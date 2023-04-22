@@ -1,0 +1,60 @@
+.ERAsector {
+	position: absolute;
+	width: 741px;
+	height: 824px;
+}
+
+.ERAsector[sector='0'] {
+	background-image: url('../img/sectors/00.png');
+}
+.ERAsector[sector='1'] {
+	background-image: url('../img/sectors/01.png');
+}
+.ERAsector[sector='2'] {
+	background-image: url('../img/sectors/02.png');
+}
+.ERAsector[sector='3'] {
+	background-image: url('../img/sectors/03.png');
+}
+.ERAsector[sector='4'] {
+	background-image: url('../img/sectors/04.png');
+}
+.ERAsector[sector='5'] {
+	background-image: url('../img/sectors/05.png');
+}
+.ERAsector[sector='6'] {
+	background-image: url('../img/sectors/06.png');
+}
+.ERAsector[sector='7'] {
+	background-image: url('../img/sectors/07.png');
+}
+.ERAsector[sector='8'] {
+	background-image: url('../img/sectors/08.png');
+}
+.ERAsector[sector='9'] {
+	background-image: url('../img/sectors/09.png');
+}
+.ERAsector[sector='10'] {
+	background-image: url('../img/sectors/10.png');
+}
+.ERAsector[sector='11'] {
+	background-image: url('../img/sectors/11.png');
+}
+.ERAsector[sector='12'] {
+	background-image: url('../img/sectors/12.png');
+}
+.ERAsector[sector='13'] {
+	background-image: url('../img/sectors/13.png');
+}
+.ERAsector[sector='14'] {
+	background-image: url('../img/sectors/14.png');
+}
+.ERAsector[sector='15'] {
+	background-image: url('../img/sectors/15.png');
+}
+.ERAsector[sector='16'] {
+	background-image: url('../img/sectors/16.png');
+}
+.ERAsector[sector='17'] {
+	background-image: url('../img/sectors/17.png');
+}

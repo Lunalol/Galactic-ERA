@@ -1,0 +1,66 @@
+#ERA-DP {
+	position: relative;
+	width: 804px;
+	height: 561px;
+	background-image: url('../img/DP.jpg');
+}
+
+#ERAgalacticStory {
+	position:absolute;
+	left:62px;
+	top:240px;
+	transition: filter 0.25s;
+}
+
+#ERAgalacticStory:hover {
+    filter:brightness(2.0);
+	transition: filter 0.25s;
+}
+
+.ERApopulationTrack {
+	position:relative;
+	width: 714px;
+	height: 314px;
+}
+.ERApanel-FF3333 .ERApopulationTrack {
+	background-image: url('../img/populationTracks/FF3333.png');
+}
+.ERApanel-00CC00 .ERApopulationTrack {
+	background-image: url('../img/populationTracks/00CC00.png');
+}
+.ERApanel-6666FF .ERApopulationTrack {
+	background-image: url('../img/populationTracks/6666FF.png');
+}
+.ERApanel-FF9900 .ERApopulationTrack {
+	background-image: url('../img/populationTracks/FF9900.png');
+}
+.ERApanel-CD1FCD .ERApopulationTrack {
+	background-image: url('../img/populationTracks/CD1FCD.png');
+}
+.ERApanel-FFFF00 .ERApopulationTrack {
+	background-image: url('../img/populationTracks/FFFF00.png');
+}
+
+.ERAtechTrack {
+	position:relative;
+	width: 877px;
+	height: 532px;
+}
+.ERApanel-FF3333 .ERAtechTrack {
+	background-image: url('../img/techTracks/FF3333.png');
+}
+.ERApanel-00CC00 .ERAtechTrack {
+	background-image: url('../img/techTracks/00CC00.png');
+}
+.ERApanel-6666FF .ERAtechTrack {
+	background-image: url('../img/techTracks/6666FF.png');
+}
+.ERApanel-FF9900 .ERAtechTrack {
+	background-image: url('../img/techTracks/FF9900.png');
+}
+.ERApanel-CD1FCD .ERAtechTrack {
+	background-image: url('../img/techTracks/CD1FCD.png');
+}
+.ERApanel-FFFF00 .ERAtechTrack {
+	background-image: url('../img/techTracks/FFFF00.png');
+}

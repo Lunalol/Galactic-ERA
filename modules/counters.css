@@ -1,0 +1,521 @@
+.ERAcounter {
+	background: url('../img/counters.png');
+	transition: all 0.25s;
+	z-index: 100;
+}
+
+.ERAcounter:hover,.ERAcounter:focus {
+	filter:brightness(2.0);
+	transition: all 0.25s;
+	z-index: 500 !important;
+}
+
+.ERAcounter.advanced_fleet_tactic_back {
+	background-position: 0 0;
+	width: 60px;
+	height: 60px;
+}
+.ERAcounter.advanced_fleet_tactic_front {
+	background-position: -119px 0;
+	width: 59px;
+	height: 59px;
+}
+
+.ERAcounter-relic
+{
+	width: 59px;
+	height: 59px;
+	clip-path: circle(59px);
+}
+.ERAcounter-relic.ERAcounter-BACK
+{
+	background-position-x: -399px;
+}
+.ERAcounter.ancient_relic_counters_ancient_pyramid_v03 {
+	background-position: -238px 0;
+}
+.ERAcounter.ancient_relic_counters_buried_ships_v03 {
+	background-position: -357px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_defense_grid_v03 {
+	background-position: -595px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_genetics {
+	background-position: -714px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_military_v03 {
+	background-position: -833px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_planetary_death_ray_v03 {
+	background-position: -952px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_propulsion {
+	background-position: -1071px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_robotics {
+	background-position: -1190px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_spirituality {
+	background-position: -1309px 0;
+}
+.ERAcounter-relic.ancient_relic_counters_super_stargate_v03 {
+	background-position: -1428px 0;
+}
+
+.ERAcounter.at_peace_.ERAcounter-6666FF {
+	background-position: -1547px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_peace_.ERAcounter-00CC00 {
+	background-position: -1724px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_peace_.ERAcounter-CD1FCD {
+	background-position: -1901px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_peace_.ERAcounter-FF9900 {
+	background-position: -2078px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_peace_.ERAcounter-FF3333 {
+	background-position: -2255px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_peace_.ERAcounter-FFFF00 {
+	background-position: -2432px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_war_.ERAcounter-6666FF {
+	background-position: -2609px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_war_.ERAcounter-00CC00 {
+	background-position: -2786px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_war_.ERAcounter-CD1FCD {
+	background-position: -2963px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_war_.ERAcounter-FF9900 {
+	background-position: -3140px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_war_.ERAcounter-FF3333 {
+	background-position: -3317px 0;
+	width: 177px;
+	height: 177px;
+}
+.ERAcounter.at_war_.ERAcounter-FFFF00 {
+	background-position: -3494px 0;
+	width: 177px;
+	height: 177px;
+}
+
+.ERAcounter.DP_counter_50- {
+	background-position: -3671px 0;
+	width: 148px;
+	height: 148px;
+}
+.ERAcounter.DP_counter_50 {
+	background-position: -3819px 0;
+	width: 148px;
+	height: 148px;
+}
+.ERAcounter.DP_counter_100 {
+	background-position: -3967px 0;
+	width: 148px;
+	height: 148px;
+}
+
+.ERAcounter.fleet_counters_blue_A_22x15mm {
+	background-position: -4115px 0;
+}
+.ERAcounter.fleet_counters_blue_B_22x15mm {
+	background-position: -4245px 0;
+}
+.ERAcounter.fleet_counters_blue_back_22x15mm {
+	background-position: -4375px 0;
+}
+.ERAcounter.fleet_counters_blue_C_22x15mm {
+	background-position: -4505px 0;
+}
+.ERAcounter.fleet_counters_blue_D_22x15mm {
+	background-position: -4635px 0;
+}
+.ERAcounter.fleet_counters_blue_E_22x15mm {
+	background-position: -4765px 0;
+}
+.ERAcounter.fleet_counters_green_A_22x15mm {
+	background-position: -4895px 0;
+}
+.ERAcounter.fleet_counters_green_B_22x15mm {
+	background-position: -5025px 0;
+}
+.ERAcounter.fleet_counters_green_back_22x15mm {
+	background-position: -5155px 0;
+}
+.ERAcounter.fleet_counters_green_C_22x15mm {
+	background-position: -5285px 0;
+}
+.ERAcounter.fleet_counters_green_D_22x15mm {
+	background-position: -5415px 0;
+}
+.ERAcounter.fleet_counters_green_E_22x15mm {
+	background-position: -5545px 0;
+}
+.ERAcounter.fleet_counters_magenta_A_22x15mm {
+	background-position: -5675px 0;
+}
+.ERAcounter.fleet_counters_magenta_B_22x15mm {
+	background-position: -5805px 0;
+}
+.ERAcounter.fleet_counters_magenta_back_22x15mm {
+	background-position: -5935px 0;
+}
+.ERAcounter.fleet_counters_magenta_C_22x15mm {
+	background-position: -6065px 0;
+}
+.ERAcounter.fleet_counters_magenta_E_22x15mm {
+	background-position: -6195px 0;
+}
+.ERAcounter.fleet_counters_magenta_D_22x15mm {
+	background-position: -6325px 0;
+}
+.ERAcounter.fleet_counters_orange_A_22x15mm {
+	background-position: -6455px 0;
+}
+.ERAcounter.fleet_counters_orange_B_22x15mm {
+	background-position: -6585px 0;
+}
+.ERAcounter.fleet_counters_orange_back_22x15mm {
+	background-position: -6715px 0;
+}
+.ERAcounter.fleet_counters_orange_C_22x15mm {
+	background-position: -6845px 0;
+}
+.ERAcounter.fleet_counters_orange_D_22x15mm {
+	background-position: -6975px 0;
+}
+.ERAcounter.fleet_counters_orange_E_22x15mm {
+	background-position: -7105px 0;
+}
+
+.ERAcounter.fleet_counters_A.ERAcounter-FF3333 {
+	background-position: -7235px 0;
+}
+.ERAcounter.fleet_counters_B.ERAcounter-FF3333 {
+	background-position: -7365px 0;
+}
+.ERAcounter.fleet_counters_BACK.ERAcounter-FF3333 {
+	background-position: -7495px 0;
+}
+.ERAcounter.fleet_counters_C.ERAcounter-FF3333 {
+	background-position: -7625px 0;
+}
+.ERAcounter.fleet_counters_D.ERAcounter-FF3333 {
+	background-position: -7755px 0;
+}
+.ERAcounter.fleet_counters_E.ERAcounter-FF3333 {
+	background-position: -7885px 0;
+}
+.ERAcounter.fleet_counters_yellow_A_22x15mm {
+	background-position: -8015px 0;
+}
+.ERAcounter.fleet_counters_yellow_B_22x15mm {
+	background-position: -8145px 0;
+}
+.ERAcounter.fleet_counters_yellow_back_22x15mm {
+	background-position: -8275px 0;
+}
+.ERAcounter.fleet_counters_yellow_C_22x15mm {
+	background-position: -8405px 0;
+}
+.ERAcounter.fleet_counters_yellow_D_22x15mm {
+	background-position: -8535px 0;
+}
+.ERAcounter.fleet_counters_yellow_E_22x15mm {
+	background-position: -8665px 0;
+}
+
+.ERAcounter-growth
+{
+    width: 89px;
+    height: 118px;
+	clip-path: ellipse(50% 50%);
+}
+.ERAcounter-growth.ERAselected {
+	filter:brightness(2.0);
+	transform: scale(125%);
+	transition: all 0.25s;
+}
+/*
+// Growth Actions (30)
+*/
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-6666FF {
+	background-position-x: -4753px;
+}
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-00CC00 {
+	background-position-x: -4486px;
+}
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-CD1FCD {
+	background-position-x: -4397px;
+}
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-FF9900 {
+	background-position-x: -4664px;
+}
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-FF3333 {
+	background-position-x: -4575px;
+}
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-FFFF00 {
+	background-position-x: -4842px;
+}
+.ERAcounter-growth[counter='buildShips'].ERAcounter-6666FF {
+	background-position-x: -5287px;
+}
+.ERAcounter-growth[counter='buildShips'].ERAcounter-00CC00 {
+	background-position-x: -5020px;
+}
+.ERAcounter-growth[counter='buildShips'].ERAcounter-CD1FCD {
+	background-position-x: -4931px;
+}
+.ERAcounter-growth[counter='buildShips'].ERAcounter-FF9900 {
+	background-position-x: -5198px;
+}
+.ERAcounter-growth[counter='buildShips'].ERAcounter-FF3333 {
+	background-position-x: -5109px;
+}
+.ERAcounter-growth[counter='buildShips'].ERAcounter-FFFF00 {
+	background-position-x: -5376px;
+}
+.ERAcounter-growth[counter='gainStar'].ERAcounter-6666FF {
+	background-position-x: -5821px;
+}
+.ERAcounter-growth[counter='gainStar'].ERAcounter-00CC00 {
+	background-position-x: -5554px;
+}
+.ERAcounter-growth[counter='gainStar'].ERAcounter-CD1FCD {
+	background-position-x: -5465px;
+}
+.ERAcounter-growth[counter='gainStar'].ERAcounter-FF9900 {
+	background-position-x: -5732px;
+}
+.ERAcounter-growth[counter='gainStar'].ERAcounter-FF3333 {
+	background-position-x: -5643px;
+}
+.ERAcounter-growth[counter='gainStar'].ERAcounter-FFFF00 {
+	background-position-x: -5910px;
+}
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-6666FF {
+	background-position-x: -6355px;
+}
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-00CC00 {
+	background-position-x: -6088px;
+}
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-CD1FCD {
+	background-position-x: -5999px;
+}
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF9900 {
+	background-position-x: -6266px;
+}
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF3333 {
+	background-position-x: -6177px;
+}
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-FFFF00 {
+	background-position-x: -6444px;
+}
+.ERAcounter-growth[counter='research'].ERAcounter-6666FF {
+	background-position-x: -6889px;
+}
+.ERAcounter-growth[counter='research'].ERAcounter-00CC00 {
+	background-position-x: -6622px;
+}
+.ERAcounter-growth[counter='research'].ERAcounter-CD1FCD {
+	background-position-x: -6533px;
+}
+.ERAcounter-growth[counter='research'].ERAcounter-FF9900 {
+	background-position-x: -6800px;
+}
+.ERAcounter-growth[counter='research'].ERAcounter-FF3333 {
+	background-position-x: -6711px;
+}
+.ERAcounter-growth[counter='research'].ERAcounter-FFFF00 {
+	background-position-x: -6978px;
+}
+/*
+// Turn Order (6)
+*/
+.ERAorder
+{
+	bottom: 0px;
+	right: 0px;
+	opacity: .5;
+	transform-origin: right bottom;
+	width: 177px;
+	height: 177px;
+}
+.ERAorder[order='?'] {
+	display: none;
+}
+.ERAorder[order='1'] {
+	background-position: -14135px 0;
+}
+.ERAorder[order='2'] {
+	background-position: -14312px 0;
+}
+.ERAorder[order='3'] {
+	background-position: -14489px 0;
+}
+.ERAorder[order='4'] {
+	background-position: -14666px 0;
+}
+.ERAorder[order='5'] {
+	background-position: -14843px 0;
+}
+.ERAorder[order='6'] {
+	background-position: -15020px 0;
+}
+/*
+// Stars (3)
+*/
+.ERAcounter-star
+{
+	width: 59px;
+	height: 59px;
+	clip-path: circle(59px);
+}
+.ERAcounter-star.ERAcounter-BACK {
+	background-position-x: -7660px;
+}
+.ERAcounter-star.ERAcounter-UNINHABITED {
+	background-position-x: -7778px;
+}
+.ERAcounter-star.ERAcounter-PRIMITIVE {
+	background-position-x: -7719px;
+}
+.ERAcounter-star.ERAcounter-ADVANCED {
+	background-position-x: -7601px;
+}
+/*
+// Technologies (5)
+*/
+.ERAcounter-technology
+{
+	width: 74px;
+	height: 74px;
+}
+.ERAcounter-technology.ERAselected {
+	transform: scale(125%);
+	transition: all 0.25s;
+}
+.ERAcounter-technology[counter='Genetics'] {
+	background-position-x: -7837px;
+}
+.ERAcounter-technology[counter='Military'] {
+	background-position-x: -7911px;
+}
+.ERAcounter-technology[counter='Propulsion'] {
+	background-position-x: -7985px;
+}
+.ERAcounter-technology[counter='Robotics'] {
+	background-position-x: -8059px;
+}
+.ERAcounter-technology[counter='Spirituality'] {
+	background-position-x: -8133px;
+}
+/*
+// Change Turn Order (2)
+*/
+.ERAcounter-turnOrder
+{
+	width: 74px;
+	height: 74px;
+}
+.ERAcounter-turnOrder.ERAselected {
+	transform: scale(125%);
+	transition: all 0.25s;
+}
+.ERAcounter-turnOrder[counter='changeTurnOrderUp'] {
+	background-position-x: -8207px;
+}
+.ERAcounter-turnOrder[counter='changeTurnOrderDown'] {
+	background-position-x: -8281px;
+}
+/*
+// Wormholes (3)
+*/
+.ERAcounter-wormhole
+{
+	width: 74px;
+	height: 74px;
+}
+.ERAcounter-wormhole.ERAcounter-blue {
+	background-position-x: -8355px;
+}
+.ERAcounter-wormhole.ERAcounter-gold {
+	background-position-x: -8414px;
+}
+.ERAcounter-wormhole.ERAcounter-purple {
+	background-position-x: -8473px;
+}
+/*
+// Cylinders (6)
+*/
+.ERAcounter-cylinder {
+	width: 72px;
+	height: 72px;
+}
+.ERAcounter-cylinder.ERAcounter-FF3333 {
+	background-position-x: -8916px;
+}
+.ERAcounter-cylinder.ERAcounter-00CC00 {
+	background-position-x: -8988px;
+}
+.ERAcounter-cylinder.ERAcounter-6666FF {
+	background-position-x: -9060px;
+}
+.ERAcounter-cylinder.ERAcounter-FF9900 {
+	background-position-x: -9132px;
+}
+.ERAcounter-cylinder.ERAcounter-CD1FCD {
+	background-position-x: -9204px;
+}
+.ERAcounter-cylinder.ERAcounter-FFFF00 {
+	background-position-x: -9276px;
+}
+/*
+// Cubes (6)
+*/
+.ERAcounter-cube {
+	width: 64px;
+	height: 64px;
+}
+.ERAcounter-cube.ERAcounter-FF3333 {
+	background-position-x: -8532px;
+}
+.ERAcounter-cube.ERAcounter-00CC00 {
+	background-position-x: -8596px;
+}
+.ERAcounter-cube.ERAcounter-6666FF {
+	background-position-x: -8660px;
+}
+.ERAcounter-cube.ERAcounter-FF9900 {
+	background-position-x: -8724px;
+}
+.ERAcounter-cube.ERAcounter-CD1FCD {
+	background-position-x: -8788px;
+}
+.ERAcounter-cube.ERAcounter-FFFF00 {
+	background-position-x: -8852px;
+}
