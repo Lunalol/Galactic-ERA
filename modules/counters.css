@@ -4,10 +4,19 @@
 	z-index: 100;
 }
 
-.ERAcounter:hover,.ERAcounter:focus {
+.ERAcounter-relic:hover,.ERAcounter-relic:focus,.ERAcounter-star:hover,.ERAcounter-star:focus {
 	filter:brightness(2.0);
 	transition: all 0.25s;
 	z-index: 500 !important;
+}
+
+.ERAcounter.ERAselected {
+    filter:brightness(4.0);
+	transition: all 0.25s;
+}
+.ERAcounter:not(.ERAselectable) {
+    filter:brightness(1.0);
+	transition: all 0.25s;
 }
 
 .ERAcounter.advanced_fleet_tactic_back {
@@ -25,9 +34,9 @@
 {
 	width: 59px;
 	height: 59px;
-	clip-path: circle(59px);
+	clip-path: circle(50%);
 }
-.ERAcounter-relic.ERAcounter-BACK
+.ERAcounter-relic
 {
 	background-position-x: -399px;
 }
@@ -263,91 +272,91 @@
 /*
 // Growth Actions (30)
 */
-.ERAcounter-growth[counter='switchAlignment'].ERAcounter-6666FF {
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-FF3333 {
 	background-position-x: -4753px;
 }
 .ERAcounter-growth[counter='switchAlignment'].ERAcounter-00CC00 {
 	background-position-x: -4486px;
 }
-.ERAcounter-growth[counter='switchAlignment'].ERAcounter-CD1FCD {
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-6666FF {
 	background-position-x: -4397px;
 }
 .ERAcounter-growth[counter='switchAlignment'].ERAcounter-FF9900 {
 	background-position-x: -4664px;
 }
-.ERAcounter-growth[counter='switchAlignment'].ERAcounter-FF3333 {
+.ERAcounter-growth[counter='switchAlignment'].ERAcounter-CD1FCD {
 	background-position-x: -4575px;
 }
 .ERAcounter-growth[counter='switchAlignment'].ERAcounter-FFFF00 {
 	background-position-x: -4842px;
 }
-.ERAcounter-growth[counter='buildShips'].ERAcounter-6666FF {
+.ERAcounter-growth[counter='buildShips'].ERAcounter-FF3333 {
 	background-position-x: -5287px;
 }
 .ERAcounter-growth[counter='buildShips'].ERAcounter-00CC00 {
 	background-position-x: -5020px;
 }
-.ERAcounter-growth[counter='buildShips'].ERAcounter-CD1FCD {
+.ERAcounter-growth[counter='buildShips'].ERAcounter-6666FF {
 	background-position-x: -4931px;
 }
 .ERAcounter-growth[counter='buildShips'].ERAcounter-FF9900 {
 	background-position-x: -5198px;
 }
-.ERAcounter-growth[counter='buildShips'].ERAcounter-FF3333 {
+.ERAcounter-growth[counter='buildShips'].ERAcounter-CD1FCD {
 	background-position-x: -5109px;
 }
 .ERAcounter-growth[counter='buildShips'].ERAcounter-FFFF00 {
 	background-position-x: -5376px;
 }
-.ERAcounter-growth[counter='gainStar'].ERAcounter-6666FF {
+.ERAcounter-growth[counter='gainStar'].ERAcounter-FF3333 {
 	background-position-x: -5821px;
 }
 .ERAcounter-growth[counter='gainStar'].ERAcounter-00CC00 {
 	background-position-x: -5554px;
 }
-.ERAcounter-growth[counter='gainStar'].ERAcounter-CD1FCD {
+.ERAcounter-growth[counter='gainStar'].ERAcounter-6666FF {
 	background-position-x: -5465px;
 }
 .ERAcounter-growth[counter='gainStar'].ERAcounter-FF9900 {
 	background-position-x: -5732px;
 }
-.ERAcounter-growth[counter='gainStar'].ERAcounter-FF3333 {
+.ERAcounter-growth[counter='gainStar'].ERAcounter-CD1FCD {
 	background-position-x: -5643px;
 }
 .ERAcounter-growth[counter='gainStar'].ERAcounter-FFFF00 {
 	background-position-x: -5910px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-6666FF {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF3333 {
 	background-position-x: -6355px;
 }
 .ERAcounter-growth[counter='growPopulation'].ERAcounter-00CC00 {
 	background-position-x: -6088px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-CD1FCD {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-6666FF {
 	background-position-x: -5999px;
 }
 .ERAcounter-growth[counter='growPopulation'].ERAcounter-FF9900 {
 	background-position-x: -6266px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF3333 {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-CD1FCD {
 	background-position-x: -6177px;
 }
 .ERAcounter-growth[counter='growPopulation'].ERAcounter-FFFF00 {
 	background-position-x: -6444px;
 }
-.ERAcounter-growth[counter='research'].ERAcounter-6666FF {
+.ERAcounter-growth[counter='research'].ERAcounter-FF3333 {
 	background-position-x: -6889px;
 }
 .ERAcounter-growth[counter='research'].ERAcounter-00CC00 {
 	background-position-x: -6622px;
 }
-.ERAcounter-growth[counter='research'].ERAcounter-CD1FCD {
+.ERAcounter-growth[counter='research'].ERAcounter-6666FF {
 	background-position-x: -6533px;
 }
 .ERAcounter-growth[counter='research'].ERAcounter-FF9900 {
 	background-position-x: -6800px;
 }
-.ERAcounter-growth[counter='research'].ERAcounter-FF3333 {
+.ERAcounter-growth[counter='research'].ERAcounter-CD1FCD {
 	background-position-x: -6711px;
 }
 .ERAcounter-growth[counter='research'].ERAcounter-FFFF00 {
@@ -393,9 +402,9 @@
 {
 	width: 59px;
 	height: 59px;
-	clip-path: circle(59px);
+	clip-path: circle(50%);
 }
-.ERAcounter-star.ERAcounter-BACK {
+.ERAcounter-star {
 	background-position-x: -7660px;
 }
 .ERAcounter-star.ERAcounter-UNINHABITED {
@@ -518,4 +527,30 @@
 }
 .ERAcounter-cube.ERAcounter-FFFF00 {
 	background-position-x: -8852px;
+}
+/*
+// Population disks (6)
+*/
+.ERAcounter-populationDisk {
+	background: url('../img/3D.png');
+	width: 250px;
+	height: 250px;
+}
+.ERAcounter-populationDisk.ERAcounter-FF3333 {
+	background-position-x: -1500px;
+}
+.ERAcounter-populationDisk.ERAcounter-00CC00 {
+	background-position-x: -1750px;
+}
+.ERAcounter-populationDisk.ERAcounter-6666FF {
+	background-position-x: -2000px;
+}
+.ERAcounter-populationDisk.ERAcounter-FF9900 {
+	background-position-x: -2250px;
+}
+.ERAcounter-populationDisk.ERAcounter-CD1FCD {
+	background-position-x: -2500px;
+}
+.ERAcounter-populationDisk.ERAcounter-FFFF00 {
+	background-position-x: -2750px;
 }
