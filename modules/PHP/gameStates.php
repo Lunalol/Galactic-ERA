@@ -106,7 +106,7 @@ trait gameStates
 			shuffle($counters);
 			foreach (array_keys($stars) as $hexagon) Counters::create('neutral', 'star', $sector . ':' . $hexagon, ['back' => array_pop($counters)]);
 //
-			Ships::create($color, 'homeStar', $sector + ':+0+0+0');
+			Ships::create($color, 'homeStar', $sector . ':+0+0+0');
 		}
 //
 // Take three star counters of each of the three types (soa total of nine).
