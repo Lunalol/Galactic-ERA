@@ -250,7 +250,7 @@ trait gameStateActions
 			}
 			if (sizeof($ships) < $SHIPS) throw new BgaUserException(self::_('Not enough ships'));
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('removeCounter', clienttranslate('${player_name} gain ${PLANET}'), [
+			$this->notifyAllPlayers('removeCounter', clienttranslate('${player_name} gains ${PLANET}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
 				'counter' => Counters::get($star),
@@ -262,8 +262,9 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
+				$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B> at ${PLANET}'), [
 					'player_name' => Players::getName(Factions::getPlayer($color)),
+					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
 					'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -293,8 +294,9 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B> at ${PLANET}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
 				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 			]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -322,8 +324,9 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B> at ${PLANET}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
 				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 			]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -346,8 +349,9 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
+			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
 				'ship' => Ships::get($color, Ships::create($color, 'ship', $location))
 			]);
 //* -------------------------------------------------------------------------------------------------------- */
