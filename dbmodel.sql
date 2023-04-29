@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `factions`
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00') PRIMARY KEY,
     `player_id` INT,`activation` ENUM ('no','yes','done'),
 	`starPeople` ENUM ('none','Alliance','Anchara','Annunaki','Avians','Caninoids','Dracos','Felines','Galactic','Greys','ICC','Mantids','Mayans','Orion','Plejars','Progenitors','Rogue','Yowies'),
-	`alignment` ENUM ('STO','STS'),`DP` INT(2) DEFAULT 0,`population` INT(2) DEFAULT 6,
+	`alignment` ENUM ('STO','STS'),`DP` INT(2) DEFAULT 0,`population` INT(2) DEFAULT 0,
 	`Military` INT(1) DEFAULT 1,`Spirituality` INT(1) DEFAULT 1,`Propulsion` INT(1) DEFAULT 1,`Robotics` INT(1) DEFAULT 1,`Genetics` INT(1) DEFAULT 1,
 	`homeStar` INT(1),`order` INT(1),`status` JSON
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -19,10 +19,17 @@ CREATE TABLE IF NOT EXISTS `counters`
 (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
-    `type` ENUM ('star','relic','wormhole','cylinder'),`subType` VARCHAR(20),
+    `type` ENUM ('star','relic','wormhole','populationDisk'),
     `location` CHAR(8),
 	`status` JSON,
     INDEX (`type`),INDEX (`color`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `revealed`
+(
+    `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
+	`type` ENUM ('star', 'relic', 'dominationCard'), `id` INT,
+    PRIMARY KEY(`color`,`type`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `ships`

@@ -11,12 +11,14 @@ require_once('modules/PHP/Ships.php');
 require_once('modules/PHP/gameStates.php');
 require_once('modules/PHP/gameStateArguments.php');
 require_once('modules/PHP/gameStateActions.php');
+require_once('modules/PHP/gameUtils.php');
 
 class GalacticEra extends Table
 {
 	use gameStates;
 	use gameStateArguments;
 	use gameStateActions;
+	use gameUtils;
 //
 	function __construct()
 	{
@@ -68,13 +70,17 @@ class GalacticEra extends Table
 		$result['factions'] = Factions::getAllDatas();
 		$result['galacticStory'] = $this->STORIES[self::getGameStateValue('galacticStory')];
 		$result['galacticGoal'] = $this->GOALS[self::getGameStateValue('galacticGoal')];
+		$result['round'] = intval(self::getGameStateValue('round'));
 //
 		foreach (Factions::list() as $color)
 		{
-			if ($player_id == Factions::getPlayer($color))
-			{
-				foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][] = $this->DOMINATIONCARDS[$domination['type']];
-			}
+			$result['factions'][$color]['revealed']['stars'] = [];
+			foreach (Counters::listRevealed($color, 'star') as $counter) $result['factions'][$color]['revealed']['stars'][$counter] = Counters::getStatus($counter, 'back');
+			$result['factions'][$color]['revealed']['relics'] = [];
+			foreach (Counters::listRevealed($color, 'relic') as $counter) $result['factions'][$color]['revealed']['relics'][$counter] = Counters::getStatus($counter, 'back');
+//
+			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][] = $player_id === Factions::getPlayer($color) ? $this->DOMINATIONCARDS[$domination['type']] : 'back';
+			$result['factions'][$color]['ships'] = 16 - sizeof(Ships::getAll($color, 'ship'));
 		}
 //
 		$result['sectors'] = Sectors::getAllDatas();

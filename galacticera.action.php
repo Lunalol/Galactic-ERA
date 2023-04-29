@@ -35,13 +35,23 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function scout()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$ships = self::getArg("ships", AT_json, true);
+		$this->game->acScout($color, $ships);
+//
+		self::ajaxResponse("");
+	}
 	public function move()
 	{
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
 		$location = self::getArg("location", AT_json, true);
-		$ships = self::getArg("ships", AT_json, false);
+		$ships = self::getArg("ships", AT_json, true);
 		$this->game->acMove($color, $location, $ships);
 //
 		self::ajaxResponse("");
@@ -69,7 +79,7 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
-		$counters = self::getArg("counters", AT_json, false);
+		$counters = self::getArg("counters", AT_json, true);
 		$this->game->acSelectCounters($color, $counters);
 //
 		self::ajaxResponse("");
@@ -79,8 +89,48 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
-		$technology = self::getArg("technology", AT_alphanum, false);
+		$technology = self::getArg("technology", AT_alphanum, true);
 		$this->game->acResearch($color, $technology);
+//
+		self::ajaxResponse("");
+	}
+	public function gainStar()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$location = self::getArg("location", AT_json, true);
+		$this->game->acGainStar($color, $location);
+//
+		self::ajaxResponse("");
+	}
+	public function growPopulation()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$locations = self::getArg("locations", AT_json, true);
+		$this->game->acGrowPopulation($color, $locations);
+//
+		self::ajaxResponse("");
+	}
+	public function bonusPopulation()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$locations = self::getArg("locations", AT_json, true);
+		$this->game->acBonusPopulation($color, $locations);
+//
+		self::ajaxResponse("");
+	}
+	public function buildShips()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$locations = self::getArg("locations", AT_json, true);
+		$this->game->acBuildShips($color, $locations);
 //
 		self::ajaxResponse("");
 	}

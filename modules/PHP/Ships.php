@@ -2,9 +2,8 @@
 
 class Ships extends APP_GameClass
 {
-	static function create($color, $fleet, $sector, $hexagon = '+0+0+0'): int
+	static function create($color, $fleet, $location): int
 	{
-		$location = sprintf('%1d:%6s', $sector, $hexagon);
 		self::DbQuery("INSERT INTO ships (color,fleet,location) VALUES ('$color','$fleet','$location')");
 		return self::DbGetLastId();
 	}
@@ -16,10 +15,25 @@ class Ships extends APP_GameClass
 	{
 		return self::getNonEmptyObjectFromDB("SELECT * FROM ships WHERE color = '$color' AND id = $id");
 	}
-	static function getAll(string $color = null): array
+	static function getHomeStar(string $color = null): array
 	{
-		if (is_null($color)) return self::getCollectionFromDB("SELECT * FROM ships ORDER BY color,fleet");
-		return self::getCollectionFromDB("SELECT * FROM ships WHERE color = '$color' ORDER BY fleet");
+		$sql = "SELECT id, location FROM ships WHERE fleet = 'homeStar'";
+		if (!is_null($color)) $sql .= " AND color ='$color'";
+		return self::getCollectionFromDB($sql, true);
+	}
+	static function getAtLocation(string $location, string $color = null, string $fleet = null): array
+	{
+		$sql = "SELECT id FROM ships WHERE location = '$location'";
+		if (!is_null($color)) $sql .= " AND color ='$color'";
+		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
+		return self::getObjectListFromDB($sql, true);
+	}
+	static function getAll(string $color = null, string $fleet = null): array
+	{
+		$sql = "SELECT * FROM ships WHERE true";
+		if (!is_null($color)) $sql .= " AND color ='$color'";
+		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
+		return self::getCollectionFromDB($sql . " ORDER BY color,fleet");
 	}
 	static function getAllDatas(): array
 	{
@@ -34,9 +48,9 @@ class Ships extends APP_GameClass
 		if (is_null($id)) self::dbQuery("UPDATE ships SET activation = '$activation'");
 		else self::dbQuery("UPDATE ships SET activation = '$activation' WHERE id = $id");
 	}
-	static function getActivation(string $color): string
+	static function getActivation(int $id): string
 	{
-		return self::getUniqueValueFromDB("SELECT activation FROM ships WHERE id = id = $id");
+		return self::getUniqueValueFromDB("SELECT activation FROM ships WHERE id = $id");
 	}
 	static function setMP(int $id, int $MP): void
 	{
@@ -44,8 +58,6 @@ class Ships extends APP_GameClass
 	}
 	static function movement(array $ship)
 	{
-		$sectors = Sectors::getAllDatas();
-//
 		$location = $ship['location'];
 		$possible = [$location => ['MP' => $ship['MP'], 'path' => [$location]]];
 //

@@ -37,13 +37,14 @@ trait gameStateArguments
 		$color = Factions::getActive();
 		$player_id = Factions::getPlayer($color);
 //
-		$this->possible = [];
+		$revealed = Counters::listRevealed($color);
+		$this->possible = ['move' => [], 'scout' => []];
 		foreach (Ships::getAll($color) as $ship)
 		{
-			if ($ship['fleet'] === 'ship') $this->possible['move'][$ship['id']] = Ships::movement($ship);
+			if ($ship['fleet'] === 'ship' && $ship['activation'] !== 'done') $this->possible['move'][$ship['id']] = Ships::movement($ship);
 //
-			$counter = Counters::getAtLocation($ship['location']);
-			if ($counter) $this->possible['scout'][$ship['id']] = $counter;
+			$counters = array_diff(Counters::getAtLocation($ship['location'], 'star'), $revealed);
+			if ($counters) $this->possible['scout'][$ship['id']] = $counters;
 		}
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
@@ -66,9 +67,56 @@ trait gameStateArguments
 		$private = [];
 		foreach (Factions::list() as $color)
 		{
+			$counters = Factions::getStatus($color, 'counters');
+//
 			$player_id = Factions::getPlayer($color);
 			$private[$player_id]['color'] = $color;
-			$private[$player_id]['counters'] = Factions::getStatus($color, 'counters');
+			$private[$player_id]['counters'] = $counters;
+//
+			foreach ($counters as $counter)
+			{
+				switch ($counter)
+				{
+					case 'reseach':
+						break;
+					case 'gainStar':
+						{
+							$private[$player_id]['gainStar'] = [];
+							foreach (Ships::getAll($color) as $ship)
+							{
+								$star = Counters::getAtLocation($ship['location'], 'star');
+								if ($star) $private[$player_id]['gainStar'][] = $star;
+							}
+						}
+						break;
+					case 'growPopulation':
+						{
+							$private[$player_id]['growPopulation'] = [];
+							foreach (Counters::getPopulation($color) as $location => $population)
+							{
+								$population = intval($population);
+								$growthLimit = Sectors::nearest($location);
+								if ($population < $growthLimit) $private[$player_id]['growPopulation'][$location] = ['population' => $population, 'growthLimit' => $growthLimit];
+							}
+						}
+						break;
+					case 'buildShips':
+						{
+							$private[$player_id]['buildShips'] = [];
+							foreach (Counters::getPopulation($color) as $location => $population) if ($population >= Factions::TECHNOLOGIES['ShipYards'][Factions::getTechnology($color, 'Robotics')]) $private[$player_id]['buildShips'][] = $location;
+//
+							$build = 0;
+							foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $build++;
+							foreach (Factions::BUILD as $population)
+							{
+								if ($population > Factions::getPopulation($color)) break;
+								$build++;
+							}
+							$private[$player_id]['newShips'] = $build + Factions::TECHNOLOGIES['Robotics'][Factions::getTechnology($color, 'Robotics')];
+						}
+						break;
+				}
+			}
 		}
 //
 		$color = Factions::getActive();
@@ -76,5 +124,15 @@ trait gameStateArguments
 		$this->possible = $private[$player_id];
 //
 		return ['_private' => $private, 'active' => $color];
+	}
+	function argBonusPopulation()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		$this->possible = ['bonusPopulation' => Counters::getPopulation($color)];
+		$bonus = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'bonus' => $bonus];
 	}
 }

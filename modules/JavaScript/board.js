@@ -34,6 +34,24 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			this.playarea = dojo.byId('ERAplayArea');
 			this.board = dojo.byId('ERAboard');
 //
+			for (let faction of Object.values(this.bgagame.gamedatas.factions))
+			{
+				const node = dojo.place(this.bgagame.format_block('ERApanel', {color: faction.color}), 'ERAboard');
+				const angle = 60 * faction.homeStar - 210;
+				const x = this.hexagons['0:+0+0+0'].x + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].x - this.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
+				const y = this.hexagons['0:+0+0+0'].y + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].y - this.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
+				dojo.style(node, 'position', 'absolute');
+				dojo.style(node, 'left', x + 'px');
+				dojo.style(node, 'top', y + 'px');
+				dojo.style(node, 'transform-origin', 'center');
+				dojo.style(node, 'transform', `scale(1) rotate(${angle}deg)`);
+				dojo.connect($(`ERAplayerAid-${faction.color}`), 'click', (event) => {
+					const playerAid = (1 + +dojo.getAttr(event.currentTarget, 'playerAid')) % 4;
+					dojo.style(event.currentTarget, 'background-image', `url(${g_gamethemeurl}img/playerAids/${playerAid}.jpg)`);
+					dojo.setAttr(event.currentTarget, 'playerAid', playerAid);
+				});
+			}
+//
 // Slider setting for zoom
 //
 			$('page-title').appendChild(dojo.byId('ERAcontrols'));
@@ -52,12 +70,14 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const sX = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sX`));
 			const sY = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sY`));
 //
-			this.setRotate(isNaN(rotate) ? 0 : rotate);
-			this.setZoom(Math.max(2. * this.playarea.clientWidth / this.boardWidth, 2. * this.playarea.clientHeight / this.boardHeight, isNaN(scale) ? 0 : scale), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
-//
-			const zoom = parseFloat(this.board.scale);
-			this.playarea.scrollLeft = isNaN(scale) ? (this.boardWidth * zoom - this.playarea.clientWidth) / 2 : sX;
-			this.playarea.scrollTop = isNaN(scale) ? (this.boardHeight * zoom - this.playarea.clientHeight) / 2 : sY;
+			if (isNaN(scale) || isNaN(rotate) || isNaN(sX) || isNaN(sY)) this.home();
+			else
+			{
+				this.setRotate(rotate);
+				this.setZoom(Math.max(2. * this.playarea.clientWidth / this.boardWidth, 2. * this.playarea.clientHeight / this.boardHeight, scale), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
+				this.playarea.scrollLeft = sX;
+				this.playarea.scrollTop = sY;
+			}
 //
 // Flag to follow drag gestures
 //
@@ -83,13 +103,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.connect(this.rotate, 'oninput', this, () => this.setRotate(event.target.value));
 			dojo.connect(dojo.byId('ERArotateAntiClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) - 10));
 			dojo.connect(dojo.byId('ERArotateClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) + 10));
-			dojo.connect(dojo.byId('ERAhome'), 'onclick', () => {
-				this.setRotate(0);
-				this.setZoom(5 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
-				const zoom = parseFloat(this.board.scale);
-				this.playarea.scrollLeft = (this.boardWidth * zoom - this.playarea.clientWidth) / 2;
-				this.playarea.scrollTop = (this.boardHeight * zoom - this.playarea.clientHeight) / 2;
-			});
+			dojo.connect(dojo.byId('ERAhome'), 'onclick', this, 'home');
 //
 			dojo.connect(this.playarea, 'gesturestart', this, () => this.zooming = this.board.scale);
 			dojo.connect(this.playarea, 'gestureend', this, () => this.zooming = null);
@@ -118,6 +132,24 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.removeClass(this.board, 'ERAhideUnits');
 				dojo.removeClass(this.board, 'ERAhideMarkers');
 			};
+		},
+		home: function ()
+		{
+			if (this.bgagame.player_id in this.bgagame.players)
+			{
+				const sector = this.bgagame.gamedatas.factions[this.bgagame.players[this.bgagame.player_id]].homeStar;
+				this.setZoom(8 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
+				this.setRotate(210 - 60 * sector);
+				this.centerMap(sector + ':+0+0+0');
+			}
+			else
+			{
+				this.setRotate(0);
+				this.setZoom(5 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
+				this.centerMap('0:+0+0+0');
+			}
+			if ($('ERAchoice')) dojo.toggleClass('ERAchoice', 'ERAhide');
+
 		},
 		setRotate: function (rotate)
 		{
@@ -155,7 +187,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			const oldScale = this.board.scale;
 			this.board.scale = scale;
-			this.board.style.transform = `scale(${this.board.scale}) translate(${this.boardWidth / 2}px,${this.boardHeight / 2}px) rotate(var(--ROTATE)) translate(-${this.boardWidth / 2}px,${-this.boardHeight / 2}px)`;
+			this.board.style.transform = `scale(${this.board.scale}) translate(${this.boardWidth / 2}px,${this.boardHeight / 2}px) rotate(var(--ROTATE)) translate(-${this.boardWidth / 2}px,${ -this.boardHeight / 2}px)`;
 			this.board.style.width = `${this.boardWidth * Math.min(1.0, scale)}px`;
 			this.board.style.height = `${this.boardHeight * Math.min(1.0, scale)}px`;
 //
@@ -216,6 +248,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				let [x, y] = [this.boardWidth / 2, this.boardHeight / 2];
 				if (location && location in this.hexagons) [x, y] = [this.hexagons[location].x, this.hexagons[location].y];
+				const angle = parseFloat(this.rotate.value) * Math.PI / 180.;
+				[x, y] = [
+					this.boardWidth / 2 + Math.cos(angle) * (x - this.boardWidth / 2) - Math.sin(angle) * (y - this.boardHeight / 2),
+					this.boardHeight / 2 + Math.sin(angle) * (x - this.boardWidth / 2) + Math.cos(angle) * (y - this.boardHeight / 2)
+				];
 				const zoom = parseFloat(this.board.scale);
 				this.playarea.scrollTo({left: x * zoom - this.playarea.clientWidth / 2, top: y * zoom - this.playarea.clientHeight / 2, behavior: 'smooth'});
 			}
@@ -224,15 +261,23 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		{
 			const rect = this.playarea.getBoundingClientRect();
 			const scale = parseFloat(this.board.scale);
+			const angle = parseFloat(this.rotate.value) * Math.PI / 180.;
 			const zoom = window.getComputedStyle($('page-content')).zoom || 1;
-			const x = (event.clientX / zoom + this.playarea.scrollLeft - rect.left) / scale;
-			const y = (event.clientY / zoom + this.playarea.scrollTop - rect.top) / scale;
+			let x = (event.clientX / zoom + this.playarea.scrollLeft - rect.left) / scale;
+			let y = (event.clientY / zoom + this.playarea.scrollTop - rect.top) / scale;
 //
-			let hexagon = this.nearest(x, y);
-			if (hexagon !== undefined)
+			[x, y] = [
+				this.boardWidth / 2 + Math.cos(angle) * (x - this.boardWidth / 2) + Math.sin(angle) * (y - this.boardHeight / 2),
+				this.boardHeight / 2 - Math.sin(angle) * (x - this.boardWidth / 2) + Math.cos(angle) * (y - this.boardHeight / 2)
+			];
+//
+			let location = this.nearest(x, y);
+			if (location !== undefined)
 			{
-				console.log(hexagon.substring(2));
-				console.log(this.bgagame.gamedatas.sectors[this.hexagons[hexagon].sector].description[this.hexagons[hexagon].hexagon]);
+				console.log(location);
+				console.log(this.bgagame.gamedatas.sectors[this.hexagons[location].sector].description[this.hexagons[location].hexagon]);
+				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
 			}
 			this.bgagame.restoreServerGameState();
 		}

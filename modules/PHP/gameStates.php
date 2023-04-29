@@ -104,22 +104,22 @@ trait gameStates
 // Players then flip all their counters face down, shuffle them and place one on each hex with a star symbol (so not the central hex) in their home star sector.
 //
 			shuffle($counters);
-			foreach (array_keys($stars) as $hexagon) Counters::create('neutral', 'star', 'BACK', $sector, $hexagon, ['back' => array_pop($counters)]);
+			foreach (array_keys($stars) as $hexagon) Counters::create('neutral', 'star', $sector . ':' . $hexagon, ['back' => array_pop($counters)]);
 //
-			Ships::create($color, 'homeStar', $sector);
+			Ships::create($color, 'homeStar', $sector + ':+0+0+0');
 		}
 //
 // Take three star counters of each of the three types (soa total of nine).
 		$stars = ['UNINHABITED', 'UNINHABITED', 'UNINHABITED', 'PRIMITIVE', 'PRIMITIVE', 'PRIMITIVE', 'ADVANCED', 'ADVANCED', 'ADVANCED'];
 // Shuffle these and place one face down on every star hex of the center sector tile, including the central hex.
 		shuffle($stars);
-		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'star', 'BACK', 0, $hexagon, ['back' => array_pop($stars)]);
+		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'star', '0:' . $hexagon, ['back' => array_pop($stars)]);
 //
 // Shuffle the ten relic counters face down and place one on each of the stars in the center sector (on top of the star counters). 		}
 //
 		$relics = range(1, 10);
 		shuffle($relics);
-		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'relic', 'BACK', 0, $hexagon, ['back' => array_pop($relics)]);
+		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'relic', '0:' . $hexagon, ['back' => array_pop($relics)]);
 //
 		$this->gamestate->nextState('next');
 	}
@@ -146,9 +146,9 @@ trait gameStates
 		foreach (Factions::list() as $color)
 		{
 			$sector = Factions::getHomeStar($color);
-			Ships::create($color, 'ship', $sector);
-			Ships::create($color, 'ship', $sector);
-			Ships::create($color, 'ship', $sector);
+			Ships::create($color, 'ship', $sector . ':+0+0+0');
+			Ships::create($color, 'ship', $sector . ':+0+0+0');
+			Ships::create($color, 'ship', $sector . ':+0+0+0');
 		}
 //
 		$this->gamestate->nextState('next');
@@ -232,11 +232,10 @@ trait gameStates
 					{
 						for ($i = 0; $i < 3; $i++)
 						{
-							$shipID = Ships::create($color, 'ship', $sector);
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 								'player_name' => Players::getName(Factions::getPlayer($color)),
-								'ship' => Ships::get($color, $shipID)
+								'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
@@ -295,22 +294,20 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					for ($i = 0; $i < 3; $i++)
 					{
-						$shipID = Ships::create($color, 'ship', $sector);
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 							'player_name' => Players::getName(Factions::getPlayer($color)),
-							'ship' => Ships::get($color, $shipID)
+							'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
 					break;
 				case 'Felines':
 // SPECIAL STO & STS: Start with 1 additional ship.
-					$shipID = Ships::create($color, 'ship', $sector);
 //* -------------------------------------------------------------------------------------------------------- */
 					$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 						'player_name' => Players::getName(Factions::getPlayer($color)),
-						'ship' => Ships::get($color, $shipID)
+						'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 					]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -331,11 +328,10 @@ trait gameStates
 // SPECIAL STS: Start with 1 extra ship.
 					if ($alignment === 'STS')
 					{
-						$shipID = Ships::create($color, 'ship', $sector);
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 							'player_name' => Players::getName(Factions::getPlayer($color)),
-							'ship' => Ships::get($color, $shipID)
+							'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
@@ -367,11 +363,9 @@ trait gameStates
 								'LEVEL' => $level,
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
-							$shipID = Ships::create($color, 'ship', $sector);
-//* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 								'player_name' => Players::getName(Factions::getPlayer($color)),
-								'ship' => Ships::get($color, $shipID)
+								'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
@@ -383,11 +377,11 @@ trait gameStates
 					{
 						for ($i = 0; $i < 2; $i++)
 						{
-							$counterID = Counters::create($color, 'cylinder', 'population', $sector);
+							Factions::gainPopulation($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
 								'player_name' => Players::getName(Factions::getPlayer($color)),
-								'counter' => Counters::get($color, $counterID)
+								'counter' => Counters::get(Counters::create($color, 'populationDisk', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
@@ -457,11 +451,10 @@ trait gameStates
 						{
 							for ($i = 0; $i < $value; $i++)
 							{
-								$shipID = Ships::create($color, 'ship', $sector);
 //* -------------------------------------------------------------------------------------------------------- */
 								$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 									'player_name' => Players::getName(Factions::getPlayer($color)),
-									'ship' => Ships::get($color, $shipID)
+									'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 								]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
@@ -508,7 +501,7 @@ trait gameStates
 	{
 		$round = self::incGameStateValue('round', 1);
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log} ${round}/8</span>', [
+		$this->notifyAllPlayers('updateRound', '<span class = "ERA-phase">${log} ${round}/8</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Start of round'),
 			'round' => $round
 		]);

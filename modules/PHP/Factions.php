@@ -10,7 +10,7 @@ class Factions extends APP_GameClass
 //
 // Build ships
 //
-	const BUILD = [0, 0, 7, 10, 14, 19, 25, 32, 48, 60];
+	const BUILD = [0, 0, 2, 5, 9, 14, 20, 27, 35];
 //
 // Technology levels
 //
@@ -19,6 +19,7 @@ class Factions extends APP_GameClass
 		'Spirituality' => [null, 0, 1, 2, 3 /**/, 4 /**/, INF /**/], // Remote view par round
 		'Propulsion' => [null, 3, 4, 4 /**/, 5 /**/, 5 /**/, INF], // Ship range
 		'Robotics' => [null, 0, +1, +3, +5 /**/, +7 /**/, +10 /**/], // Build ships bonus
+		'ShipYards' => [null, 4, 4, 4, 3, 2, 1], // Population requirement for Shipyards
 		'Genetics' => [null, 0, 1, 2, 3, 4 /**/, 6 /**/], // Grow population bonus
 	];
 //
@@ -56,13 +57,13 @@ class Factions extends APP_GameClass
 	{
 		return self::getUniqueValueFromDB("SELECT activation FROM factions WHERE color = '$color'");
 	}
-	static function getPlayer(string $color): int
+	static function getPlayer(string $color): string
 	{
 		return self::getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'");
 	}
 	static function getHomeStar(string $color): int
 	{
-		return self::getUniqueValueFromDB("SELECT homeStar FROM factions WHERE color = '$color'");
+		return intval(self::getUniqueValueFromDB("SELECT homeStar FROM factions WHERE color = '$color'"));
 	}
 	static function getAlignment(string $color): string
 	{
@@ -91,7 +92,7 @@ class Factions extends APP_GameClass
 	}
 	static function getOrder(string $color): int
 	{
-		return self::getUniqueValueFromDB("SELECT `order` FROM factions WHERE color = '$color'");
+		return intval(self::getUniqueValueFromDB("SELECT `order` FROM factions WHERE color = '$color'"));
 	}
 	static function setOrder(string $color, int $order): void
 	{
@@ -99,23 +100,34 @@ class Factions extends APP_GameClass
 	}
 	static function getDP(string $color): int
 	{
-		return self::getUniqueValueFromDB("SELECT `DP` FROM factions WHERE color = '$color'");
+		return intval(self::getUniqueValueFromDB("SELECT `DP` FROM factions WHERE color = '$color'"));
 	}
-	static function gainDP(string $color, int $delta): void
+	static function gainDP(string $color, int $delta): int
 	{
 		self::dbQuery("UPDATE factions SET `DP` = `DP` + $delta WHERE color = '$color'");
+		return self::getDP($color);
+	}
+	static function getPopulation(string $color): int
+	{
+		return intval(self::getUniqueValueFromDB("SELECT `population` FROM factions WHERE color = '$color'"));
+	}
+	static function gainPopulation(string $color, int $delta): int
+	{
+		self::dbQuery("UPDATE factions SET `population` = `population` + $delta WHERE color = '$color'");
+		return self::getPopulation($color);
 	}
 	static function getTechnology(string $color, string $technology): int
 	{
-		return self::getUniqueValueFromDB("SELECT `$technology` FROM factions WHERE color = '$color'");
+		return intval(self::getUniqueValueFromDB("SELECT `$technology` FROM factions WHERE color = '$color'"));
 	}
 	static function setTechnology(string $color, string $technology, int $level): void
 	{
 		self::dbQuery("UPDATE factions SET `$technology` = $level WHERE color = '$color'");
 	}
-	static function gainTechnology(string $color, string $technology): void
+	static function gainTechnology(string $color, string $technology): int
 	{
 		self::dbQuery("UPDATE factions SET `$technology` = `$technology` + 1 WHERE color = '$color'");
+		return self::getTechnology($color, $technology);
 	}
 	static function getStatus(string $color, string $status)
 	{

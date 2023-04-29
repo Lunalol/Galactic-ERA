@@ -195,6 +195,20 @@ class Sectors extends APP_GameClass
 		],
 		12 => [
 			'+0+0+0' => Sectors::HOME,
+			'+1+1-2' => Sectors::PLANET,
+			'-2+1+1' => Sectors::PLANET,
+			'-3+0+3' => Sectors::PLANET,
+			'+3-1-2' => Sectors::PLANET,
+			'-2+3-1' => Sectors::PLANET,
+			'+1+3-4' => Sectors::PLANET,
+			'+0-2+2' => Sectors::NEBULA,
+			'+0-3+3' => Sectors::NEBULA,
+			'+1-3+2' => Sectors::NEBULA,
+			'+0+3-3' => Sectors::NEBULA,
+			'-1-3+4' => Sectors::NEBULA,
+			'+1-4+3' => Sectors::NEBULA,
+			'+0-4+4' => Sectors::ASTEROIDS,
+			'+3-3+0' => Sectors::NEUTRON,
 		],
 		13 => [
 			'+0+0+0' => Sectors::HOME,
@@ -1369,7 +1383,7 @@ class Sectors extends APP_GameClass
 	}
 	static function get(int $position): int
 	{
-		return self::getUniqueValueFromDB("SELECT sector FROM sectors WHERE position = $position");
+		return intval(self::getUniqueValueFromDB("SELECT sector FROM sectors WHERE position = $position"));
 	}
 	static function terrainFromLocation(string $location): int
 	{
@@ -1409,5 +1423,27 @@ class Sectors extends APP_GameClass
 			else $neighbors[sprintf('%1d:%+2d%+2d%+2d', $sector, $neighbor['q'], $neighbor['r'], $neighbor['s'])] = Sectors::terrainFromHex($sector, $neighbor);
 		}
 		return $neighbors;
+	}
+	static function nearest(string $location): int
+	{
+		$distance = [$location => 0];
+//
+		$queue = new SplQueue();
+		$queue->enqueue($location);
+		while (!$queue->isEmpty())
+		{
+			$location = $queue->dequeue();
+			foreach (array_keys(Sectors::neighbors($location)) as $next_location)
+			{
+				if (!array_key_exists($next_location, $distance))
+				{
+					$distance[$next_location] = $distance[$location] + 1;
+					if (Counters::getAtLocation($next_location, 'populationDisk')) return $distance[$next_location];
+					if (Ships::getAtLocation($next_location, null, 'homeStar')) return $distance[$next_location];
+					$queue->enqueue($next_location);
+				}
+			}
+		}
+		return INF;
 	}
 }

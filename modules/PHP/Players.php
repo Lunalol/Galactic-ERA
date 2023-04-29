@@ -14,7 +14,7 @@ class Players extends APP_GameClass
 	}
 	static function getAdmin(): int
 	{
-		return self::getUniqueValueFromDB("SELECT global_value FROM global WHERE global_id = 5");
+		return intval(self::getUniqueValueFromDB("SELECT global_value FROM global WHERE global_id = 5"));
 	}
 	static function getName(int $player_id): string
 	{

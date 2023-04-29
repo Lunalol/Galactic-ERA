@@ -15,33 +15,87 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		{
 			console.info('placeCounter', counter);
 //
-			const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: counter.id, color: counter.color, type: counter.type, subtype: counter.subType, location: counter.location}), 'ERAboard');
+			const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: counter.id, color: counter.color, type: counter.type, location: counter.location}), 'ERAboard');
 //
 			dojo.style(node, 'position', 'absolute');
-			dojo.style(node, 'left', this.board.hexagons[counter.location].x - node.clientWidth / 2 + 'px');
-			dojo.style(node, 'top', this.board.hexagons[counter.location].y - node.clientHeight / 2 + 'px');
+			dojo.style(node, 'left', (this.board.hexagons[counter.location].x - node.clientWidth / 2) + 'px');
+			dojo.style(node, 'top', (this.board.hexagons[counter.location].y - node.clientHeight / 2) + 'px');
 //
 			dojo.connect(node, 'click', this, 'click');
+			node.addEventListener('animationend', (event) => {
+				if (event.animationName === 'flip')
+				{
+					dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
+					dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
+					dojo.removeAttr(node, 'back');
+				}
+				else dojo.style(node, 'animation', '');
+			});
 //
 			if (/^\d:([+-]\d){3}$/.test(counter.location)) this.arrange(counter.location);
+//
+			return node;
+		},
+		flip: function (counter)
+		{
+			console.info('flipCounter', counter);
+//
+			let node = $(`ERAcounter-${counter.id}`);
+			if (node)
+			{
+				dojo.style(node, 'animation', `flip ${DELAY / 2}ms`);
+				dojo.setAttr(node, 'back', counter.type);
+			}
 		},
 		arrange: function (location)
 		{
 			let index = 0;
-			const nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}']`);
+			let nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}']:not(.ERAcounter-populationDisk)`);
 			for (const node of nodes)
 			{
-				dojo.style(node, 'transform', `translate(${4 * (index) * node.clientWidth / 10}px, -${2 * (index) * node.clientHeight / 10}px) rotate(calc(-1 * var(--ROTATE)))`);
+				dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${4 * (index) * node.clientWidth / 10}px, -${2 * (index) * node.clientHeight / 10}px)`);
 				dojo.style(node, 'z-index', index + 100);
 				index++;
 			}
-		}
-		,
+//
+			index = 0;
+			nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}'].ERAcounter-populationDisk`);
+			for (const node of nodes)
+			{
+				dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translateY(-${index * node.clientHeight / 5}px)`);
+				dojo.style(node, 'z-index', index + 100);
+				index++;
+			}
+			homeStar = $('ERAboard').querySelector(`.ERAhomeStar[location='${location}']`);
+			if (homeStar)
+			{
+				dojo.style(homeStar, 'transform', `scale(39%) rotate(calc(-1 * var(--ROTATE))) translate(-2px, -${50 + index * 32}px)`);
+				dojo.style(homeStar, 'z-index', index + 100);
+			}
+//
+		},
+		remove: function (counter)
+		{
+			console.info('removeCounter', counter);
+//
+			dojo.query(`#ERAcounter-${counter.id}`).remove();
+			this.arrange(counter.location);
+//
+		},
 		click: function (event)
 		{
-			console.log('click : ', event.currentTarget.id);
+			const counter = event.currentTarget;
+			const location = dojo.getAttr(counter, 'location');
 //
-//			dojo.stopEvent(event);
+			if (dojo.hasClass(counter, 'ERAselectable'))
+			{
+				dojo.stopEvent(event);
+//
+				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
+			}
 		}
 	}
 	);

@@ -3,27 +3,55 @@
 class Counters extends APP_GameClass
 {
 //
-	static function create($color, $type, $subType, $sector, $hexagon = '+0+0+0', array $status = []): int
+	static function create($color, $type, $location, array $status = []): int
 	{
-		$location = sprintf('%1d:%6s', $sector, $hexagon);
 		$json = self::escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
-		self::DbQuery("INSERT INTO counters (color, type, subType, location, status) VALUES ('$color', '$type', '$subType', '$location', '$json')");
+		self::DbQuery("INSERT INTO counters (color, type, location, status) VALUES ('$color', '$type', '$location', '$json')");
 		return self::DbGetLastId();
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDB("SELECT id, color, type, subType, location FROM counters ORDER BY color, type, subType");
+		return self::getCollectionFromDB("SELECT id, color, type, location FROM counters ORDER BY color, type");
 	}
 	static function destroy(int $id): void
 	{
 		self::DbQuery("DELETE FROM counters WHERE id = $id");
 	}
-	static function get(string $color, int $id): array
+	static function get(int $id): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT * FROM counters WHERE color = '$color' AND id = $id");
+		return self::getNonEmptyObjectFromDB("SELECT * FROM counters WHERE id = $id");
 	}
-	static function getAtLocation(string $location): array
+	static function getAtLocation(string $location, string $type = null): array
 	{
-		return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location'", true);
+		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location'", true);
+		return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location' AND type = '$type'", true);
+	}
+	static function getStatus(int $id, string $status)
+	{
+		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM counters WHERE id = $id");
+	}
+	static function getPopulation(string $color): array
+	{
+		$populations = self::getCollectionFromDB("SELECT location, COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
+		foreach (Ships::getHomeStar() as $location)
+		{
+			if (array_key_exists($location, $populations)) $populations[$location] += 6;
+			else $populations[$location] = 6;
+		}
+		return $populations;
+	}
+	static function reveal(string $color, string $type, int $id)
+	{
+		self::DbQuery("INSERT INTO revealed VALUES('$color', '$type', $id)");
+		return self::DbGetLastId();
+	}
+	static function isRevealed(string $color, string $type, int $id)
+	{
+		return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type = '$type' AND id = $id)"));
+	}
+	static function listRevealed(string $color, string $type = null): array
+	{
+		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star', 'relic')", true);
+		return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type = '$type'", true);
 	}
 }

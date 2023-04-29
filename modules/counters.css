@@ -1,22 +1,33 @@
 .ERAcounter {
 	background: url('../img/counters.png');
-	transition: all 0.25s;
+	transition: filter .25s, transform .25s;
 	z-index: 100;
 }
 
-.ERAcounter-relic:hover,.ERAcounter-relic:focus,.ERAcounter-star:hover,.ERAcounter-star:focus {
-	filter:brightness(2.0);
-	transition: all 0.25s;
-	z-index: 500 !important;
+@keyframes flip {
+	from {
+		transform: rotate3d(1,2,0,0deg) rotate(calc(-1 * var(--ROTATE))) ;
+	}
+	to {
+		transform: rotate3d(1,2,0,90deg) rotate(calc(-1 * var(--ROTATE))) ;
+	}
+}
+@keyframes unflip {
+	from {
+		transform: rotate3d(1,2,0,90deg) rotate(calc(-1 * var(--ROTATE))) ;
+	}
+	to {
+		transform: rotate3d(1,2,0,0deg) rotate(calc(-1 * var(--ROTATE))) ;
+	}
 }
 
 .ERAcounter.ERAselected {
     filter:brightness(4.0);
-	transition: all 0.25s;
+	transition: filter .25s, transform .25s;
 }
 .ERAcounter:not(.ERAselectable) {
     filter:brightness(1.0);
-	transition: all 0.25s;
+	transition: filter .25s, transform .25s;
 }
 
 .ERAcounter.advanced_fleet_tactic_back {
@@ -267,7 +278,7 @@
 .ERAcounter-growth.ERAselected {
 	filter:brightness(2.0);
 	transform: scale(125%);
-	transition: all 0.25s;
+	transition: filter .25s, transform .25s;
 }
 /*
 // Growth Actions (30)
@@ -426,7 +437,7 @@
 }
 .ERAcounter-technology.ERAselected {
 	transform: scale(125%);
-	transition: all 0.25s;
+	transition: filter .25s, transform .25s;
 }
 .ERAcounter-technology[counter='Genetics'] {
 	background-position-x: -7837px;
@@ -453,7 +464,7 @@
 }
 .ERAcounter-turnOrder.ERAselected {
 	transform: scale(125%);
-	transition: all 0.25s;
+	transition: filter .25s, transform .25s;
 }
 .ERAcounter-turnOrder[counter='changeTurnOrderUp'] {
 	background-position-x: -8207px;

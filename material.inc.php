@@ -174,6 +174,12 @@ $this->SECTORS = [
 	],
 	12 => [
 		'+0+0+0' => clienttranslate('Lyra'),
+		'+1+1-2' => clienttranslate('Kappa Fornacis'),
+		'-2+1+1' => clienttranslate('Izar'),
+		'-3+0+3' => clienttranslate('Sagittarius B'),
+		'+3-1-2' => clienttranslate('Giliese 581'),
+		'-2+3-1' => clienttranslate('Procyon'),
+		'+1+3-4' => clienttranslate('Uru'),
 	],
 	13 => [
 		'+0+0+0' => clienttranslate('Lyra'),
