@@ -56,33 +56,7 @@ trait gameStates
 //
 // Select randomly sectors and place them in location
 //
-		$locations = range(1, 6);
-		switch (self::getPlayersNumber())
-		{
-			case 1:
-			case 2:
-			case 3:
-				$index = random_int(0, 5);
-				unset($locations[$index]);
-				unset($locations[($index + 2) % 6]);
-				unset($locations[($index + 4) % 6]);
-				break;
-			case 4:
-				$index = random_int(0, 5);
-				unset($locations[$index]);
-				unset($locations[($index + 3) % 6]);
-				break;
-			case 5:
-				unset($locations[random_int(0, 5)]);
-				break;
-		}
-		$setup = array_merge([0], array_values($locations));
-//
-		$available = range(0, 6/* PJL: 8 */);
-		shuffle($available);
-//
-		$sectors = array_slice($available, 0, sizeof($setup));
-		foreach ($sectors as $index => $sector) Sectors::create($setup[$index], $sector * 2 /* PJL: random_int(0, 1) */, 0 * random_int(0, 5));
+		$setup = Sectors::setup(self::getPlayersNumber());
 //
 // Assign a color and a home sector to each player
 //
@@ -165,7 +139,7 @@ trait gameStates
 		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 
 		/* PJL */
-		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', array_keys($this->STARPEOPLES));
+//		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', array_keys($this->STARPEOPLES));
 		/* PJL */
 //
 		$this->gamestate->setAllPlayersMultiactive('next');

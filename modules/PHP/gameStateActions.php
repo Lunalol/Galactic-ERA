@@ -284,9 +284,11 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B> at ${PLANET}'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)),
-					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+				$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
+					'PLANET' => [
+						'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+						'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+					],
 					'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -316,9 +318,11 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B> at ${PLANET}'), [
-				'player_name' => Players::getName(Factions::getPlayer($color)),
-				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
+				'PLANET' => [
+					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+				],
 				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 			]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -346,9 +350,11 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B> at ${PLANET}'), [
-				'player_name' => Players::getName(Factions::getPlayer($color)),
-				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
+				'PLANET' => [
+					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+				],
 				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 			]);
 //* -------------------------------------------------------------------------------------------------------- */

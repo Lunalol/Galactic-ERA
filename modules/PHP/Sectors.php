@@ -1368,6 +1368,68 @@ class Sectors extends APP_GameClass
 	];
 // </editor-fold>
 //
+// Wormholes
+//
+	const WORMHOLES = [
+		1 => ['previous' => '1:-4+2+2', 'next' => '1:+2+2-4'],
+		2 => ['previous' => '2:-2-2+4', 'next' => '2:-2+4-2'],
+		3 => ['previous' => '3:+2-4+2', 'next' => '3:-4+2+2'],
+		4 => ['previous' => '4:+4-2-2', 'next' => '4:-2-2+4'],
+		5 => ['previous' => '5:+2+2-4', 'next' => '5:+2-4+2'],
+		6 => ['previous' => '6:-2+4-2', 'next' => '6:+4-2-2'],
+	];
+//
+	static function setup($playersNumber)
+	{
+		$locations = range(1, 6);
+		switch ($playersNumber)
+		{
+			case 1:
+			case 2:
+			case 3:
+				$index = random_int(0, 5);
+				unset($locations[$index]);
+				unset($locations[($index + 2) % 6]);
+				unset($locations[($index + 4) % 6]);
+				break;
+			case 4:
+				$index = random_int(0, 5);
+				unset($locations[$index]);
+				unset($locations[($index + 3) % 6]);
+				break;
+			case 5:
+				unset($locations[random_int(0, 5)]);
+				break;
+		}
+		$setup = array_merge([0], array_values($locations));
+//
+		$available = range(0, 6/* PJL: 8 */);
+		shuffle($available);
+//
+		$sectors = array_slice($available, 0, sizeof($setup));
+		foreach ($sectors as $index => $sector)
+		{
+//
+// Random sector and random orientation
+//
+			$location = $setup[$index];
+			Sectors::create($location, $sector * 2 /* PJL: random_int(0, 1) */, 0 * random_int(0, 5));
+//
+// Wormholes
+//
+			if ($location !== 0)
+			{
+				$next = $location === 6 ? 1 : $location + 1;
+				if (!array_search($next, $setup))
+				{
+					Counters::create('neutral', 'wormhole', self::WORMHOLES[$location]['next']);
+					Counters::create('neutral', 'wormhole', self::WORMHOLES[$next === 6 ? 1 : $next + 1]['previous']);
+				}
+			}
+		}
+//
+		return $setup;
+	}
 	static function create(int $position, int $sector, int $orientation): int
 	{
 		self::DbQuery("INSERT INTO sectors VALUES ($position, $sector ,$orientation)");

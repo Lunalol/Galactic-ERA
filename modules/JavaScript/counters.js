@@ -21,16 +21,33 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.style(node, 'left', (this.board.hexagons[counter.location].x - node.clientWidth / 2) + 'px');
 			dojo.style(node, 'top', (this.board.hexagons[counter.location].y - node.clientHeight / 2) + 'px');
 //
-			dojo.connect(node, 'click', this, 'click');
-			node.addEventListener('animationend', (event) => {
-				if (event.animationName === 'flip')
-				{
-					dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
-					dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
-					dojo.removeAttr(node, 'back');
-				}
-				else dojo.style(node, 'animation', '');
-			});
+			switch (counter.type)
+			{
+				case 'wormhole':
+//
+					const color = [null, 'blue', 'blue', 'gold', 'gold', 'purple', 'purple'][dojo.query('#ERAboard .ERAcounter-wormhole').length];
+					dojo.addClass(node, `ERAcounter-${color}`);
+//
+					const center = this.board.hexagons[counter.location[0] + ':+0+0+0'];
+					const dx = 0.20 * (this.board.hexagons[counter.location].x - center.x);
+					const dy = 0.20 * (this.board.hexagons[counter.location].y - center.y);
+					dojo.style(node, 'transform', `translate(${dx}px, ${dy}px)`);
+					break;
+				case 'star':
+				case 'relic':
+					node.addEventListener('animationend', (event) => {
+						if (event.animationName === 'flip')
+						{
+							dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
+							dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
+							dojo.removeAttr(node, 'back');
+						}
+						else dojo.style(node, 'animation', '');
+					});
+				case 'populationDisk':
+					dojo.connect(node, 'click', this, 'click');
+					break;
+			}
 //
 			if (/^\d:([+-]\d){3}$/.test(counter.location)) this.arrange(counter.location);
 //
@@ -50,7 +67,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		arrange: function (location)
 		{
 			let index = 0;
-			let nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}']:not(.ERAcounter-populationDisk)`);
+			let nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}']:not(.ERAcounter-populationDisk,.ERAcounter-wormhole)`);
 			for (const node of nodes)
 			{
 				dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${4 * (index) * node.clientWidth / 10}px, -${2 * (index) * node.clientHeight / 10}px)`);
