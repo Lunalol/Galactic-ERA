@@ -165,7 +165,7 @@ trait gameStates
 		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 
 		/* PJL */
-//		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', array_keys($this->STARPEOPLES));
+		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', array_keys($this->STARPEOPLES));
 		/* PJL */
 //
 		$this->gamestate->setAllPlayersMultiactive('next');
@@ -195,8 +195,9 @@ trait gameStates
 		$this->gamestate->setAllPlayersMultiactive('next');
 		$this->gamestate->nextState('next');
 	}
-	function stIndividualChoices()
+	function stBonus()
 	{
+		Factions::setActivation(null, 'done');
 		foreach (Factions::list() as $color)
 		{
 			$starPeople = Factions::getStarPeople($color);
@@ -276,9 +277,7 @@ trait gameStates
 					break;
 				case 'Caninoids':
 // SPECIAL STO & STS: Start at level 2 in a technology field of your choice.
-					Factions::setStatus($color, 'special', 'Technology');
-//* -------------------------------------------------------------------------------------------------------- */
-// TODO */
+					Factions::setActivation($color, 'no');
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 				case 'Dracos':
@@ -436,14 +435,29 @@ trait gameStates
 						{
 							foreach ($value as $technology => $level)
 							{
-								Factions::setTechnology($color, $technology, $level);
+								$current = Factions::getTechnology($color, $technology);
+								if ($current > 1)
+								{
+									Factions::setActivation($color, 'no');
 //* -------------------------------------------------------------------------------------------------------- */
-								$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-									'player_name' => Players::getName(Factions::getPlayer($color)),
-									'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
-									'LEVEL' => $level,
-								]);
+									$this->notifyAllPlayers('msg', clienttranslate('${player_name} has already <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+										'player_name' => Players::getName(Factions::getPlayer($color)),
+										'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
+										'LEVEL' => $current,
+									]);
 //* -------------------------------------------------------------------------------------------------------- */
+								}
+								else
+								{
+									Factions::setTechnology($color, $technology, $level);
+//* -------------------------------------------------------------------------------------------------------- */
+									$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+										'player_name' => Players::getName(Factions::getPlayer($color)),
+										'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
+										'LEVEL' => $level,
+									]);
+//* -------------------------------------------------------------------------------------------------------- */
+								}
 							}
 						}
 						break;
@@ -483,13 +497,20 @@ trait gameStates
 		}
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Individual choice')
+			'i18n' => ['log'], 'log' => clienttranslate('Individual choices')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
-	function stEndOfSetup()
+	function stIndividualChoices()
 	{
+		$color = Factions::getNext();
+		if ($color)
+		{
+			Factions::setActivation($color, 'yes');
+			$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
+			return $this->gamestate->nextState('individualChoice');
+		}
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Start of game')

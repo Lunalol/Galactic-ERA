@@ -12,7 +12,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 // Setup DP
 //
-			let galacticStoryNode = dojo.place(`<img id='ERAgalacticStory' title='${_('Galactic story')}' src='${g_gamethemeurl}img/galacticStories/${this.bgagame.gamedatas.galacticStory}.png'/>`, 'ERA-DP');
+			let galacticStoryNode = dojo.place(`<img id='ERAgalacticStory' title='${_('Galactic story')}' src='${g_gamethemeurl}img/galacticStories/${this.bgagame.gamedatas.galacticStory}.png' draggable='false'>`, 'ERA-DP');
 //
 		},
 		update: function (faction)

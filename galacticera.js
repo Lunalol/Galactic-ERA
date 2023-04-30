@@ -141,8 +141,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						case 'Robotics':
 						case 'Genetics':
 							{
-//								if (!['selectCounters', 'resolveGrowthActions', 'research'].includes(stateName)) continue;
-//
 								const container = dojo.place('<div></div>', technologyNode);
 								const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + ID, color: state.args._private.color, type: 'technology', location: ''}), container);
 								dojo.setAttr(node, 'counter', counter);
@@ -163,6 +161,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 											dojo.toggleClass(event.currentTarget, 'ERAselected');
 											this.action('research', {color: this.color, technology: counter});
 										}
+										if (stateName === 'individualChoice')
+										{
+											this.action('individualChoice', {color: this.color, technology: counter});
+										}
 									}
 								});
 							}
@@ -170,8 +172,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						case 'changeTurnOrderUp':
 						case 'changeTurnOrderDown':
 							{
-//								if (stateName !== 'selectCounters') continue;
-//
 								const container = dojo.place('<div></div>', turnOrderNode);
 								const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + ID, color: state.args._private.color, type: 'turnOrder', subtype: counter, location: ''}), container);
 								dojo.setAttr(node, 'counter', counter);
@@ -189,8 +189,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							break;
 						default:
 						{
-//							if (!['selectCounters', 'resolveGrowthActions', counter].includes(stateName)) continue;
-//
 							const container = dojo.place("<div></div>", growthNode);
 							const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + ID, color: state.args._private.color, type: 'growth', subtype: counter, location: ''}), container);
 							dojo.setAttr(node, 'counter', counter);
@@ -228,7 +226,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						}
 					}
 				}
-				dojo.query('#ERAchoice .ERAcounter-technology').style('filter', research ? '' : 'grayscale(1)');
+				if (stateName === 'individualChoice') dojo.query('#ERAchoice .ERAcounter-technology').addClass('ERAselectable');
+				else dojo.query('#ERAchoice .ERAcounter-technology').style('filter', research ? '' : 'grayscale(1)');
+//
 				if ('counter' in state)
 				{
 					window.setTimeout(() => {
@@ -315,8 +315,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						this.addActionButton('ERAconfirmButton', _('Use selected Star People'), () => {
 							const starPeople = dojo.getAttr(document.querySelector('#ERAchoice .ERAstarPeople.ERAselected'), 'starPeople');
 							this.action('starPeopleChoice', {color: args._private.color, starPeople: starPeople}, () => {
-								this.last_server_state.args._private.starPeople = [starPeople];
-								this.restoreServerGameState();
+								if (this.gamedatas.gamestate.name === 'starPeopleChoice')
+								{
+									this.last_server_state.args._private.starPeople = [starPeople];
+									this.restoreServerGameState();
+								}
 							});
 						}
 						);
@@ -328,8 +331,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						this.addActionButton('ERAconfirmButton', _('Use selected Alignment'), () => {
 							const alignment = dojo.hasClass(document.querySelector('#ERAchoice .ERAstarPeople'), 'ERA-STS');
 							this.action('alignmentChoice', {color: args._private.color, alignment: alignment}, () => {
-								this.last_server_state.args._private.alignment = alignment;
-								this.restoreServerGameState();
+								if (this.gamedatas.gamestate.name === 'alignmentChoice')
+								{
+									this.last_server_state.args._private.alignment = alignment;
+									this.restoreServerGameState();
+								}
 							});
 						}
 						);

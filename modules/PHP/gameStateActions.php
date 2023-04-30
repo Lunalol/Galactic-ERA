@@ -29,6 +29,28 @@ trait gameStateActions
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 	}
+	function acIndividualChoice(string $color, string $technology): void
+	{
+		$this->checkAction('individualChoice');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
+//
+		$level = 2;
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+			'player_name' => Players::getName(Factions::getPlayer($color)),
+			'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+			'faction' => ['color' => $color, $technology => $level]
+		]);
+//* -------------------------------------------------------------------------------------------------------- */
+		Factions::setActivation($color, 'done');
+//
+		$this->gamestate->nextState('nextPlayer');
+	}
 	function acScout(string $color, array $ships)
 	{
 		$this->checkAction('scout');

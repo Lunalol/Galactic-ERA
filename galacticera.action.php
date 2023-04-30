@@ -35,6 +35,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function individualChoice()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$technology = self::getArg("technology", AT_alphanum, true);
+		$this->game->acIndividualChoice($color, $technology);
+//
+		self::ajaxResponse("");
+	}
 	public function scout()
 	{
 		self::setAjaxMode();

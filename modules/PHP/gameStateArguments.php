@@ -32,6 +32,16 @@ trait gameStateArguments
 //
 		return ['_private' => $private];
 	}
+	function argIndividualChoice()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		$this->possible = ['counters' => [], 'color' => $color];
+		foreach (array_keys($this->TECHNOLOGIES) as $technology) if (Factions::getTechnology($color, $technology) < 2) $this->possible['counters'][] = $technology;
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color];
+	}
 	function argMovement()
 	{
 		$color = Factions::getActive();

@@ -71,25 +71,27 @@ $machinestates = [
 		'transitions' => ['next' => 80]
 	],
 	80 => [
+		'name' => 'bonus',
+		'description' => clienttranslate('Sector Starting Bonus'),
+		'type' => 'game',
+		'action' => 'stBonus',
+		'transitions' => ['next' => 90]
+	],
+	90 => [
 		'name' => 'individualChoices',
 		'description' => clienttranslate('Players have to make some individual choices'),
 		'type' => 'game',
 		'action' => 'stIndividualChoices',
-		'transitions' => ['next' => 90]
+		'transitions' => ['individualChoice' => 95, 'next' => 100]
 	],
-	85 => [
-		'name' => 'individualChoices',
+	95 => [
+		'name' => 'individualChoice',
 		'description' => clienttranslate('${actplayer} have to make some individual choices'),
-		'descriptionmyturn' => clienttranslate('${you} have to make some individual choices'),
+		'descriptionmyturn' => clienttranslate('${you} must choose a different technology field to start with level 2'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['choices'],
-		'transitions' => ['nextPlayer' => 80]
-	],
-	90 => [
-		'name' => 'endOfSetup',
-		'type' => 'game',
-		'action' => 'stEndOfSetup',
-		'transitions' => ['next' => 100]
+		'args' => 'argIndividualChoice',
+		'possibleactions' => ['individualChoice'],
+		'transitions' => ['nextPlayer' => 90]
 	],
 //
 // Play
