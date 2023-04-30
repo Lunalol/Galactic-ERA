@@ -20,9 +20,9 @@
 
 <script type="text/javascript">
 	var ERAchoice = "<div class='ERAchoice' id='ERAchoice'></div>";
-	var ERAstarPeople = "<div class='ERAstarPeople' tabindex='-1' starpeople='${starpeople}'><img style='width:100%;'/></div>";
+	var ERAstarPeople = "<div class='ERAstarPeople' tabindex='-1' starpeople='${starpeople}'><img style='width:100%;' draggable='false'/></div>";
 	var ERAdominationCards = "<div class='ERAdominationCards' id='ERAdominationCards'></div>";
-	var ERAdominationCard = "<div class='ERAdominationCard' id='ERAdominationCard-${domination}' tabindex='-1' domination='${domination}'><img/></div>";
+	var ERAdominationCard = "<div class='ERAdominationCard' id='ERAdominationCard-${domination}' tabindex='-1' domination='${domination}'><img draggable='false'/></div>";
 	var ERAsector = "<div class='ERAsector ERAsector-${id}' id='ERAsector-${id}' sector=${sector} style='left:${x}px;top:${y}px;transform:rotate(${angle}deg)'></div>";
 	var ERAcounter = "<div class='ERAcounter ERAcounter-${color} ERAcounter-${type}' id='ERAcounter-${id}' location='${location}'></div>";
 	var ERAhomeStar = "<div class='ERAhomeStar ERAhomeStar-${color}' id='ERAhomeStar-${id}' homeStar=${id} color='${color}' location='${location}'></div>";
@@ -41,7 +41,7 @@
 			</div>\n\
 			<div class='ERAtechTrack' id='ERAtechTrack-${color}'></div>\n\
 		</div>\n\
-		<div class='ERAstarPeople' tabindex='-1'><img style='width:100%;'/></div>\n\
+		<div class='ERAstarPeople' tabindex='-1'><img style='width:100%;' draggable='false'/></div>\n\
 	</div>\n\
 </div>";
 </script>
