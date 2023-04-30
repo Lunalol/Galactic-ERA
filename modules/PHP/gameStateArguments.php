@@ -53,7 +53,7 @@ trait gameStateArguments
 		{
 			if ($ship['fleet'] === 'ship' && $ship['activation'] !== 'done') $this->possible['move'][$ship['id']] = Ships::movement($ship);
 //
-			$counters = array_diff(Counters::getAtLocation($ship['location'], 'star'), $revealed);
+			$counters = array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), $revealed);
 			if ($counters) $this->possible['scout'][$ship['id']] = $counters;
 		}
 //

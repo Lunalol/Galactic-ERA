@@ -68,6 +68,8 @@ trait gameStateActions
 			$ship = Ships::get($color, $ships[0]);
 			$counters = Counters::getAtLocation($ship['location'], 'star');
 			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
+			$counters = Counters::getAtLocation($ship['location'], 'relic');
+			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
 		}
 //
 		$this->gamestate->nextState('continue');
@@ -170,6 +172,8 @@ trait gameStateActions
 		foreach (Ships::getAll($color) as $ship)
 		{
 			$counters = array_diff(Counters::getAtLocation($ship['location'], 'star'), $revealed);
+			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
+			$counters = Counters::getAtLocation($ship['location'], 'relic');
 			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
 		}
 //

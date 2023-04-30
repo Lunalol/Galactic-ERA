@@ -1465,9 +1465,29 @@ class Sectors extends APP_GameClass
 		[0 => $sector, 1 => $q, 2 => $r, 3 => $s] = sscanf($location, '%1d:%2d%2d%2d');
 //
 		$neighbors = [];
-		for ($i = 0;
-			$i < 6;
-			$i++)
+//
+// Wormholes
+//
+		if (in_array($location, array_column(self::WORMHOLES, 'next')))
+		{
+			$next = $location[0] === '6' ? 1 : $location[0] + 1;
+			if (!in_array($next, $sectors))
+			{
+				$next_location = self::WORMHOLES[$next === 6 ? 1 : $next + 1]['previous'];
+				$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+			}
+		}
+		if (in_array($location, array_column(self::WORMHOLES, 'previous')))
+		{
+			$next = $location[0] === '1' ? 6 : $location[0] - 1;
+			if (!in_array($next, $sectors))
+			{
+				$next_location = self::WORMHOLES[$next === 1 ? 6 : $next - 1]['next'];
+				$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+			}
+		}
+//
+		for ($i = 0; $i < 6; $i++)
 		{
 			$neighbor = hex_neighbor(Hex($q, $r, $s), $i);
 			if (hex_length($neighbor) > 4)

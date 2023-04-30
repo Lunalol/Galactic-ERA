@@ -29,8 +29,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.addClass(node, `ERAcounter-${color}`);
 //
 					const center = this.board.hexagons[counter.location[0] + ':+0+0+0'];
-					const dx = 0.20 * (this.board.hexagons[counter.location].x - center.x);
-					const dy = 0.20 * (this.board.hexagons[counter.location].y - center.y);
+					const dx = 0.18 * (this.board.hexagons[counter.location].x - center.x);
+					const dy = 0.18 * (this.board.hexagons[counter.location].y - center.y);
 					dojo.style(node, 'transform', `translate(${dx}px, ${dy}px)`);
 					break;
 				case 'star':

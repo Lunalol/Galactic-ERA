@@ -8,7 +8,7 @@ trait gameUtils
 {
 	function reveal(string $color, string $location, int $counter)
 	{
-		Counters::reveal($color, 'star', $counter);
+		if (Counters::isRevealed($color, $counter)) return;
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
@@ -16,6 +16,7 @@ trait gameUtils
 		switch (Counters::getStatus($counter, 'back'))
 		{
 			case 'UNINHABITED':
+				Counters::reveal($color, 'star', $counter);
 				if ($color)
 //* -------------------------------------------------------------------------------------------------------- */
 					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} is <B>uninhabited</B>'), [
@@ -34,6 +35,7 @@ trait gameUtils
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
 			case 'PRIMITIVE':
+				Counters::reveal($color, 'star', $counter);
 				if ($color)
 //* -------------------------------------------------------------------------------------------------------- */
 					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has a <B>primitive</B> civilization'), [
@@ -51,6 +53,7 @@ trait gameUtils
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
 			case 'ADVANCED':
+				Counters::reveal($color, 'star', $counter);
 				if ($color)
 //* -------------------------------------------------------------------------------------------------------- */
 					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization'), [
@@ -60,7 +63,7 @@ trait gameUtils
 					);
 //* -------------------------------------------------------------------------------------------------------- */
 				else
-//* -------------------------------------------------------------------------------------------------------- */
+//* -------------------------------------------------------------------------------------------------------- */10
 					$this->notifyAllPlayers('flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization'), [
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
 						'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]
@@ -68,6 +71,15 @@ trait gameUtils
 					);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
+			default:
+				Counters::reveal($color, 'relic', $counter);
+//* -------------------------------------------------------------------------------------------------------- */10
+				$this->notifyAllPlayers('flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET}'), [
+					'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'RELIC' => $this->RELICS[Counters::getStatus($counter, 'back')],
+					'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]
+					]
+				);
+//* -------------------------------------------------------------------------------------------------------- */
 		}
 	}
 }

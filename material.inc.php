@@ -80,6 +80,9 @@ $this->STARPEOPLES = [
 	'Rogue' => ['STO' => clienttranslate('Rogue AI'), 'STS' => clienttranslate('Rogue AI')],
 	'Yowies' => ['STO' => clienttranslate('Yowies'), 'STS' => clienttranslate('Yowies')],
 ];
+//
+// Technologies (5)
+//
 $this->TECHNOLOGIES = [
 	'Military' => clienttranslate('Military'),
 	'Spirituality' => clienttranslate('Spirituality'),
@@ -87,6 +90,22 @@ $this->TECHNOLOGIES = [
 	'Robotics' => clienttranslate('Robotics'),
 	'Genetics' => clienttranslate('Genetics')
 ];
+//
+// Relics (10)
+//
+$this->RELICS = [
+	clienttranslate('Ancient Pyramids'),
+	clienttranslate('Ancient Technology: Genetics'),
+	clienttranslate('Ancient Technology: Military'),
+	clienttranslate('Ancient Technology: Propulsion'),
+	clienttranslate('Ancient Technology: Robotics'),
+	clienttranslate('Ancient Technology: Spirituality'),
+	clienttranslate('Buried Ships'),
+	clienttranslate('Planetary Death Ray'),
+	clienttranslate('Defense Grid'),
+	clienttranslate('Super-Stargate')
+];
+
 //
 // <editor-fold defaultstate="collapsed" desc="Description of sectors">
 //

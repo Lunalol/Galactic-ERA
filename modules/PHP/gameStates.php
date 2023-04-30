@@ -91,7 +91,7 @@ trait gameStates
 //
 // Shuffle the ten relic counters face down and place one on each of the stars in the center sector (on top of the star counters). 		}
 //
-		$relics = range(1, 10);
+		$relics = range(0, 9);
 		shuffle($relics);
 		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'relic', '0:' . $hexagon, ['back' => array_pop($relics)]);
 //

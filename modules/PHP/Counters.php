@@ -45,8 +45,9 @@ class Counters extends APP_GameClass
 		self::DbQuery("INSERT INTO revealed VALUES('$color', '$type', $id)");
 		return self::DbGetLastId();
 	}
-	static function isRevealed(string $color, string $type, int $id)
+	static function isRevealed(string $color, int $id, string $type = null)
 	{
+		if (is_null($type)) return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type IN ('star', 'relic') AND id = $id)"));
 		return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type = '$type' AND id = $id)"));
 	}
 	static function listRevealed(string $color, string $type = null): array

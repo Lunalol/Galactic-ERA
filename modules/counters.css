@@ -51,35 +51,35 @@
 {
 	background-position-x: -399px;
 }
-.ERAcounter.ancient_relic_counters_ancient_pyramid_v03 {
-	background-position: -238px 0;
+.ERAcounter-0 {
+	background-position-x: -340px;
 }
-.ERAcounter.ancient_relic_counters_buried_ships_v03 {
-	background-position: -357px 0;
+.ERAcounter-6 {
+	background-position-x: -458px;
 }
-.ERAcounter-relic.ancient_relic_counters_defense_grid_v03 {
-	background-position: -595px 0;
+.ERAcounter-8 {
+	background-position-x: -517px;
 }
-.ERAcounter-relic.ancient_relic_counters_genetics {
-	background-position: -714px 0;
+.ERAcounter-1 {
+	background-position-x: -576px;
 }
-.ERAcounter-relic.ancient_relic_counters_military_v03 {
-	background-position: -833px 0;
+.ERAcounter-2 {
+	background-position-x: -635px;
 }
-.ERAcounter-relic.ancient_relic_counters_planetary_death_ray_v03 {
-	background-position: -952px 0;
+.ERAcounter-7 {
+	background-position-x: -694px;
 }
-.ERAcounter-relic.ancient_relic_counters_propulsion {
-	background-position: -1071px 0;
+.ERAcounter-3 {
+	background-position-x: -753px;
 }
-.ERAcounter-relic.ancient_relic_counters_robotics {
-	background-position: -1190px 0;
+.ERAcounter-4 {
+	background-position-x: -812px;
 }
-.ERAcounter-relic.ancient_relic_counters_spirituality {
-	background-position: -1309px 0;
+.ERAcounter-5 {
+	background-position-x: -871px;
 }
-.ERAcounter-relic.ancient_relic_counters_super_stargate_v03 {
-	background-position: -1428px 0;
+.ERAcounter-9 {
+	background-position-x: -930px;
 }
 
 .ERAcounter.at_peace_.ERAcounter-6666FF {
@@ -479,6 +479,7 @@
 {
 	width: 59px;
 	height: 59px;
+	z-index: -1;
 }
 .ERAcounter-wormhole.ERAcounter-blue {
 	background-position-x: -8355px;
