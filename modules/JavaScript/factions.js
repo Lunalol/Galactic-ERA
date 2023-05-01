@@ -91,17 +91,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.style(node, 'top', y + 'px');
 					dojo.style(node, 'transform', 'scale(20%)');
 				}
-//
-//				let nodes = dojo.query(`.ERApopulationTrack .ERAcounter-populationDisk`);
-//				let index = {};
-//				for (let node of nodes)
-//				{
-//					let population = dojo.getAttr(node, 'population');
-//					if (!(population in index)) index[population] = 0;
-//					dojo.style(node, 'transform', `scale(20%) translateY(-${index[population] * node.clientHeight / 10}px) `);
-//					dojo.style(node, 'z-index', index[population] + 100);
-//					index[population]++;
-//				}
+				$(`ERApopulation-${faction.color}`).innerHTML = dojo.query(`#ERApopulationTrack-${faction.color}>.ERAcounter-populationDisk`).length;
 			}
 //
 			for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
@@ -115,19 +105,17 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.style(node, 'top', (['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'].indexOf(technology) * 92.5 + 85) + 'px');
 					dojo.style(node, 'left', [0, 55, 119, 193, 281, 388, 519][faction[technology]] + 'px');
 					dojo.style(node, 'transform', 'scale(75%)');
-//
-//					let nodes = dojo.query(`.ERAtechTrack .ERAcounter-cube`);
-//					let index = {};
-//					for (let node of nodes)
-//					{
-//						let technologyLevel = dojo.getAttr(node, 'location') + dojo.getAttr(node, 'level');
-//						if (!(technologyLevel in index)) index[technologyLevel] = 0;
-//						dojo.style(node, 'transform', `scale(75%) translate(+${index[technologyLevel] * node.clientWidth / 10}px, -${index[technologyLevel] * node.clientHeight / 5}px) `);
-//						dojo.style(node, 'z-index', index[technologyLevel] + 100);
-//						index[technologyLevel]++;
-//					}
 				}
 			}
+			dojo.query(`#ERAcounters-${faction.color} .ERAtechnology`).forEach((node) => {
+				const technology = dojo.getAttr(node, 'technology');
+				if (technology in faction)
+				{
+					let html = '';
+					for (let i = 1; i <= 6; i++) html += `<span class='${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
+					node.innerHTML = html;
+				}
+			});
 //			if ('order' in faction) dojo.setAttr(`ERAorder-${faction.color}`, 'order', faction.order);
 		}
 	}

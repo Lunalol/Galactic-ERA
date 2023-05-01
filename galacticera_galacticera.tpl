@@ -44,6 +44,8 @@
 		<div class='ERAstarPeople' tabindex='-1'><img style='width:100%;' draggable='false'/></div>\n\
 	</div>\n\
 </div>";
+	var ERAfaction = "<div class='ERAfaction' id='ERAfaction-${color}'></div></div>";
+	var ERAcounters = "<div class='ERAcounters' id='ERAcounters-${color}'></div></div>";
 </script>
 
 {OVERALL_GAME_FOOTER}
