@@ -129,11 +129,18 @@ trait gameStateArguments
 			}
 		}
 //
+		$counters = [];
+		foreach (Factions::list() as $color)
+		{
+			foreach (Factions::getStatus($color, 'counters') as $counter) $counters[$color][$counter] = true;
+			foreach (Factions::getStatus($color, 'used') as $counter) $counters[$color][$counter] = false;
+		}
+//
 		$color = Factions::getActive();
 		$player_id = Factions::getPlayer($color);
 		$this->possible = $private[$player_id];
 //
-		return ['_private' => $private, 'active' => $color];
+		return ['_private' => $private, 'active' => $color, 'counters' => $counters];
 	}
 	function argBonusPopulation()
 	{

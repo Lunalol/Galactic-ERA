@@ -107,7 +107,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.style(node, 'transform', 'scale(75%)');
 				}
 			}
-			dojo.query(`#ERAcounters-${faction.color} .ERAtechnology`).forEach((node) => {
+			dojo.query(`#ERAtechnologies-${faction.color} .ERAtechnology`).forEach((node) => {
 				const technology = dojo.getAttr(node, 'technology');
 				if (technology in faction)
 				{

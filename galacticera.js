@@ -39,19 +39,20 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 // Setup player panels
 //
-				let nodeFaction = dojo.place(this.format_block('ERAfaction', {color: faction.color}), `player_board_${faction.player_id}`, 2);
+				dojo.place(`<div class='ERAcounters' id='ERAcounters-${faction.color}'/>`, `player_board_${faction.player_id}`, 2);
+				let nodeFaction = dojo.place(this.format_block('ERAfaction', {color: faction.color}), `player_board_${faction.player_id}`, 3);
 //
 				let nodeStarPeople = dojo.place(this.format_block('ERAstarPeople', {starpeople: faction.starPeople}), nodeFaction);
 				dojo.style(nodeStarPeople, 'flex', '1 1 50%');
 //
-				let nodeCounters = dojo.place(this.format_block('ERAcounters', {color: faction.color}), nodeFaction);
+				let nodeCounters = dojo.place(this.format_block('ERAtechnologies', {color: faction.color}), nodeFaction);
 				dojo.place(`<div>${'Population disks'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeCounters);
 				for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
 				{
-					dojo.place(`<div><span class='ERAtechnology' technology=${technology}>?</span><div class='ERAsmallCounter'><div class='ERAcounter ERAcounter-technology' counter='${technology}'/></div>`, nodeCounters);
+					dojo.place(`<div><span class='ERAtechnology' technology=${technology}>?</span><div class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology' counter='${technology}'/></div>`, nodeCounters);
 				}
-//
 				this.factions.update(faction);
+//
 			}
 //
 // Gray pawn
@@ -90,6 +91,29 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			if (!(state.args)) return;
 			this.color = ('active' in state.args) ? state.args.active : undefined;
 //
+			dojo.query('.ERAcounters').empty();
+			if ('counters' in state.args)
+			{
+				for (color in state.args.counters)
+				{
+					for (let counter in state.args.counters[color])
+					{
+						switch (counter)
+						{
+							case 'Military':
+							case 'Spirituality':
+							case 'Propulsion':
+							case 'Robotics':
+							case 'Genetics':
+								node = dojo.place(`<div class='ERAsmallTechnology' ${state.args.counters[color][counter] ? '' : 'filter:grayscale(1)'}><div class='ERAcounter ERAcounter-technology' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								break;
+							default:
+								node = dojo.place(`<div class='ERAsmallGrowth' ${state.args.counters[color][counter] ? '' : "style='filter:grayscale(1);'"}><div class='ERAcounter ERAcounter-${color} ERAcounter-growth' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+						}
+					}
+				}
+			}
+//
 			if ('_private' in state.args && 'starPeople' in state.args._private)
 			{
 				dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
@@ -97,8 +121,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				{
 					let node = dojo.place(this.format_block('ERAstarPeople', {starpeople: starPeople}), 'ERAchoice');
 					dojo.setStyle(node, 'max-width', '500px');
-					dojo.setAttr(node, 'STO', `${g_gamethemeurl}img / starPeoples / ${starPeople}.STO.jpg`);
-					dojo.setAttr(node, 'STS', `${g_gamethemeurl}img / starPeoples / ${starPeople}.STS.jpg`);
+					dojo.setAttr(node, 'STO', `${g_gamethemeurl}img/starPeoples/${starPeople}.STO.jpg`);
+					dojo.setAttr(node, 'STS', `${g_gamethemeurl}img/starPeoples/${starPeople}.STS.jpg`);
 					dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, state.args._private.alignment ? 'STS' : 'STO'));
 //
 					dojo.connect(node, 'click', (event) => {
@@ -245,7 +269,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			{
 				case 'movement':
 				{
-					if (this.isCurrentPlayerActive()) dojo.query(`#ERAboard.ERAship[color = ${this.color}]`).addClass('ERAselectable');
+					debugger
+							;
+					if (this.isCurrentPlayerActive()) dojo.query(`#ERAboard .ERAship[color=${this.color}]`).addClass('ERAselectable');
 					break;
 				}
 				case 'research':
@@ -254,23 +280,23 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					break;
 				case 'growPopulation':
 					{
-//						dojo.query(`#ERAboard.ERAhomeStar[color = '${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
+//						dojo.query(`#ERAboard .ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
 						for (let [location, population] of Object.entries(state.args._private.growPopulation))
-							dojo.query(`#ERAboard.ERAcounter - populationDisk.ERAcounter - ${this.color}[location = '${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							dojo.query(`#ERAboard .ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 					}
 					break;
 				case 'bonusPopulation':
 					{
-						dojo.query(`#ERAboard.ERAhomeStar[color = '${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
+						dojo.query(`#ERAboard .ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
 						for (let [location, population] of Object.entries(state.args._private.bonusPopulation))
-							dojo.query(`#ERAboard.ERAcounter - populationDisk.ERAcounter - ${this.color}[location = '${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							dojo.query(`#ERAboard .ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 					}
 					break;
 				case 'buildShips':
 					{
-						dojo.query(`#ERAboard.ERAhomeStar[color = '${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
+						dojo.query(`#ERAboard .ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
 						for (let location of state.args._private.buildShips)
-							dojo.query(`#ERAboard.ERAcounter - populationDisk.ERAcounter - ${this.color}[location = '${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							dojo.query(`#ERAboard .ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 					}
 					break;
 				case 'gainStar':
@@ -279,8 +305,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						{
 							for (let star of stars)
 							{
-								dojo.addClass(`ERAcounter - ${star}`, 'ERAselectable');
-								dojo.addClass(`ERAcounter - ${star}`, 'ERAselected');
+								dojo.addClass(`ERAcounter-${star}`, 'ERAselectable');
+								dojo.addClass(`ERAcounter-${star}`, 'ERAselected');
 							}
 						}
 					}
@@ -348,7 +374,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						this.addActionButton('ERAundoButton', _('undo'), () => this.action('undo', {color: this.color}));
 //
 						this.addActionButton('ERAscoutButton', _('Scout'), () => {
-							let ships = dojo.query(`#ERAboard.ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
+							let ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
 							if ($('ERApath'))
 							{
 								this.confirmationDialog(_('Scouting will end movement of selected ships'), () =>
@@ -388,7 +414,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 						this.addActionButton('ERAselectButton', dojo.string.substitute(_('Select Growth Actions (${N})'), {N: args._private.N}), () =>
 						{
-							const counters = dojo.query(`#ERAchoice.ERAselected`).reduce((L, node) => [...L, node.getAttribute('counter')], []);
+							const counters = dojo.query(`#ERAchoice .ERAselected`).reduce((L, node) => [...L, node.getAttribute('counter')], []);
 							this.action('selectCounters', {color: args._private.color, counters: JSON.stringify(counters)}, () => {
 								this.last_server_state.args._private.counters = counters;
 								this.restoreServerGameState();
@@ -493,7 +519,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			if (location in this.gamedatas.gamestate.args._private.growPopulation)
 			{
-				let nodes = dojo.query(`.ERAcounter - populationDisk[location = '${location}'].ERAprovisional`);
+				let nodes = dojo.query(`.ERAcounter-populationDisk[location='${location}'].ERAprovisional`);
 				if (nodes.length)
 				{
 					nodes.remove();
@@ -511,13 +537,13 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			if (location in this.gamedatas.gamestate.args._private.bonusPopulation)
 			{
-				let nodes = dojo.query(`.ERAcounter - populationDisk[location = '${location}'].ERAprovisional`);
+				let nodes = dojo.query(`.ERAcounter-populationDisk[location='${location}'].ERAprovisional`);
 				if (nodes.length)
 				{
 					nodes.remove();
 					this.counters.arrange(location);
 				}
-				else if (dojo.query(`.ERAcounter - populationDisk.ERAprovisional`).length < this.gamedatas.gamestate.args.bonus)
+				else if (dojo.query(`.ERAcounter-populationDisk.ERAprovisional`).length < this.gamedatas.gamestate.args.bonus)
 					dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisk', location: location}), 'ERAprovisional');
 			}
 		},
@@ -527,7 +553,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			if (this.checkAction(action))
 			{
 				args.lock = true;
-				this.ajaxcall(` / galacticera / galacticera / ${action}.html`, args, this, success, fail);
+				this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
 		}
 		}
 	}

@@ -70,6 +70,8 @@ trait gameStateActions
 			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
 			$counters = Counters::getAtLocation($ship['location'], 'relic');
 			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
+//
+			self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 		}
 //
 		$this->gamestate->nextState('continue');
@@ -213,7 +215,8 @@ trait gameStateActions
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('research', $counters)]);
 		unset($counters[array_search($technology, $counters)]);
-		Factions::setStatus($color, 'counters', array_values($counters));
+		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research', $technology])));
 //
 		$this->gamestate->nextState('continue');
 	}
@@ -230,8 +233,6 @@ trait gameStateActions
 		$ships = Ships::getAtLocation($location, $color);
 		if (!$ships) throw new BgaVisibleSystemException('No ships at location: ' . $location);
 //
-		$relics = Counters::getAtLocation($location, 'relic');
-		if ($relics) throw new BgaVisibleSystemException('Relics not implemented');
 		$stars = Counters::getAtLocation($location, 'star');
 		foreach ($stars as $star)
 		{
@@ -300,9 +301,122 @@ trait gameStateActions
 			Counters::destroy($star);
 		}
 //
+		$relics = Counters::getAtLocation($location, 'relic');
+		foreach ($relics as $relic)
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('<B>${RELIC}</B> is found'), [
+				'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')],
+				]
+			);
+//* -------------------------------------------------------------------------------------------------------- */
+			switch (Counters::getStatus($relic, 'back'))
+			{
+				case 0: // Ancient Pyramids
+					throw new BgaVisibleSystemException('Relic not implemented');
+					break;
+				case 1: // Ancient Technology: Genetics
+					$technology = 'Genetics';
+					if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+					$level = Factions::gainTechnology($color, $technology);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+						'player_name' => Players::getName(Factions::getPlayer($color)),
+						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+						'faction' => ['color' => $color, $technology => $level]
+					]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
+				case 2: // Ancient Technology: Military
+					$technology = 'Military';
+					if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+					$level = Factions::gainTechnology($color, $technology);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+						'player_name' => Players::getName(Factions::getPlayer($color)),
+						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+						'faction' => ['color' => $color, $technology => $level]
+					]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
+				case 3: // Ancient Technology: Propulsion
+					$technology = 'Propulsion';
+					if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+					$level = Factions::gainTechnology($color, $technology);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+						'player_name' => Players::getName(Factions::getPlayer($color)),
+						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+						'faction' => ['color' => $color, $technology => $level]
+					]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
+				case 4: // Ancient Technology: Robotics
+					$technology = 'Robotics';
+					if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+					$level = Factions::gainTechnology($color, $technology);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+						'player_name' => Players::getName(Factions::getPlayer($color)),
+						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+						'faction' => ['color' => $color, $technology => $level]
+					]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
+				case 5: // Ancient Technology: Spirituality
+					$technology = 'Spirituality';
+					if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+					$level = Factions::gainTechnology($color, $technology);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+						'player_name' => Players::getName(Factions::getPlayer($color)),
+						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+						'faction' => ['color' => $color, $technology => $level]
+					]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
+				case 6: // Buried Ships
+					for ($i = 0; $i < 3; $i++)
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET}'), [
+							'player_name' => Players::getName(Factions::getPlayer($color)),
+							'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+							'ship' => Ships::get($color, Ships::create($color, 'ship', $location))
+						]);
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
+				case 7: // Planetary Death Ray
+					throw new BgaVisibleSystemException('Relic not implemented');
+					break;
+				case 8: // Defense Grid
+					throw new BgaVisibleSystemException('Relic not implemented');
+					break;
+				case 9: // Super-Stargate
+					throw new BgaVisibleSystemException('Relic not implemented');
+					break;
+			}
+		}
+//
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('gainStar', $counters)]);
-		Factions::setStatus($color, 'counters', array_values($counters));
+		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
 //
 		$this->gamestate->nextState('continue');
 	}
@@ -334,7 +448,8 @@ trait gameStateActions
 //
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('growPopulation', $counters)]);
-		Factions::setStatus($color, 'counters', array_values($counters));
+		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['growPopulation'])));
 //
 		if (self::argBonusPopulation()['bonus'] > 0) $this->gamestate->nextState('bonusPopulation');
 		else $this->gamestate->nextState('continue');
@@ -352,8 +467,6 @@ trait gameStateActions
 		{
 			if (!array_key_exists($location, $this->possible['bonusPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
-//* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
@@ -361,6 +474,8 @@ trait gameStateActions
 				],
 				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 			]);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
@@ -379,19 +494,20 @@ trait gameStateActions
 		{
 			if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
-//* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
 				'ship' => Ships::get($color, Ships::create($color, 'ship', $location))
 			]);
 //* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
+//* -------------------------------------------------------------------------------------------------------- */
 		}
 //
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('buildShips', $counters)]);
-		Factions::setStatus($color, 'counters', array_values($counters));
+		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['buildShips'])));
 //
 		$this->gamestate->nextState('continue');
 	}

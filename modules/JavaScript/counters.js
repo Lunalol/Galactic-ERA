@@ -34,7 +34,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.style(node, 'transform', `translate(${dx}px, ${dy}px)`);
 					break;
 				case 'star':
-				case 'relic':
+					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE)))`);
+					dojo.style(node, 'z-index', 100);
 					node.addEventListener('animationend', (event) => {
 						if (event.animationName === 'flip')
 						{
@@ -44,6 +45,22 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						}
 						else dojo.style(node, 'animation', '');
 					});
+					dojo.connect(node, 'click', this, 'click');
+					break;
+				case 'relic':
+					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(32px, -32px)`);
+					dojo.style(node, 'z-index', 100);
+					node.addEventListener('animationend', (event) => {
+						if (event.animationName === 'flip')
+						{
+							dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
+							dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
+							dojo.removeAttr(node, 'back');
+						}
+						else dojo.style(node, 'animation', '');
+					});
+					dojo.connect(node, 'click', this, 'click');
+					break;
 				case 'populationDisk':
 					dojo.connect(node, 'click', this, 'click');
 					break;
@@ -66,15 +83,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		arrange: function (location)
 		{
-			let index = 0;
-			let nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}']:not(.ERAcounter-populationDisk,.ERAcounter-wormhole)`);
-			for (const node of nodes)
-			{
-				dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${4 * (index) * node.clientWidth / 10}px, -${2 * (index) * node.clientHeight / 10}px)`);
-				dojo.style(node, 'z-index', index + 100);
-				index++;
-			}
-//
 			index = 0;
 			nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}'].ERAcounter-populationDisk`);
 			for (const node of nodes)

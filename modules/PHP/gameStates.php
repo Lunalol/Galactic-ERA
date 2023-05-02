@@ -539,7 +539,11 @@ trait gameStates
 			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
-		foreach (Factions::list() as $color) Factions::setStatus($color, 'counters', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
+		foreach (Factions::list() as $color)
+		{
+			Factions::setStatus($color, 'counters', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
+			Factions::setStatus($color, 'used', []);
+		}
 //
 		$this->gamestate->setAllPlayersMultiactive('next');
 		$this->gamestate->nextState('next');
@@ -553,13 +557,15 @@ trait gameStates
 			{
 				Factions::switchAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('updateFaction', clienttranslate('${STARPEOPLE} switches alignment (<B>${ALIGNMENT}</B>)'), [
+				$this->notifyAllPlayers('updateFaction', clienttranslate('${STARPEOPLE} switches alignment(<B>${ALIGNMENT}</B>)'), [
 					'i18n' => ['STARPEOPLE', 'ALIGNMENT'], 'STARPEOPLE' => $this->STARPEOPLES[Factions::getStarPeople($color)][Factions::getAlignment($color)], 'ALIGNMENT' => Factions::getAlignment($color),
 					'faction' => ['color' => $color, 'starPeople' => Factions::getStarPeople($color), 'alignment' => Factions::getAlignment($color)]
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
+				$counters = Factions::getStatus($color, 'counters');
 				unset($counters[array_search('switchAlignment', $counters)]);
-				Factions::setStatus($color, 'counters', array_values($counters));
+				Factions::setStatus($color, 'counters', $counters);
+				Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['switchAlignment'])));
 			}
 		}
 		$this->gamestate->nextState('next');
@@ -588,8 +594,10 @@ trait gameStates
 					'faction' => ['color' => $color, 'order' => Factions::getOrder($color)]
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
+				$counters = Factions::getStatus($color, 'counters');
 				unset($counters[array_search('changeTurnOrderDown', $counters)]);
-				Factions::setStatus($color, 'counters', array_values($counters));
+				Factions::setStatus($color, 'counters', $counters);
+//				Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['changeTurnOrderDown'])));
 			}
 		}
 		$this->gamestate->nextState('next');
