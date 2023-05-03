@@ -30,9 +30,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			}
 			if ('starPeople' in faction)
 			{
-				let node = document.querySelector(`#ERAfaction-${faction.color}>.ERAstarPeople`);
-//
-				if (node)
+				let node = dojo.query(`#ERAfaction-${faction.color} .ERAstarPeople,.ERApanel-${faction.color} .ERAstarPeople`).forEach((node) =>
 				{
 					dojo.setAttr(node, 'starPeople', faction.starPeople);
 					if (faction.starPeople === 'none')
@@ -47,12 +45,13 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.setAttr(node, 'STS', `${g_gamethemeurl}img/starPeoples/${faction.starPeople}.STS.jpg`);
 						dojo.style(node, 'pointer-events', '');
 					}
-				}
-				if ('alignment' in faction)
-				{
-					if (faction.alignment === 'STS') dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, 'STS'));
-					else dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, 'STO'));
-				}
+					if ('alignment' in faction)
+					{
+						dojo.toggleClass(node, 'ERA-STS', faction.alignment === 'STS')
+						if (dojo.hasClass(node, 'ERA-STS')) dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, 'STS'));
+						else dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, 'STO'));
+					}
+				});
 			}
 //
 			if ('DP' in faction)

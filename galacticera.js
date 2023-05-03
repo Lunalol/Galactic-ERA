@@ -55,6 +55,25 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			}
 //
+//	Focus to examine and swap Star People tiles
+//
+			dojo.query(`.ERAstarPeople`).forEach((node) =>
+			{
+				dojo.connect(node, 'click', (event) =>
+				{
+					dojo.toggleClass(event.currentTarget, 'ERA-STO');
+					if (!dojo.hasClass(event.currentTarget, 'ERA-STO')) dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STS'));
+					else dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STO'));
+				});
+				dojo.connect(node, 'focusin', (event) => dojo.toggleClass(event.currentTarget, 'ERA-STO', dojo.hasClass(event.currentTarget, 'ERA-STS')));
+				dojo.connect(node, 'focusout', (event) =>
+				{
+					if (dojo.hasClass(event.currentTarget, 'ERA-STS')) dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STS'));
+					else dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STO'));
+				});
+			});
+
+//
 // Gray pawn
 //
 			dojo.place("<div class='ERApawn' id='ERApawn'></div>", 'ERA-DP');
@@ -269,8 +288,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			{
 				case 'movement':
 				{
-					debugger
-							;
 					if (this.isCurrentPlayerActive()) dojo.query(`#ERAboard .ERAship[color=${this.color}]`).addClass('ERAselectable');
 					break;
 				}
