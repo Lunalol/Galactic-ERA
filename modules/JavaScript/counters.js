@@ -24,42 +24,47 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			switch (counter.type)
 			{
 				case 'wormhole':
+					{
+						const color = [null, 'blue', 'blue', 'gold', 'gold', 'purple', 'purple'][dojo.query('#ERAboard .ERAcounter-wormhole').length];
+						dojo.addClass(node, `ERAcounter-${color}`);
 //
-					const color = [null, 'blue', 'blue', 'gold', 'gold', 'purple', 'purple'][dojo.query('#ERAboard .ERAcounter-wormhole').length];
-					dojo.addClass(node, `ERAcounter-${color}`);
-//
-					const center = this.board.hexagons[counter.location[0] + ':+0+0+0'];
-					const dx = 0.18 * (this.board.hexagons[counter.location].x - center.x);
-					const dy = 0.18 * (this.board.hexagons[counter.location].y - center.y);
-					dojo.style(node, 'transform', `translate(${dx}px, ${dy}px)`);
+						const center = this.board.hexagons[counter.location[0] + ':+0+0+0'];
+						const dx = 0.18 * (this.board.hexagons[counter.location].x - center.x);
+						const dy = 0.18 * (this.board.hexagons[counter.location].y - center.y);
+						dojo.style(node, 'transform', `translate(${dx}px, ${dy}px)`);
+					}
 					break;
 				case 'star':
-					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE)))`);
-					dojo.style(node, 'z-index', 100);
-					node.addEventListener('animationend', (event) => {
-						if (event.animationName === 'flip')
-						{
-							dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
-							dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
-							dojo.removeAttr(node, 'back');
-						}
-						else dojo.style(node, 'animation', '');
-					});
-					dojo.connect(node, 'click', this, 'click');
+					{
+						dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE)))`);
+						dojo.style(node, 'z-index', 100);
+						node.addEventListener('animationend', (event) => {
+							if (event.animationName === 'flip')
+							{
+								dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
+								dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
+								dojo.removeAttr(node, 'back');
+							}
+							else dojo.style(node, 'animation', '');
+						});
+						dojo.connect(node, 'click', this, 'click');
+					}
 					break;
 				case 'relic':
-					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(32px, -32px)`);
-					dojo.style(node, 'z-index', 100);
-					node.addEventListener('animationend', (event) => {
-						if (event.animationName === 'flip')
-						{
-							dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
-							dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
-							dojo.removeAttr(node, 'back');
-						}
-						else dojo.style(node, 'animation', '');
-					});
-					dojo.connect(node, 'click', this, 'click');
+					{
+						dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(32px, -32px)`);
+						dojo.style(node, 'z-index', 100);
+						node.addEventListener('animationend', (event) => {
+							if (event.animationName === 'flip')
+							{
+								dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
+								dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
+								dojo.removeAttr(node, 'back');
+							}
+							else dojo.style(node, 'animation', '');
+						});
+						dojo.connect(node, 'click', this, 'click');
+					}
 					break;
 				case 'populationDisk':
 					dojo.connect(node, 'click', this, 'click');

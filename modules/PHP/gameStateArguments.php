@@ -102,12 +102,8 @@ trait gameStateArguments
 					case 'growPopulation':
 						{
 							$private[$player_id]['growPopulation'] = [];
-							foreach (Counters::getPopulation($color) as $location => $population)
-							{
-								$population = intval($population);
-								$growthLimit = Sectors::nearest($location);
-								if ($population < $growthLimit) $private[$player_id]['growPopulation'][$location] = ['population' => $population, 'growthLimit' => $growthLimit];
-							}
+							foreach (Counters::getPopulation($color) as $location => $population) $private[$player_id]['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
+							$private[$player_id]['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
 						}
 						break;
 					case 'buildShips':
@@ -132,8 +128,9 @@ trait gameStateArguments
 		$counters = [];
 		foreach (Factions::list() as $color)
 		{
-			foreach (Factions::getStatus($color, 'counters') as $counter) $counters[$color][$counter] = true;
-			foreach (Factions::getStatus($color, 'used') as $counter) $counters[$color][$counter] = false;
+			$counters[$color] = ['available' => [], 'used' => []];
+			foreach (Factions::getStatus($color, 'counters') as $counter) $counters[$color]['available'][] = $counter;
+			foreach (Factions::getStatus($color, 'used') as $counter) $counters[$color]['used'][] = $counter;
 		}
 //
 		$color = Factions::getActive();

@@ -177,15 +177,6 @@ $machinestates = [
 		'possibleactions' => ['research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
 		'transitions' => ['bonusPopulation' => 420, 'continue' => 410, 'next' => 400]
 	],
-	420 => [
-		'name' => 'bonusPopulation',
-		'description' => clienttranslate('${actplayer} may add “bonus population” discss'),
-		'descriptionmyturn' => clienttranslate('${you} may add ${bonus} “bonus population” discs'),
-		'type' => 'activeplayer',
-		'args' => 'argBonusPopulation',
-		'possibleactions' => ['bonusPopulation'],
-		'transitions' => ['continue' => 410]
-	],
 	500 => [
 		'name' => 'endOfRound',
 		'type' => 'game',

@@ -188,7 +188,7 @@ trait gameStateActions
 		$player_id = self::getCurrentPlayerId();
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'counters', array_values($counters));
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 	}
@@ -215,7 +215,7 @@ trait gameStateActions
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('research', $counters)]);
 		unset($counters[array_search($technology, $counters)]);
-		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research', $technology])));
 //
 		$this->gamestate->nextState('continue');
@@ -415,12 +415,12 @@ trait gameStateActions
 //
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('gainStar', $counters)]);
-		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
 //
 		$this->gamestate->nextState('continue');
 	}
-	function acGrowPopulation(string $color, array $locations): void
+	function acGrowPopulation(string $color, array $locations, array $locationsBonus): void
 	{
 		$this->checkAction('growPopulation');
 //
@@ -428,13 +428,27 @@ trait gameStateActions
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 		if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if (!in_array('growPopulation', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'gainStar');
+		if (!in_array('growPopulation', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'growPopulation');
+		if (sizeof($locationsBonus) > $this->possible['bonusPopulation']) throw new BgaVisibleSystemException('Invalid bonus population: ' . sizeof($locationsBonus));
 //
 		foreach ($locations as $location)
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
+				'PLANET' => [
+					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+				],
+				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
+			]);
+//* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+		foreach ($locationsBonus as $location)
+		{
+			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
@@ -443,41 +457,15 @@ trait gameStateActions
 				],
 				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
 			]);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('growPopulation', $counters)]);
-		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['growPopulation'])));
-//
-		if (self::argBonusPopulation()['bonus'] > 0) $this->gamestate->nextState('bonusPopulation');
-		else $this->gamestate->nextState('continue');
-	}
-	function acBonusPopulation(string $color, array $locations): void
-	{
-		$this->checkAction('bonusPopulation');
-//
-		$player_id = self::getCurrentPlayerId();
-		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-//
-		if (!array_key_exists('bonusPopulation', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-//
-		foreach ($locations as $location)
-		{
-			if (!array_key_exists($location, $this->possible['bonusPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
-//* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
-				'PLANET' => [
-					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
-					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
-				],
-				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
-			]);
-//* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
-//* -------------------------------------------------------------------------------------------------------- */
-		}
 //
 		$this->gamestate->nextState('continue');
 	}
@@ -489,6 +477,7 @@ trait gameStateActions
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 		if (!array_key_exists('buildShips', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (!in_array('buildShips', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'buildShips');
 //
 		foreach ($locations as $location)
 		{
@@ -506,7 +495,7 @@ trait gameStateActions
 //
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('buildShips', $counters)]);
-		Factions::setStatus($color, 'counters', $counters);
+		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['buildShips'])));
 //
 		$this->gamestate->nextState('continue');

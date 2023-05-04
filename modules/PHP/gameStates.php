@@ -524,7 +524,7 @@ trait gameStates
 		Factions::setActivation($color, 'yes');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Move/Combat Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -535,7 +535,7 @@ trait gameStates
 	{
 		Factions::setActivation();
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -564,7 +564,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 				$counters = Factions::getStatus($color, 'counters');
 				unset($counters[array_search('switchAlignment', $counters)]);
-				Factions::setStatus($color, 'counters', $counters);
+				Factions::setStatus($color, 'counters', array_values($counters));
 				Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['switchAlignment'])));
 			}
 		}
@@ -596,7 +596,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 				$counters = Factions::getStatus($color, 'counters');
 				unset($counters[array_search('changeTurnOrderDown', $counters)]);
-				Factions::setStatus($color, 'counters', $counters);
+				Factions::setStatus($color, 'counters', array_values($counters));
 //				Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['changeTurnOrderDown'])));
 			}
 		}
@@ -610,9 +610,9 @@ trait gameStates
 		Factions::setActivation($color, 'yes');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
-		]);
+//		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+//			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
+//		]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
 		$this->gamestate->nextState('nextPlayer');

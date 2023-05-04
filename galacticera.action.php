@@ -120,17 +120,8 @@ class action_galacticera extends APP_GameAction
 //
 		$color = self::getArg("color", AT_alphanum, true);
 		$locations = self::getArg("locations", AT_json, true);
-		$this->game->acGrowPopulation($color, $locations);
-//
-		self::ajaxResponse("");
-	}
-	public function bonusPopulation()
-	{
-		self::setAjaxMode();
-//
-		$color = self::getArg("color", AT_alphanum, true);
-		$locations = self::getArg("locations", AT_json, true);
-		$this->game->acBonusPopulation($color, $locations);
+		$locationsBonus = self::getArg("locationsBonus", AT_json, true);
+		$this->game->acGrowPopulation($color, $locations, $locationsBonus);
 //
 		self::ajaxResponse("");
 	}
