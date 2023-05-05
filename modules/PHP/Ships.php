@@ -2,9 +2,12 @@
 
 class Ships extends APP_GameClass
 {
-	static function create($color, $fleet, $location): int
+	const FLEETS = ['A', 'B', 'C', 'D', 'E'];
+//
+	static function create($color, $fleet, $location, array $status = []): int
 	{
-		self::DbQuery("INSERT INTO ships (color,fleet,location) VALUES ('$color','$fleet','$location')");
+		$json = self::escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
+		self::DbQuery("INSERT INTO ships (color,fleet,location,activation,status) VALUES ('$color','$fleet','$location','no', '$json')");
 		return self::DbGetLastId();
 	}
 	static function destroy(int $id): void
@@ -55,6 +58,15 @@ class Ships extends APP_GameClass
 	static function setMP(int $id, int $MP): void
 	{
 		self::dbQuery("UPDATE ships SET MP = $MP WHERE id = $id");
+	}
+	static function getStatus(int $id, string $status)
+	{
+		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM ships WHERE id = $id");
+	}
+	static function setStatus(int $id, string $status, $value = null): void
+	{
+		if (is_null($value)) self::dbQuery("UPDATE ships SET status = JSON_REMOVE(status, '$.$status') WHERE id = $id'");
+		else self::dbQuery("UPDATE ships SET status = JSON_SET(status, '$.$status', '$value') WHERE color = '$color'");
 	}
 	static function movement(array $ship)
 	{

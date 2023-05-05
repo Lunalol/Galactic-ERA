@@ -6,12 +6,12 @@ class Counters extends APP_GameClass
 	static function create($color, $type, $location, array $status = []): int
 	{
 		$json = self::escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
-		self::DbQuery("INSERT INTO counters (color, type, location, status) VALUES ('$color', '$type', '$location', '$json')");
+		self::DbQuery("INSERT INTO counters (color,type,location,status) VALUES ('$color','$type','$location','$json')");
 		return self::DbGetLastId();
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDB("SELECT id, color, type, location FROM counters ORDER BY color, type");
+		return self::getCollectionFromDB("SELECT id,color,type,location FROM counters ORDER BY color,type");
 	}
 	static function destroy(int $id): void
 	{
@@ -32,7 +32,7 @@ class Counters extends APP_GameClass
 	}
 	static function getPopulation(string $color): array
 	{
-		$populations = self::getCollectionFromDB("SELECT location, COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
+		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
 		foreach (Ships::getHomeStar() as $location)
 		{
 			if (array_key_exists($location, $populations)) $populations[$location] += 6;
@@ -42,17 +42,17 @@ class Counters extends APP_GameClass
 	}
 	static function reveal(string $color, string $type, int $id)
 	{
-		self::DbQuery("INSERT INTO revealed VALUES('$color', '$type', $id)");
+		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
 		return self::DbGetLastId();
 	}
 	static function isRevealed(string $color, int $id, string $type = null)
 	{
-		if (is_null($type)) return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type IN ('star', 'relic') AND id = $id)"));
+		if (is_null($type)) return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type IN ('star','relic') AND id = $id)"));
 		return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type = '$type' AND id = $id)"));
 	}
 	static function listRevealed(string $color, string $type = null): array
 	{
-		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star', 'relic')", true);
+		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star','relic')", true);
 		return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type = '$type'", true);
 	}
 }

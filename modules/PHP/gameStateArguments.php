@@ -42,6 +42,31 @@ trait gameStateArguments
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
+	function argFleets()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		$available = Ships::FLEETS;
+		$this->possible = ['ships' => []];
+		foreach (Ships::getAll($color) as $ship)
+		{
+			switch ($ship['fleet'])
+			{
+				case 'ship':
+					$this->possible['ships'][] = $ship['id'];
+					break;
+				case 'fleet':
+					$this->possible['ships'][] = $ship['id'];
+					$fleet = Ships::getStatus($ship['id'], 'fleet');
+					unset($available[array_search($fleet, $available)]);
+					break;
+			}
+		}
+		$this->possible['fleets'] = array_values($available);
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color];
+	}
 	function argMovement()
 	{
 		$color = Factions::getActive();
@@ -51,12 +76,21 @@ trait gameStateArguments
 		$this->possible = ['move' => [], 'scout' => []];
 		foreach (Ships::getAll($color) as $ship)
 		{
-			if ($ship['fleet'] === 'ship' && $ship['activation'] !== 'done') $this->possible['move'][$ship['id']] = Ships::movement($ship);
-//
+			if ($ship['activation'] !== 'done')
+			{
+				switch ($ship['fleet'])
+				{
+					case 'ship':
+						$this->possible['move'][$ship['id']] = Ships::movement($ship);
+						break;
+					case 'fleet':
+						$this->possible['move'][$ship['id']] = Ships::movement($ship);
+						break;
+				}
+			}
 			$counters = array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), $revealed);
 			if ($counters) $this->possible['scout'][$ship['id']] = $counters;
 		}
-//
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
 	function argSelectCounters()

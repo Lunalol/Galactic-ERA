@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS `ships`
 (
     `id` INT PRIMARY KEY AUTO_INCREMENT,`activation` ENUM ('no','yes','done'),
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
-	`fleet` ENUM ('homeStar','A','B','C','D','E','ship'),
-	`MP` INT(1),`location` CHAR(8),
+	`fleet` ENUM ('homeStar','ship', 'fleet'),
+	`MP` INT(1) DEFAULT 0,`location` CHAR(8),
 	`status` JSON,
     INDEX (`location`),INDEX (`color`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

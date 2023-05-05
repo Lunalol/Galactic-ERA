@@ -51,6 +51,54 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('nextPlayer');
 	}
+	function acCreateFleet(string $color, string $fleet, array $ships)
+	{
+		$this->checkAction('createFleet');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . $this->possible);
+		if (!in_array($fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Fleet non available: ' . $fleet);
+//
+		if ($ships)
+		{
+			$ship = Ships::get($color, $ships[0]);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} moves ${N} ship(s) to fleet'), [
+				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'ship' => Ships::get($color, Ships::create($color, 'fleet', $ship['location'], ['fleet' => $fleet, 'ships' => sizeof($ships)])),
+				'N' => sizeof($ships)
+				]
+			);
+//* -------------------------------------------------------------------------------------------------------- */
+			foreach ($ships as $ship)
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyAllPlayers('removeShip', '', ['ship' => Ships::get($color, $ship)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				Ships::destroy($ship);
+			}
+		}
+//
+		$this->gamestate->nextState('continue');
+	}
+	function acDone(string $color): void
+	{
+		$this->checkAction('done');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		foreach (Ships::getAll($color) as $ship)
+		{
+			$MP = Factions::TECHNOLOGIES['Propulsion'][Factions::getTechnology($color, 'Propulsion')];
+			if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += 2;
+			Ships::setMP($ship['id'], $ship['fleet'] === 'homeStar' ? 0 : $MP);
+		}
+//
+		$this->gamestate->nextState('next');
+	}
 	function acScout(string $color, array $ships)
 	{
 		$this->checkAction('scout');
@@ -122,7 +170,7 @@ trait gameStateActions
 //
 		foreach ($ships as $ship)
 		{
-			$json = json_encode(Ships::get($color, $ship));
+			$json = self::escapeStringForDB(json_encode(Ships::get($color, $ship)));
 			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$ship,'$color','move','$json')");
 //
 			$MP = $this->possible['move'][$ship][$location]['MP'];
@@ -170,14 +218,7 @@ trait gameStateActions
 		Factions::setActivation($color, 'done');
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
-		$revealed = Counters::listRevealed($color);
-		foreach (Ships::getAll($color) as $ship)
-		{
-			$counters = array_diff(Counters::getAtLocation($ship['location'], 'star'), $revealed);
-			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
-			$counters = Counters::getAtLocation($ship['location'], 'relic');
-			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
-		}
+		foreach (Ships::getAll($color) as $ship) foreach (array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, $ship['location'], $counter);
 //
 		$this->gamestate->nextState('next');
 	}

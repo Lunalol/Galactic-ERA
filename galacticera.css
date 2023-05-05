@@ -22,7 +22,6 @@ div,img {
 	visibility: hidden;
 }
 
-
 /* <editor-fold defaultstate="collapsed" desc="Logs"> */
 .ERA-phase {
 	display: block;
@@ -118,6 +117,16 @@ div,img {
     -webkit-overflow-scrolling: touch;
     background-image:url('img/background.jpg');
 	border-radius: 15px;
+}
+#ERAfleets {
+	position: sticky;
+	top: 0px;
+	left: 0px;
+	padding: 2%;
+	background-color: #000000A0;
+	display: flex;
+	justify-content: space-evenly;
+	z-index: 500;
 }
 #ERAboard {
     transform-origin: top left;
@@ -306,6 +315,8 @@ div,img {
 .ERAship-FFFF00 {
 	background-position-x: -4250px;
 }
+/* </editor-fold> */
+/* <editor-fold defaultstate="collapsed" desc="homeStar"> */
 .ERAhomeStar {
 	background: url('img/3D.png');
 	width: 250px;
@@ -334,6 +345,58 @@ div,img {
 }
 .ERAhomeStar-FFFF00 {
 	background-position-x: -1250px;
+}
+/* </editor-fold> */
+/* <editor-fold defaultstate="collapsed" desc="fleet"> */
+.ERAship[fleet] {
+	background: url('img/counters.png');
+	width: 65px;
+	height: 45px;
+	clip-path: none;
+	transition: all 0.25s;
+	opacity: 75%;
+}
+.ERAship[fleet]:hover {
+    filter:brightness(2.0);
+	opacity: 100%;
+	transition: all 0.25s;
+	z-index: 500 !important;
+}
+.ERAship[fleet].ERAship-FF3333[fleet='A'] {
+	background-position-x: -3617px;
+}
+.ERAship[fleet].ERAship-FF3333[fleet='B'] {
+	background-position-x: -3682px;
+}
+.ERAship[fleet].ERAship-FF3333[fleet='C'] {
+	background-position-x: -3747px;
+}
+.ERAship[fleet].ERAship-FF3333[fleet='D'] {
+	background-position-x: -3812px;
+}
+.ERAship[fleet].ERAship-FF3333[fleet='E'] {
+	background-position-x: -3877px;
+}
+.ERAship[fleet].ERAship-FF3333 {
+	background-position-x: -3941px;
+}
+.ERAship[fleet].ERAship-FFFF00[fleet='A'] {
+	background-position: -8015px 0;
+}
+.ERAship[fleet].ERAship-FFFF00[fleet='B'] {
+	background-position: -8145px 0;
+}
+.ERAship[fleet].ERAship-FFFF00[fleet='C'] {
+	background-position: -8405px 0;
+}
+.ERAship[fleet].ERAship-FFFF00[fleet='D'] {
+	background-position: -8535px 0;
+}
+.ERAship[fleet].ERAship-FFFF00[fleet='E'] {
+	background-position: -8665px 0;
+}
+.ERAship[fleet].ERAship-FF0000 {
+	background-position: -8275px 0;
 }
 /* </editor-fold> */
 
@@ -481,6 +544,7 @@ div,img {
 	height: 59px;
 }
 
+/* <editor-fold defaultstate="collapsed" desc="Relics"> */
 .ERAcounter-relic
 {
 	width: 59px;
@@ -521,7 +585,8 @@ div,img {
 .ERAcounter-9 {
 	background-position-x: -930px;
 }
-
+/* </editor-fold> */
+/* <editor-fold defaultstate="collapsed" desc="War/Peace"> */
 .ERAcounter.at_peace_.ERAcounter-6666FF {
 	background-position: -1547px 0;
 	width: 177px;
@@ -582,6 +647,7 @@ div,img {
 	width: 177px;
 	height: 177px;
 }
+/* </editor-fold> */
 
 .ERAcounter.DP_counter_50- {
 	background-position: -3671px 0;
@@ -599,116 +665,82 @@ div,img {
 	height: 148px;
 }
 
-.ERAcounter.fleet_counters_blue_A_22x15mm {
+/* <editor-fold defaultstate="collapsed" desc="Fleets"> */
+.ERAship[fleet].ue_A {
 	background-position: -4115px 0;
 }
-.ERAcounter.fleet_counters_blue_B_22x15mm {
+.ERAship[fleet].ue_B {
 	background-position: -4245px 0;
 }
-.ERAcounter.fleet_counters_blue_back_22x15mm {
+.ERAship[fleet].ue_back {
 	background-position: -4375px 0;
 }
-.ERAcounter.fleet_counters_blue_C_22x15mm {
+.ERAship[fleet].ue_C {
 	background-position: -4505px 0;
 }
-.ERAcounter.fleet_counters_blue_D_22x15mm {
+.ERAship[fleet].ue_D {
 	background-position: -4635px 0;
 }
-.ERAcounter.fleet_counters_blue_E_22x15mm {
+.ERAship[fleet].ue_E {
 	background-position: -4765px 0;
 }
-.ERAcounter.fleet_counters_green_A_22x15mm {
+.ERAship[fleet].counters_green_A {
 	background-position: -4895px 0;
 }
-.ERAcounter.fleet_counters_green_B_22x15mm {
+.ERAship[fleet].counters_green_B {
 	background-position: -5025px 0;
 }
-.ERAcounter.fleet_counters_green_back_22x15mm {
+.ERAship[fleet].counters_green_back {
 	background-position: -5155px 0;
 }
-.ERAcounter.fleet_counters_green_C_22x15mm {
+.ERAship[fleet].counters_green_C {
 	background-position: -5285px 0;
 }
-.ERAcounter.fleet_counters_green_D_22x15mm {
+.ERAship[fleet].counters_green_D {
 	background-position: -5415px 0;
 }
-.ERAcounter.fleet_counters_green_E_22x15mm {
+.ERAship[fleet].counters_green_E {
 	background-position: -5545px 0;
 }
-.ERAcounter.fleet_counters_magenta_A_22x15mm {
+.ERAship[fleet].counters_magenta_A {
 	background-position: -5675px 0;
 }
-.ERAcounter.fleet_counters_magenta_B_22x15mm {
+.ERAship[fleet].counters_magenta_B {
 	background-position: -5805px 0;
 }
-.ERAcounter.fleet_counters_magenta_back_22x15mm {
+.ERAship[fleet].counters_magenta_back {
 	background-position: -5935px 0;
 }
-.ERAcounter.fleet_counters_magenta_C_22x15mm {
+.ERAship[fleet].counters_magenta_C {
 	background-position: -6065px 0;
 }
-.ERAcounter.fleet_counters_magenta_E_22x15mm {
+.ERAship[fleet].counters_magenta_E {
 	background-position: -6195px 0;
 }
-.ERAcounter.fleet_counters_magenta_D_22x15mm {
+.ERAship[fleet].counters_magenta_D {
 	background-position: -6325px 0;
 }
-.ERAcounter.fleet_counters_orange_A_22x15mm {
+.ERAship[fleet].counters_orange_A {
 	background-position: -6455px 0;
 }
-.ERAcounter.fleet_counters_orange_B_22x15mm {
+.ERAship[fleet].counters_orange_B {
 	background-position: -6585px 0;
 }
-.ERAcounter.fleet_counters_orange_back_22x15mm {
+.ERAship[fleet].counters_orange_back {
 	background-position: -6715px 0;
 }
-.ERAcounter.fleet_counters_orange_C_22x15mm {
+.ERAship[fleet].counters_orange_C {
 	background-position: -6845px 0;
 }
-.ERAcounter.fleet_counters_orange_D_22x15mm {
+.ERAship[fleet].counters_orange_D {
 	background-position: -6975px 0;
 }
-.ERAcounter.fleet_counters_orange_E_22x15mm {
+.ERAship[fleet].counters_orange_E {
 	background-position: -7105px 0;
 }
 
-.ERAcounter.fleet_counters_A.ERAcounter-FF3333 {
-	background-position: -7235px 0;
-}
-.ERAcounter.fleet_counters_B.ERAcounter-FF3333 {
-	background-position: -7365px 0;
-}
-.ERAcounter.fleet_counters_BACK.ERAcounter-FF3333 {
-	background-position: -7495px 0;
-}
-.ERAcounter.fleet_counters_C.ERAcounter-FF3333 {
-	background-position: -7625px 0;
-}
-.ERAcounter.fleet_counters_D.ERAcounter-FF3333 {
-	background-position: -7755px 0;
-}
-.ERAcounter.fleet_counters_E.ERAcounter-FF3333 {
-	background-position: -7885px 0;
-}
-.ERAcounter.fleet_counters_yellow_A_22x15mm {
-	background-position: -8015px 0;
-}
-.ERAcounter.fleet_counters_yellow_B_22x15mm {
-	background-position: -8145px 0;
-}
-.ERAcounter.fleet_counters_yellow_back_22x15mm {
-	background-position: -8275px 0;
-}
-.ERAcounter.fleet_counters_yellow_C_22x15mm {
-	background-position: -8405px 0;
-}
-.ERAcounter.fleet_counters_yellow_D_22x15mm {
-	background-position: -8535px 0;
-}
-.ERAcounter.fleet_counters_yellow_E_22x15mm {
-	background-position: -8665px 0;
-}
-
+/* </editor-fold> */
+/* <editor-fold defaultstate="collapsed" desc="Growth Actions"> */
 .ERAcounter-growth
 {
 	width: 89px;
@@ -821,6 +853,7 @@ div,img {
 .ERAcounter-growth[counter='research'].ERAcounter-FFFF00 {
 	background-position-x: -6978px;
 }
+/* </editor-fold> */
 /*
 // Turn Order (6)
 */

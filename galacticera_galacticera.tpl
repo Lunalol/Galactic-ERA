@@ -1,21 +1,20 @@
 {OVERALL_GAME_HEADER}
 
 <div id='ERAplayArea'>
-	<div id='ERAboard'>
-	</div>
-</div>
+	<div id='ERAfleets' class='ERAhide'></div>
+	<div id='ERAboard'></div>
 </div>
 <div id='ERApanels'>
 	<div id='ERA-DP'></div>
 </div>
 <div id='ERAcontrols'>
-    <span id='ERAzoomMinus'>🔍</span>
-    <input id='ERAzoomLevel' type='range' style='vertical-align:middle;'/>
-    <span id='ERAzoomPlus'>🔎</span>
+	<span id='ERAzoomMinus'>🔍</span>
+	<input id='ERAzoomLevel' type='range' style='vertical-align:middle;'/>
+	<span id='ERAzoomPlus'>🔎</span>
 	<span id='ERAhome' class="fa fa-home fa-lg"></span>
 	<span id='ERArotateAntiClockwise'>⭯</span>
-    <input id='ERArotate' type='range' min='-180' max='180' value='0' style='vertical-align:middle;'/>
-    <span id='ERArotateClockwise'>⭮</span>
+	<input id='ERArotate' type='range' min='-180' max='180' value='0' style='vertical-align:middle;'/>
+	<span id='ERArotateClockwise'>⭮</span>
 </div>
 
 <script type="text/javascript">

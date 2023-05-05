@@ -45,6 +45,26 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function createFleet()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$fleet = self::getArg("fleet", AT_alphanum, true);
+		$ships = self::getArg("ships", AT_json, true);
+		$this->game->acCreateFleet($color, $fleet, $ships);
+//
+		self::ajaxResponse("");
+	}
+	public function done()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$this->game->acDone($color);
+//
+		self::ajaxResponse("");
+	}
 	public function scout()
 	{
 		self::setAjaxMode();

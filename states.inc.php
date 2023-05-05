@@ -106,7 +106,7 @@ $machinestates = [
 		'name' => 'movementCombatPhase',
 		'type' => 'game',
 		'action' => 'stMovementCombatPhase',
-		'transitions' => ['nextPlayer' => 220, 'next' => 300]
+		'transitions' => ['nextPlayer' => 210, 'next' => 300]
 	],
 	210 => [
 		'name' => 'fleets',
@@ -114,7 +114,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
 		'args' => 'argFleets',
-		'possibleactions' => ['create', 'swap', 'dissolve'],
+		'possibleactions' => ['createFleet', 'swapFleet', 'dissolveFleet', 'done'],
 		'transitions' => ['continue' => 210, 'next' => 220]
 	],
 	220 => [
