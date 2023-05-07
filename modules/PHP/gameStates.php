@@ -400,6 +400,11 @@ trait gameStates
 				{
 					case 'Grow':
 						Factions::setStatus($color, 'bonus', 'Grow');
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B> in the first round'), [
+							'player_name' => Players::getName(Factions::getPlayer($color)),
+						]);
+//* -------------------------------------------------------------------------------------------------------- */
 						break;
 					case 'Technology':
 						{
