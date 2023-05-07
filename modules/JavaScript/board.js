@@ -274,8 +274,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			let location = this.nearest(x, y);
 			if (location !== undefined)
 			{
-				console.log(location);
-				console.log(this.bgagame.gamedatas.sectors[this.hexagons[location].sector].description[this.hexagons[location].hexagon]);
+				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);

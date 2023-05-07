@@ -172,27 +172,35 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		click: function (event)
 		{
 			const ship = event.currentTarget;
+			const location = dojo.getAttr(ship, 'location');
+			const color = dojo.getAttr(ship, 'color');
+//
+			if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
+			if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
+			if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
+			if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
 //
 			if (dojo.hasClass(ship, 'ERAselectable'))
 			{
 				dojo.stopEvent(event);
 //
-				const location = dojo.getAttr(ship, 'location');
-				const color = dojo.getAttr(ship, 'color');
-				const homeStar = dojo.hasAttr(ship, 'homeStar');
-//
-				if (homeStar)
-				{
-					if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
-					if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
-					if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
-				}
-				else if (this.bgagame.gamedatas.gamestate.name === 'fleets')
+				if (this.bgagame.gamedatas.gamestate.name === 'fleets')
 				{
 					dojo.query(`#ERAboard .ERAship[color='${color}']:not([location='${location}'])`).removeClass('ERAselected');
-					if (event.detail === 1) dojo.toggleClass(ship, 'ERAselected');
-					if (event.detail === 2) dojo.query(`#ERAboard .ERAship[color='${color}'][location='${location}'].ERAselectable`).toggleClass('ERAselected', dojo.hasClass(ship, 'ERAselected'));
-					if (dojo.query(`#ERAboard .ERAship[color='${color}'][location='${location}'].ERAselected`).length) return this.bgagame.fleets(location);
+//
+					if (dojo.hasAttr(ship, 'fleet'))
+					{
+						dojo.query(`#ERAboard .ERAship[color='${color}']:not([fleet])`).removeClass('ERAselected');
+						dojo.toggleClass(ship, 'ERAselected');
+					}
+					else
+					{
+						dojo.query(`#ERAboard .ERAship[color='${color}'][fleet]`).removeClass('ERAselected');
+//
+						if (event.detail === 1) dojo.toggleClass(ship, 'ERAselected');
+						if (event.detail === 2) dojo.query(`#ERAboard .ERAship[color='${color}'][location='${location}']:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(ship, 'ERAselected'));
+					}
+					return this.bgagame.fleets(location);
 				}
 				else if (this.bgagame.gamedatas.gamestate.name === 'movement')
 				{

@@ -99,6 +99,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				{
 					dojo.query(`#ERAtechTrack-${faction.color}>.ERAcounter-cube[location='${technology}']`).remove();
 					let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-technology', color: faction.color, type: 'cube', location: technology}), `ERAtechTrack-${faction.color}`);
+					dojo.setAttr(node, 'title', _(technology) + ' ' + faction[technology]);
 					dojo.setAttr(node, 'level', faction[technology]);
 					dojo.style(node, 'position', 'absolute');
 					dojo.style(node, 'top', (['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'].indexOf(technology) * 92.5 + 85) + 'px');

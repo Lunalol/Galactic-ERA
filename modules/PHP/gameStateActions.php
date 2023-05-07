@@ -59,7 +59,7 @@ trait gameStateActions
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . $this->possible);
-		if (!in_array($fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Fleet non available: ' . $fleet);
+		if (!array_key_exists($fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $fleet);
 //
 		if ($ships)
 		{
@@ -94,6 +94,7 @@ trait gameStateActions
 		{
 			$MP = Factions::TECHNOLOGIES['Propulsion'][Factions::getTechnology($color, 'Propulsion')];
 			if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += 2;
+			if (!is_null(Ships::getStatus($ship['id'], 'fleet'))) $MP += 1;
 			Ships::setMP($ship['id'], $ship['fleet'] === 'homeStar' ? 0 : $MP);
 		}
 //

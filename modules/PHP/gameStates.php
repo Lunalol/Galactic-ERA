@@ -107,7 +107,7 @@ trait gameStates
 //
 // Deal one domination card face down to each player
 //
-		foreach (Factions::list() as $color) $domination = $this->domination->pickCard('deck', $color)['type'];
+		foreach (Factions::list() as $color) $this->domination->pickCard('deck', $color)['type'];
 //
 // Remove the turn order counters from the game that have a number higher than the number of players.
 // Shuffle the remaining ones and give one face up to each player
@@ -180,7 +180,7 @@ trait gameStates
 //
 			$alignment = Factions::getAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing ${STARPEOPLE} (<B>${ALIGNMENT}</B>)'), [
+			$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${ALIGNMENT}</B>'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'i18n' => ['STARPEOPLE', 'ALIGNMENT'], 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($color)], 'ALIGNMENT' => Factions::getAlignment($color),
 				'faction' => ['color' => $color, 'starPeople' => $starPeople, 'alignment' => $alignment]
@@ -230,24 +230,17 @@ trait gameStates
 					break;
 				case 'Avians':
 // SPECIAL STO & STS: Start with Spirituality level 2 and Propulsion level 2.
-					[$technology, $level] = ['Spirituality', 2];
-					Factions::setTechnology($color, $technology, $level);
+					foreach ([['Spirituality', 2], ['Propulsion', 2]] as [$technology, $level])
+					{
+						Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)),
-						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
-						'LEVEL' => $level,
-					]);
+						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+							'player_name' => Players::getName(Factions::getPlayer($color)),
+							'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
+							'LEVEL' => $level,
+						]);
 //* -------------------------------------------------------------------------------------------------------- */
-					[$technology, $level] = ['Propulsion', 2];
-					Factions::setTechnology($color, $technology, $level);
-//* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)),
-						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
-						'LEVEL' => $level,
-					]);
-//* -------------------------------------------------------------------------------------------------------- */
+					}
 					break;
 				case 'Caninoids':
 // SPECIAL STO & STS: Start at level 2 in a technology field of your choice.
@@ -405,6 +398,9 @@ trait gameStates
 			{
 				switch ($bonus)
 				{
+					case 'Grow':
+						Factions::setStatus($color, 'bonus', 'Grow');
+						break;
 					case 'Technology':
 						{
 							foreach ($value as $technology => $level)
@@ -503,16 +499,6 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		Ships::setActivation();
 		Factions::setActivation();
-		foreach (Factions::list() as $color)
-		{
-			$propulsion = Factions::getTechnology($color, 'Propulsion');
-			foreach (Ships::getAll($color) as $ship)
-			{
-				$MP = Factions::TECHNOLOGIES['Propulsion'][$propulsion];
-				if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += 2;
-				Ships::setMP($ship['id'], $ship['fleet'] === 'homeStar' ? 0 : $MP);
-			}
-		}
 //
 		$this->gamestate->nextState('next');
 	}
@@ -610,9 +596,9 @@ trait gameStates
 		Factions::setActivation($color, 'yes');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-//		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
-//			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
-//		]);
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+			'log' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Players::getName(Factions::getPlayer($color))]]
+		]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
 		$this->gamestate->nextState('nextPlayer');
@@ -626,6 +612,13 @@ trait gameStates
 			'round' => $round
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
+		foreach (Factions::list() as $color)
+		{
+			Factions::setStatus($color, 'counters');
+			Factions::setStatus($color, 'used');
+			Factions::setStatus($color, 'bonus');
+		}
+//
 		$this->gamestate->nextState('nextRound');
 	}
 }

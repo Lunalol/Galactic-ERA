@@ -175,7 +175,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
 		'possibleactions' => ['research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['bonusPopulation' => 420, 'continue' => 410, 'next' => 400]
+		'transitions' => ['continue' => 410, 'next' => 400]
 	],
 	500 => [
 		'name' => 'endOfRound',

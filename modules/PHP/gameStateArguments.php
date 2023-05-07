@@ -48,22 +48,12 @@ trait gameStateArguments
 		$player_id = Factions::getPlayer($color);
 //
 		$available = Ships::FLEETS;
-		$this->possible = ['ships' => []];
+		$this->possible = ['ships' => [], 'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0])];
 		foreach (Ships::getAll($color) as $ship)
 		{
-			switch ($ship['fleet'])
-			{
-				case 'ship':
-					$this->possible['ships'][] = $ship['id'];
-					break;
-				case 'fleet':
-					$this->possible['ships'][] = $ship['id'];
-					$fleet = Ships::getStatus($ship['id'], 'fleet');
-					unset($available[array_search($fleet, $available)]);
-					break;
-			}
+			$this->possible['ships'][] = $ship['id'];
+			if ($ship['fleet'] === 'fleet') $this->possible['fleets'][Ships::getStatus($ship['id'], 'fleet')] = ['location' => $ship['location'], 'ships' => intval(Ships::getStatus($ship['id'], 'ships'))];
 		}
-		$this->possible['fleets'] = array_values($available);
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
@@ -101,7 +91,7 @@ trait gameStateArguments
 			$player_id = Factions::getPlayer($color);
 			$private[$player_id]['color'] = $color;
 			$private[$player_id]['counters'] = Factions::getStatus($color, 'counters');
-			$private[$player_id]['N'] = 2;
+			$private[$player_id]['N'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
 		}
 //
 		return ['_private' => $private];
@@ -129,7 +119,7 @@ trait gameStateArguments
 							foreach (Ships::getAll($color) as $ship)
 							{
 								$star = Counters::getAtLocation($ship['location'], 'star');
-								if ($star) $private[$player_id]['gainStar'][] = $star;
+								if ($star) $private[$player_id]['gainStar'][$ship['location']] = $star;
 							}
 						}
 						break;
