@@ -640,6 +640,23 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisk', location: location}), 'ERAprovisionalBonus');
 			}
 		},
+		onCenter: function (event)
+		{
+			if (event.currentTarget.hasAttribute('location'))
+			{
+				dojo.stopEvent(event);
+				this.board.centerMap(event.currentTarget.getAttribute('location'));
+			}
+		},
+		format_string_recursive: function (log, args)
+		{
+			if (log && args && !args.processed)
+			{
+				args.processed = true;
+				if ('GPS' in args) args.GPS = `<span onclick="gameui.onCenter(event)" location='${args.GPS}'>📌</span>`;
+			}
+			return this.inherited(arguments);
+		},
 		action: function (action, args =
 		{}, success = () => {}, fail = undefined)
 		{

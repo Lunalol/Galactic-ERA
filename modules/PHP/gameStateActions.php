@@ -65,9 +65,10 @@ trait gameStateActions
 		{
 			$ship = Ships::get($color, $ships[0]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} moves ${N} ship(s) to fleet'), [
+			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} moves ${N} ship(s) to fleet ${GPS}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'ship' => Ships::get($color, Ships::create($color, 'fleet', $ship['location'], ['fleet' => $fleet, 'ships' => sizeof($ships)])),
+				'GPS' => $ship['location'],
 				'N' => sizeof($ships)
 				]
 			);
@@ -115,10 +116,7 @@ trait gameStateActions
 		if ($ships)
 		{
 			$ship = Ships::get($color, $ships[0]);
-			$counters = Counters::getAtLocation($ship['location'], 'star');
-			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
-			$counters = Counters::getAtLocation($ship['location'], 'relic');
-			foreach ($counters as $counter) self::reveal($color, $ship['location'], $counter);
+			foreach (array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, $ship['location'], $counter);
 //
 			self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 		}
@@ -144,22 +142,18 @@ trait gameStateActions
 		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to ${PLANET}'), [
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to ${PLANET} ${GPS}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-				'N' => sizeof($ships),
-				]
-			);
+				'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		else
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s)'), [
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) ${GPS}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
-				'N' => sizeof($ships),
-				]
-			);
+				'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		foreach ($this->possible['move'][$ships[0]][$location]['path'] as $next_location)
@@ -319,25 +313,22 @@ trait gameStateActions
 			}
 			if (sizeof($ships) < $SHIPS) throw new BgaUserException(self::_('Not enough ships'));
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('removeCounter', clienttranslate('${player_name} gains ${PLANET}'), [
+			$this->notifyAllPlayers('removeCounter', clienttranslate('${player_name} gains ${PLANET} ${GPS}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
-				'counter' => Counters::get($star),
-				]
-			);
+				'GPS' => $location, 'counter' => Counters::get($star)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			for ($i = 0; $i < $population; $i++)
 			{
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
+				$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
 					'PLANET' => [
 						'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 						'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
 					],
-					'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
-				]);
+					'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 			Counters::destroy($star);
@@ -347,10 +338,9 @@ trait gameStateActions
 		foreach ($relics as $relic)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('<B>${RELIC}</B> is found'), [
+			$this->notifyAllPlayers('msg', clienttranslate('<B>${RELIC}</B> is found ${GPS}'), [
 				'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')],
-				]
-			);
+				'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			switch (Counters::getStatus($relic, 'back'))
 			{
@@ -477,13 +467,11 @@ trait gameStateActions
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
 				'PLANET' => [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
-				],
-				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
-			]);
+				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -492,13 +480,11 @@ trait gameStateActions
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B>'), [
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
 				'PLANET' => [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
-				],
-				'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))
-			]);
+				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -525,11 +511,10 @@ trait gameStateActions
 		{
 			if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET}'), [
+			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET} ${GPS}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
-				'ship' => Ships::get($color, Ships::create($color, 'ship', $location))
-			]);
+				'GPS' => $location, 'ship' => Ships::get($color, Ships::create($color, 'ship', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
 //* -------------------------------------------------------------------------------------------------------- */

@@ -1506,7 +1506,7 @@ class Sectors extends APP_GameClass
 		}
 		return $neighbors;
 	}
-	static function nearest(string $location): int
+	static function nearest(string $location): float
 	{
 		$distance = [$location => 0];
 //
