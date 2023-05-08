@@ -48,7 +48,7 @@ trait gameStateArguments
 		$player_id = Factions::getPlayer($color);
 //
 		$available = Ships::FLEETS;
-		$this->possible = ['ships' => [], 'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0])];
+		$this->possible = ['ships' => [], 'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0]), 'view' => Factions::getStatus($color, 'view')];
 		foreach (Ships::getAll($color) as $ship)
 		{
 			$this->possible['ships'][] = $ship['id'];
@@ -63,7 +63,7 @@ trait gameStateArguments
 		$player_id = Factions::getPlayer($color);
 //
 		$revealed = Counters::listRevealed($color);
-		$this->possible = ['move' => [], 'scout' => []];
+		$this->possible = ['move' => [], 'scout' => [], 'view' => Factions::getStatus($color, 'view')];
 		foreach (Ships::getAll($color) as $ship)
 		{
 			if ($ship['activation'] !== 'done')

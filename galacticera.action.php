@@ -65,6 +65,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function removeViewing()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$counter = self::getArg("counter", AT_int, true);
+		$this->game->acRemoteViewing($color, $counter);
+//
+		self::ajaxResponse("");
+	}
 	public function scout()
 	{
 		self::setAjaxMode();

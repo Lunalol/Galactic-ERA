@@ -58,7 +58,7 @@ trait gameStateActions
 		$player_id = self::getCurrentPlayerId();
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . $this->possible);
+		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!array_key_exists($fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $fleet);
 //
 		if ($ships)
@@ -101,6 +101,22 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('next');
 	}
+	function acRemoteViewing(string $color, int $counter)
+	{
+		$this->checkAction('removeViewing');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!array_key_exists('view', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (!$this->possible['view']) throw new BgaVisibleSystemException('No move view: ' . $this->possible['view']);
+//
+		self::reveal($color, Counters::get($counter)['location'], $counter);
+		Factions::setStatus($color, 'view', $this->possible['view'] - 1);
+//
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
+//
+		$this->gamestate->nextState('continue');
+	}
 	function acScout(string $color, array $ships)
 	{
 		$this->checkAction('scout');
@@ -108,7 +124,7 @@ trait gameStateActions
 		$player_id = self::getCurrentPlayerId();
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		if (!array_key_exists('scout', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . $this->possible);
+		if (!array_key_exists('scout', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		foreach ($ships as $ship) if (!array_key_exists($ship, $this->possible['scout'])) throw new BgaVisibleSystemException('Invalid ship: ' . $ship);
 //
 		foreach ($ships as $ship) Ships::setActivation($ship, 'done');
@@ -130,7 +146,7 @@ trait gameStateActions
 		$player_id = self::getCurrentPlayerId();
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		if (!array_key_exists('move', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . $this->possible);
+		if (!array_key_exists('move', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		foreach ($ships as $ship)
 		{
 			if (!array_key_exists($ship, $this->possible['move'])) throw new BgaVisibleSystemException('Invalid ship: ' . $ship);

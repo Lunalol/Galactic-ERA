@@ -272,7 +272,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			];
 //
 			let location = this.nearest(x, y);
-			if (location !== undefined)
+			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
 				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);

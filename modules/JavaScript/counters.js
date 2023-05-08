@@ -43,7 +43,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 							{
 								dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
 								dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
-								dojo.removeAttr(node, 'back');
+//								dojo.removeAttr(node, 'back');
 							}
 							else dojo.style(node, 'animation', '');
 						});
@@ -59,7 +59,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 							{
 								dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
 								dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
-								dojo.removeAttr(node, 'back');
+//								dojo.removeAttr(node, 'back');
 							}
 							else dojo.style(node, 'animation', '');
 						});
@@ -117,14 +117,18 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const counter = event.currentTarget;
 			const location = dojo.getAttr(counter, 'location');
 //
-			if (dojo.hasClass(counter, 'ERAselectable'))
+			if (this.bgagame.isCurrentPlayerActive())
 			{
-				dojo.stopEvent(event);
+				if (dojo.hasClass(counter, 'ERAselectable'))
+				{
+					dojo.stopEvent(event);
 //
-				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
-				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
-				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
-				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'removeViewing') return this.bgagame.removeViewing(counter);
+					if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
+				}
 			}
 		}
 	}

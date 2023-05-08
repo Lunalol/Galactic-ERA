@@ -513,6 +513,7 @@ trait gameStates
 		if (!$color) return $this->gamestate->nextState('next');
 //
 		Factions::setActivation($color, 'yes');
+		Factions::setStatus($color, 'view', Factions::TECHNOLOGIES['Spirituality'][Factions::getTechnology($color, 'Spirituality')]);
 //
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
@@ -625,5 +626,11 @@ trait gameStates
 		}
 //
 		$this->gamestate->nextState('nextRound');
+	}
+	function X()
+	{
+		$color = 'FF3333';
+		var_dump((json_encode(Factions::TECHNOLOGIES['Spirituality'][Factions::getTechnology($color, 'Spirituality')])));
+		Factions::setStatus($color, 'view', Factions::TECHNOLOGIES['Spirituality'][Factions::getTechnology($color, 'Spirituality')]);
 	}
 }
