@@ -26,19 +26,19 @@ $this->GOALS = [
 // Domination deck (13)
 //
 $this->DOMINATION = [
-	['type' => ACQUISITION, 'type_arg' => 0, 'nbr' => 1],
-	['type' => ALIGNMENT, 'type_arg' => 0, 'nbr' => 1],
-	['type' => CENTRAL, 'type_arg' => 0, 'nbr' => 1],
-	['type' => DEFENSIVE, 'type_arg' => 0, 'nbr' => 1],
-	['type' => DENSITY, 'type_arg' => 0, 'nbr' => 1],
-	['type' => DIPLOMATIC, 'type_arg' => 0, 'nbr' => 1],
-	['type' => ECONOMIC, 'type_arg' => 0, 'nbr' => 1],
-	['type' => ETHERIC, 'type_arg' => 0, 'nbr' => 1],
-	['type' => EXPLORATORY, 'type_arg' => 0, 'nbr' => 1],
-	['type' => GENERALSCIENTIFIC, 'type_arg' => 0, 'nbr' => 1],
-	['type' => MILITARY, 'type_arg' => 0, 'nbr' => 1],
-	['type' => SPATIAL, 'type_arg' => 0, 'nbr' => 1],
-	['type' => SPECIALSCIENTIFIC, 'type_arg' => 0, 'nbr' => 1],
+	ACQUISITION => ['type' => ACQUISITION, 'type_arg' => 0, 'nbr' => 1],
+	ALIGNMENT => ['type' => ALIGNMENT, 'type_arg' => 0, 'nbr' => 1],
+	CENTRAL => ['type' => CENTRAL, 'type_arg' => 0, 'nbr' => 1],
+	DEFENSIVE => ['type' => DEFENSIVE, 'type_arg' => 0, 'nbr' => 1],
+	DENSITY => ['type' => DENSITY, 'type_arg' => 0, 'nbr' => 1],
+	DIPLOMATIC => ['type' => DIPLOMATIC, 'type_arg' => 0, 'nbr' => 1],
+	ECONOMIC => ['type' => ECONOMIC, 'type_arg' => 0, 'nbr' => 1],
+	ETHERIC => ['type' => ETHERIC, 'type_arg' => 0, 'nbr' => 1],
+	EXPLORATORY => ['type' => EXPLORATORY, 'type_arg' => 0, 'nbr' => 1],
+	GENERALSCIENTIFIC => ['type' => GENERALSCIENTIFIC, 'type_arg' => 0, 'nbr' => 1],
+	MILITARY => ['type' => MILITARY, 'type_arg' => 0, 'nbr' => 1],
+	SPATIAL => ['type' => SPATIAL, 'type_arg' => 0, 'nbr' => 1],
+	SPECIALSCIENTIFIC => ['type' => SPECIALSCIENTIFIC, 'type_arg' => 0, 'nbr' => 1],
 ];
 //
 // Domination cards (13)
@@ -79,6 +79,8 @@ $this->STARPEOPLES = [
 	'Progenitors' => ['STO' => clienttranslate('Progenitors'), 'STS' => clienttranslate('Progenitors')],
 	'Rogue' => ['STO' => clienttranslate('Rogue AI'), 'STS' => clienttranslate('Rogue AI')],
 	'Yowies' => ['STO' => clienttranslate('Yowies'), 'STS' => clienttranslate('Yowies')],
+	'Farmers' => ['STO' => clienttranslate('Genetic Farmers')],
+	'Slavers' => ['STS' => clienttranslate('Slavers')],
 ];
 //
 // Technologies (5)

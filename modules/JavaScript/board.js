@@ -36,20 +36,23 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			for (let faction of Object.values(this.bgagame.gamedatas.factions))
 			{
-				const node = dojo.place(this.bgagame.format_block('ERApanel', {color: faction.color}), 'ERAboard');
-				const angle = 60 * faction.homeStar - 210;
-				const x = this.hexagons['0:+0+0+0'].x + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].x - this.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
-				const y = this.hexagons['0:+0+0+0'].y + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].y - this.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
-				dojo.style(node, 'position', 'absolute');
-				dojo.style(node, 'left', x + 'px');
-				dojo.style(node, 'top', y + 'px');
-				dojo.style(node, 'transform-origin', 'center');
-				dojo.style(node, 'transform', `scale(1) rotate(${angle}deg)`);
-				dojo.connect($(`ERAplayerAid-${faction.color}`), 'click', (event) => {
-					const playerAid = (1 + +dojo.getAttr(event.currentTarget, 'playerAid')) % 4;
-					dojo.style(event.currentTarget, 'background-image', `url(${g_gamethemeurl}img/playerAids/${playerAid}.jpg)`);
-					dojo.setAttr(event.currentTarget, 'playerAid', playerAid);
-				});
+				if (faction.player_id > 0)
+				{
+					const node = dojo.place(this.bgagame.format_block('ERApanel', {color: faction.color}), 'ERAboard');
+					const angle = 60 * faction.homeStar - 210;
+					const x = this.hexagons['0:+0+0+0'].x + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].x - this.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
+					const y = this.hexagons['0:+0+0+0'].y + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].y - this.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
+					dojo.style(node, 'position', 'absolute');
+					dojo.style(node, 'left', x + 'px');
+					dojo.style(node, 'top', y + 'px');
+					dojo.style(node, 'transform-origin', 'center');
+					dojo.style(node, 'transform', `scale(1) rotate(${angle}deg)`);
+					dojo.connect($(`ERAplayerAid-${faction.color}`), 'click', (event) => {
+						const playerAid = (1 + +dojo.getAttr(event.currentTarget, 'playerAid')) % 4;
+						dojo.style(event.currentTarget, 'background-image', `url(${g_gamethemeurl}img/playerAids/${playerAid}.jpg)`);
+						dojo.setAttr(event.currentTarget, 'playerAid', playerAid);
+					});
+				}
 			}
 //
 // Slider setting for zoom

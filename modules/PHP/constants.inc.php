@@ -14,6 +14,11 @@ define('ROUND', 10);
 define('GALACTICSTORY', 20);
 define('GALACTICGOAL', 21);
 //
+// Automas (2)
+//
+define('FARMERS', -1);
+define('SLAVERS', -2);
+//
 // Galacic stories (4)
 //
 define('JOURNEYS', 1);

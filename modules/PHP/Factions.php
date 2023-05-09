@@ -57,9 +57,9 @@ class Factions extends APP_GameClass
 	{
 		return self::getUniqueValueFromDB("SELECT activation FROM factions WHERE color = '$color'");
 	}
-	static function getPlayer(string $color): string
+	static function getPlayer(string $color): int
 	{
-		return self::getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'");
+		return intval(self::getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'"));
 	}
 	static function getHomeStar(string $color): int
 	{

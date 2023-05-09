@@ -13,7 +13,7 @@ class Automas extends APP_GameClass
 		{
 			case FARMERS:
 				{
-					Faction:setStatus($color, 'dice', $dice);
+					Faction::setStatus($color, 'dice', $dice);
 					switch ($dice)
 					{
 						case 1:
@@ -33,7 +33,7 @@ class Automas extends APP_GameClass
 				break;
 			case SLAVERS:
 				{
-					Faction:setStatus($color, 'dice', $dice);
+					Faction::setStatus($color, 'dice', $dice);
 					switch ($dice)
 					{
 						case 1:
@@ -64,7 +64,7 @@ class Automas extends APP_GameClass
 		{
 			case FARMERS:
 				{
-					Faction:setStatus($color, 'dice', $dice);
+					Faction::setStatus($color, 'dice', $dice);
 					switch ($dice)
 					{
 						case 1:
@@ -96,7 +96,7 @@ class Automas extends APP_GameClass
 				break;
 			case SLAVERS:
 				{
-					Faction:setStatus($color, 'dice', $dice);
+					Faction::setStatus($color, 'dice', $dice);
 					switch ($dice)
 					{
 						case 1:

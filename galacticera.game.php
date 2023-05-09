@@ -8,6 +8,7 @@ require_once('modules/PHP/Factions.php');
 require_once('modules/PHP/Sectors.php');
 require_once('modules/PHP/Counters.php');
 require_once('modules/PHP/Ships.php');
+require_once('modules/PHP/Automas.php');
 require_once('modules/PHP/gameStates.php');
 require_once('modules/PHP/gameStateArguments.php');
 require_once('modules/PHP/gameStateActions.php');

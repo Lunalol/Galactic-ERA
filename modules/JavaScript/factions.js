@@ -78,33 +78,41 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			if ('population' in faction)
 			{
-				dojo.query(`#ERApopulationTrack-${faction.color}>.ERAcounter-populationDisk`).remove();
-				for (let population = 1 + +faction.population; population < 40; population++)
+				const nodePopulationTrack = $(`ERApopulationTrack-${faction.color}`);
+				if (nodePopulationTrack)
 				{
-					let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisk', location: 'populationTrack'}), `ERApopulationTrack-${faction.color}`);
-					dojo.setAttr(node, 'population', population);
-					dojo.style(node, 'position', 'absolute');
-					if (population === 0) [x, y] = [543, 122];
-					else [x, y] = [47.7 * ((39 - population) % 13) - 78, 81 * (Math.floor((39 - population) / 13)) - 40];
-					dojo.style(node, 'left', x + 'px');
-					dojo.style(node, 'top', y + 'px');
-					dojo.style(node, 'transform', 'scale(20%)');
+					dojo.query('.ERAcounter-populationDisk', nodePopulationTrack).remove();
+					for (let population = 1 + +faction.population; population < 40; population++)
+					{
+						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisk', location: 'populationTrack'}), nodePopulationTrack);
+						dojo.setAttr(node, 'population', population);
+						dojo.style(node, 'position', 'absolute');
+						if (population === 0) [x, y] = [543, 122];
+						else [x, y] = [47.7 * ((39 - population) % 13) - 78, 81 * (Math.floor((39 - population) / 13)) - 40];
+						dojo.style(node, 'left', x + 'px');
+						dojo.style(node, 'top', y + 'px');
+						dojo.style(node, 'transform', 'scale(20%)');
+					}
 				}
 				$(`ERApopulation-${faction.color}`).innerHTML = dojo.query(`#ERApopulationTrack-${faction.color}>.ERAcounter-populationDisk`).length;
 			}
 //
-			for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
+			const nodeTechnologiesTrack = $(`ERAtechTrack-${faction.color}`);
+			if (nodeTechnologiesTrack)
 			{
-				if (technology in faction)
+				for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
 				{
-					dojo.query(`#ERAtechTrack-${faction.color}>.ERAcounter-cube[location='${technology}']`).remove();
-					let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-technology', color: faction.color, type: 'cube', location: technology}), `ERAtechTrack-${faction.color}`);
-					dojo.setAttr(node, 'title', _(technology) + ' ' + faction[technology]);
-					dojo.setAttr(node, 'level', faction[technology]);
-					dojo.style(node, 'position', 'absolute');
-					dojo.style(node, 'top', (['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'].indexOf(technology) * 92.5 + 85) + 'px');
-					dojo.style(node, 'left', [0, 55, 119, 193, 281, 388, 519][faction[technology]] + 'px');
-					dojo.style(node, 'transform', 'scale(75%)');
+					if (technology in faction)
+					{
+						dojo.query(`.ERAcounter-cube[location='${technology}']`, nodeTechnologiesTrack).remove();
+						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-technology', color: faction.color, type: 'cube', location: technology}), nodeTechnologiesTrack);
+						dojo.setAttr(node, 'title', _(technology) + ' ' + faction[technology]);
+						dojo.setAttr(node, 'level', faction[technology]);
+						dojo.style(node, 'position', 'absolute');
+						dojo.style(node, 'top', (['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'].indexOf(technology) * 92.5 + 85) + 'px');
+						dojo.style(node, 'left', [0, 55, 119, 193, 281, 388, 519][faction[technology]] + 'px');
+						dojo.style(node, 'transform', 'scale(75%)');
+					}
 				}
 			}
 			dojo.query(`#ERAtechnologies-${faction.color} .ERAtechnology`).forEach((node) => {

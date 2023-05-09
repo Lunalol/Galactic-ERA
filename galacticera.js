@@ -36,6 +36,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			for (let faction of Object.values(gamedatas.factions))
 			{
+				if (faction.player_id < 0)
+				{
+					dojo.place(`<div class='player-board' id='player_board_${faction.player_id}'/></div>`, 'player_boards');
+				}
 //
 // Setup player panels
 //

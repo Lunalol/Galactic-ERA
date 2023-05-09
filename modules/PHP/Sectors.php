@@ -1385,6 +1385,8 @@ class Sectors extends APP_GameClass
 		switch ($playersNumber)
 		{
 			case 1:
+				$locations = [1];
+				break;
 			case 2:
 			case 3:
 				$index = random_int(0, 5);
@@ -1422,8 +1424,12 @@ class Sectors extends APP_GameClass
 				$next = $location === 6 ? 1 : $location + 1;
 				if (!array_search($next, $setup))
 				{
-					Counters::create('neutral', 'wormhole', self::WORMHOLES[$location]['next']);
-					Counters::create('neutral', 'wormhole', self::WORMHOLES[$next === 6 ? 1 : $next + 1]['previous']);
+					$next2 = $next === 6 ? 1 : $next + 1;
+					if (array_search($next2, $setup))
+					{
+						Counters::create('neutral', 'wormhole', self::WORMHOLES[$location]['next']);
+						Counters::create('neutral', 'wormhole', self::WORMHOLES[$next2]['previous']);
+					}
 				}
 			}
 		}
@@ -1473,8 +1479,12 @@ class Sectors extends APP_GameClass
 			$next = $location[0] === '6' ? 1 : $location[0] + 1;
 			if (!in_array($next, $sectors))
 			{
-				$next_location = self::WORMHOLES[$next === 6 ? 1 : $next + 1]['previous'];
-				$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+				$next2 = $next === 6 ? 1 : $next + 1;
+				if (in_array($next2, $sectors))
+				{
+					$next_location = self::WORMHOLES[$next2]['previous'];
+					$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+				}
 			}
 		}
 		if (in_array($location, array_column(self::WORMHOLES, 'previous')))
@@ -1482,8 +1492,12 @@ class Sectors extends APP_GameClass
 			$next = $location[0] === '1' ? 6 : $location[0] - 1;
 			if (!in_array($next, $sectors))
 			{
-				$next_location = self::WORMHOLES[$next === 1 ? 6 : $next - 1]['next'];
-				$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+				$next2 = $next === 1 ? 6 : $next - 1;
+				if (in_array($next2, $sectors))
+				{
+					$next_location = self::WORMHOLES[$next2]['next'];
+					$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+				}
 			}
 		}
 //

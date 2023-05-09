@@ -18,6 +18,8 @@ class Players extends APP_GameClass
 	}
 	static function getName(int $player_id): string
 	{
+		if ($player_id === FARMERS) return clienttranslate('Farmers');
+		if ($player_id === SLAVERS) return clienttranslate('Slavers');
 		return self::getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $player_id");
 	}
 }

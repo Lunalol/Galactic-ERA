@@ -106,7 +106,7 @@ $machinestates = [
 		'name' => 'movementCombatPhase',
 		'type' => 'game',
 		'action' => 'stMovementCombatPhase',
-		'transitions' => ['nextPlayer' => 210, 'next' => 300]
+		'transitions' => ['continue' => 200, 'nextPlayer' => 210, 'next' => 300]
 	],
 	210 => [
 		'name' => 'fleets',
@@ -166,7 +166,7 @@ $machinestates = [
 		'name' => 'growthActions',
 		'type' => 'game',
 		'action' => 'stGrowthActions',
-		'transitions' => ['nextPlayer' => 410, 'next' => 500]
+		'transitions' => ['continue' => 400, 'nextPlayer' => 410, 'next' => 500]
 	],
 	410 => [
 		'name' => 'resolveGrowthActions',

@@ -244,16 +244,19 @@ trait gameStateActions
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 	}
-	function acResearch(string $color, string $technology): void
+	function acResearch(string $color, string $technology, bool $automa = false): void
 	{
-		$this->checkAction('research');
+		if (!$automa)
+		{
+			$this->checkAction('research');
 //
-		$player_id = self::getCurrentPlayerId();
-		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+			$player_id = self::getCurrentPlayerId();
+			if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if (!in_array('research', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'research');
-		if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
+			if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+			if (!in_array('research', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'research');
+			if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
+		}
 //
 		if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
 		$level = Factions::gainTechnology($color, $technology);
@@ -270,7 +273,7 @@ trait gameStateActions
 		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research', $technology])));
 //
-		$this->gamestate->nextState('continue');
+		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acGainStar(string $color, string $location): void
 	{

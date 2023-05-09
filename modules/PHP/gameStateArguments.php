@@ -12,9 +12,12 @@ trait gameStateArguments
 		foreach (Factions::list() as $color)
 		{
 			$player_id = Factions::getPlayer($color);
-			$private[$player_id]['color'] = $color;
-			$private[$player_id]['starPeople'] = Factions::getStatus($color, 'starPeople');
-			$private[$player_id]['alignment'] = false;
+			if ($player_id > 0)
+			{
+				$private[$player_id]['color'] = $color;
+				$private[$player_id]['starPeople'] = Factions::getStatus($color, 'starPeople');
+				$private[$player_id]['alignment'] = false;
+			}
 		}
 //
 		return ['_private' => $private];
@@ -25,9 +28,12 @@ trait gameStateArguments
 		foreach (Factions::list() as $color)
 		{
 			$player_id = Factions::getPlayer($color);
-			$private[$player_id]['color'] = $color;
-			$private[$player_id]['starPeople'] = [Factions::getStarPeople($color)];
-			$private[$player_id]['alignment'] = Factions::getStatus($color, 'alignment');
+			if ($player_id > 0)
+			{
+				$private[$player_id]['color'] = $color;
+				$private[$player_id]['starPeople'] = [Factions::getStarPeople($color)];
+				$private[$player_id]['alignment'] = Factions::getStatus($color, 'alignment');
+			}
 		}
 //
 		return ['_private' => $private];
@@ -47,7 +53,6 @@ trait gameStateArguments
 		$color = Factions::getActive();
 		$player_id = Factions::getPlayer($color);
 //
-		$available = Ships::FLEETS;
 		$this->possible = ['ships' => [], 'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0]), 'view' => Factions::getStatus($color, 'view')];
 		foreach (Ships::getAll($color) as $ship)
 		{
@@ -89,9 +94,12 @@ trait gameStateArguments
 		foreach (Factions::list() as $color)
 		{
 			$player_id = Factions::getPlayer($color);
-			$private[$player_id]['color'] = $color;
-			$private[$player_id]['counters'] = Factions::getStatus($color, 'counters');
-			$private[$player_id]['N'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+			if ($player_id > 0)
+			{
+				$private[$player_id]['color'] = $color;
+				$private[$player_id]['counters'] = Factions::getStatus($color, 'counters');
+				$private[$player_id]['N'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+			}
 		}
 //
 		return ['_private' => $private];
@@ -104,47 +112,50 @@ trait gameStateArguments
 			$counters = Factions::getStatus($color, 'counters');
 //
 			$player_id = Factions::getPlayer($color);
-			$private[$player_id]['color'] = $color;
-			$private[$player_id]['counters'] = $counters;
-//
-			foreach ($counters as $counter)
+			if ($player_id > 0)
 			{
-				switch ($counter)
-				{
-					case 'reseach':
-						break;
-					case 'gainStar':
-						{
-							$private[$player_id]['gainStar'] = [];
-							foreach (Ships::getAll($color) as $ship)
-							{
-								$star = Counters::getAtLocation($ship['location'], 'star');
-								if ($star) $private[$player_id]['gainStar'][$ship['location']] = $star;
-							}
-						}
-						break;
-					case 'growPopulation':
-						{
-							$private[$player_id]['growPopulation'] = [];
-							foreach (Counters::getPopulation($color) as $location => $population) $private[$player_id]['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
-							$private[$player_id]['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
-						}
-						break;
-					case 'buildShips':
-						{
-							$private[$player_id]['buildShips'] = [];
-							foreach (Counters::getPopulation($color) as $location => $population) if ($population >= Factions::TECHNOLOGIES['ShipYards'][Factions::getTechnology($color, 'Robotics')]) $private[$player_id]['buildShips'][] = $location;
+				$private[$player_id]['color'] = $color;
+				$private[$player_id]['counters'] = $counters;
 //
-							$build = 0;
-							foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $build++;
-							foreach (Factions::BUILD as $population)
+				foreach ($counters as $counter)
+				{
+					switch ($counter)
+					{
+						case 'reseach':
+							break;
+						case 'gainStar':
 							{
-								if ($population > Factions::getPopulation($color)) break;
-								$build++;
+								$private[$player_id]['gainStar'] = [];
+								foreach (Ships::getAll($color) as $ship)
+								{
+									$star = Counters::getAtLocation($ship['location'], 'star');
+									if ($star) $private[$player_id]['gainStar'][$ship['location']] = $star;
+								}
 							}
-							$private[$player_id]['newShips'] = $build + Factions::TECHNOLOGIES['Robotics'][Factions::getTechnology($color, 'Robotics')];
-						}
-						break;
+							break;
+						case 'growPopulation':
+							{
+								$private[$player_id]['growPopulation'] = [];
+								foreach (Counters::getPopulation($color) as $location => $population) $private[$player_id]['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
+								$private[$player_id]['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
+							}
+							break;
+						case 'buildShips':
+							{
+								$private[$player_id]['buildShips'] = [];
+								foreach (Counters::getPopulation($color) as $location => $population) if ($population >= Factions::TECHNOLOGIES['ShipYards'][Factions::getTechnology($color, 'Robotics')]) $private[$player_id]['buildShips'][] = $location;
+//
+								$build = 0;
+								foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $build++;
+								foreach (Factions::BUILD as $population)
+								{
+									if ($population > Factions::getPopulation($color)) break;
+									$build++;
+								}
+								$private[$player_id]['newShips'] = $build + Factions::TECHNOLOGIES['Robotics'][Factions::getTechnology($color, 'Robotics')];
+							}
+							break;
+					}
 				}
 			}
 		}
