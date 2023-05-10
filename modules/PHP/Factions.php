@@ -30,7 +30,7 @@ class Factions extends APP_GameClass
 	}
 	static function list(): array
 	{
-		return self::getObjectListFromDB("SELECT color FROM factions ORDER by `order`", true);
+		return self::getObjectListFromDB("SELECT color FROM factions ORDER BY `order`", true);
 	}
 	static function getAllDatas(): array
 	{
@@ -89,6 +89,10 @@ class Factions extends APP_GameClass
 	static function setStarPeople(string $color, string $starPeople): void
 	{
 		self::dbQuery("UPDATE factions SET starPeople = '$starPeople' WHERE color = '$color'");
+	}
+	static function getByOrder(int $order): string
+	{
+		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE `order` = $order");
 	}
 	static function getOrder(string $color): int
 	{

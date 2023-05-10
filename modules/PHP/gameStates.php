@@ -613,32 +613,53 @@ trait gameStates
 	}
 	function stChangeTurnOrder()
 	{
-		foreach (Factions::list() as $color)
+		$factions = Factions::list();
+		foreach ($factions as $color)
 		{
 			$counters = Factions::getStatus($color, 'counters');
 			if (in_array('changeTurnOrderUp', $counters))
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} goes <B>up</B> in turn order'), [
+				$this->notifyAllPlayers('msg', clienttranslate('${player_name} goes <B>up</B> in turn order'), [
 					'player_name' => Players::getName(Factions::getPlayer($color)),
-					'faction' => ['color' => $color, 'order' => Factions::getOrder($color)]
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
+				$order = Factions::getOrder($color) - 1;
+				if ($order >= 1)
+				{
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => Factions::getByOrder($order), 'order' => $order + 1]]);
+					$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'order' => $order]]);
+					Factions::setOrder(Factions::getByOrder($order), $order + 1);
+					Factions::setOrder($color, $order);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
 				unset($counters[array_search('changeTurnOrderUp', $counters)]);
 				Factions::setStatus($color, 'counters', array_values($counters));
 			}
+		}
+		foreach (array_reverse($factions) as $color)
+		{
+			$counters = Factions::getStatus($color, 'counters');
 			if (in_array('changeTurnOrderDown', $counters))
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} goes <B>down</B> in turn order'), [
+				$this->notifyAllPlayers('msg', clienttranslate('${player_name} goes <B>down</B> in turn order'), [
 					'player_name' => Players::getName(Factions::getPlayer($color)),
-					'faction' => ['color' => $color, 'order' => Factions::getOrder($color)]
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$counters = Factions::getStatus($color, 'counters');
+				$order = Factions::getOrder($color) + 1;
+				if ($order <= sizeof($factions))
+				{
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => Factions::getByOrder($order), 'order' => $order - 1]]);
+					$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'order' => $order]]);
+					Factions::setOrder(Factions::getByOrder($order), $order - 1);
+					Factions::setOrder($color, $order);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
 				unset($counters[array_search('changeTurnOrderDown', $counters)]);
 				Factions::setStatus($color, 'counters', array_values($counters));
-//				Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['changeTurnOrderDown'])));
 			}
 		}
 		$this->gamestate->nextState('next');
