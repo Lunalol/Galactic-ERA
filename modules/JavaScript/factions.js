@@ -124,11 +124,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					node.innerHTML = html;
 				}
 			});
-			if ('order' in faction)
-			{
-				$(`ERApopulation-${faction.color}`).innerHTML = faction.order;
-//				dojo.setAttr(`ERAorder-${faction.color}`, 'order', faction.order);
-			}
+			if ('order' in faction) dojo.setAttr(`ERAorder-${faction.color}`, 'order', faction.order);
 		}
 	}
 	);

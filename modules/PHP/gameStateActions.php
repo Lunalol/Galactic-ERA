@@ -260,6 +260,13 @@ trait gameStateActions
 //
 		if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
 		$level = Factions::gainTechnology($color, $technology);
+//
+// GREYS SPECIAL STO & STS: When you research a technology at level 1 you increase it to level 3.
+//
+		if (Factions::getStarPeople($color) === 'Greys' && Factions::getTechnology($color, $technology) === 1)
+		{
+			$level = Factions::gainTechnology($color, $technology);
+		}
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
 			'player_name' => Players::getName(Factions::getPlayer($color)),
@@ -469,6 +476,23 @@ trait gameStateActions
 		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
 //
+// Scoring
+//
+		$galacticStory = self::getGameStateValue('galacticStory');
+		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
+//
+// RIVALRY First: All players score 1 DP for every Gain Star action they do in this era.
+//
+		if ($era === 'First' && $galacticStory === RIVALRY)
+		{
+			Factions::gainDP($color, 1);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
+				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
 		$this->gamestate->nextState('continue');
 	}
 	function acGrowPopulation(string $color, array $locations, array $locationsBonus): void
@@ -514,6 +538,24 @@ trait gameStateActions
 		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['growPopulation'])));
 //
+// Scoring
+//
+		$galacticStory = self::getGameStateValue('galacticStory');
+		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
+//
+// MIGRATIONS First: All players score 3 DP for every Grow Population action they do in this era.
+// Only Grow Population actions that generated at least one additional population are counted.
+//
+		if ($era === 'First' && $galacticStory === MIGRATIONS && (sizeof($locations) + sizeof($locationsBonus) > 0))
+		{
+			Factions::gainDP($color, 3);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('updateFaction', _('${player_name} gains 3 DP'), [
+				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
 		$this->gamestate->nextState('continue');
 	}
 	function acBuildShips(string $color, array $locations): void
@@ -543,6 +585,23 @@ trait gameStateActions
 		unset($counters[array_search('buildShips', $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['buildShips'])));
+//
+// Scoring
+//
+		$galacticStory = self::getGameStateValue('galacticStory');
+		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
+//
+// WARS First: All players score 2 DP for every Build Ships action they do in this era.
+//
+		if ($era === 'First' && $galacticStory === WARS)
+		{
+			Factions::gainDP($color, 2);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('updateFaction', _('${player_name} gains 2 DP'), [
+				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
 //
 		$this->gamestate->nextState('continue');
 	}

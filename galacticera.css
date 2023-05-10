@@ -380,23 +380,59 @@ div,img {
 .ERAship[fleet].ERAship-FF3333 {
 	background-position-x: -3941px;
 }
+.ERAship[fleet].ERAship-00CC00[fleet='A'] {
+	background-position-x: -2447px;
+}
+.ERAship[fleet].ERAship-00CC00[fleet='B'] {
+	background-position-x: -2512px;
+}
+.ERAship[fleet].ERAship-00CC00[fleet='C'] {
+	background-position-x: -2577px;
+}
+.ERAship[fleet].ERAship-00CC00[fleet='D'] {
+	background-position-x: -2642px;
+}
+.ERAship[fleet].ERAship-00CC00[fleet='E'] {
+	background-position-x: -2707px;
+}
+.ERAship[fleet].ERAship-00CC00 {
+	background-position-x: -2772px;
+}
+.ERAship[fleet].ERAship-6666FF[fleet='A'] {
+	background-position-x: -2837px;
+}
+.ERAship[fleet].ERAship-6666FF[fleet='B'] {
+	background-position-x: -2902px;
+}
+.ERAship[fleet].ERAship-6666FF[fleet='C'] {
+	background-position-x: -2967px;
+}
+.ERAship[fleet].ERAship-6666FF[fleet='D'] {
+	background-position-x: -3032px;
+}
+.ERAship[fleet].ERAship-6666FF[fleet='E'] {
+	background-position-x: -3097px;
+}
+.ERAship[fleet].ERAship-6666FF {
+	background-position-x: -3162px;
+}
 .ERAship[fleet].ERAship-FFFF00[fleet='A'] {
-	background-position: -8015px 0;
+	background-position-x: -8015px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='B'] {
-	background-position: -8145px 0;
+	background-position-x: -8145px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='C'] {
-	background-position: -8405px 0;
+	background-position-x: -8405px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='D'] {
-	background-position: -8535px 0;
+	background-position-x: -8535px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='E'] {
-	background-position: -8665px 0;
+	background-position-x: -8665px;
 }
-.ERAship[fleet].ERAship-FF0000 {
-	background-position: -8275px 0;
+.ERAship[fleet].ERAship-FFFF00 {
+	background-position-x: -8275px;
 }
 /* </editor-fold> */
 
@@ -684,24 +720,6 @@ div,img {
 .ERAship[fleet].ue_E {
 	background-position: -4765px 0;
 }
-.ERAship[fleet].counters_green_A {
-	background-position: -4895px 0;
-}
-.ERAship[fleet].counters_green_B {
-	background-position: -5025px 0;
-}
-.ERAship[fleet].counters_green_back {
-	background-position: -5155px 0;
-}
-.ERAship[fleet].counters_green_C {
-	background-position: -5285px 0;
-}
-.ERAship[fleet].counters_green_D {
-	background-position: -5415px 0;
-}
-.ERAship[fleet].counters_green_E {
-	background-position: -5545px 0;
-}
 .ERAship[fleet].counters_magenta_A {
 	background-position: -5675px 0;
 }
@@ -859,33 +877,36 @@ div,img {
 */
 .ERAorder
 {
-	bottom: 0px;
-	right: 0px;
-	opacity: .5;
-	transform-origin: right bottom;
-	width: 177px;
-	height: 177px;
+	width: 89px;
+	height: 89px;
+}
+.ERAsmallOrder{
+	display: inline-block;
+	width: 22px;
+	height: 22px;
+	transform: scale(25%);
+	transform-origin: left top;
 }
 .ERAorder[order='?'] {
 	display: none;
 }
 .ERAorder[order='1'] {
-	background-position: -14135px 0;
+	background-position-x: -7067px;
 }
 .ERAorder[order='2'] {
-	background-position: -14312px 0;
+	background-position-x: -7156px;
 }
 .ERAorder[order='3'] {
-	background-position: -14489px 0;
+	background-position-x: -7245px;
 }
 .ERAorder[order='4'] {
-	background-position: -14666px 0;
+	background-position-x: -7334px;
 }
 .ERAorder[order='5'] {
-	background-position: -14843px 0;
+	background-position-x: -7423px;
 }
 .ERAorder[order='6'] {
-	background-position: -15020px 0;
+	background-position-x: -7512px;
 }
 /*
 // Stars (3)

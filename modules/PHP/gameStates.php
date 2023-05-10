@@ -154,10 +154,10 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		$starPeoples = array_keys($this->STARPEOPLES);
 // Automas
-		unset($starPeoples['Farmers']);
-		unset($starPeoples['Slavers']);
+		unset($starPeoples[array_search('Farmers', $starPeoples)]);
+		unset($starPeoples[array_search('Slavers', $starPeoples)]);
 // Two-Player Game: Remove the “ICC” star people tile
-		if (self::getPlayersNumber() === 2) unset($starPeoples['ICC']);
+		if (self::getPlayersNumber() === 2) unset($starPeoples[array_search('ICC', $starPeoples)]);
 //
 		shuffle($starPeoples);
 		foreach (Factions::list() as $color)
@@ -234,7 +234,7 @@ trait gameStates
 			switch ($starPeople)
 			{
 				case 'Anchara':
-// SPECIAL STO: Start with 2 additional DP.
+// ANCHARA SPECIAL STO: Start with 2 additional DP.
 					if ($alignment === 'STO')
 					{
 						Factions::gainDP($color, 2);
@@ -243,7 +243,7 @@ trait gameStates
 						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 DP</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
-// SPECIAL STS: Start with 2 additional ships.
+// ANCHARA SPECIAL STS: Start with 2 additional ships.
 					if ($alignment === 'STS')
 					{
 						for ($i = 0; $i < 3; $i++)
@@ -270,7 +270,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 				case 'Avians':
-// SPECIAL STO & STS: Start with Spirituality level 2 and Propulsion level 2.
+// AVIANS SPECIAL STO & STS: Start with Spirituality level 2 and Propulsion level 2.
 					foreach ([['Spirituality', 2], ['Propulsion', 2]] as [$technology, $level])
 					{
 						Factions::setTechnology($color, $technology, $level);
@@ -319,7 +319,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 				case 'Greys':
-// SPECIAL STO: Start with 1 ship less than normal.
+// GREYS SPECIAL STO: Start with 1 ship less than normal.
 					if ($alignment === 'STO')
 					{
 						$ships = Ships::getAll($color);
@@ -332,7 +332,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 						Ships::destroy($shipID);
 					}
-// SPECIAL STS: Start with 1 extra ship.
+// GREYS SPECIAL STS: Start with 1 extra ship.
 					if ($alignment === 'STS')
 					{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -596,6 +596,11 @@ trait gameStates
 			if (in_array('switchAlignment', $counters))
 			{
 				Factions::switchAlignment($color);
+//
+// ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter,
+// then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost.
+// To do Research, you must have already chosen a technology for your square counter choice
+//
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
 					'player_name' => Players::getName(Factions::getPlayer($color)),
@@ -695,8 +700,112 @@ trait gameStates
 			'round' => $round
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
+//
+// Scoring
+//
+		$galacticStory = self::getGameStateValue('galacticStory');
+		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][$round];
+//
 		foreach (Factions::list() as $color)
 		{
+			$alignment = Factions::getAlignment($color);
+//
+			switch ($era)
+			{
+				case 'First':
+					{
+// Every player with the STO alignment at the end of a round scores 1 DP.
+						if ($alignment === 'STO')
+						{
+							Factions::gainDP($color, 1);
+//* -------------------------------------------------------------------------------------------------------- */
+							$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
+								'player_name' => Players::getName(Factions::getPlayer($color)),
+								'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						switch ($galacticStory)
+						{
+							case JOURNEYS:
+								throw new BgaVisibleSystemException('Galactic story JOURNEYS not implemented');
+								break;
+							case MIGRATIONS:
+// All players score 3 DP for every Grow Population action they do in this era.
+// Only Grow Population actions that generated at least one additional population are counted.
+								break;
+							case RIVALRY:
+// All players score 1 DP for every Gain Star action they do in this era.
+								break;
+							case WARS:
+// All players score 2 DP for every Build Ships action they do in this era.
+								break;
+						}
+					}
+					break;
+				case 'Second':
+					{
+// Every player with the STS alignment at the end of a round scores 1 DP.
+						if ($alignment === 'STS')
+						{
+							Factions::gainDP($color, 1);
+//* -------------------------------------------------------------------------------------------------------- */
+							$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
+								'player_name' => Players::getName(Factions::getPlayer($color)),
+								'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						throw new BgaVisibleSystemException('Second Era not implemented');
+						switch ($galacticStory)
+						{
+							case JOURNEYS:
+								throw new BgaVisibleSystemException('Galactic story JOURNEYS not implemented');
+								break;
+							case MIGRATIONS:
+								throw new BgaVisibleSystemException('Galactic story MIGRATIONS not implemented');
+								break;
+							case RIVALRY:
+								throw new BgaVisibleSystemException('Galactic story RIVALRY not implemented');
+								break;
+							case WARS:
+								throw new BgaVisibleSystemException('Galactic story WARS not implemented');
+								break;
+						}
+					}
+					break;
+				case 'Third':
+					{
+// Every player with the STO alignment at the end of a round scores 1 DP.
+						if ($alignment === 'STO')
+						{
+							Factions::gainDP($color, 1);
+//* -------------------------------------------------------------------------------------------------------- */
+							$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
+								'player_name' => Players::getName(Factions::getPlayer($color)),
+								'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						throw new BgaVisibleSystemException('Third Era not implemented');
+						switch ($galacticStory)
+						{
+							case JOURNEYS:
+								throw new BgaVisibleSystemException('Galactic story JOURNEYS not implemented');
+								break;
+							case MIGRATIONS:
+								throw new BgaVisibleSystemException('Galactic story MIGRATIONS not implemented');
+								break;
+							case RIVALRY:
+								throw new BgaVisibleSystemException('Galactic story RIVALRY not implemented');
+								break;
+							case WARS:
+								throw new BgaVisibleSystemException('Galactic story WARS not implemented');
+								break;
+						}
+					}
+					break;
+			}
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
 			Factions::setStatus($color, 'counters');
 			Factions::setStatus($color, 'used');
 			Factions::setStatus($color, 'bonus');
