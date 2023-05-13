@@ -165,4 +165,15 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function trade()
+	{
+		self::setAjaxMode();
+//
+		$from = self::getArg("from", AT_alphanum, true);
+		$to = self::getArg("to", AT_alphanum, true);
+		$technology = self::getArg("technology", AT_alphanum, true);
+		$this->game->acTrade($from, $to, $technology);
+//
+		self::ajaxResponse("");
+	}
 }

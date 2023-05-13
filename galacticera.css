@@ -22,6 +22,11 @@ div,img {
 	visibility: hidden;
 }
 
+.ERAdisabled {
+	pointer-events: none !important;
+	filter: grayscale(1) !important;
+}
+
 /* <editor-fold defaultstate="collapsed" desc="Logs"> */
 .ERA-phase {
 	display: block;
@@ -564,8 +569,11 @@ div,img {
 	filter:brightness(2.0);
 	transition: filter .25s, transform .25s;
 }
+.ERAcounter.ERAselectable {
+	pointer-events: all;
+}
 .ERAcounter:not(.ERAselectable) {
-	filter:brightness(1.0);
+	filter:brightness(75%);
 	transition: filter .25s, transform .25s;
 }
 
@@ -940,6 +948,7 @@ div,img {
 .ERAcounter-technology.ERAselected {
 	transform: scale(125%);
 	transition: filter .25s, transform .25s;
+	z-index: 500;
 }
 .ERAcounter-technology[counter='Genetics'] {
 	background-position-x: -7837px;

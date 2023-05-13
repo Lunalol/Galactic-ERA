@@ -691,20 +691,33 @@ trait gameStates
 		$this->gamestate->changeActivePlayer($player_id);
 		$this->gamestate->nextState('nextPlayer');
 	}
-	function stEndOfRound()
+	function stTradingPhase()
 	{
-		$round = self::getGameStateValue('round');
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log} ${round}/8</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('End of round'),
-			'round' => $round
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+			'i18n' => ['log'], 'log' => clienttranslate('Trading Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
-//
-// Scoring
-//
+		$players = [];
+		foreach (Factions::list() as $color)
+		{
+			$inContact = Factions::inContact($color);
+			Factions::setStatus($color, 'inContact', $inContact);
+			if ($inContact) $players[] = Factions::getPlayer($color);
+			Factions::setStatus($color, 'trade', []);
+		}
+		if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;
+		$this->gamestate->nextState('tradingPhase');
+	}
+	function stScoringPhase()
+	{
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+			'i18n' => ['log'], 'log' => clienttranslate('Scoring Phase')
+		]);
+//* -------------------------------------------------------------------------------------------------------- */
 		$galacticStory = self::getGameStateValue('galacticStory');
-		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][$round];
+		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
 //
 		foreach (Factions::list() as $color)
 		{
@@ -719,15 +732,23 @@ trait gameStates
 						{
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
-								'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
+								'player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						switch ($galacticStory)
 						{
 							case JOURNEYS:
-								throw new BgaVisibleSystemException('Galactic story JOURNEYS not implemented');
+// All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game).
+								$inContact = Factions::getStatus($color, 'contact');
+								if ($inContact)
+								{
+									Factions::gainDP($color, size($inContact));
+//* -------------------------------------------------------------------------------------------------------- */
+									$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
+										'player_name' => Players::getName(Factions::getPlayer($color))]);
+//* -------------------------------------------------------------------------------------------------------- */
+								}
 								break;
 							case MIGRATIONS:
 // All players score 3 DP for every Grow Population action they do in this era.
@@ -749,9 +770,8 @@ trait gameStates
 						{
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
-								'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
+								'player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						throw new BgaVisibleSystemException('Second Era not implemented');
@@ -779,9 +799,8 @@ trait gameStates
 						{
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
-								'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+							$this->notifyAllPlayers('msg', _('${player_name} gains 1 DP'), [
+								'player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						throw new BgaVisibleSystemException('Third Era not implemented');
@@ -806,9 +825,26 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+		$this->gamestate->nextState('next');
+	}
+	function stEndOfRound()
+	{
+		$round = self::getGameStateValue('round');
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log} ${round}/8</span>', [
+			'i18n' => ['log'], 'log' => clienttranslate('End of round'),
+			'round' => $round
+		]);
+//* -------------------------------------------------------------------------------------------------------- */
+		foreach (Factions::list() as $color)
+		{
 			Factions::setStatus($color, 'counters');
 			Factions::setStatus($color, 'used');
 			Factions::setStatus($color, 'bonus');
+			Factions::setStatus($color, 'contact');
+			Factions::setStatus($color, 'trade');
 		}
 //
 		$this->gamestate->nextState('nextRound');

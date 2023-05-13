@@ -174,14 +174,30 @@ trait gameStateArguments
 //
 		return ['_private' => $private, 'active' => $color, 'counters' => $counters];
 	}
-	function argBonusPopulation()
+	function argTradingPhase()
 	{
-		$color = Factions::getActive();
-		$player_id = Factions::getPlayer($color);
-//
-		$this->possible = ['bonusPopulation' => Counters::getPopulation($color)];
-		$bonus = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
-//
-		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'bonus' => $bonus];
+		$private = [];
+		foreach (Factions::list() as $color)
+		{
+			$player_id = Factions::getPlayer($color);
+			if ($player_id > 0)
+			{
+				$private[$player_id]['color'] = $color;
+				$private[$player_id]['trade'][$color] = Factions::getStatus($color, 'trade');
+				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($color, $technology);
+				foreach (Factions::getStatus($color, 'inContact') as $otherColor)
+				{
+					if ($this->gamestate->isPlayerActive(Factions::getPlayer($otherColor)))
+					{
+						$private[$player_id]['trade'][$otherColor] = Factions::getStatus($otherColor, 'trade');
+						foreach (array_keys($this->TECHNOLOGIES) as $technology)
+						{
+							$private[$player_id]['inContact'][$otherColor][$technology] = Factions::getTechnology($otherColor, $technology);
+						}
+					}
+				}
+			}
+		}
+		return ['_private' => $private];
 	}
 }

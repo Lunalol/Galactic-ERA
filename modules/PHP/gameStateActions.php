@@ -227,8 +227,8 @@ trait gameStateActions
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 		Factions::setActivation($color, 'done');
-		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 		foreach (Ships::getAll($color) as $ship) foreach (array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, $ship['location'], $counter);
 //
 		$this->gamestate->nextState('next');
@@ -351,7 +351,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
 					'PLANET' => [
-						'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+						'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 						'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
 					],
 					'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
@@ -487,7 +487,7 @@ trait gameStateActions
 		{
 			Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', _('${player_name} gains 1 DP'), [
+			$this->notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -512,7 +512,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
 				'PLANET' => [
-					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
 				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -525,7 +525,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
 				'PLANET' => [
-					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
 				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -550,7 +550,7 @@ trait gameStateActions
 		{
 			Factions::gainDP($color, 3);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', _('${player_name} gains 3 DP'), [
+			$this->notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => 3,
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -597,11 +597,64 @@ trait gameStateActions
 		{
 			Factions::gainDP($color, 2);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', _('${player_name} gains 2 DP'), [
+			$this->notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s) '), ['DP' => 2,
 				'player_name' => Players::getName(Factions::getPlayer($color)),
 				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
+//
+		$this->gamestate->nextState('continue');
+	}
+	function acTrade(string $from, string $to, string $technology)
+	{
+		$this->checkAction('trade');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($from)) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
+//
+		$fromStatus = Factions::getStatus($from, 'trade');
+//
+		if ($technology === 'accept')
+		{
+			if (!array_key_exists($to, $fromStatus)) throw new BgaUserException(self::_('You must choose what you are getting'));
+			$toStatus = Factions::getStatus($to, 'trade');
+			if (!array_key_exists($from, $toStatus)) throw new BgaUserException(self::_('Other player must choose what you are teaching'));
+//
+			foreach ([$from => $fromStatus[$to], $to => $toStatus[$from]] as $color => $technology)
+			{
+				if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+				$level = Factions::gainTechnology($color, $technology);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+					'player_name' => Players::getName(Factions::getPlayer($color)),
+					'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+					'faction' => ['color' => $color, $technology => $level]
+				]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+			$this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($from), 'next');
+			$this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($to), 'next');
+			if (sizeof($this->gamestate->getActivePlayerList()) < 2) $this->gamestate->setAllPlayersNonMultiactive('next');
+			else $this->gamestate->nextState('continue');
+			return;
+		}
+		if (!$to)
+		{
+			$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
+			if (sizeof($this->gamestate->getActivePlayerList()) < 2) $this->gamestate->setAllPlayersNonMultiactive('next');
+			else $this->gamestate->nextState('continue');
+			return;
+		}
+		if ($technology === 'reset') unset($fromStatus[$to]);
+		else if (array_key_exists($to, $fromStatus))
+		{
+			$old = $fromStatus[$to];
+			unset($fromStatus[$to]);
+			if ($technology !== $old) $fromStatus[$to] = $technology;
+		}
+		else $fromStatus[$to] = $technology;
+//
+		Factions::setStatus($from, 'trade', $fromStatus);
 //
 		$this->gamestate->nextState('continue');
 	}

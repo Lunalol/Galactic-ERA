@@ -290,7 +290,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					}
 				}
 				if (stateName === 'individualChoice') dojo.query('#ERAchoice .ERAcounter-technology').addClass('ERAselectable');
-				else dojo.query('#ERAchoice .ERAcounter-technology').style('filter', research ? '' : 'grayscale(1)');
+//				else dojo.query('#ERAchoice .ERAcounter-technology').style('filter', research ? '' : 'grayscale(1)');
+				else dojo.query('#ERAchoice .ERAcounter-technology').addClass('ERAdisabled');
 //
 				if ('counter' in state)
 				{
@@ -361,8 +362,52 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						}
 					}
 					break;
-//
 				case 'buildShips':
+					break;
+				case 'tradingPhase':
+					{
+						if (this.isCurrentPlayerActive())
+						{
+							dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
+							for (let color in state.args._private.inContact)
+							{
+								const _container = dojo.place(`<div style='display: flex;flex-direction: column;flex: 1 1 auto;max-width: 500px;'></div>`, 'ERAchoice');
+								const container = dojo.place(`<div style='display: flex;justify-content: space-evenly;margin: 1%;padding: 5%; border-radius: 5%;' class='ERAtrade' id='ERAtrade-${state.args._private.color}-${color}'></div>`, _container);
+								dojo.style(container, 'background', '#' + color + '80');
+//
+								const fromColor = dojo.place(`<div style='display: flex;flex-direction: column;flex: 1 1 auto;align-items: center;' class='ERAtrade' id='ERAtrade-${state.args._private.color}-${color}'></div>`, container);
+								dojo.place(`<div style='color:white;margin-bottom: 10px;'>${_('You are teaching')}</div>`, fromColor);
+								for (let [technology, level] of Object.entries(state.args._private.inContact[color]))
+								{
+									const node = dojo.place(this.format_block('ERAcounter', {id: technology, color: color, type: 'technology', location: ''}), fromColor);
+									dojo.toggleClass(node, 'ERAhide', level >= state.args._private[technology]);
+									dojo.toggleClass(node, 'ERAselectable', !dojo.hasClass(node, 'ERAdisabled'));
+									dojo.toggleClass(node, 'ERAselected', color in state.args._private.trade && state.args._private.color in state.args._private.trade[color] && state.args._private.trade[color][state.args._private.color] === technology)
+								}
+//
+								const toColor = dojo.place(`<div style='display: flex;flex-direction: column;flex: 1 1 auto;align-items: center;' class='ERAtrade' id='ERAtrade-${state.args._private.color}-${color}'></div>`, container);
+								dojo.place(`<div style='color:white;margin-bottom: 10px;'>${_('You are getting')}</div>`, toColor);
+								for (let [technology, level] of Object.entries(state.args._private.inContact[color]))
+								{
+									const node = dojo.place(this.format_block('ERAcounter', {id: technology, color: color, type: 'technology', location: ''}), toColor);
+									dojo.toggleClass(node, 'ERAhide', level <= state.args._private[technology]);
+									dojo.toggleClass(node, 'ERAselectable', !dojo.hasClass(node, 'ERAdisabled'));
+									dojo.toggleClass(node, 'ERAselected', state.args._private.color in state.args._private.trade && color in state.args._private.trade[state.args._private.color] && state.args._private.trade[state.args._private.color][color] === technology)
+//
+									dojo.connect(node, 'click', () => this.action('trade', {from: state.args._private.color, to: color, technology: technology}))
+								}
+								const node = dojo.place('<div style="display: flex;justify-content: space-between;"></div>', _container);
+								const accept = dojo.place(`<div class='bgabutton'>${_('Accept trade')}</div>`, node);
+								dojo.style(accept, 'background', '#' + color + '80');
+								dojo.style(accept, 'pointer-events', 'all');
+								dojo.connect(accept, 'click', () => this.action('trade', {from: state.args._private.color, to: color, technology: 'accept'}))
+								const reset = dojo.place(`<div class='bgabutton'>${_('Reset trade')}</div>`, node);
+								dojo.style(reset, 'background', '#' + color + '80');
+								dojo.style(reset, 'pointer-events', 'all');
+								dojo.connect(reset, 'click', () => this.action('trade', {from: state.args._private.color, to: color, technology: 'reset'}))
+							}
+						}
+					}
 					break;
 			}
 		},
@@ -564,6 +609,27 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						this.addActionButton('ERAcancelButton', _('Cancel'), () => this.restoreServerGameState());
 						break;
 //
+					case 'tradingPhase':
+//
+						this.addActionButton('ERApassButton', _('No trade'), () => {
+							const node = $('ERApassButton');
+							if (node.count)
+							{
+								delete node.count;
+								return this.restoreServerGameState();
+							}
+							dojo.query('#generalcounters .bgabutton:not(#ERApassButton)').remove();
+							node.count = 1;
+							const timer = window.setInterval(() => {
+								node.count -= 1;
+								node.innerHTML = _('Cancel') + ` (${(+node.count / 10).toFixed(1)}s)`;
+								if (node.count < 0)
+								{
+									window.clearInterval(timer);
+									return this.action('trade', {from: args._private.color, to: '', technology: ''})
+								}
+							}, 100);
+						}, null, false, 'red');
 				}
 			}
 		},
@@ -579,6 +645,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.subscribe('placeShip', (notif) => this.ships.place(notif.args.ship));
 			dojo.subscribe('moveShips', (notif) => this.ships.move(notif.args.ships, notif.args.location));
 			dojo.subscribe('removeShip', (notif) => this.ships.remove(notif.args.ship));
+			dojo.subscribe('trade', (notif) => this.trade(notif.args.from, notif.args.to, notif.args.technology, notif.args.status));
 //
 			this.notifqueue.setSynchronous('placeShip', DELAY);
 			this.notifqueue.setSynchronous('moveShips', DELAY / 2);
@@ -656,6 +723,12 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisk', location: location}), 'ERAprovisionalBonus');
 			}
 		},
+		trade: function (from, to, technology, status)
+		{
+			console.log(from, to, technology, status);
+			if (from === this.gamedatas.gamestate.args._private.color) dojo.query(`.ERAcounter[counter='${technology}']`, `ERAtrade-${from}-${to}`).toggleClass('ERAselected', status);
+			if (to === this.gamedatas.gamestate.args._private.color) dojo.query(`.ERAcounter[counter='${technology}']`, `ERAtrade-${to}-${from}`).toggleClass('ERAselected', status);
+		},
 		onCenter: function (event)
 		{
 			if (event.currentTarget.hasAttribute('location'))
@@ -672,7 +745,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				if ('GPS' in args) args.GPS = `<span onclick="gameui.onCenter(event)" location='${args.GPS}'>📌</span>`;
 			}
 			return this.inherited(arguments);
-		},
+		}
+		,
 		action: function (action, args =
 		{}, success = () => {}, fail = undefined)
 		{

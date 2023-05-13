@@ -178,6 +178,27 @@ $machinestates = [
 		'transitions' => ['continue' => 410, 'next' => 400]
 	],
 	500 => [
+		'name' => 'tradingPhase',
+		'type' => 'game',
+		'action' => 'stTradingPhase',
+		'transitions' => ['tradingPhase' => 510, 'next' => 550]
+	],
+	510 => [
+		'name' => 'tradingPhase',
+		'description' => clienttranslate('Players at peace and in contact may trade technology'),
+		'descriptionmyturn' => clienttranslate('${you} may trade technology'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argTradingPhase',
+		'possibleactions' => ['trade', 'pass'],
+		'transitions' => ['continue' => 510, 'next' => 550]
+	],
+	550 => [
+		'name' => 'scoringPhase',
+		'type' => 'game',
+		'action' => 'stScoringPhase',
+		'transitions' => ['next' => 600]
+	],
+	600 => [
 		'name' => 'endOfRound',
 		'type' => 'game',
 		'action' => 'stEndOfRound',

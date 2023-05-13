@@ -146,4 +146,12 @@ class Factions extends APP_GameClass
 			self::dbQuery("UPDATE factions SET status = JSON_SET(status, '$.$status', '$json') WHERE color = '$color'");
 		}
 	}
+	static function inContact(string $color): array
+	{
+		$locations = array_unique(array_merge(array_column(Ships::getAll($color), 'location'), array_keys(Counters::getPopulation($color))));
+//
+		$factions = [];
+		foreach (Factions::list() as $otherColor) if ($otherColor != $color && array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor)))))) $factions[] = $otherColor;
+		return $factions;
+	}
 }
