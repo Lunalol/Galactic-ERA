@@ -6,6 +6,46 @@
  */
 class Automas extends APP_GameClass
 {
+	const WORMHOLES = ['0:-2+4-2', '1:-4+2+2', '1:+2+2-4'];
+//
+	function startBonus(string $color): array
+	{
+		$dice = bga_rand(1, 6);
+		switch (Factions::getPlayer($color))
+		{
+			case FARMERS:
+				{
+					switch ($dice)
+					{
+						case 1: return ['Military' => 2];
+						case 2: return ['Spirituality' => 2];
+						case 3: return ['Propulsion' => 2];
+						case 4: return ['Robotics' => 2];
+						case 5: return ['Genetics' => 2];
+						case 6:
+							{
+								$technologies = array_keys(Factions::TECHNOLOGIES);
+								shuffle($technologies);
+								return [array_shift($technologies) => 2, array_shift($technologies) => 2];
+							}
+					}
+				}
+				break;
+			case SLAVERS:
+				{
+					switch ($dice)
+					{
+						case 1: return ['Military' => 3];
+						case 2: return ['Spirituality' => 2, 'Military' => 2];
+						case 3: return ['Propulsion' => 2, 'Military' => 2];
+						case 4: return ['Robotics' => 2, 'Military' => 2];
+						case 5: return ['Genetics' => 2, 'Military' => 2];
+						case 6: return ['offboard' => 2];
+					}
+				}
+				break;
+		}
+	}
 	function movement(string $color): void
 	{
 		$dice = bga_rand(1, 6);
@@ -57,6 +97,9 @@ class Automas extends APP_GameClass
 	}
 	function growthActions(string $color): array
 	{
+		$wormholes = self::WORMHOLES;
+		shuffle($wormholes);
+//
 		$counters = [];
 //
 		$dice = bga_rand(1, 6);
@@ -90,6 +133,7 @@ class Automas extends APP_GameClass
 						case 6:
 							$counters[] = 'changeTurnOrderUp';
 							$counters[] = 'buildShips';
+							Factions::setStatus($color, 'buildShips', array_slice($wormholes, 0, 1));
 							break;
 					}
 				}
@@ -103,23 +147,24 @@ class Automas extends APP_GameClass
 							$counters[] = 'research';
 							$counters[] = 'Military';
 							$counters[] = 'buildShips';
-							$counters[] = 'buildShips';
-							$counters[] = 'buildShips';
+							Factions::setStatus($color, 'buildShips', $wormholes);
 							break;
 						case 2:
 							$counters[] = 'changeTurnOrderDown';
 							$counters[] = 'buildShips';
-							$counters[] = 'buildShips';
+							Factions::setStatus($color, 'buildShips', array_slice($wormholes, 0, 2));
 							break;
 						case 3:
 							$counters[] = 'research';
 							$counters[] = 'Propulsion';
 							$counters[] = 'buildShips';
+							Factions::setStatus($color, 'buildShips', array_slice($wormholes, 0, 1));
 							break;
 						case 4:
 							$counters[] = 'research';
 							$counters[] = 'Robotics';
 							$counters[] = 'buildShips';
+							Factions::setStatus($color, 'buildShips', [self::WORMHOLES[0]]);
 							break;
 						case 5:
 							$counters[] = 'changeTurnOrderDown';
@@ -160,7 +205,6 @@ class Automas extends APP_GameClass
 			$growPopulation = array_search('growPopulation', $counters);
 			if ($growPopulation !== false)
 			{
-//
 				unset($counters[$growPopulation]);
 				Factions::setStatus($color, 'counters', array_values($counters));
 				continue;
@@ -168,19 +212,11 @@ class Automas extends APP_GameClass
 			$buildShips = array_search('buildShips', $counters);
 			if ($buildShips !== false)
 			{
-//
-				unset($counters[$buildShips]);
-				Factions::setStatus($color, 'counters', array_values($counters));
+				$bgagame->acBuildShips($color, Factions::getStatus($color, 'buildShips'), true);
+				Factions::setStatus($color, 'buildShips');
 				continue;
 			}
-			$spawn = array_search('spawn', $counters);
-			if ($spawn !== false)
-			{
-//
-				unset($counters[$spawn]);
-				Factions::setStatus($color, 'counters', array_values($counters));
-				continue;
-			}
+			throw new BgaVisibleSystemException('Automas Growth Action not implemented');
 		}
 //
 		Factions::setActivation($color, 'done');

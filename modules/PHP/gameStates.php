@@ -9,9 +9,7 @@ trait gameStates
 	function stStartOfSetup()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Setup')
-		]);
+		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Setup')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
@@ -27,31 +25,23 @@ trait gameStates
 		$galacticStory = array_rand($this->STORIES);
 		self::setGameStateInitialValue('galacticStory', $galacticStory);
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', clienttranslate('Galactic Story: <B>${STORY}</B>'), [
-			'i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]
-		]);
+		$this->notifyAllPlayers('message', clienttranslate('Galactic Story: <B>${STORY}</B>'), ['i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Randomly draw a galactic goal tile and place it on the spot of the same size below the turn track.
 // Introductory Game: Leave out the galactic goal for an introductory game.
 //
-		$galacticGoal = NONE;
-		if (self::getGameStateValue('game') != INTRODUCTORY) $galacticGoal = array_rand($this->GOALS);
+		$galacticGoal = (self::getGameStateValue('game') == INTRODUCTORY) ? NONE : array_rand($this->GOALS);
 		self::setGameStateInitialValue('galacticGoal', $galacticGoal);
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', clienttranslate('Galactic goal: <B>${GOAL}</B>'), [
-			'i18n' => ['GOAL'], 'GOAL' => $this->GOALS[$galacticGoal]
-		]);
+		$this->notifyAllPlayers('message', clienttranslate('Galactic goal: <B>${GOAL}</B>'), ['i18n' => ['GOAL'], 'GOAL' => $this->GOALS[$galacticGoal]]);
 //* -------------------------------------------------------------------------------------------------------- */
-//
 		$this->gamestate->nextState('next');
 	}
 	function stSetUpBoard()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Set Up Board')
-		]);
+		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Set Up Board')]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Select randomly sectors and place them in location
@@ -83,9 +73,12 @@ trait gameStates
 			Ships::create($color, 'homeStar', $sector . ':+0+0+0');
 		}
 //
-// Take three star counters of each of the three types (soa total of nine).
+// Take three star counters of each of the three types (so a total of nine).
+//
 		$stars = ['UNINHABITED', 'UNINHABITED', 'UNINHABITED', 'PRIMITIVE', 'PRIMITIVE', 'PRIMITIVE', 'ADVANCED', 'ADVANCED', 'ADVANCED'];
+//
 // Shuffle these and place one face down on every star hex of the center sector tile, including the central hex.
+//
 		shuffle($stars);
 		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'star', '0:' . $hexagon, ['back' => array_pop($stars)]);
 //
@@ -103,10 +96,14 @@ trait gameStates
 // Shuffle the domination cards into a deck
 //
 		$dominationCards = $this->DOMINATION;
+//
 // Solo: Remove the “Exploratory” domination card
+//
 		if (self::getPlayersNumber() === 1) unset($dominationCards[EXPLORATORY]);
+//
 // Two-Player Game: Remove the “Alignment” domination card
-		if (self::getPlayersNumber() === 1) unset($dominationCards[ALIGNMENT]);
+//
+		if (self::getPlayersNumber() === 2) unset($dominationCards[ALIGNMENT]);
 //
 		$this->domination->createCards($dominationCards);
 		$this->domination->shuffle('deck');
@@ -134,8 +131,8 @@ trait gameStates
 			$colors = array_diff($this->getGameinfos()['player_colors'], Factions::list());
 			shuffle($colors);
 //
-			Factions::create(array_shift($colors), -1, 0);
-			Factions::create(array_shift($colors), -2, 0);
+			Factions::create(array_shift($colors), FARMERS, 0);
+			Factions::create(array_shift($colors), SLAVERS, 0);
 //
 			$order = [1, 2, 3];
 			shuffle($order);
@@ -148,15 +145,17 @@ trait gameStates
 	function stStarPeople()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Star People choice')
-		]);
+		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Star People choice')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$starPeoples = array_keys($this->STARPEOPLES);
+//
 // Automas
+//
 		unset($starPeoples[array_search('Farmers', $starPeoples)]);
 		unset($starPeoples[array_search('Slavers', $starPeoples)]);
+//
 // Two-Player Game: Remove the “ICC” star people tile
+//
 		if (self::getPlayersNumber() === 2) unset($starPeoples[array_search('ICC', $starPeoples)]);
 //
 		shuffle($starPeoples);
@@ -198,9 +197,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Alignment choice')
-		]);
+		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Alignment choice')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->setAllPlayersMultiactive('next');
 		$this->gamestate->nextState('next');
@@ -210,8 +207,20 @@ trait gameStates
 		Factions::setActivation(null, 'done');
 		foreach (Factions::list() as $color)
 		{
-			if (Factions::getPlayer($color) === -1) Factions::setStatus($color, 'alignment', false);
-			else if (Factions::getPlayer($color) === -2) Factions::setStatus($color, 'alignment', true);
+			if (Factions::getPlayer($color) < 0)
+			{
+				Factions::setStatus($color, 'alignment', Factions::getPlayer($color) === SLAVERS);
+				foreach (Automas::startBonus($color) as $technology => $level)
+				{
+					if ($technology === 'offboard') throw new BgaVisibleSystemException('Offboard power strack not implemented');
+					Factions::setTechnology($color, $technology, $level);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+						'player_name' => Players::getName(Factions::getPlayer($color)), 'faction' => Factions::get($color),
+						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+			}
 //
 			$starPeople = Factions::getStarPeople($color);
 			if (Factions::getStatus($color, 'alignment')) Factions::STS($color);
@@ -512,9 +521,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Individual choices')
-		]);
+		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Individual choices')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
@@ -685,6 +692,7 @@ trait gameStates
 		if ($player_id < 0)
 		{
 			Automas::actions($this, $color);
+			Factions::setActivation($color, 'done');
 			return $this->gamestate->nextState('continue');
 		}
 //
@@ -773,21 +781,22 @@ trait gameStates
 							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
 								'player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
+							$this->notifyAllPlayers('msg', _('Second Era not implemented'), []);
 						}
-						throw new BgaVisibleSystemException('Second Era not implemented');
+						$this->notifyAllPlayers('msg', _('Second Era not implemented'), []);
 						switch ($galacticStory)
 						{
 							case JOURNEYS:
-								throw new BgaVisibleSystemException('Galactic story JOURNEYS not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story JOURNEYS not implemented'), []);
 								break;
 							case MIGRATIONS:
-								throw new BgaVisibleSystemException('Galactic story MIGRATIONS not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
 								break;
 							case RIVALRY:
-								throw new BgaVisibleSystemException('Galactic story RIVALRY not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
 								break;
 							case WARS:
-								throw new BgaVisibleSystemException('Galactic story WARS not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
 								break;
 						}
 					}
@@ -803,20 +812,20 @@ trait gameStates
 								'player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
-						throw new BgaVisibleSystemException('Third Era not implemented');
+						$this->notifyAllPlayers('msg', _('Third Era not implemented'), []);
 						switch ($galacticStory)
 						{
 							case JOURNEYS:
-								throw new BgaVisibleSystemException('Galactic story JOURNEYS not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story JOURNEYS not implemented'), []);
 								break;
 							case MIGRATIONS:
-								throw new BgaVisibleSystemException('Galactic story MIGRATIONS not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
 								break;
 							case RIVALRY:
-								throw new BgaVisibleSystemException('Galactic story RIVALRY not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
 								break;
 							case WARS:
-								throw new BgaVisibleSystemException('Galactic story WARS not implemented');
+								$this->notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
 								break;
 						}
 					}
@@ -848,16 +857,5 @@ trait gameStates
 		}
 //
 		$this->gamestate->nextState('nextRound');
-	}
-	function X()
-	{
-		$this->gamestate->setAllPlayersMultiactive('next');
-		foreach (Factions::list() as $color)
-		{
-			$list = Factions::list();
-			unset($list[array_search($color, $list)]);
-			Factions::setStatus($color, 'inContact', $list);
-			Factions::setStatus($color, 'trade', []);
-		}
 	}
 }

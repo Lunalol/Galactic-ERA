@@ -19,9 +19,12 @@ class Factions extends APP_GameClass
 		'Spirituality' => [null, 0, 1, 2, 3 /**/, 4 /**/, INF /**/], // Remote view par round
 		'Propulsion' => [null, 3, 4, 4 /**/, 5 /**/, 5 /**/, INF], // Ship range
 		'Robotics' => [null, 0, +1, +3, +5 /**/, +7 /**/, +10 /**/], // Build ships bonus
-		'ShipYards' => [null, 4, 4, 4, 3, 2, 1], // Population requirement for Shipyards
 		'Genetics' => [null, 0, 1, 2, 3, 4 /**/, 6 /**/], // Grow population bonus
 	];
+//
+// Population requirement for Shipyards;
+//
+	const SHIPYARDS = [null, 4, 4, 4, 3, 2, 1];
 //
 	static function create(string $color, int $player_id, int $homeStar): int
 	{

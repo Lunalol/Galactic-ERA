@@ -291,7 +291,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				}
 				if (stateName === 'individualChoice') dojo.query('#ERAchoice .ERAcounter-technology').addClass('ERAselectable');
 //				else dojo.query('#ERAchoice .ERAcounter-technology').style('filter', research ? '' : 'grayscale(1)');
-				else dojo.query('#ERAchoice .ERAcounter-technology').addClass('ERAdisabled');
+//				else dojo.query('#ERAchoice .ERAcounter-technology').addClass('ERAdisabled');
 //
 				if ('counter' in state)
 				{

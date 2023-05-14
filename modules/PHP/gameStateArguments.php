@@ -143,7 +143,7 @@ trait gameStateArguments
 						case 'buildShips':
 							{
 								$private[$player_id]['buildShips'] = [];
-								foreach (Counters::getPopulation($color) as $location => $population) if ($population >= Factions::TECHNOLOGIES['ShipYards'][Factions::getTechnology($color, 'Robotics')]) $private[$player_id]['buildShips'][] = $location;
+								foreach (Counters::getPopulation($color) as $location => $population) if ($population >= Factions::SHIPYARDS[Factions::getTechnology($color, 'Robotics')]) $private[$player_id]['buildShips'][] = $location;
 //
 								$build = 0;
 								foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $build++;

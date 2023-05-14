@@ -558,24 +558,35 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('continue');
 	}
-	function acBuildShips(string $color, array $locations): void
+	function acBuildShips(string $color, array $locations, bool $automa = false): void
 	{
-		$this->checkAction('buildShips');
+		if (!$automa)
+		{
+			$this->checkAction('buildShips');
 //
-		$player_id = self::getCurrentPlayerId();
-		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+			$player_id = self::getCurrentPlayerId();
+			if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		if (!array_key_exists('buildShips', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if (!in_array('buildShips', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'buildShips');
+			if (!array_key_exists('buildShips', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+			if (!in_array('buildShips', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'buildShips');
+//
+			foreach ($locations as $location) if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+		}
 //
 		foreach ($locations as $location)
 		{
-			if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+			if ($automa)
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET} ${GPS}'), [
-				'player_name' => Players::getName(Factions::getPlayer($color)),
-				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
-				'GPS' => $location, 'ship' => Ships::get($color, Ships::create($color, 'ship', $location))]);
+				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} spawns an <B>additional ship</B> ${GPS}'), [
+					'player_name' => Players::getName(Factions::getPlayer($color)),
+					'GPS' => $location, 'ship' => Ships::get($color, Ships::create($color, 'ship', $location))]);
+//* -------------------------------------------------------------------------------------------------------- */
+			else
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET} ${GPS}'), [
+					'player_name' => Players::getName(Factions::getPlayer($color)),
+					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+					'GPS' => $location, 'ship' => Ships::get($color, Ships::create($color, 'ship', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -603,7 +614,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
-		$this->gamestate->nextState('continue');
+		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acTrade(string $from, string $to, string $technology)
 	{
