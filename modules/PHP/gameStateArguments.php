@@ -177,22 +177,22 @@ trait gameStateArguments
 	function argTradingPhase()
 	{
 		$private = [];
-		foreach (Factions::list() as $color)
+		foreach (Factions::list() as $from)
 		{
-			$player_id = Factions::getPlayer($color);
+			$player_id = Factions::getPlayer($from);
 			if ($player_id > 0)
 			{
-				$private[$player_id]['color'] = $color;
-				$private[$player_id]['trade'][$color] = Factions::getStatus($color, 'trade');
-				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($color, $technology);
-				foreach (Factions::getStatus($color, 'inContact') as $otherColor)
+				$private[$player_id]['color'] = $from;
+				$private[$player_id]['trade'][$from] = Factions::getStatus($from, 'trade');
+				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($from, $technology);
+				foreach (Factions::getStatus($from, 'inContact') as $to)
 				{
-					if ($this->gamestate->isPlayerActive(Factions::getPlayer($otherColor)))
+					if ($this->gamestate->isPlayerActive(Factions::getPlayer($to)))
 					{
-						$private[$player_id]['trade'][$otherColor] = Factions::getStatus($otherColor, 'trade');
+						$private[$player_id]['trade'][$to] = array_filter(Factions::getStatus($to, 'trade'), fn($key) => $key === $from, ARRAY_FILTER_USE_KEY);
 						foreach (array_keys($this->TECHNOLOGIES) as $technology)
 						{
-							$private[$player_id]['inContact'][$otherColor][$technology] = Factions::getTechnology($otherColor, $technology);
+							$private[$player_id]['inContact'][$to][$technology] = Factions::getTechnology($to, $technology);
 						}
 					}
 				}

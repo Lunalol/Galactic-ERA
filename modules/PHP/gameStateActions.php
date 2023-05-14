@@ -612,32 +612,6 @@ trait gameStateActions
 		$player_id = self::getCurrentPlayerId();
 		if ($player_id != Factions::getPlayer($from)) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
 //
-		$fromStatus = Factions::getStatus($from, 'trade');
-//
-		if ($technology === 'accept')
-		{
-			if (!array_key_exists($to, $fromStatus)) throw new BgaUserException(self::_('You must choose what you are getting'));
-			$toStatus = Factions::getStatus($to, 'trade');
-			if (!array_key_exists($from, $toStatus)) throw new BgaUserException(self::_('Other player must choose what you are teaching'));
-//
-			foreach ([$from => $fromStatus[$to], $to => $toStatus[$from]] as $color => $technology)
-			{
-				if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
-				$level = Factions::gainTechnology($color, $technology);
-//* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)),
-					'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
-					'faction' => ['color' => $color, $technology => $level]
-				]);
-//* -------------------------------------------------------------------------------------------------------- */
-			}
-			$this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($from), 'next');
-			$this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($to), 'next');
-			if (sizeof($this->gamestate->getActivePlayerList()) < 2) $this->gamestate->setAllPlayersNonMultiactive('next');
-			else $this->gamestate->nextState('continue');
-			return;
-		}
 		if (!$to)
 		{
 			$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
@@ -645,15 +619,79 @@ trait gameStateActions
 			else $this->gamestate->nextState('continue');
 			return;
 		}
-		if ($technology === 'reset') unset($fromStatus[$to]);
-		else if (array_key_exists($to, $fromStatus))
-		{
-			$old = $fromStatus[$to];
-			unset($fromStatus[$to]);
-			if ($technology !== $old) $fromStatus[$to] = $technology;
-		}
-		else $fromStatus[$to] = $technology;
 //
+		$fromStatus = Factions::getStatus($from, 'trade');
+		switch ($technology)
+		{
+			case 'accept':
+				{
+					if (!array_key_exists($to, $fromStatus)) throw new BgaUserException(self::_('You must choose what you are getting'));
+					$toStatus = Factions::getStatus($to, 'trade');
+					if (!array_key_exists($from, $toStatus)) throw new BgaUserException(self::_('Other player must choose what you are teaching'));
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyPlayer(Factions::getPlayer($from), 'msg', clienttranslate('Waiting from confirmation of ${player_name}'), [
+						'player_name' => Players::getName(Factions::getPlayer($to))]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyPlayer(Factions::getPlayer($to), 'trade', '', [
+						'from' => $from, 'to' => $to]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$toStatus[$from]['pending'] = true;
+					Factions::setStatus($to, 'trade', $toStatus);
+				}
+				break;
+			case 'confirm':
+				{
+					if (!array_key_exists($to, $fromStatus)) throw new BgaUserException(self::_('You must choose what you are getting'));
+					$toStatus = Factions::getStatus($to, 'trade');
+					if (!array_key_exists($from, $toStatus)) throw new BgaUserException(self::_('Other player must choose what you are teaching'));
+//
+					foreach ([$from => $fromStatus[$to]['technology'], $to => $toStatus[$from]['technology']] as $color => $technology)
+					{
+						if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+						$level = Factions::gainTechnology($color, $technology);
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+							'player_name' => Players::getName(Factions::getPlayer($color)),
+							'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+							'faction' => ['color' => $color, $technology => $level]
+						]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+					$this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($from), 'next');
+					$this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($to), 'next');
+					if (sizeof($this->gamestate->getActivePlayerList()) < 2) $this->gamestate->setAllPlayersNonMultiactive('next');
+					else $this->gamestate->nextState('continue');
+					return;
+				}
+				break;
+
+			case 'refuse':
+				{
+					if (array_key_exists($to, $fromStatus)) unset($fromStatus[$to]);
+					$toStatus = Factions::getStatus($to, 'trade');
+					if (array_key_exists($from, $toStatus))
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyPlayer(Factions::getPlayer($to), 'msg', clienttranslate('${player_name} refuses your trade'), [
+							'player_name' => Players::getName(Factions::getPlayer($from)),
+						]);
+//* -------------------------------------------------------------------------------------------------------- */
+						unset($toStatus[$from]);
+						Factions::setStatus($to, 'trade', $toStatus);
+					}
+				}
+				break;
+			default:
+				{
+					if (array_key_exists($to, $fromStatus))
+					{
+						$old = $fromStatus[$to]['technology'];
+						unset($fromStatus[$to]);
+						if ($technology !== $old) $fromStatus[$to] = ['technology' => $technology, 'pending' => false];
+					}
+					else $fromStatus[$to] = ['technology' => $technology, 'pending' => false];
+				}
+		}
 		Factions::setStatus($from, 'trade', $fromStatus);
 //
 		$this->gamestate->nextState('continue');

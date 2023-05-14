@@ -849,4 +849,15 @@ trait gameStates
 //
 		$this->gamestate->nextState('nextRound');
 	}
+	function X()
+	{
+		$this->gamestate->setAllPlayersMultiactive('next');
+		foreach (Factions::list() as $color)
+		{
+			$list = Factions::list();
+			unset($list[array_search($color, $list)]);
+			Factions::setStatus($color, 'inContact', $list);
+			Factions::setStatus($color, 'trade', []);
+		}
+	}
 }
