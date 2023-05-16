@@ -74,8 +74,8 @@ class Factions extends APP_GameClass
 	}
 	static function switchAlignment(string $color): void
 	{
-		if (Factions::getAlignment($color) === 'STO') Factions::STS($color);
-		else Factions::STO($color);
+		if (self::getAlignment($color) === 'STO') self::STS($color);
+		else self::STO($color);
 	}
 	static function STO(string $color): void
 	{
@@ -149,12 +149,22 @@ class Factions extends APP_GameClass
 			self::dbQuery("UPDATE factions SET status = JSON_SET(status, '$.$status', '$json') WHERE color = '$color'");
 		}
 	}
+	static function ships(string $color): int
+	{
+		$ships = self::TECHNOLOGIES['Robotics'][self::getTechnology($color, 'Robotics')];
+		foreach (self::BUILD as $population)
+		{
+			if ($population > self::getPopulation($color)) break;
+			$ships++;
+		}
+		return $ships;
+	}
 	static function inContact(string $color): array
 	{
 		$locations = array_unique(array_merge(array_column(Ships::getAll($color), 'location'), array_keys(Counters::getPopulation($color))));
 //
 		$factions = [];
-		foreach (Factions::list() as $otherColor) if ($otherColor != $color && array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor)))))) $factions[] = $otherColor;
+		foreach (self::list() as $otherColor) if ($otherColor != $color && array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor)))))) $factions[] = $otherColor;
 		return $factions;
 	}
 }

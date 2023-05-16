@@ -207,20 +207,7 @@ trait gameStates
 		Factions::setActivation(null, 'done');
 		foreach (Factions::list() as $color)
 		{
-			if (Factions::getPlayer($color) < 0)
-			{
-				Factions::setStatus($color, 'alignment', Factions::getPlayer($color) === SLAVERS);
-				foreach (Automas::startBonus($color) as $technology => $level)
-				{
-					if ($technology === 'offboard') throw new BgaVisibleSystemException('Offboard power strack not implemented');
-					Factions::setTechnology($color, $technology, $level);
-//* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)), 'faction' => Factions::get($color),
-						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
-			}
+			if (Factions::getPlayer($color) < 0) Factions::setStatus($color, 'alignment', Factions::getPlayer($color) === SLAVERS);
 //
 			$starPeople = Factions::getStarPeople($color);
 			if (Factions::getStatus($color, 'alignment')) Factions::STS($color);
@@ -238,7 +225,6 @@ trait gameStates
 // Star people starting bonus
 //
 			$sector = Factions::getHomeStar($color);
-			if ($sector === 0) continue;
 //
 			switch ($starPeople)
 			{
@@ -440,82 +426,98 @@ trait gameStates
 					]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
+				case 'Farmers':
+				case 'Slavers':
+// Each automa also gets a start bonus
+					foreach (Automas::startBonus($color) as $technology => $level)
+					{
+						if ($technology === 'offboard') throw new BgaVisibleSystemException('Offboard power strack not implemented');
+						Factions::setTechnology($color, $technology, $level);
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+							'player_name' => Players::getName(Factions::getPlayer($color)), 'faction' => Factions::get($color),
+							'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+					break;
 			}
 //
 // Home Star bonus
 //
-			foreach (Sectors::BONUS[intdiv(Sectors::get($sector), 2)] as $bonus => $value)
+			if ($sector !== 0)
 			{
-				switch ($bonus)
+				foreach (Sectors::BONUS[intdiv(Sectors::get($sector), 2)] as $bonus => $value)
 				{
-					case 'Grow':
-						Factions::setStatus($color, 'bonus', 'Grow');
+					switch ($bonus)
+					{
+						case 'Grow':
+							Factions::setStatus($color, 'bonus', 'Grow');
 //* -------------------------------------------------------------------------------------------------------- */
-						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B> in the first round'), [
-							'player_name' => Players::getName(Factions::getPlayer($color)),
-						]);
+							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B> in the first round'), [
+								'player_name' => Players::getName(Factions::getPlayer($color)),
+							]);
 //* -------------------------------------------------------------------------------------------------------- */
-						break;
-					case 'Technology':
-						{
-							foreach ($value as $technology => $level)
+							break;
+						case 'Technology':
 							{
-								$current = Factions::getTechnology($color, $technology);
-								if ($current > 1)
+								foreach ($value as $technology => $level)
 								{
-									Factions::setActivation($color, 'no');
+									$current = Factions::getTechnology($color, $technology);
+									if ($current > 1)
+									{
+										Factions::setActivation($color, 'no');
 //* -------------------------------------------------------------------------------------------------------- */
-									$this->notifyAllPlayers('msg', clienttranslate('${player_name} has already <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-										'player_name' => Players::getName(Factions::getPlayer($color)),
-										'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
-										'LEVEL' => $current,
-									]);
+										$this->notifyAllPlayers('msg', clienttranslate('${player_name} has already <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+											'player_name' => Players::getName(Factions::getPlayer($color)),
+											'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
+											'LEVEL' => $current,
+										]);
 //* -------------------------------------------------------------------------------------------------------- */
+									}
+									else
+									{
+										Factions::setTechnology($color, $technology, $level);
+//* -------------------------------------------------------------------------------------------------------- */
+										$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+											'player_name' => Players::getName(Factions::getPlayer($color)),
+											'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
+											'LEVEL' => $level,
+										]);
+//* -------------------------------------------------------------------------------------------------------- */
+									}
 								}
-								else
+							}
+							break;
+						case 'Ships':
+							{
+								for ($i = 0; $i < $value; $i++)
 								{
-									Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-									$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
+									$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 										'player_name' => Players::getName(Factions::getPlayer($color)),
-										'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
-										'LEVEL' => $level,
+										'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 									]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 							}
-						}
-						break;
-					case 'Ships':
-						{
-							for ($i = 0; $i < $value; $i++)
+							break;
+						case 'Population':
 							{
 //* -------------------------------------------------------------------------------------------------------- */
-								$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
-									'player_name' => Players::getName(Factions::getPlayer($color)),
-									'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
-								]);
+								$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 populations</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
-						}
-						break;
-					case 'Population':
-						{
+							break;
+						case 'Grow':
+							{
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 populations</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
+								$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
 //* -------------------------------------------------------------------------------------------------------- */
-						}
-						break;
-					case 'Grow':
-						{
-//* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
-//* -------------------------------------------------------------------------------------------------------- */
-						}
-						break;
+							}
+							break;
+					}
 				}
 			}
-
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */

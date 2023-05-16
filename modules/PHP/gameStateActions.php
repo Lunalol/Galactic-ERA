@@ -573,20 +573,20 @@ trait gameStateActions
 			foreach ($locations as $location) if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 		}
 //
-		foreach ($locations as $location)
+		foreach (array_count_values($locations) as $location => $ships)
 		{
 			if ($automa)
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} spawns an <B>additional ship</B> ${GPS}'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)),
-					'GPS' => $location, 'ship' => Ships::get($color, Ships::create($color, 'ship', $location))]);
+				$this->notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>additional ship(s)</B> ${GPS}'), [
+					'player_name' => Players::getName(Factions::getPlayer($color)), 'ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B> at ${PLANET} ${GPS}'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)),
-					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
-					'GPS' => $location, 'ship' => Ships::get($color, Ships::create($color, 'ship', $location))]);
+				$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains ${ships} <B>additional ship(s)</B> at ${PLANET} ${GPS}'), [
+					'player_name' => Players::getName(Factions::getPlayer($color)), 'ships' => $ships,
+					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)], 'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
+			for ($i = 0; $i < $ships; $i++) $this->notifyAllPlayers('placeShip', '', ['ship' => Ships::get($color, Ships::create($color, 'ship', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
 //* -------------------------------------------------------------------------------------------------------- */

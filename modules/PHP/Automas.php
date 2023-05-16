@@ -53,7 +53,6 @@ class Automas extends APP_GameClass
 		{
 			case FARMERS:
 				{
-					Factions::setStatus($color, 'dice', $dice);
 					switch ($dice)
 					{
 						case 1:
@@ -73,7 +72,6 @@ class Automas extends APP_GameClass
 				break;
 			case SLAVERS:
 				{
-					Factions::setStatus($color, 'dice', $dice);
 					switch ($dice)
 					{
 						case 1:
@@ -107,7 +105,8 @@ class Automas extends APP_GameClass
 		{
 			case FARMERS:
 				{
-					Factions::setStatus($color, 'dice', $dice);
+					if (!Ships::getAll($color)) $dice = 6;
+//
 					switch ($dice)
 					{
 						case 1:
@@ -140,31 +139,30 @@ class Automas extends APP_GameClass
 				break;
 			case SLAVERS:
 				{
-					Factions::setStatus($color, 'dice', $dice);
 					switch ($dice)
 					{
 						case 1:
 							$counters[] = 'research';
 							$counters[] = 'Military';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', $wormholes);
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), $wormholes)));
 							break;
 						case 2:
 							$counters[] = 'changeTurnOrderDown';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', array_slice($wormholes, 0, 2));
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), array_slice($wormholes, 0, 2))));
 							break;
 						case 3:
 							$counters[] = 'research';
 							$counters[] = 'Propulsion';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', array_slice($wormholes, 0, 1));
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), array_slice($wormholes, 0, 1))));
 							break;
 						case 4:
 							$counters[] = 'research';
 							$counters[] = 'Robotics';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', [self::WORMHOLES[0]]);
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), [self::WORMHOLES[0]])));
 							break;
 						case 5:
 							$counters[] = 'changeTurnOrderDown';

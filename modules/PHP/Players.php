@@ -16,10 +16,16 @@ class Players extends APP_GameClass
 	{
 		return intval(self::getUniqueValueFromDB("SELECT global_value FROM global WHERE global_id = 5"));
 	}
-	static function getName(int $player_id): string
+	static function getName(int $player_id)
 	{
-		if ($player_id === FARMERS) return clienttranslate('Farmers');
-		if ($player_id === SLAVERS) return clienttranslate('Slavers');
+		if ($player_id === FARMERS) return [
+				'log' => '<span style="color:white;font-weight:bold;">${NAME}</span>',
+				'args' => ['NAME' => clienttranslate('Farmers'), 'i18n' => ['NAME']]
+			];
+		if ($player_id === SLAVERS) return [
+				'log' => '<span style="color:white;font-weight:bold;">${NAME}</span>',
+				'args' => ['NAME' => clienttranslate('Slavers'), 'i18n' => ['NAME']]
+			];
 		return self::getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $player_id");
 	}
 }
