@@ -73,7 +73,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const sX = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sX`));
 			const sY = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sY`));
 //
-			if (isNaN(scale) || isNaN(rotate) || isNaN(sX) || isNaN(sY)) this.home();
+			if (isNaN(scale) || isNaN(rotate) || isNaN(sX) || isNaN(sY)) this.home(this.player_id);
 			else
 			{
 				this.setRotate(rotate);
@@ -106,7 +106,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.connect(this.rotate, 'oninput', this, () => this.setRotate(event.target.value));
 			dojo.connect(dojo.byId('ERArotateAntiClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) - 10));
 			dojo.connect(dojo.byId('ERArotateClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) + 10));
-			dojo.connect(dojo.byId('ERAhome'), 'onclick', this, 'home');
+			dojo.connect(dojo.byId('ERAhome'), 'onclick', () => this.home(this.bgagame.player_id));
 //
 			dojo.connect(this.playarea, 'gesturestart', this, () => this.zooming = this.board.scale);
 			dojo.connect(this.playarea, 'gestureend', this, () => this.zooming = null);
@@ -136,11 +136,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.removeClass(this.board, 'ERAhideMarkers');
 			};
 		},
-		home: function ()
+		home: function (player_id)
 		{
-			if (this.bgagame.player_id in this.bgagame.players)
+			if (player_id in this.bgagame.players)
 			{
-				const sector = this.bgagame.gamedatas.factions[this.bgagame.players[this.bgagame.player_id]].homeStar;
+				const sector = this.bgagame.gamedatas.factions[this.bgagame.players[player_id]].homeStar;
 				this.setZoom(8 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
 				this.setRotate(210 - 60 * sector);
 				this.centerMap(sector + ':+0+0+0');

@@ -70,15 +70,14 @@ class Ships extends APP_GameClass
 	}
 	static function movement(array $ship)
 	{
-		$location = $ship['location'];
-		$possible = [$location => ['MP' => $ship['MP'], 'path' => [$location]]];
+		$possible = [$ship['location'] => ['MP' => $ship['MP'], 'from' => null]];
 //
-		$queue = new SplQueue();
-		$queue->enqueue($location);
-		while (!$queue->isEmpty())
+		$locations = [$ship['location'] => $ship['MP']];
+		while ($locations)
 		{
-			$location = $queue->dequeue();
-			$MP = $possible[$location]['MP'];
+			$MP = max($locations);
+			$location = array_search($MP, $locations);
+			unset($locations[$location]);
 //
 			foreach (Sectors::neighbors($location) as $next_location => $terrain)
 			{
@@ -88,13 +87,12 @@ class Ships extends APP_GameClass
 				{
 					if (!array_key_exists($next_location, $possible) || ($possible[$next_location]['MP'] < $next_MP))
 					{
-						$possible[$next_location] = ['MP' => $next_MP, 'path' => array_merge($possible[$location]['path'], [$next_location])];
-						$queue->enqueue($next_location);
+						$possible[$next_location] = ['MP' => $next_MP, 'from' => $location];
+						$locations[$next_location] = $next_MP;
 					}
 				}
 			}
 		}
-		array_shift($possible);
 		return $possible;
 	}
 }

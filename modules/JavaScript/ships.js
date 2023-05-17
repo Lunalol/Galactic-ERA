@@ -126,12 +126,12 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			for (let location of possible)
 			{
 				const SVGpath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-				let path = '';
-				let first = true;
-				for (let next of paths[location].path)
+				let path = 'M' + this.board.hexagons[location].x + ' ' + this.board.hexagons[location].y;
+				let from = paths[location].from;
+				while (from)
 				{
-					path += (first ? 'M' : 'L') + this.board.hexagons[next].x + ' ' + this.board.hexagons[next].y;
-					first = false;
+					path += 'L' + this.board.hexagons[from].x + ' ' + this.board.hexagons[from].y;
+					from = paths[from].from;
 				}
 				SVGpath.setAttribute('stroke', '#ffffff40');
 				SVGpath.setAttribute('fill', 'none');

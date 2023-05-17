@@ -172,7 +172,11 @@ trait gameStateActions
 				'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
-		foreach ($this->possible['move'][$ships[0]][$location]['path'] as $next_location)
+//
+		$locations = [$location];
+		while ($from = $this->possible['move'][$ships[0]][$locations[0]]['from']) array_unshift($locations, $from);
+//
+		foreach ($locations as $next_location)
 		{
 			$this->notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $next_location, 'old' => $location]);
 			$location = $next_location;

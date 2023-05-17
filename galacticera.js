@@ -23,6 +23,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			this.players = {};
 			for (let faction of Object.values(gamedatas.factions)) this.players[faction.player_id] = faction.color;
+			this.color = this.player_id in this.players ? this.players[this.player_id] : null;
 //
 //
 // Setup game Board
@@ -55,9 +56,20 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				{
 					dojo.place(`<div><span class='ERAtechnology' title='${_(technology)}' technology=${technology}>?</span><div class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology' counter='${technology}'/></div>`, nodeCounters);
 				}
-				dojo.place(`<div class='ERAsmallOrder' title='${_('Turn order')}'><div class='ERAcounter ERAorder' id='ERAorder-${faction.color}'></div></div>`, nodeFaction, 'before');
+				let nodeOrder = dojo.place(`<div class='ERAsmallOrder' title='${_('Turn order')}'><div class='ERAcounter ERAorder' id='ERAorder-${faction.color}'></div></div>`, nodeFaction, 'before');
+//
+				for (let otherFaction of Object.values(gamedatas.factions))
+				{
+					if (otherFaction.color !== faction.color)
+					{
+						dojo.place(`<div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAsmall' title='${'In peace with'} ${gamedatas.players[otherFaction.player_id].name}'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace'></div></div>`, nodeOrder, 'after');
+						dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}' style='display:none;' class='ERAsmall' title='${'At war with'} ${gamedatas.players[otherFaction.player_id].name}'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war'></div></div>`, nodeOrder, 'after');
+					}
+				}
+//
 				this.factions.update(faction);
 //
+				dojo.connect($(`player_board_${faction.player_id}`), 'click', () => this.board.home(faction.player_id));
 			}
 //
 //	Focus to examine and swap Star People tiles
@@ -466,8 +478,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		onUpdateActionButtons: function (stateName, args)
 		{
 			console.log('onUpdateActionButtons: ' + stateName);
-//
-			this.color = args ? ('active' in args) ? args.active : undefined : undefined;
 //
 			if (this.isCurrentPlayerActive())
 			{
