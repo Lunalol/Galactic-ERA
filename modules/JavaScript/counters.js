@@ -77,8 +77,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		flip: function (counter)
 		{
-			console.info('flipCounter', counter);
-//
 			let node = $(`ERAcounter-${counter.id}`);
 			if (node)
 			{

@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `counters`
 CREATE TABLE IF NOT EXISTS `revealed`
 (
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
-	`type` ENUM ('star', 'relic', 'dominationCard','A','B','C','D','E'), `id` INT,
+	`type` ENUM ('star','relic','dominationCard','fleet'),`id` INT,
     PRIMARY KEY(`color`,`type`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `ships`
 (
     `id` INT PRIMARY KEY AUTO_INCREMENT,`activation` ENUM ('no','yes','done'),
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
-	`fleet` ENUM ('homeStar','ship', 'fleet'),
+	`fleet` ENUM ('homeStar','ship','fleet'),
 	`MP` INT(1) DEFAULT 0,`location` CHAR(8),
 	`status` JSON,
     INDEX (`location`),INDEX (`color`)

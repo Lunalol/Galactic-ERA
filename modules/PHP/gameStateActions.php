@@ -51,9 +51,9 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('nextPlayer');
 	}
-	function acCreateFleet(string $color, string $Fleet, array $ships)
+	function acShipsToFleet(string $color, string $Fleet, array $ships)
 	{
-		$this->checkAction('createFleet');
+		$this->checkAction('shipsToFleet');
 //
 		$player_id = self::getCurrentPlayerId();
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
@@ -63,31 +63,65 @@ trait gameStateActions
 //
 		if ($ships)
 		{
-			$fleet = $this->possible['fleets'][$Fleet];
+			$fleetID = Ships::getFleet($color, $Fleet);
+			Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + sizeof($ships));
 //
 			$location = Ships::get($color, $ships[0])['location'];
+			$fleet = Ships::get($color, $fleetID);
 			if ($fleet['location'] === 'stock')
 			{
+				Ships::setLocation($fleet['id'], $location);
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} creates a new fleet ${GPS}'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)), 'GPS' => $location,
-					'ship' => Ships::get($color, Ships::create($color, 'fleet', $location, ['fleet' => $fleet, 'ships' => sizeof($ships)]))]);
+					'player_name' => Players::getName(Factions::getPlayer($color)), 'GPS' => $location, 'ship' => Ships::get($color, $fleetID)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
-			else Ships::setStatus($fleet['id'], 'ships', intval(Ships::getStatus($fleet['id'], 'ships')) + sizeof($ships));
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to fleet ${GPS}'), [
 				'player_name' => Players::getName(Factions::getPlayer($color)), 'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
-			foreach ($ships as $ship)
+			foreach ($ships as $shipID)
 			{
+				$ship = Ships::get($color, $shipID);
+				if (!$ship) throw new BgaVisibleSystemException('Invalid ship: ' . $shipID);
+				if ($ship['location'] !== $location) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+				if ($ship['fleet'] !== 'ship') throw new BgaVisibleSystemException('Not a ship');
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('removeShip', '', ['ship' => Ships::get($color, $ship)]);
+				$this->notifyAllPlayers('removeShip', '', ['ship' => $ship]);
 //* -------------------------------------------------------------------------------------------------------- */
-				Ships::destroy($ship);
+				Ships::destroy($shipID);
 			}
 		}
 //
+		$this->gamestate->nextState('continue');
+	}
+	function acSwapFleets(string $color, array $fleets)
+	{
+		$this->checkAction('swapFleets');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (sizeof($fleets) !== 2) throw new BgaVisibleSystemException('Invalid fleets: ' . json_encode($fleets));
+		if (!array_key_exists($fleets[0], $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $fleets[0]);
+		if (!array_key_exists($fleets[1], $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $fleets[1]);
+//
+		$first = Ships::getFleet($color, $fleets[0]);
+		$second = Ships::getFleet($color, $fleets[1]);
+
+		$this->possible['stars'][] = 'stock';
+		if (!in_array(Ships::get($color, $first)['location'], $this->possible['stars'])) throw new BgaVisibleSystemException('Invalid location: ' . Ships::get($color, $first)['location']);
+		if (!in_array(Ships::get($color, $second)['location'], $this->possible['stars'])) throw new BgaVisibleSystemException('Invalid location: ' . Ships::get($color, $second)['location']);
+//
+		Ships::setStatus($first, 'fleet', $fleets[1]);
+		Ships::setStatus($second, 'fleet', $fleets[0]);
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $first, 'fleet' => $fleets[1]]]);
+		$this->notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $second, 'fleet' => $fleets[0]]]);
+//* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('continue');
 	}
 	function acDone(string $color): void
@@ -99,10 +133,13 @@ trait gameStateActions
 //
 		foreach (Ships::getAll($color) as $ship)
 		{
-			$MP = Factions::TECHNOLOGIES['Propulsion'][Factions::getTechnology($color, 'Propulsion')];
-			if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += 2;
-			if (!is_null(Ships::getStatus($ship['id'], 'fleet'))) $MP += 1;
-			Ships::setMP($ship['id'], $ship['fleet'] === 'homeStar' ? 0 : $MP);
+			if ($ship['location'] !== 'stock')
+			{
+				$MP = Factions::TECHNOLOGIES['Propulsion'][Factions::getTechnology($color, 'Propulsion')];
+				if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += 2;
+				if (Ships::getStatus($ship['id'], 'fleet') === 'D') $MP += 1;
+				Ships::setMP($ship['id'], $ship['fleet'] === 'homeStar' ? 0 : $MP);
+			}
 		}
 //
 		$this->gamestate->nextState('next');

@@ -53,7 +53,11 @@ trait gameStateArguments
 		$color = Factions::getActive();
 		$player_id = Factions::getPlayer($color);
 //
-		$this->possible = ['ships' => [], 'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0]), 'view' => Factions::getStatus($color, 'view')];
+		$this->possible = [
+			'ships' => [],
+			'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0]),
+			'stars' => array_keys(Counters::getPopulation($color)),
+			'view' => Factions::getStatus($color, 'view')];
 		foreach (Ships::getAll($color) as $ship)
 		{
 			$this->possible['ships'][] = $ship['id'];
@@ -76,7 +80,7 @@ trait gameStateArguments
 		$this->possible = ['move' => [], 'scout' => [], 'view' => Factions::getStatus($color, 'view')];
 		foreach (Ships::getAll($color) as $ship)
 		{
-			if ($ship['activation'] !== 'done')
+			if ($ship['activation'] !== 'done' && $ship['location'] !== 'stock')
 			{
 				switch ($ship['fleet'])
 				{

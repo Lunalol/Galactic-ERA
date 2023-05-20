@@ -73,7 +73,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const sX = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sX`));
 			const sY = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sY`));
 //
-			if (isNaN(scale) || isNaN(rotate) || isNaN(sX) || isNaN(sY)) this.home(this.player_id);
+			if (isNaN(scale) || isNaN(rotate) || isNaN(sX) || isNaN(sY)) this.home(this.bgagame.player_id);
 			else
 			{
 				this.setRotate(rotate);

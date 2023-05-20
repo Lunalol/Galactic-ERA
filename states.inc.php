@@ -114,7 +114,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
 		'args' => 'argFleets',
-		'possibleactions' => ['createFleet', 'swapFleet', 'dissolveFleet', 'removeViewing', 'done'],
+		'possibleactions' => ['shipsToFleet', 'fleetToShips', 'swapFleets', 'removeViewing', 'done'],
 		'transitions' => ['continue' => 210, 'next' => 220]
 	],
 	220 => [

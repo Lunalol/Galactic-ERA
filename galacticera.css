@@ -49,6 +49,22 @@ div,img {
 	filter: grayscale(1) !important;
 }
 
+#ERAfleets {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	padding: 2%;
+	background-color: #000000A0;
+	display: flex;
+	justify-content: space-evenly;
+	z-index: 500;
+	pointer-events: none;
+}
+.ERAfleetAction {
+	color: white;
+}
+
 /* <editor-fold defaultstate="collapsed" desc="Logs"> */
 .ERA-phase {
 	display: block;
@@ -144,18 +160,6 @@ div,img {
     -webkit-overflow-scrolling: touch;
     background-image:url('img/background.jpg');
 	border-radius: 15px;
-}
-#ERAfleets {
-	position: fixed;
-	top: 0px;
-	left: 0px;
-	right: 0px;
-	padding: 2%;
-	background-color: #000000A0;
-	display: flex;
-	justify-content: space-evenly;
-	z-index: 500;
-	pointer-events: none;
 }
 #ERAboard {
     transform-origin: top left;

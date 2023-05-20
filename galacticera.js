@@ -112,6 +112,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				{
 					for (let star in faction.revealed.stars) this.counters.flip({id: star, type: faction.revealed.stars[star]});
 					for (let relic in faction.revealed.relics) this.counters.flip({id: relic, type: faction.revealed.relics[relic]});
+					for (let fleet in faction.revealed.fleets) this.ships.reveal({id: fleet, fleet: faction.revealed.fleets[fleet]});
 				}
 			}
 //
@@ -531,7 +532,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						{
 							const _fleetNode = dojo.place(this.format_block('ERAfleet', {fleet: fleet, location: location, ships: ships}), 'ERAfleets');
 //
-							if (ships > 0) dojo.place('<div style="color:white;">⟱</div>', _fleetNode);
+							dojo.place(`<div class='ERAfleetAction' style="color:white;"></div>`, _fleetNode);
 							let fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, ship: ships, location: location}), _fleetNode);
 							dojo.setAttr(fleetNode, 'fleet', fleet);
 //
@@ -547,8 +548,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							dojo.style(fleetNode, 'pointer-events', 'all');
 							dojo.connect(fleetNode, 'click', (event) => {
 								const fleet = dojo.getAttr(event.currentTarget, 'fleet');
-								const ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
-								this.action('createFleet', {color: this.color, fleet: fleet, ships: JSON.stringify(ships)});
+								const ships = dojo.query(`#ERAboard .ERAship.ERAselected:not([fleet])`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
+								if (ships.length) return this.action('shipsToFleet', {color: this.color, fleet: fleet, ships: JSON.stringify(ships)});
+//
+								const fleets = dojo.query(`#ERAboard .ERAship.ERAselected[fleet]`).reduce((L, node) => [...L, node.getAttribute('fleet')], [fleet]);
+								this.action('swapFleets', {color: this.color, fleets: JSON.stringify(fleets)});
 							}
 							);
 						}
@@ -703,6 +707,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.subscribe('removeCounter', (notif) => this.counters.remove(notif.args.counter));
 			dojo.subscribe('placeShip', (notif) => this.ships.place(notif.args.ship));
 			dojo.subscribe('moveShips', (notif) => this.ships.move(notif.args.ships, notif.args.location));
+			dojo.subscribe('revealShip', (notif) => this.ships.reveal(notif.args.ship));
 			dojo.subscribe('removeShip', (notif) => this.ships.remove(notif.args.ship));
 //
 			this.notifqueue.setSynchronous('placeShip', DELAY);
@@ -724,12 +729,48 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			this.action('removeViewing', {color: this.color, counter: dojo.getAttr(counter, 'counter')});
 		},
-		fleets: function (location)
+		fleets: function (location, type, nodes)
 		{
-			dojo.removeClass('ERAfleets', 'ERAhide');
-			dojo.query('#ERAfleets .ERAfleet').forEach((node) => {
-				dojo.toggleClass(node, 'ERAhide', location !== dojo.getAttr(node, 'location') && 'stock' !== dojo.getAttr(node, 'location'));
-			});
+			console.log(location, type, nodes.length);
+//
+			dojo.toggleClass('ERAfleets', 'ERAhide', nodes.length === 0);
+//
+			switch (type)
+			{
+				case 'ships':
+					dojo.query('#ERAfleets .ERAfleet').forEach((node) => {
+						let hide = true;
+						if (this.gamedatas.gamestate.args._private.stars.includes(location))
+						{
+							let fleetLocation = dojo.getAttr(node, 'location');
+							if (fleetLocation === 'stock') hide = false;
+							if (fleetLocation === location)
+							{
+								hide = false;
+								node.querySelector('.ERAfleetAction').innerHTML = '⟱';
+							}
+						}
+						dojo.toggleClass(node, 'ERAhide', hide);
+					});
+					break;
+				case 'fleet':
+					const fleet = dojo.getAttr(nodes[0], 'fleet');
+					dojo.query('#ERAfleets .ERAfleet').forEach((node) => {
+						let hide = true;
+						if (this.gamedatas.gamestate.args._private.stars.includes(location))
+						{
+							if (fleet !== dojo.getAttr(node, 'fleet'))
+							{
+								let fleetLocation = dojo.getAttr(node, 'location');
+								if (fleetLocation === 'stock') hide = false;
+								if (this.gamedatas.gamestate.args._private.stars.includes(fleetLocation)) hide = false;
+								node.querySelector('.ERAfleetAction').innerHTML = '⇚⇛';
+							}
+						}
+						dojo.toggleClass(node, 'ERAhide', hide);
+					});
+					break;
+			}
 		},
 		gainStar: function (location)
 		{

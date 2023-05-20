@@ -67,6 +67,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			return node;
 		},
+		reveal: function (fleet)
+		{
+			let node = $(`ERAship-${fleet.id}`);
+			if (node) dojo.setAttr(node, 'fleet', fleet.fleet);
+		},
 		move: function (ships, to)
 		{
 			console.info('moveShips', ships, to);
@@ -201,7 +206,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						if (dojo.hasAttr(ship, 'fleet'))
 						{
 							dojo.query(`#ERAboard .ERAship[color='${color}']:not([fleet])`).removeClass('ERAselected');
-							dojo.toggleClass(ship, 'ERAselected');
+							dojo.addClass(ship, 'ERAselected');
+							return this.bgagame.fleets(location, 'fleet', dojo.query(`#ERAboard .ERAship.ERAselected`));
 						}
 						else
 						{
@@ -210,7 +216,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 							if (event.detail === 1) dojo.toggleClass(ship, 'ERAselected');
 							if (event.detail === 2) dojo.query(`#ERAboard .ERAship[color='${color}'][location='${location}']:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(ship, 'ERAselected'));
 						}
-						return this.bgagame.fleets(location);
+						return this.bgagame.fleets(location, 'ships', dojo.query(`#ERAboard .ERAship.ERAselected`));
 					}
 					else if (this.bgagame.gamedatas.gamestate.name === 'movement')
 					{

@@ -16,13 +16,17 @@ class Ships extends APP_GameClass
 	}
 	static function get(string $color, int $id): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT * FROM ships WHERE color = '$color' AND id = $id");
+		return self::getNonEmptyObjectFromDB("SELECT id, color, location, fleet FROM ships WHERE color = '$color' AND id = $id");
 	}
 	static function getHomeStar(string $color = null): array
 	{
 		$sql = "SELECT id, location FROM ships WHERE fleet = 'homeStar'";
 		if (!is_null($color)) $sql .= " AND color ='$color'";
 		return self::getCollectionFromDB($sql, true);
+	}
+	static function getFleet(string $color, string $fleet): int
+	{
+		return self::getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND status->'$.fleet' = '$fleet'");
 	}
 	static function getAtLocation(string $location, string $color = null, string $fleet = null): array
 	{

@@ -8,7 +8,7 @@ define('GAME', 100);
 define('INTRODUCTORY', 0);
 define('STANDARD', 1);
 //
-// Gamm globals
+// Game globals
 //
 define('ROUND', 10);
 define('GALACTICSTORY', 20);
@@ -21,10 +21,10 @@ define('SLAVERS', -2);
 //
 // Galacic stories (4)
 //
-define('JOURNEYS', 1);
-define('MIGRATIONS', 2);
-define('RIVALRY', 3);
-define('WARS', 4);
+define('JOURNEYS', 0);
+define('MIGRATIONS', 1);
+define('RIVALRY', 2);
+define('WARS', 3);
 //
 // Galacic goals (8)
 //
@@ -40,17 +40,17 @@ define('PRESENCE', 8);
 //
 // Domination cards (13)
 //
-define('ACQUISITION', 1);
-define('ALIGNMENT', 2);
-define('CENTRAL', 3);
-define('DEFENSIVE', 4);
-define('DENSITY', 5);
-define('DIPLOMATIC', 6);
-define('ECONOMIC', 7);
-define('ETHERIC', 8);
-define('EXPLORATORY', 9);
-define('GENERALSCIENTIFIC', 10);
-define('MILITARY', 11);
-define('SPATIAL', 12);
-define('SPECIALSCIENTIFIC', 13);
+define('ACQUISITION', 0);
+define('ALIGNMENT', 1);
+define('CENTRAL', 2);
+define('DEFENSIVE', 3);
+define('DENSITY', 4);
+define('DIPLOMATIC', 5);
+define('ECONOMIC', 6);
+define('ETHERIC', 7);
+define('EXPLORATORY', 8);
+define('GENERALSCIENTIFIC', 9);
+define('MILITARY', 10);
+define('SPATIAL', 11);
+define('SPECIALSCIENTIFIC', 12);
 //

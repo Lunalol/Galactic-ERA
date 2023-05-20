@@ -71,12 +71,12 @@ trait gameStates
 			foreach (array_keys($stars) as $hexagon) Counters::create('neutral', 'star', $sector . ':' . $hexagon, ['back' => array_pop($counters)]);
 //
 			Ships::create($color, 'homeStar', $sector . ':+0+0+0');
-			Ships::create($color, 'fleet', 'stock', ['fleet' => 'A']);
-			Ships::create($color, 'fleet', 'stock', ['fleet' => 'B']);
-			Ships::create($color, 'fleet', 'stock', ['fleet' => 'C']);
+			Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'A']));
+			Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'B']));
+			Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'C']));
 			$ship = Ships::create($color, 'fleet', 'stock', ['fleet' => 'D']);
-			foreach (Factions::list() as $otherColor) Ships::reveal($otherColor, 'D', $ship);
-			Ships::create($color, 'fleet', 'stock', ['fleet' => 'E']);
+			foreach (Factions::list() as $otherColor) Ships::reveal($otherColor, 'fleet', $ship);
+			Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'E']));
 		}
 //
 // Take three star counters of each of the three types (so a total of nine).
