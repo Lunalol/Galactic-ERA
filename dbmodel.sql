@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `counters`
 CREATE TABLE IF NOT EXISTS `revealed`
 (
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
-	`type` ENUM ('star', 'relic', 'dominationCard'), `id` INT,
+	`type` ENUM ('star', 'relic', 'dominationCard','A','B','C','D','E'), `id` INT,
     PRIMARY KEY(`color`,`type`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

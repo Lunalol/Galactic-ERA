@@ -71,6 +71,12 @@ trait gameStates
 			foreach (array_keys($stars) as $hexagon) Counters::create('neutral', 'star', $sector . ':' . $hexagon, ['back' => array_pop($counters)]);
 //
 			Ships::create($color, 'homeStar', $sector . ':+0+0+0');
+			Ships::create($color, 'fleet', 'stock', ['fleet' => 'A']);
+			Ships::create($color, 'fleet', 'stock', ['fleet' => 'B']);
+			Ships::create($color, 'fleet', 'stock', ['fleet' => 'C']);
+			$ship = Ships::create($color, 'fleet', 'stock', ['fleet' => 'D']);
+			foreach (Factions::list() as $otherColor) Ships::reveal($otherColor, 'D', $ship);
+			Ships::create($color, 'fleet', 'stock', ['fleet' => 'E']);
 		}
 //
 // Take three star counters of each of the three types (so a total of nine).
@@ -145,7 +151,7 @@ trait gameStates
 	function stStarPeople()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Star People choice')]);
+		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Star People choice')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$starPeoples = array_keys($this->STARPEOPLES);
 //
@@ -161,12 +167,12 @@ trait gameStates
 		shuffle($starPeoples);
 		foreach (Factions::list() as $color)
 		{
-			if (Factions::getPlayer($color) === FARMERS)
+			if (Factions::getPlayer($color) == FARMERS)
 			{
 				Factions::setStatus($color, 'starPeople', ['Farmers']);
 				Factions::STO($color);
 			}
-			else if (Factions::getPlayer($color) === SLAVERS)
+			else if (Factions::getPlayer($color) == SLAVERS)
 			{
 				Factions::setStatus($color, 'starPeople', ['Slavers']);
 				Factions::STS($color);
@@ -197,7 +203,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Alignment choice')]);
+		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Alignment choice')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->setAllPlayersMultiactive('next');
 		$this->gamestate->nextState('next');
@@ -523,7 +529,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Individual choices')]);
+		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Individual choices')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
@@ -537,7 +543,7 @@ trait gameStates
 			return $this->gamestate->nextState('individualChoice');
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Start of game')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -547,10 +553,8 @@ trait gameStates
 	{
 		$round = self::incGameStateValue('round', 1);
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('updateRound', '<span class = "ERA-phase">${log} ${round}/8</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Start of round'),
-			'round' => $round
-		]);
+		$this->notifyAllPlayers('updateRound', '<span class="ERA-phase">${log} ${round}/8</span>', [
+			'i18n' => ['log'], 'log' => clienttranslate('Start of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		Ships::setActivation();
 		Factions::setActivation();
@@ -566,7 +570,7 @@ trait gameStates
 		Factions::setStatus($color, 'view', Factions::TECHNOLOGIES['Spirituality'][Factions::getTechnology($color, 'Spirituality')]);
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
 			'log' => ['log' => clienttranslate('${player_name} Move/Combat Phase'), 'args' => ['player_name' => Players::getName(Factions::getPlayer($color))]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
@@ -583,7 +587,7 @@ trait gameStates
 	{
 		Factions::setActivation();
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -686,7 +690,7 @@ trait gameStates
 		Factions::setActivation($color, 'yes');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
 			'log' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Players::getName(Factions::getPlayer($color))]]
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -704,7 +708,7 @@ trait gameStates
 	function stTradingPhase()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Trading Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -722,7 +726,7 @@ trait gameStates
 	function stScoringPhase()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Scoring Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -844,10 +848,8 @@ trait gameStates
 	{
 		$round = self::getGameStateValue('round');
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log} ${round}/8</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('End of round'),
-			'round' => $round
-		]);
+		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log} ${round}/8</span>', [
+			'i18n' => ['log'], 'log' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color)
 		{

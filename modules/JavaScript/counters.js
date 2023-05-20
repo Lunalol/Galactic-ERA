@@ -13,7 +13,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		place: function (counter)
 		{
-			console.info('placeCounter', counter);
+//			console.info('placeCounter', counter);
 //
 			const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: counter.id, color: counter.color, type: counter.type, location: counter.location}), 'ERAboard');
 //

@@ -57,7 +57,12 @@ trait gameStateArguments
 		foreach (Ships::getAll($color) as $ship)
 		{
 			$this->possible['ships'][] = $ship['id'];
-			if ($ship['fleet'] === 'fleet') $this->possible['fleets'][Ships::getStatus($ship['id'], 'fleet')] = ['location' => $ship['location'], 'ships' => intval(Ships::getStatus($ship['id'], 'ships'))];
+			if ($ship['fleet'] === 'fleet')
+			{
+				$fleet = Ships::getStatus($ship['id'], 'fleet');
+				$this->possible['fleets'][$fleet] = $ship;
+				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
+			}
 		}
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];

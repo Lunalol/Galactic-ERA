@@ -16,6 +16,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		{
 			console.info('placeShip', ship);
 //
+			if (ship.location === 'stock') return;
+//
 			switch (ship.fleet)
 			{
 				case 'homeStar':
@@ -42,6 +44,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					}
 					break;
 				case 'fleet':
+				case 'A':
+				case 'B':
+				case 'C':
+				case 'D':
+				case 'E':
 					{
 						node = dojo.place(this.bgagame.format_block('ERAship', {id: ship.id, color: ship.color, location: ship.location}), 'ERAboard');
 						dojo.setAttr(node, 'fleet', '?');
@@ -49,6 +56,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'position', 'absolute');
 						dojo.style(node, 'left', (this.board.hexagons[ship.location].x - node.clientWidth / 2) + 'px');
 						dojo.style(node, 'top', (this.board.hexagons[ship.location].y - node.clientHeight / 2) + 'px');
+						dojo.setAttr(node, 'fleet', ship.fleet);
 //
 						dojo.connect(node, 'click', this, 'click');
 					}
@@ -86,7 +94,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		arrange: function (location)
 		{
 			let index = fleet = 0;
-			nodes = dojo.query(`.ERAship[location='${location}']`);
+			nodes = Array.from(dojo.query(`.ERAship[location='${location}']`)).sort((a, b) => dojo.hasAttr(a, 'fleet') ? -1 : 1);
 			for (const node of nodes)
 			{
 				if (dojo.hasAttr(node, 'fleet'))

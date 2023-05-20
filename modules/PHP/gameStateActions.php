@@ -51,7 +51,7 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('nextPlayer');
 	}
-	function acCreateFleet(string $color, string $fleet, array $ships)
+	function acCreateFleet(string $color, string $Fleet, array $ships)
 	{
 		$this->checkAction('createFleet');
 //
@@ -59,19 +59,25 @@ trait gameStateActions
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if (!array_key_exists($fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $fleet);
+		if (!array_key_exists($Fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $Fleet);
 //
 		if ($ships)
 		{
-			$ship = Ships::get($color, $ships[0]);
+			$fleet = $this->possible['fleets'][$Fleet];
+//
+			$location = Ships::get($color, $ships[0])['location'];
+			if ($fleet['location'] === 'stock')
+			{
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} moves ${N} ship(s) to fleet ${GPS}'), [
-				'player_name' => Players::getName(Factions::getPlayer($color)),
-				'ship' => Ships::get($color, Ships::create($color, 'fleet', $ship['location'], ['fleet' => $fleet, 'ships' => sizeof($ships)])),
-				'GPS' => $ship['location'],
-				'N' => sizeof($ships)
-				]
-			);
+				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} creates a new fleet ${GPS}'), [
+					'player_name' => Players::getName(Factions::getPlayer($color)), 'GPS' => $location,
+					'ship' => Ships::get($color, Ships::create($color, 'fleet', $location, ['fleet' => $fleet, 'ships' => sizeof($ships)]))]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+			else Ships::setStatus($fleet['id'], 'ships', intval(Ships::getStatus($fleet['id'], 'ships')) + sizeof($ships));
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to fleet ${GPS}'), [
+				'player_name' => Players::getName(Factions::getPlayer($color)), 'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			foreach ($ships as $ship)
 			{

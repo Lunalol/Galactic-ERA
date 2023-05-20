@@ -17,6 +17,9 @@ div,img {
     background-color:rgba(0, 0, 0, 0.5);
     color:white;
 }
+#game_play_area {
+	will-change: transform;
+}
 
 /* Simulate title property on mobile */
 @media (pointer: coarse), (hover: none) {
@@ -143,14 +146,16 @@ div,img {
 	border-radius: 15px;
 }
 #ERAfleets {
-	position: sticky;
+	position: fixed;
 	top: 0px;
 	left: 0px;
+	right: 0px;
 	padding: 2%;
 	background-color: #000000A0;
 	display: flex;
 	justify-content: space-evenly;
 	z-index: 500;
+	pointer-events: none;
 }
 #ERAboard {
     transform-origin: top left;

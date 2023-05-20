@@ -138,17 +138,16 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		home: function (player_id)
 		{
-			if (player_id in this.bgagame.players)
+			if (player_id in this.bgagame.players && player_id > 0)
 			{
 				const sector = this.bgagame.gamedatas.factions[this.bgagame.players[player_id]].homeStar;
-				this.setZoom(8 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
+				this.setZoom(10 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
 				this.setRotate(210 - 60 * sector);
 				this.centerMap(sector + ':+0+0+0');
 			}
 			else
 			{
-				this.setRotate(0);
-				this.setZoom(5 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
+				this.setZoom(10 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
 				this.centerMap('0:+0+0+0');
 			}
 			if ($('ERAchoice')) dojo.toggleClass('ERAchoice', 'ERAhide');

@@ -38,9 +38,23 @@ class Ships extends APP_GameClass
 		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
 		return self::getCollectionFromDB($sql . " ORDER BY color,fleet");
 	}
-	static function getAllDatas(): array
+	static function getAllDatas($player_id): array
 	{
-		return self::getCollectionFromDB("SELECT id,color,fleet,location FROM ships ORDER BY color,fleet");
+		$ships = self::getCollectionFromDB("SELECT id,color,fleet,location FROM ships ORDER BY color,fleet");
+		foreach ($ships as $id => $ship)
+		{
+			if ($player_id == Factions::getPlayer($ship['color']))
+			{
+				$fleet = self::getStatus($id, 'fleet');
+				if ($fleet)
+				{
+					$ships[$id]['fleet'] = self::getStatus($id, 'fleet');
+					$ships[$id]['ships'] = self::getStatus($id, 'ships');
+				}
+			}
+//			else $ships[$id]['id'] = 0;
+		}
+		return /* array_values */($ships);
 	}
 	static function setLocation(int $id, string $location): void
 	{
@@ -65,8 +79,13 @@ class Ships extends APP_GameClass
 	}
 	static function setStatus(int $id, string $status, $value = null): void
 	{
-		if (is_null($value)) self::dbQuery("UPDATE ships SET status = JSON_REMOVE(status, '$.$status') WHERE id = $id'");
-		else self::dbQuery("UPDATE ships SET status = JSON_SET(status, '$.$status', '$value') WHERE color = '$color'");
+		if (is_null($value)) self::dbQuery("UPDATE ships SET status = JSON_REMOVE(status, '$.$status') WHERE id = $id");
+		else self::dbQuery("UPDATE ships SET status = JSON_SET(status, '$.$status', '$value') WHERE id = $id");
+	}
+	static function reveal(string $color, string $type, int $id)
+	{
+		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
+		return self::DbGetLastId();
 	}
 	static function movement(array $ship)
 	{

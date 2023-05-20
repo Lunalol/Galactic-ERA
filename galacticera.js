@@ -62,8 +62,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				{
 					if (otherFaction.color !== faction.color)
 					{
-						dojo.place(`<div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAsmall' title='${'In peace with'} ${gamedatas.players[otherFaction.player_id].name}'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace'></div></div>`, nodeOrder, 'after');
-						dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}' style='display:none;' class='ERAsmall' title='${'At war with'} ${gamedatas.players[otherFaction.player_id].name}'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war'></div></div>`, nodeOrder, 'after');
+						dojo.place(`<div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAsmall'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace'></div></div>`, nodeOrder, 'after');
+						dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}' class='ERAsmall'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war' style='display:none;'></div></div>`, nodeOrder, 'after');
 					}
 				}
 //
@@ -291,7 +291,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 												this.setClientState(counter, {counter: node.id, possibleactions: ['gainStar'], descriptionmyturn: _('${you} may choose to populate or take over a star')});
 												break;
 											case 'buildShips':
-												this.setClientState(counter, {counter: node.id, possibleactions: ['buildShips'], descriptionmyturn: _('${you} gets new ships')});
+												this.setClientState(counter, {counter: node.id, possibleactions: ['buildShips'], descriptionmyturn: _('${you} get new ships')});
 												break;
 										}
 									}
@@ -529,13 +529,23 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						dojo.empty('ERAfleets');
 						for (let [fleet, {location: location, ships: ships}] of Object.entries(args._private.fleets))
 						{
-							const fleetNode = dojo.place(this.format_block('ERAfleet', {fleet: fleet, location: location ? location : 'available', ships: ships}), 'ERAfleets');
-							const node = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, ship: ships, location: location ? location : 'available'}), fleetNode);
-							dojo.setAttr(node, 'fleet', fleet);
+							const _fleetNode = dojo.place(this.format_block('ERAfleet', {fleet: fleet, location: location, ships: ships}), 'ERAfleets');
 //
-							if (ships > 0) dojo.place(`<div style='color:white;'>(${ships})</div>`, fleetNode);
+							if (ships > 0) dojo.place('<div style="color:white;">⟱</div>', _fleetNode);
+							let fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, ship: ships, location: location}), _fleetNode);
+							dojo.setAttr(fleetNode, 'fleet', fleet);
+//
+							const shipsNode = dojo.place(`<div style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
+							for (let index = 0; index < ships; index++)
+							{
+								let node = dojo.place(this.format_block('ERAship', {id: 0, color: this.color, location: location}), shipsNode);
+								dojo.style(node, 'transform', `scale(20%) translateY(${index * node.clientHeight / 4}px)`);
+								dojo.style(node, 'transform-origin', 'left top');
+								dojo.style(node, 'position', 'absolute');
+							}
 //1
-							dojo.connect(node, 'click', (event) => {
+							dojo.style(fleetNode, 'pointer-events', 'all');
+							dojo.connect(fleetNode, 'click', (event) => {
 								const fleet = dojo.getAttr(event.currentTarget, 'fleet');
 								const ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
 								this.action('createFleet', {color: this.color, fleet: fleet, ships: JSON.stringify(ships)});
@@ -718,9 +728,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			dojo.removeClass('ERAfleets', 'ERAhide');
 			dojo.query('#ERAfleets .ERAfleet').forEach((node) => {
-				console.log(location, dojo.getAttr(node, 'location'));
-				dojo.toggleClass(node, 'ERAhide', location !== dojo.getAttr(node, 'location') && 'available' !== dojo.getAttr(node, 'location'));
-				console.log(node);
+				dojo.toggleClass(node, 'ERAhide', location !== dojo.getAttr(node, 'location') && 'stock' !== dojo.getAttr(node, 'location'));
 			});
 		},
 		gainStar: function (location)
