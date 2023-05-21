@@ -190,10 +190,27 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			if (this.bgagame.isCurrentPlayerActive())
 			{
-				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
-				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
-				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
-				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
+//
+				if (this.bgagame.gamedatas.gamestate.name === 'gainStar')
+				{
+					dojo.stopEvent(event);
+					return this.bgagame.gainStar(location);
+				}
+				if (this.bgagame.gamedatas.gamestate.name === 'buildShips')
+				{
+					dojo.stopEvent(event);
+					return this.bgagame.buildShips(location);
+				}
+				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation')
+				{
+					dojo.stopEvent(event);
+					return this.bgagame.growPopulation(location);
+				}
+				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation')
+				{
+					dojo.stopEvent(event);
+					return this.bgagame.bonusPopulation(location);
+				}
 //
 				if (dojo.hasClass(ship, 'ERAselectable'))
 				{

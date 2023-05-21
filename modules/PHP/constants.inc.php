@@ -4,6 +4,7 @@ define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== 
 // Game options
 //
 define('GAME', 100);
+define('DIFFICULTY', 101);
 //
 define('INTRODUCTORY', 0);
 define('STANDARD', 1);

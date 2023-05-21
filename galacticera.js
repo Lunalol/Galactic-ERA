@@ -51,7 +51,14 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				dojo.style(nodeStarPeople, 'flex', '1 1 50%');
 //
 				let nodeCounters = dojo.place(this.format_block('ERAtechnologies', {color: faction.color}), nodeFaction);
-				dojo.place(`<div>${'Population disks'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeCounters);
+//
+				let nodePopulation = dojo.place(`<div>${'Population disks'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeCounters);
+// Farmers
+				if (+faction.player_id === -1) dojo.style(nodePopulation, 'display', 'none');
+// Slavers
+				if (+faction.player_id === -2)
+					dojo.place(`<div id='ERAoffboard' title='${_('Slavers’ offboard power track')}'><img style='width:100%;' src='${g_gamethemeurl}img/offboard.jpg' draggable='false'/></div>`, nodeFaction, 'after');
+//
 				for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
 				{
 					dojo.place(`<div><span class='ERAtechnology' title='${_(technology)}' technology=${technology}>?</span><div class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology' counter='${technology}'/></div>`, nodeCounters);
@@ -292,7 +299,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 												this.setClientState(counter, {counter: node.id, possibleactions: ['gainStar'], descriptionmyturn: _('${you} may choose to populate or take over a star')});
 												break;
 											case 'buildShips':
-												this.setClientState(counter, {counter: node.id, possibleactions: ['buildShips'], descriptionmyturn: _('${you} get new ships')});
+												this.setClientState(counter, {counter: node.id, possibleactions: ['buildShips'], descriptionmyturn: _('${you} get new ships') + ` (${state.args._private.newShips})`});
 												break;
 										}
 									}
@@ -318,7 +325,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			switch (stateName)
 			{
-				case 'removeViewing':
+				case 'remoteViewing':
 					dojo.query('#ERAboard .ERAcounter-star:not([back]').addClass('ERAselectable').addClass('ERAselected');
 					dojo.query('#ERAboard .ERAcounter-relic:not([back]').addClass('ERAselectable').addClass('ERAselected');
 					break;
@@ -482,14 +489,14 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			if (this.isCurrentPlayerActive())
 			{
-				if (this.gamedatas.gamestate.possibleactions.includes('removeViewing'))
+				if (this.gamedatas.gamestate.possibleactions.includes('remoteViewing'))
 				{
 					this.addActionButton('ERAviewButton', '<span class="fa fa-eye fa-spin"></span> ×' + args._private.view, () =>
 					{
-						this.setClientState('removeViewing', {descriptionmyturn: _('${you} may may secretly look at one “hidden thing”')});
+						if (args._private.view > 0) this.setClientState('remoteViewing', {descriptionmyturn: _('${you} may may secretly look at one “hidden thing”')});
 					});
 					dojo.setAttr('ERAviewButton', 'title', _('Remote Viewing is the psychic ability to tap into the Universal Mind to see any event anywhere in space and time'));
-					dojo.toggleClass('ERAviewButton', 'disabled', args._private.view === 0);
+					if (args._private.view === 0) dojo.style('ERAviewButton', 'filter', 'grayscale(1)');
 				}
 //
 				switch (stateName)
@@ -621,8 +628,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						{
 							const counters = dojo.query(`#ERAchoice .ERAselected`).reduce((L, node) => [...L, node.getAttribute('counter')], []);
 							this.action('selectCounters', {color: args._private.color, counters: JSON.stringify(counters)}, () => {
-								this.last_server_state.args._private.counters = counters;
-								this.restoreServerGameState();
+								if (this.gamedatas.gamestate.name === 'selectCounters')
+								{
+									this.last_server_state.args._private.counters = counters;
+									this.restoreServerGameState();
+								}
 							});
 						});
 						dojo.toggleClass('ERAselectButton', 'disabled', dojo.query('#ERAchoice .ERAcounter-growth.ERAselected').length !== +args._private.N || dojo.query('#ERAchoice .ERAcounter-technology.ERAselected,#ERAchoice .ERAcounter-turnOrder.ERAselected').length !== 1);
@@ -725,9 +735,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				dojo.setAttr('ERApawn', 'title', dojo.string.substitute(_('Round ${round} of 8'), {round: round}));
 			}
 		},
-		removeViewing: function (counter)
+		remoteViewing: function (counter)
 		{
-			this.action('removeViewing', {color: this.color, counter: dojo.getAttr(counter, 'counter')});
+			this.action('remoteViewing', {color: this.color, counter: dojo.getAttr(counter, 'counter')});
 		},
 		fleets: function (location, type, nodes)
 		{
@@ -833,6 +843,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			{
 				args.processed = true;
 				if ('GPS' in args) args.GPS = `<span onclick="gameui.onCenter(event)" location='${args.GPS}'>📌</span>`;
+				if ('DICE' in args) args.DICE = `<span class='ERAdice' style='background-position-x:-${30 * (args.DICE - 1)}px'></span>`;
 			}
 			return this.inherited(arguments);
 		}

@@ -27,6 +27,7 @@ class GalacticEra extends Table
 //
 		$this->GLOBALLABELS = [
 			'game' => GAME,
+			'difficulty' => DIFFICULTY,
 			'round' => ROUND,
 			'galacticStory' => GALACTICSTORY,
 			'galacticGoal' => GALACTICGOAL,
@@ -98,10 +99,25 @@ class GalacticEra extends Table
 //
 		return $result;
 	}
-	function dbSetScore(int $player_id, int $score, int $score_aux = 0): void
+	function dbGetScore(int $player_id): int
 	{
-		$this->DbQuery("UPDATE player SET player_score=$score, player_score_aux=$score_aux WHERE player_id = $player_id");
-		$this->notifyAllPlayers('update_score', '', ['player_id' => $player_id, 'score' => $score]);
+		return intval(self::getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id='$player_id'"));
+	}
+	function dbSetScore(int $player_id, int $score = 0): void
+	{
+		$this->DbQuery("UPDATE player SET player_score = $score WHERE player_id = $player_id");
+	}
+	function dbIncScore(int $player_id, int $inc): int
+	{
+		if ($player_id <= 0) return 0;
+//
+		$score = self::dbGetScore($player_id);
+		if ($inc !== 0)
+		{
+			$score += $inc;
+			$this->dbSetScore($player_id, $score);
+		}
+		return $score;
 	}
 	function getGameProgression(): int
 	{

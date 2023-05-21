@@ -1386,6 +1386,11 @@ class Sectors extends APP_GameClass
 		{
 			case 1:
 				$locations = [1];
+				foreach (Automas::WORMHOLES as $location)
+				{
+					Counters::create('neutral', 'wormhole', $location);
+					Counters::create('neutral', 'wormhole', $location);
+				}
 				break;
 			case 2:
 			case 3:
@@ -1455,6 +1460,7 @@ class Sectors extends APP_GameClass
 	}
 	static function terrainFromLocation(string $location): int
 	{
+		if ($location === 'stock') return 0;
 		[0 => $sector, 1 => $q, 2 => $r, 3 => $s] = sscanf($location, '%1d:%2d%2d%2d');
 		return Sectors::terrainFromHex($sector, Hex($q, $r, $s));
 	}

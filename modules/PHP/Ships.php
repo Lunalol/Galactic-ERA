@@ -7,7 +7,7 @@ class Ships extends APP_GameClass
 	static function create($color, $fleet, $location, array $status = []): int
 	{
 		$json = self::escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
-		self::DbQuery("INSERT INTO ships (color,fleet,location,activation,status) VALUES ('$color','$fleet','$location','no', '$json')");
+		self::DbQuery("INSERT INTO ships (color,fleet,location,activation,status) VALUES ('$color','$fleet','$location','no','$json')");
 		return self::DbGetLastId();
 	}
 	static function destroy(int $id): void
@@ -16,13 +16,17 @@ class Ships extends APP_GameClass
 	}
 	static function get(string $color, int $id): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT id, color, location, fleet FROM ships WHERE color = '$color' AND id = $id");
+		return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE color = '$color' AND id = $id");
 	}
 	static function getHomeStar(string $color = null): array
 	{
-		$sql = "SELECT id, location FROM ships WHERE fleet = 'homeStar'";
+		$sql = "SELECT id,location FROM ships WHERE fleet = 'homeStar'";
 		if (!is_null($color)) $sql .= " AND color ='$color'";
 		return self::getCollectionFromDB($sql, true);
+	}
+	static function isShip(string $color, int $id): bool
+	{
+		return boolval(self::getUniqueValueFromDB("SELECT fleet = 'ship' FROM ships WHERE color = '$color' AND id = $id"));
 	}
 	static function getFleet(string $color, string $fleet): int
 	{
@@ -44,7 +48,7 @@ class Ships extends APP_GameClass
 	}
 	static function getAllDatas($player_id): array
 	{
-		$ships = self::getCollectionFromDB("SELECT id,color,fleet,location FROM ships ORDER BY color,fleet");
+		$ships = self::getCollectionFromDB("SELECT id,color,fleet,location,activation FROM ships ORDER BY color,fleet");
 		foreach ($ships as $id => $ship)
 		{
 			if ($player_id == Factions::getPlayer($ship['color']))
@@ -83,8 +87,8 @@ class Ships extends APP_GameClass
 	}
 	static function setStatus(int $id, string $status, $value = null): void
 	{
-		if (is_null($value)) self::dbQuery("UPDATE ships SET status = JSON_REMOVE(status, '$.$status') WHERE id = $id");
-		else self::dbQuery("UPDATE ships SET status = JSON_SET(status, '$.$status', '$value') WHERE id = $id");
+		if (is_null($value)) self::dbQuery("UPDATE ships SET status = JSON_REMOVE(status,'$.$status') WHERE id = $id");
+		else self::dbQuery("UPDATE ships SET status = JSON_SET(status,'$.$status','$value') WHERE id = $id");
 	}
 	static function reveal(string $color, string $type, int $id)
 	{

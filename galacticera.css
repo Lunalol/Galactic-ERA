@@ -40,6 +40,14 @@ div,img {
 	}
 }
 
+.ERAdice {
+    display:inline-block;
+    vertical-align:middle;
+    width:30px;
+    height:30px;
+    background-image:url('img/dices.png');
+}
+
 .ERAhide {
 	visibility: hidden;
 }
@@ -310,6 +318,7 @@ div,img {
 }
 /* </editor-fold> */
 
+
 .ERAchoice {
 	position: absolute;
 	top: 0px;
@@ -444,6 +453,12 @@ div,img {
 #ERAboard .ERAcounter:not(.ERAselectable) {
 	filter:brightness(75%);
 	transition: filter .25s, transform .25s;
+}
+
+#ERAoffboard {
+	position: relative;
+	padding: 10px;
+	box-sizing: border-box;
 }
 
 /* <editor-fold defaultstate="collapsed" desc="Cylinders (6)"> */

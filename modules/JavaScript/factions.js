@@ -56,23 +56,41 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			if ('DP' in faction)
 			{
-				if (faction.player_id in this.bgagame.scoreCtrl) this.bgagame.scoreCtrl[faction.player_id].setValue(faction.DP);
-//
-				dojo.query(`#ERA-DP .ERAcounter-cylinder.ERAcounter-${faction.color}`).remove();
-				let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
-				dojo.style(node, 'position', 'absolute');
-				dojo.style(node, 'left', (faction.DP * 49) + 'px');
-//
-				let nodes = dojo.query(`#ERA-DP .ERAcounter-cylinder`);
-				let index = {};
-				for (let node of nodes)
+				if (+faction.player_id === -2)
 				{
-					let DP = dojo.getAttr(node, 'location');
-					if (!(DP in index)) index[DP] = 0;
-					dojo.style(node, 'transform', `scale(.75) translate(+${index[DP] * node.clientWidth / 10}px, -${index[DP] * node.clientHeight / 5}px) `);
-					dojo.style(node, 'z-index', index[DP] + 100);
-					dojo.setAttr(node, 'title', dojo.string.substitute(_('${DP} destiny points'), {DP: DP}));
-					index[DP]++;
+					dojo.query('.ERAcounter-population', 'ERAoffboard').remove();
+					for (let i = 0; i < faction.DP; i++)
+					{
+						let x = 20 + 30 * i;
+						let y = 75;
+						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisk', location: 'offbard'}), 'ERAoffboard');
+						dojo.style(node, 'position', 'absolute');
+						dojo.style(node, 'left', x + 'px');
+						dojo.style(node, 'top', y + 'px');
+						dojo.style(node, 'transform', 'scale(12.5%)');
+						dojo.style(node, 'transform-origin', 'left top');
+					}
+				}
+				if (faction.player_id in this.bgagame.gamedatas.players)
+				{
+					if (faction.player_id in this.bgagame.scoreCtrl) this.bgagame.scoreCtrl[faction.player_id].setValue(faction.DP);
+//
+					dojo.query(`.ERAcounter-cylinder.ERAcounter-${faction.color}`, 'ERA-DP').remove();
+					let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
+					dojo.style(node, 'position', 'absolute');
+					dojo.style(node, 'left', (faction.DP * 49) + 'px');
+//
+					let nodes = dojo.query(`#ERA-DP .ERAcounter-cylinder`);
+					let index = {};
+					for (let node of nodes)
+					{
+						let DP = dojo.getAttr(node, 'location');
+						if (!(DP in index)) index[DP] = 0;
+						dojo.style(node, 'transform', `scale(.75) translate(+${index[DP] * node.clientWidth / 10}px, -${index[DP] * node.clientHeight / 5}px) `);
+						dojo.style(node, 'z-index', index[DP] + 100);
+						dojo.setAttr(node, 'title', dojo.string.substitute(_('${DP} destiny points'), {DP: DP}));
+						index[DP]++;
+					}
 				}
 			}
 //
@@ -81,7 +99,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				const nodePopulationTrack = $(`ERApopulationTrack-${faction.color}`);
 				if (nodePopulationTrack)
 				{
-					dojo.query('.ERAcounter-populationDisk', nodePopulationTrack).remove();
+//					dojo.query('.ERAcounter-populationDisk', nodePopulationTrack).remove();
+					dojo.empty(nodePopulationTrack);
 					for (let population = 1 + +faction.population; population < 40; population++)
 					{
 						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisk', location: 'populationTrack'}), nodePopulationTrack);
@@ -94,7 +113,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'transform', 'scale(20%)');
 					}
 				}
-				$(`ERApopulation-${faction.color}`).innerHTML = dojo.query(`#ERApopulationTrack-${faction.color}>.ERAcounter-populationDisk`).length;
+				$(`ERApopulation-${faction.color}`).innerHTML = 39 - faction.population;
 			}
 //
 			const nodeTechnologiesTrack = $(`ERAtechTrack-${faction.color}`);
@@ -124,6 +143,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					node.innerHTML = html;
 				}
 			});
+//
 			if ('order' in faction) dojo.setAttr(`ERAorder-${faction.color}`, 'order', faction.order);
 		}
 	}

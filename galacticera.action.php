@@ -86,7 +86,7 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
-	public function removeViewing()
+	public function remoteViewing()
 	{
 		self::setAjaxMode();
 //

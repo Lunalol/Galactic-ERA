@@ -64,6 +64,12 @@ class Factions extends APP_GameClass
 	{
 		return self::getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'");
 	}
+	static function getName(string $color)
+	{
+		$player_id = self::getPlayer($color);
+		if ($player_id < 0) return Automas::getName($player_id, $color);
+		return Players::getName($player_id);
+	}
 	static function getHomeStar(string $color): int
 	{
 		return intval(self::getUniqueValueFromDB("SELECT homeStar FROM factions WHERE color = '$color'"));
@@ -152,6 +158,7 @@ class Factions extends APP_GameClass
 	static function ships(string $color): int
 	{
 		$ships = self::TECHNOLOGIES['Robotics'][self::getTechnology($color, 'Robotics')];
+		foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $ships++;
 		foreach (self::BUILD as $population)
 		{
 			if ($population > self::getPopulation($color)) break;

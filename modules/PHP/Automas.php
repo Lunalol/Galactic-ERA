@@ -6,11 +6,29 @@
  */
 class Automas extends APP_GameClass
 {
+	const DIFFICULTY = [0, 0, 1, 2];
 	const WORMHOLES = ['0:-2+4-2', '1:-4+2+2', '1:+2+2-4'];
 //
-	function startBonus(string $color): array
+	function getName(int $player_id, string $color)
 	{
-		$dice = bga_rand(1, 6);
+		switch ($player_id)
+		{
+			case FARMERS:
+				return [
+					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${NAME}</span>',
+					'args' => ['NAME' => clienttranslate('Farmers'), 'i18n' => ['NAME']]
+				];
+			case SLAVERS:
+				return [
+					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${NAME}</span>',
+					'args' => ['NAME' => clienttranslate('Slavers'), 'i18n' => ['NAME']]
+				];
+			default:
+				throw new BgaVisibleSystemException('Invalid automas: ' . $player_id);
+		}
+	}
+	function startBonus(string $color, int $dice): array
+	{
 		switch (Factions::getPlayer($color))
 		{
 			case FARMERS:
@@ -44,11 +62,12 @@ class Automas extends APP_GameClass
 					}
 				}
 				break;
+			default:
+				throw new BgaVisibleSystemException('Invalid automas: ' . $player_id);
 		}
 	}
-	function movement(string $color): void
+	function movement(string $color, int $dice): void
 	{
-		$dice = bga_rand(1, 6);
 		switch (Factions::getPlayer($color))
 		{
 			case FARMERS:
@@ -89,18 +108,18 @@ class Automas extends APP_GameClass
 					}
 				}
 				break;
+			default:
+				throw new BgaVisibleSystemException('Invalid automas: ' . $player_id);
 		}
 //
-		Factions::setActivation($color, 'done');
 	}
-	function growthActions(string $color): array
+	function growthActions(string $color, int $difficulty, int $dice): array
 	{
 		$wormholes = self::WORMHOLES;
 		shuffle($wormholes);
 //
 		$counters = [];
 //
-		$dice = bga_rand(1, 6);
 		switch (Factions::getPlayer($color))
 		{
 			case FARMERS:
@@ -145,29 +164,30 @@ class Automas extends APP_GameClass
 							$counters[] = 'research';
 							$counters[] = 'Military';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), $wormholes)));
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), $wormholes)));
 							break;
 						case 2:
 							$counters[] = 'changeTurnOrderDown';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), array_slice($wormholes, 0, 2))));
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 2))));
 							break;
 						case 3:
 							$counters[] = 'research';
 							$counters[] = 'Propulsion';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), array_slice($wormholes, 0, 1))));
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 1))));
 							break;
 						case 4:
 							$counters[] = 'research';
 							$counters[] = 'Robotics';
 							$counters[] = 'buildShips';
-							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, Factions::ships($color), [self::WORMHOLES[0]])));
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
 							break;
 						case 5:
 							$counters[] = 'changeTurnOrderDown';
 							$counters[] = 'gainStar';
-							$counters[] = 'growPopulation';
+//							$counters[] = 'growPopulation';
+							Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
 							break;
 						case 6:
 							$counters[] = 'gainStar';
@@ -177,6 +197,8 @@ class Automas extends APP_GameClass
 					}
 				}
 				break;
+			default:
+				throw new BgaVisibleSystemException('Invalid automas: ' . $player_id);
 		}
 //
 		return $counters;
@@ -216,7 +238,5 @@ class Automas extends APP_GameClass
 			}
 			throw new BgaVisibleSystemException('Automas Growth Action not implemented');
 		}
-//
-		Factions::setActivation($color, 'done');
 	}
 }

@@ -176,6 +176,8 @@ trait gameStates
 			{
 				Factions::setStatus($color, 'starPeople', ['Slavers']);
 				Factions::STS($color);
+				Factions::gainPopulation($color, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
+				Factions::gainDP($color, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
 			}
 			else Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 		}
@@ -195,7 +197,7 @@ trait gameStates
 			Factions::setStatus($color, 'starPeople');
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${STARPEOPLE}</B>'), [
-				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'player_name' => Factions::getName($color),
 				'i18n' => ['STARPEOPLE'], 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($color)],
 				'faction' => ['color' => $color, 'starPeople' => $starPeople, 'alignment' => Factions::getAlignment($color)]
 				]
@@ -222,7 +224,7 @@ trait gameStates
 			$alignment = Factions::getAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${ALIGNMENT}</B>'), [
-				'player_name' => Players::getName(Factions::getPlayer($color)),
+				'player_name' => Factions::getName($color),
 				'i18n' => ['STARPEOPLE', 'ALIGNMENT'], 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($color)], 'ALIGNMENT' => Factions::getAlignment($color),
 				'faction' => ['color' => $color, 'starPeople' => $starPeople, 'alignment' => $alignment]
 			]);
@@ -238,10 +240,9 @@ trait gameStates
 // ANCHARA SPECIAL STO: Start with 2 additional DP.
 					if ($alignment === 'STO')
 					{
-						Factions::gainDP($color, 2);
-						self::dbSetScore(Factions::getPlayer($color), 2);
+						self::dbSetScore(Factions::getPlayer($color), Factions::gainDP($color, 2));
 //* -------------------------------------------------------------------------------------------------------- */
-						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 DP</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
+						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 DP</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
 // ANCHARA SPECIAL STS: Start with 2 additional ships.
@@ -251,7 +252,7 @@ trait gameStates
 						{
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
+								'player_name' => Factions::getName($color),
 								'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -263,8 +264,8 @@ trait gameStates
 					[$technology, $level] = ['Genetics', 2];
 					Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)),
+					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+						'player_name' => Factions::getName($color),
 						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 						'LEVEL' => $level,
 					]);
@@ -276,8 +277,8 @@ trait gameStates
 					{
 						Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-							'player_name' => Players::getName(Factions::getPlayer($color)),
+						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+							'player_name' => Factions::getName($color),
 							'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 							'LEVEL' => $level,
 						]);
@@ -294,8 +295,8 @@ trait gameStates
 					[$technology, $level] = ['Military', 2];
 					Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)),
+					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+						'player_name' => Factions::getName($color),
 						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 						'LEVEL' => $level,
 					]);
@@ -304,7 +305,7 @@ trait gameStates
 					{
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
-							'player_name' => Players::getName(Factions::getPlayer($color)),
+							'player_name' => Factions::getName($color),
 							'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -314,7 +315,7 @@ trait gameStates
 // SPECIAL STO & STS: Start with 1 additional ship.
 //* -------------------------------------------------------------------------------------------------------- */
 					$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)),
+						'player_name' => Factions::getName($color),
 						'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 					]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -323,11 +324,11 @@ trait gameStates
 // GREYS SPECIAL STO: Start with 1 ship less than normal.
 					if ($alignment === 'STO')
 					{
-						$ships = Ships::getAll($color);
+						$ships = Ships::getAll($color, 'ship');
 						$shipID = array_pop($ships)['id'];
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->notifyAllPlayers('removeShip', clienttranslate('${player_name} loses one ship'), [
-							'player_name' => Players::getName(Factions::getPlayer($color)),
+							'player_name' => Factions::getName($color),
 							'ship' => Ships::get($color, $shipID),
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -338,7 +339,7 @@ trait gameStates
 					{
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
-							'player_name' => Players::getName(Factions::getPlayer($color)),
+							'player_name' => Factions::getName($color),
 							'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -352,8 +353,8 @@ trait gameStates
 							[$technology, $level] = ['Propulsion', 2];
 							Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
+							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+								'player_name' => Factions::getName($color),
 								'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 								'LEVEL' => $level,
 							]);
@@ -365,14 +366,14 @@ trait gameStates
 							[$technology, $level] = ['Robotics', 2];
 							Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
+							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+								'player_name' => Factions::getName($color),
 								'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 								'LEVEL' => $level,
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
+								'player_name' => Factions::getName($color),
 								'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -388,7 +389,7 @@ trait gameStates
 							Factions::gainPopulation($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
+								'player_name' => Factions::getName($color),
 								'counter' => Counters::get(Counters::create($color, 'populationDisk', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -400,8 +401,8 @@ trait gameStates
 						[$technology, $level] = ['Genetics', 2];
 						Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-							'player_name' => Players::getName(Factions::getPlayer($color)),
+						$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+							'player_name' => Factions::getName($color),
 							'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 							'LEVEL' => $level,
 						]);
@@ -413,8 +414,8 @@ trait gameStates
 					[$technology, $level] = ['Robotics', 2];
 					Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)),
+					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+						'player_name' => Factions::getName($color),
 						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 						'LEVEL' => $level,
 					]);
@@ -425,25 +426,43 @@ trait gameStates
 					[$technology, $level] = ['Spirituality', 3];
 					Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-						'player_name' => Players::getName(Factions::getPlayer($color)),
+					$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+						'player_name' => Factions::getName($color),
 						'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 						'LEVEL' => $level,
 					]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
-				case 'Farmers':
 				case 'Slavers':
+				case 'Farmers':
+//
 // Each automa also gets a start bonus
-					foreach (Automas::startBonus($color) as $technology => $level)
+//
+					$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+						'player_name' => Factions::getName($color), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+					foreach (Automas::startBonus($color, $dice) as $technology => $level)
 					{
-						if ($technology === 'offboard') throw new BgaVisibleSystemException('Offboard power strack not implemented');
-						Factions::setTechnology($color, $technology, $level);
+						if ($technology === 'offboard')
+						{
+							Factions::gainPopulation($color, 2);
+							Factions::gainDP($color, 2);
 //* -------------------------------------------------------------------------------------------------------- */
-						$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-							'player_name' => Players::getName(Factions::getPlayer($color)), 'faction' => Factions::get($color),
-							'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level]);
+							$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes 2 population discs from their population track (add to offboard power track)'), [
+								'player_name' => Factions::getName($color), 'faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+						}
+						else
+						{
+							Factions::setTechnology($color, $technology, $level);
+//* -------------------------------------------------------------------------------------------------------- */
+							$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+								'player_name' => Factions::getName($color), 'faction' => Factions::get($color),
+								'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
 					}
 					break;
 			}
@@ -460,7 +479,7 @@ trait gameStates
 							Factions::setStatus($color, 'bonus', 'Grow');
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B> in the first round'), [
-								'player_name' => Players::getName(Factions::getPlayer($color)),
+								'player_name' => Factions::getName($color),
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 							break;
@@ -473,8 +492,8 @@ trait gameStates
 									{
 										Factions::setActivation($color, 'no');
 //* -------------------------------------------------------------------------------------------------------- */
-										$this->notifyAllPlayers('msg', clienttranslate('${player_name} has already <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-											'player_name' => Players::getName(Factions::getPlayer($color)),
+										$this->notifyAllPlayers('msg', clienttranslate('${player_name} has already <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+											'player_name' => Factions::getName($color),
 											'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 											'LEVEL' => $current,
 										]);
@@ -484,8 +503,8 @@ trait gameStates
 									{
 										Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
-										$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} level ${LEVEL}</B>'), [
-											'player_name' => Players::getName(Factions::getPlayer($color)),
+										$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+											'player_name' => Factions::getName($color),
 											'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],
 											'LEVEL' => $level,
 										]);
@@ -500,7 +519,7 @@ trait gameStates
 								{
 //* -------------------------------------------------------------------------------------------------------- */
 									$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
-										'player_name' => Players::getName(Factions::getPlayer($color)),
+										'player_name' => Factions::getName($color),
 										'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
 									]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -510,14 +529,14 @@ trait gameStates
 						case 'Population':
 							{
 //* -------------------------------------------------------------------------------------------------------- */
-								$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 populations</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
+								$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 populations</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
 							break;
 						case 'Grow':
 							{
 //* -------------------------------------------------------------------------------------------------------- */
-								$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B>'), ['player_name' => Players::getName(Factions::getPlayer($color))]);
+								$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
 							break;
@@ -571,12 +590,21 @@ trait gameStates
 //
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
-			'log' => ['log' => clienttranslate('${player_name} Move/Combat Phase'), 'args' => ['player_name' => Players::getName(Factions::getPlayer($color))]]]);
+			'log' => ['log' => clienttranslate('${player_name} Move/Combat Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
 		if ($player_id < 0)
 		{
-			Automas::movement($color);
+			if (Ships::getAll($color))
+			{
+				$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+					'player_name' => Factions::getName($color), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+				Automas::movement($color, $dice);
+			}
+			Factions::setActivation($color, 'done');
 			return $this->gamestate->nextState('continue');
 		}
 //
@@ -593,8 +621,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color)
 		{
-			if (Factions::getPlayer($color) < 0) Factions::setStatus($color, 'counters', Automas::growthActions($color));
-			else Factions::setStatus($color, 'counters', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
+			Factions::setStatus($color, 'counters', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
 			Factions::setStatus($color, 'used', []);
 		}
 //
@@ -603,6 +630,19 @@ trait gameStates
 	}
 	function stSwitchAlignment()
 	{
+		foreach (Factions::list() as $color)
+		{
+			if (Factions::getPlayer($color) < 0)
+			{
+				$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+					'player_name' => Factions::getName($color), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+				Factions::setStatus($color, 'counters', Automas::growthActions($color, intval(self::getGameStateValue('difficulty')), $dice));
+			}
+		}
+//
 		foreach (Factions::list() as $color)
 		{
 			$counters = Factions::getStatus($color, 'counters');
@@ -616,7 +656,7 @@ trait gameStates
 //
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)),
+					'player_name' => Factions::getName($color),
 					'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
 					'faction' => ['color' => $color, 'starPeople' => Factions::getStarPeople($color), 'alignment' => Factions::getAlignment($color)]
 				]);
@@ -639,7 +679,7 @@ trait gameStates
 			{
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('msg', clienttranslate('${player_name} goes <B>up</B> in turn order'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)),
+					'player_name' => Factions::getName($color),
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$order = Factions::getOrder($color) - 1;
@@ -663,7 +703,7 @@ trait gameStates
 			{
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('msg', clienttranslate('${player_name} goes <B>down</B> in turn order'), [
-					'player_name' => Players::getName(Factions::getPlayer($color)),
+					'player_name' => Factions::getName($color),
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$order = Factions::getOrder($color) + 1;
@@ -691,7 +731,7 @@ trait gameStates
 //
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
-			'log' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Players::getName(Factions::getPlayer($color))]]
+			'log' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
@@ -747,7 +787,7 @@ trait gameStates
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
-								'player_name' => Players::getName(Factions::getPlayer($color))]);
+								'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						switch ($galacticStory)
@@ -760,7 +800,7 @@ trait gameStates
 									Factions::gainDP($color, size($inContact));
 //* -------------------------------------------------------------------------------------------------------- */
 									$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
-										'player_name' => Players::getName(Factions::getPlayer($color))]);
+										'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 								break;
@@ -784,8 +824,7 @@ trait gameStates
 						{
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
-								'player_name' => Players::getName(Factions::getPlayer($color))]);
+							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('msg', _('Second Era not implemented'), []);
 						}
@@ -815,7 +854,7 @@ trait gameStates
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('msg', _('${player_name} gains 1 DP'), [
-								'player_name' => Players::getName(Factions::getPlayer($color))]);
+								'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						$this->notifyAllPlayers('msg', _('Third Era not implemented'), []);
