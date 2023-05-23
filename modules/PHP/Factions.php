@@ -51,23 +51,27 @@ class Factions extends APP_GameClass
 	{
 		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE activation = 'yes'");
 	}
-	static function setActivation(string $color = null, string $activation = 'no'): void
+	static function setActivation(string $color = 'ALL', string $activation = 'no'): void
 	{
-		if (is_null($color)) self::dbQuery("UPDATE factions SET activation = '$activation'");
+		if ($color === 'ALL') self::dbQuery("UPDATE factions SET activation = '$activation'");
 		else self::dbQuery("UPDATE factions SET activation = '$activation' WHERE color = '$color'");
 	}
 	static function getActivation(string $color): string
 	{
 		return self::getUniqueValueFromDB("SELECT activation FROM factions WHERE color = '$color'");
 	}
-	static function getPlayer(string $color): string
+	static function getPlayer(string $color = ''): string
 	{
 		return self::getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'");
+	}
+	static function getNotAutomas(): string
+	{
+		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id > 0");
 	}
 	static function getName(string $color)
 	{
 		$player_id = self::getPlayer($color);
-		if ($player_id < 0) return Automas::getName($player_id, $color);
+		if ($player_id < 0) return Automas::getName($color);
 		return Players::getName($player_id);
 	}
 	static function getHomeStar(string $color): int

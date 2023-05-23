@@ -188,7 +188,7 @@ trait gameStateArguments
 				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($from, $technology);
 				foreach (Factions::getStatus($from, 'inContact') as $to)
 				{
-					if ($this->gamestate->isPlayerActive(Factions::getPlayer($to)))
+					if (Factions::getActivation($to) !== 'done')
 					{
 						$private[$player_id]['trade'][$to] = array_filter(Factions::getStatus($to, 'trade'), fn($key) => $key === $from, ARRAY_FILTER_USE_KEY);
 						foreach (array_keys($this->TECHNOLOGIES) as $technology)

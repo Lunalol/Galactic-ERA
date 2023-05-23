@@ -183,25 +183,29 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('continue');
 	}
-	function acMove(string $color, string $location, array $ships)
+	function acMove(string $color, string $location, array $ships, bool $automa = false)
 	{
-		$this->checkAction('move');
-//
-		$player_id = self::getCurrentPlayerId();
-		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-//
-		if (!array_key_exists('move', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		foreach ($ships as $ship)
+		if (!$automa)
 		{
-			if (!array_key_exists($ship, $this->possible['move'])) throw new BgaVisibleSystemException('Invalid ship: ' . $ship);
-			if (!array_key_exists($location, $this->possible['move'][$ship])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+			$this->checkAction('move');
+//
+			$player_id = self::getCurrentPlayerId();
+			if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+			if (!array_key_exists('move', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+			if (!$ships) throw new BgaVisibleSystemException('Empty ship list');
+			foreach ($ships as $ship)
+			{
+				if (!array_key_exists($ship, $this->possible['move'])) throw new BgaVisibleSystemException('Invalid ship: ' . $ship);
+				if (!array_key_exists($location, $this->possible['move'][$ship])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+			}
 		}
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
 		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
 		{
-			if (Ships::isShip($color, $ship))
+			if (Ships::isShip($color, $ships[0]))
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to ${PLANET} ${GPS}'), [
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
@@ -216,7 +220,7 @@ trait gameStateActions
 		}
 		else
 		{
-			if (Ships::isShip($color, $ship))
+			if (Ships::isShip($color, $ships[0]))
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) ${GPS}'), [
 					'player_name' => Factions::getName($color), 'GPS' => $location, 'N' => sizeof($ships)]);
@@ -236,8 +240,8 @@ trait gameStateActions
 			$this->notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $next_location, 'old' => $location]);
 			$location = $next_location;
 		}
+
 		$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
-//
 		foreach ($ships as $ship)
 		{
 			$json = self::escapeStringForDB(json_encode(Ships::get($color, $ship)));
@@ -249,7 +253,7 @@ trait gameStateActions
 			Ships::setLocation($ship, $location);
 		}
 //
-		$this->gamestate->nextState('continue');
+		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acUndo($color)
 	{
@@ -684,11 +688,15 @@ trait gameStateActions
 //
 		if (!$to)
 		{
+			Factions::setActivation($from, 'done');
 			$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 			if (sizeof($this->gamestate->getActivePlayerList()) < 2) $this->gamestate->setAllPlayersNonMultiactive('next');
 			else $this->gamestate->nextState('continue');
 			return;
 		}
+//
+		$automas = Factions::getPlayer($to) < 0;
+		if ($automas && $technology === 'accept') $technology = 'confirm';
 //
 		$fromStatus = Factions::getStatus($from, 'trade');
 		switch ($technology)
@@ -734,19 +742,21 @@ trait gameStateActions
 					return;
 				}
 				break;
-
 			case 'refuse':
 				{
 					if (array_key_exists($to, $fromStatus)) unset($fromStatus[$to]);
-					$toStatus = Factions::getStatus($to, 'trade');
-					if (array_key_exists($from, $toStatus))
+					if (!$automas)
 					{
+						$toStatus = Factions::getStatus($to, 'trade');
+						if (array_key_exists($from, $toStatus))
+						{
 //* -------------------------------------------------------------------------------------------------------- */
-						$this->notifyPlayer(Factions::getPlayer($to), 'msg', clienttranslate('${player_name} refuses your trade'), [
-							'player_name' => Factions::getName($from)]);
+							$this->notifyPlayer(Factions::getPlayer($to), 'msg', clienttranslate('${player_name} refuses your trade'), [
+								'player_name' => Factions::getName($from)]);
 //* -------------------------------------------------------------------------------------------------------- */
-						unset($toStatus[$from]);
-						Factions::setStatus($to, 'trade', $toStatus);
+							unset($toStatus[$from]);
+							Factions::setStatus($to, 'trade', $toStatus);
+						}
 					}
 				}
 				break;

@@ -16,7 +16,7 @@ trait gameStates
 	function stPrepareRoundAndDPTrack()
 	{
 //
-// Place the gray pawn on the left-most position of the round track (where the gray arrow is).
+// Place the gra	y pawn on the left-most position of the round track (where the gray arrow is).
 //
 		self::setGameStateInitialValue('round', 0);
 //
@@ -212,7 +212,7 @@ trait gameStates
 	}
 	function stBonus()
 	{
-		Factions::setActivation(null, 'done');
+		Factions::setActivation('ALL', 'done');
 		foreach (Factions::list() as $color)
 		{
 			if (Factions::getPlayer($color) < 0) Factions::setStatus($color, 'alignment', Factions::getPlayer($color) === SLAVERS);
@@ -602,7 +602,7 @@ trait gameStates
 				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 					'player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
-				Automas::movement($color, $dice);
+				Automas::movement($this, $color, $dice);
 			}
 			Factions::setActivation($color, 'done');
 			return $this->gamestate->nextState('continue');
@@ -747,6 +747,7 @@ trait gameStates
 	}
 	function stTradingPhase()
 	{
+		Factions::setActivation('ALL', 'done');
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Trading Phase')
@@ -755,10 +756,55 @@ trait gameStates
 		$players = [];
 		foreach (Factions::list() as $color)
 		{
-			$inContact = Factions::inContact($color);
-			Factions::setStatus($color, 'inContact', $inContact);
-			if ($inContact) $players[] = Factions::getPlayer($color);
-			Factions::setStatus($color, 'trade', []);
+			$player_id = Factions::getPlayer($color);
+			if ($player_id > 0)
+			{
+				$inContact = Factions::inContact($color);
+				if ($inContact)
+				{
+					foreach ($inContact as $index => $with)
+					{
+						if (Factions::getPlayer($with) < 0)
+						{
+							$technologies = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($color, $technology) > Factions::getTechnology($with, $technology));
+							if ($technologies)
+							{
+								$roll = Automas::trading($with, Factions::getAlignment($color));
+								if ($roll)
+								{
+									$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+									$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+										'player_name' => Factions::getName($with), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+								}
+								if ($roll && $dice > $roll)
+								{
+//* -------------------------------------------------------------------------------------------------------- */
+									$this->notifyAllPlayers('msg', clienttranslate('${player_name} denies trading'), ['player_name' => Factions::getName($with)]);
+//* -------------------------------------------------------------------------------------------------------- */
+									unset($inContact[$index]);
+								}
+								else
+								{
+//* -------------------------------------------------------------------------------------------------------- */
+									$this->notifyAllPlayers('msg', clienttranslate('${player_name} accepts trading'), ['player_name' => Factions::getName($with)]);
+//* -------------------------------------------------------------------------------------------------------- */
+									Factions::setStatus($with, 'trade', [$color => ['technology' => $technologies[array_rand($technologies)], 'pending' => false]]);
+								}
+							}
+						}
+						else unset($inContact[$index]);
+					}
+					if ($inContact)
+					{
+						Factions::setActivation($color, 'no');
+						Factions::setStatus($color, 'inContact', $inContact);
+						Factions::setStatus($color, 'trade', []);
+						$players[] = Factions::getPlayer($color);
+					}
+				}
+			}
 		}
 		if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;
 		$this->gamestate->nextState('tradingPhase');

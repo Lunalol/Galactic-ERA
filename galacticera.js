@@ -227,7 +227,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 								const container = dojo.place('<div></div>', technologyNode);
 								const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + ID, color: state.args._private.color, type: 'technology', location: ''}), container);
 								dojo.setAttr(node, 'counter', counter);
-								dojo.style(node, 'pointer-events', 'all');
+								dojo.addClass(node, 'ERAselectable');
 								dojo.connect(node, 'click', (event) => {
 									if (this.isCurrentPlayerActive())
 									{
@@ -240,7 +240,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 										}
 										if (stateName === 'research')
 										{
-											dojo.style(node, 'pointer-events', 'all');
+											dojo.addClass(node, 'ERAselectable');
 											dojo.toggleClass(event.currentTarget, 'ERAselected');
 											this.action('research', {color: this.color, technology: counter});
 										}
@@ -258,7 +258,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 								const container = dojo.place('<div></div>', turnOrderNode);
 								const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + ID, color: state.args._private.color, type: 'turnOrder', subtype: counter, location: ''}), container);
 								dojo.setAttr(node, 'counter', counter);
-								dojo.style(node, 'pointer-events', 'all');
+								dojo.addClass(node, 'ERAselectable');
 								dojo.connect(node, 'click', (event) => {
 									if (this.isCurrentPlayerActive())
 									{
@@ -275,7 +275,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							const container = dojo.place("<div></div>", growthNode);
 							const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + ID, color: state.args._private.color, type: 'growth', subtype: counter, location: ''}), container);
 							dojo.setAttr(node, 'counter', counter);
-							dojo.style(node, 'pointer-events', 'all');
+							dojo.addClass(node, 'ERAselectable');
 							dojo.connect(node, 'click', (event) => {
 								if (this.isCurrentPlayerActive())
 								{
