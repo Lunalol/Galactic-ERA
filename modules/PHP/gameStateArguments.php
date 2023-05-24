@@ -69,6 +69,7 @@ trait gameStateArguments
 			}
 		}
 //
+		$this->possible['declareWar'] = Factions::canDeclareWar($color);
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
 	function argMovement()
@@ -95,6 +96,18 @@ trait gameStateArguments
 			$counters = array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), $revealed);
 			if ($counters) $this->possible['scout'][$ship['id']] = $counters;
 		}
+//
+		$this->possible['declareWar'] = Factions::canDeclareWar($color);
+		return ['_private' => [$player_id => $this->possible], 'active' => $color];
+	}
+	function argCombatChoice()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		var_dump(array_unique(array_column(Ships::getAll($color), 'location')));
+		die;
+//
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
 	function argSelectCounters()

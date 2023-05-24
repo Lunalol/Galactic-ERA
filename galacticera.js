@@ -44,15 +44,28 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 // Setup player panels
 //
-				dojo.place(`<div class='ERAcounters' id='ERAcounters-${faction.color}'/>`, `player_board_${faction.player_id}`, 2);
-				let nodeFaction = dojo.place(this.format_block('ERAfaction', {color: faction.color}), `player_board_${faction.player_id}`, 3);
+				let nodeCounters = dojo.place(`<div class='ERAcounters' id='ERAcounters-${faction.color}'></div>`, `player_board_${faction.player_id}`, 2);
+//
+				let nodeStatus = dojo.place(`<div id='ERAstatus-${faction.color}' class='ERAstatus'></div>`, nodeCounters, 'after');
+				dojo.place(`<div class='ERAsmallOrder' title='${_('Turn order')}'><div class='ERAcounter ERAselectable ERAorder' id='ERAorder-${faction.color}'></div></div>`, nodeStatus);
+				dojo.place(`<div class='ERAsmallOrder'></div>`, nodeStatus);
+				for (let otherFaction of Object.values(gamedatas.factions))
+				{
+					if (otherFaction.color !== faction.color)
+					{
+						dojo.place(`<div class='ERAsmall'><div id='ERAwar-${faction.color}-${otherFaction.color}'  class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war' color='${otherFaction.color}'></div></div>`, nodeStatus);
+						let node = dojo.place(`<div class='ERAsmall'><div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace' color='${otherFaction.color}' title='${_('Declare war')}'></div></div>`, nodeStatus);
+						dojo.connect(node, 'click', () => this.action('declareWar', {color: faction.color, on: otherFaction.color}));
+					}
+				}
+//
+				let nodeFaction = dojo.place(this.format_block('ERAfaction', {color: faction.color}), nodeStatus, 'after');
 //
 				let nodeStarPeople = dojo.place(this.format_block('ERAstarPeople', {starpeople: faction.starPeople}), nodeFaction);
 				dojo.style(nodeStarPeople, 'flex', '1 1 50%');
 //
-				let nodeCounters = dojo.place(this.format_block('ERAtechnologies', {color: faction.color}), nodeFaction);
-//
-				let nodePopulation = dojo.place(`<div>${'Population disks'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeCounters);
+				let nodeTechnologies = dojo.place(this.format_block('ERAtechnologies', {color: faction.color}), nodeFaction);
+				let nodePopulation = dojo.place(`<div>${'Population disks'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeTechnologies);
 // Farmers
 				if (+faction.player_id === -1) dojo.style(nodePopulation, 'display', 'none');
 // Slavers
@@ -61,17 +74,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 				for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
 				{
-					dojo.place(`<div><span class='ERAtechnology' title='${_(technology)}' technology=${technology}>?</span><div class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology' counter='${technology}'/></div>`, nodeCounters);
-				}
-				let nodeOrder = dojo.place(`<div class='ERAsmallOrder' title='${_('Turn order')}'><div class='ERAcounter ERAorder' id='ERAorder-${faction.color}'></div></div>`, nodeFaction, 'before');
-//
-				for (let otherFaction of Object.values(gamedatas.factions))
-				{
-					if (otherFaction.color !== faction.color)
-					{
-						dojo.place(`<div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAsmall'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace'></div></div>`, nodeOrder, 'after');
-						dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}' class='ERAsmall'><div class='ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war' style='display:none;'></div></div>`, nodeOrder, 'after');
-					}
+					dojo.place(`<div><span class='ERAtechnology' title='${_(technology)}' technology=${technology}>?</span><div class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology' counter='${technology}'/></div>`, nodeTechnologies);
 				}
 //
 				this.factions.update(faction);
@@ -320,6 +323,15 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						dojo.addClass(state.counter, 'ERAselected');
 						if (stateName === 'research') dojo.query('#ERAchoice .ERAcounter-technology').addClass('ERAselected');
 					}, 1);
+				}
+			}
+//
+			if ('_private' in state.args && 'declareWar' in state.args._private)
+			{
+				for (let color of state.args._private.declareWar)
+				{
+					let node = $(`ERApeace-${this.color}-${color}`);
+					dojo.addClass(node, 'ERAselectable');
 				}
 			}
 //
@@ -616,7 +628,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 								if (node.count < 0)
 								{
 									window.clearInterval(timer);
-									return this.action('pass', {color: this.color});
+									return this.action('done', {color: this.color});
 								}
 							}, 100);
 						}, null, false, 'red');

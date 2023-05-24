@@ -611,22 +611,10 @@ trait gameStates
 		$this->gamestate->changeActivePlayer($player_id);
 		$this->gamestate->nextState('nextPlayer');
 	}
-	function stGrowthPhase()
+	function stCombatChoice()
 	{
-		Factions::setActivation();
-//* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
-			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
-		]);
-//* -------------------------------------------------------------------------------------------------------- */
-		foreach (Factions::list() as $color)
-		{
-			Factions::setStatus($color, 'counters', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
-			Factions::setStatus($color, 'used', []);
-		}
-//
-		$this->gamestate->setAllPlayersMultiactive('next');
-		$this->gamestate->nextState('next');
+		Factions::setActivation(Factions::getActive(), 'done');
+		$this->gamestate->nextState('nextPlayer');
 	}
 	function stSwitchAlignment()
 	{
@@ -793,8 +781,8 @@ trait gameStates
 									Factions::setStatus($with, 'trade', [$color => ['technology' => $technologies[array_rand($technologies)], 'pending' => false]]);
 								}
 							}
+							else unset($inContact[$index]);
 						}
-						else unset($inContact[$index]);
 					}
 					if ($inContact)
 					{
@@ -832,21 +820,19 @@ trait gameStates
 						{
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
-								'player_name' => Factions::getName($color)]);
+							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						switch ($galacticStory)
 						{
 							case JOURNEYS:
 // All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game).
-								$inContact = Factions::getStatus($color, 'contact');
+								$inContact = Factions::inContact($color, 'contact');
 								if ($inContact)
 								{
-									Factions::gainDP($color, size($inContact));
+									Factions::gainDP($color, sizeof($inContact));
 //* -------------------------------------------------------------------------------------------------------- */
-									$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
-										'player_name' => Factions::getName($color)]);
+									$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 								break;
@@ -899,8 +885,7 @@ trait gameStates
 						{
 							Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', _('${player_name} gains 1 DP'), [
-								'player_name' => Factions::getName($color)]);
+							$this->notifyAllPlayers('msg', _('${player_name} gains 1 DP'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						$this->notifyAllPlayers('msg', _('Third Era not implemented'), []);

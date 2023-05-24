@@ -143,7 +143,29 @@ trait gameStateActions
 			}
 		}
 //
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
+		foreach (Ships::getAll($color) as $ship) foreach (array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, $ship['location'], $counter);
+//
 		$this->gamestate->nextState('next');
+	}
+	function acDeclareWar(string $color, string $on)
+	{
+		$this->checkAction('declareWar');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!in_array($on, Factions::canDeclareWar($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
+//
+		Factions::declareWar($color, $on);
+		Factions::declareWar($on, $color);
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
+//* -------------------------------------------------------------------------------------------------------- */
+
+		$this->gamestate->nextState('continue');
+//
 	}
 	function acRemoteViewing(string $color, int $counter)
 	{
@@ -291,9 +313,6 @@ trait gameStateActions
 //
 		Factions::setActivation($color, 'done');
 //
-		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
-		foreach (Ships::getAll($color) as $ship) foreach (array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, $ship['location'], $counter);
-//
 		$this->gamestate->nextState('next');
 	}
 	function acSelectCounters(string $color, array $counters): void
@@ -324,12 +343,13 @@ trait gameStateActions
 		if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
 		$level = Factions::gainTechnology($color, $technology);
 //
-// GREYS SPECIAL STO & STS: When you research a technology at level 1 you increase it to level 3.
+// GREYS SPECIAL STO & STS: When you research a technology at level 1 you increase it to level 3
 //
-		if (Factions::getStarPeople($color) === 'Greys' && Factions::getTechnology($color, $technology) === 1)
-		{
-			$level = Factions::gainTechnology($color, $technology);
-		}
+		if (Factions::getStarPeople($color) === 'Greys' && Factions::getTechnology($color, $technology) === 2) $level = Factions::gainTechnology($color, $technology);
+//
+// YOWIES SPECIAL STO & STS: You may not have Robotics higher than level 1
+//
+		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('May not have Robotics higher than level 1'));
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
 			'player_name' => Factions::getName($color),
@@ -727,6 +747,10 @@ trait gameStateActions
 					{
 						if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
 						$level = Factions::gainTechnology($color, $technology);
+//
+// YOWIES SPECIAL STO & STS: You may not have Robotics higher than level 1
+//
+						if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('May not have Robotics higher than level 1'));
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
 							'player_name' => Factions::getName($color),

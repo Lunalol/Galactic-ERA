@@ -114,7 +114,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
 		'args' => 'argFleets',
-		'possibleactions' => ['shipsToFleet', 'fleetToShips', 'swapFleets', 'remoteViewing', 'done'],
+		'possibleactions' => ['shipsToFleet', 'fleetToShips', 'swapFleets', 'remoteViewing', 'done', 'declareWar'],
 		'transitions' => ['continue' => 210, 'next' => 220]
 	],
 	220 => [
@@ -123,10 +123,25 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may move any or all ships'),
 		'type' => 'activeplayer',
 		'args' => 'argMovement',
-		'possibleactions' => ['undo', 'move', 'scout', 'remoteViewing', 'pass'],
-		'transitions' => ['continue' => 220, 'next' => 200]
+		'possibleactions' => ['undo', 'move', 'scout', 'remoteViewing', 'done', 'declareWar'],
+		'transitions' => ['continue' => 220, 'next' => 230]
 	],
 	230 => [
+		'name' => 'combatChoice',
+		'type' => 'game',
+		'action' => 'stCombatChoice',
+		'transitions' => ['retreat' => 235, 'nextPlayer' => 200]
+	],
+	235 => [
+		'name' => 'combatChoice',
+		'description' => clienttranslate('${actplayer} must resolve battles'),
+		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),
+		'type' => 'activeplayer',
+		'args' => 'argCombatChoice',
+		'possibleactions' => ['combat'],
+		'transitions' => ['combat' => 240]
+	],
+	270 => [
 		'name' => 'combat',
 		'description' => clienttranslate('${actplayer} must resolve battles'),
 		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),

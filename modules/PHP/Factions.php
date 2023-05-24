@@ -28,7 +28,7 @@ class Factions extends APP_GameClass
 //
 	static function create(string $color, int $player_id, int $homeStar): int
 	{
-		self::DbQuery("INSERT INTO factions (color,player_id,starPeople,alignment,homeStar,status) VALUES ('$color', $player_id, 'None', 'STO', $homeStar, '{}')");
+		self::DbQuery("INSERT INTO factions (color,player_id,starPeople,alignment,homeStar,atWar,status) VALUES ('$color', $player_id, 'None', 'STO', $homeStar, '[]', '{}')");
 		return self::DbGetLastId();
 	}
 	static function list(): array
@@ -37,11 +37,11 @@ class Factions extends APP_GameClass
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions ORDER by `order`");
+		return self::getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions ORDER by `order`");
 	}
 	static function get(string $color): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions WHERE color = '$color'");
+		return self::getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions WHERE color = '$color'");
 	}
 	static function getNext()
 	{
@@ -177,5 +177,14 @@ class Factions extends APP_GameClass
 		$factions = [];
 		foreach (self::list() as $otherColor) if ($otherColor != $color && array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor)))))) $factions[] = $otherColor;
 		return $factions;
+	}
+	static function canDeclareWar(string $color): array
+	{
+		$colors = self::list();
+		return array_values(array_diff($colors, [$color]));
+	}
+	static function declareWar(string $color, string $on): void
+	{
+		self::dBQuery("UPDATE factions SET atWar = JSON_ARRAY_APPEND(atWar, '$', '$on') WHERE color = '$color'");
 	}
 }

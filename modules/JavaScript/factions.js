@@ -56,7 +56,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			if ('DP' in faction)
 			{
-				if (+faction.player_id === -2)
+				let player_id = +this.bgagame.gamedatas.factions[faction.color].player_id;
+				if (player_id === -2)
 				{
 					dojo.query('.ERAcounter-population', 'ERAoffboard').remove();
 					for (let i = 0; i < faction.DP; i++)
@@ -71,9 +72,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'transform-origin', 'left top');
 					}
 				}
-				if (faction.player_id in this.bgagame.gamedatas.players)
+				if (player_id in this.bgagame.gamedatas.players)
 				{
-					if (faction.player_id in this.bgagame.scoreCtrl) this.bgagame.scoreCtrl[faction.player_id].setValue(faction.DP);
+					if (player_id in this.bgagame.scoreCtrl) this.bgagame.scoreCtrl[player_id].setValue(faction.DP);
 //
 					dojo.query(`.ERAcounter-cylinder.ERAcounter-${faction.color}`, 'ERA-DP').remove();
 					let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
@@ -145,6 +146,14 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			});
 //
 			if ('order' in faction) dojo.setAttr(`ERAorder-${faction.color}`, 'order', faction.order);
+//
+			if ('atWar' in faction)
+			{
+				const atWar = JSON.parse(faction.atWar);
+				dojo.query('.ERAcounter-peace', `ERAstatus-${faction.color}`).forEach((node) => dojo.toggleClass(node, 'ERAhide', atWar.includes(dojo.getAttr(node, 'color'))));
+				dojo.query('.ERAcounter-war', `ERAstatus-${faction.color}`).forEach((node) => dojo.toggleClass(node, 'ERAhide', !atWar.includes(dojo.getAttr(node, 'color'))));
+			}
+
 		}
 	}
 	);

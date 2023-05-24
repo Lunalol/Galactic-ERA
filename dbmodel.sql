@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `factions`
 	`starPeople` ENUM ('none','Alliance','Anchara','Annunaki','Avians','Caninoids','Dracos','Felines','Galactic','Greys','ICC','Mantids','Mayans','Orion','Plejars','Progenitors','Rogue','Yowies','Farmers','Slavers'),
 	`alignment` ENUM ('STO','STS'),`DP` INT(2) DEFAULT 0,`population` INT(2) DEFAULT 0,
 	`Military` INT(1) DEFAULT 1,`Spirituality` INT(1) DEFAULT 1,`Propulsion` INT(1) DEFAULT 1,`Robotics` INT(1) DEFAULT 1,`Genetics` INT(1) DEFAULT 1,
-	`homeStar` INT(1),`order` INT(1),`status` JSON
+	`homeStar` INT(1),`order` INT(1),`atWar` JSON,`status` JSON
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `sectors`
