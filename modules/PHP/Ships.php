@@ -46,6 +46,14 @@ class Ships extends APP_GameClass
 		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
 		return self::getCollectionFromDB($sql . " ORDER BY color,fleet");
 	}
+	static function getConflictLocation(string $color): array
+	{
+		return self::getObjectListFromDB("SELECT DISTINCT location FROM ships AS attacker"
+				. " JOIN ships AS defender USING (location)"
+				. " JOIN factions ON attacker.color = factions.color"
+				. " WHERE location <> 'stock' AND attacker.color = '$color' AND attacker.color <> defender.color"
+				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ", true);
+	}
 	static function getAllDatas($player_id): array
 	{
 		$ships = self::getCollectionFromDB("SELECT id,color,fleet,location,activation FROM ships ORDER BY color,fleet");

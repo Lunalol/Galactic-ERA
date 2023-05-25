@@ -315,6 +315,32 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('next');
 	}
+	function acCombatChoice(string $color, string $location)
+	{
+		$this->checkAction('combatChoice');
+//
+		$player_id = self::getCurrentPlayerId();
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if (!array_key_exists('combatChoice', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (!in_array($location, $this->possible['combatChoice'])) throw new BgaVisibleSystemException('Invalid $ocation: ' . $location);
+//
+		$sector = Sectors::get($location[0]);
+		$hexagon = substr($location, 2);
+		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages enemy fleet(s) near ${PLANET} ${GPS}'), [
+				'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+				'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
+		else
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages enemy fleet(s) ${GPS}'), [
+				'player_name' => Factions::getName($color), 'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
+//
+		$this->gamestate->nextState('engage');
+	}
 	function acSelectCounters(string $color, array $counters): void
 	{
 		$this->checkAction('selectCounters');

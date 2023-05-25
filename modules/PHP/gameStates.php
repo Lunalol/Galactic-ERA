@@ -613,8 +613,17 @@ trait gameStates
 	}
 	function stCombatChoice()
 	{
-		Factions::setActivation(Factions::getActive(), 'done');
-		$this->gamestate->nextState('nextPlayer');
+		self::argCombatChoice();
+		if (!$this->possible['combatChoice'])
+		{
+			Factions::setActivation(Factions::getActive(), 'done');
+			return $this->gamestate->nextState('nextPlayer');
+		}
+		$this->gamestate->nextState('combatChoice');
+	}
+	function stRetreat()
+	{
+		$this->gamestate->nextState('endCombat');
 	}
 	function stSwitchAlignment()
 	{

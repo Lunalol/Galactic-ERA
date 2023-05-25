@@ -276,14 +276,14 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			let location = this.nearest(x, y);
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
+				if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
 			}
 			this.bgagame.restoreServerGameState();
-		}
-		,
+		},
 		drawHexagon: function (hexagon, color)
 		{
 			let shape = Array.from(hexagon.shape);
@@ -301,13 +301,13 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			path += 'Z';
 //
 			const SVGpath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-			SVGpath.setAttribute('d', path);
-			SVGpath.setAttribute('fill', color);
-			SVGpath.setAttribute('stroke', 'none');
+			dojo.setAttr(SVGpath, 'd', path);
+			dojo.setAttr(SVGpath, 'fill', color);
+			dojo.setAttr(SVGpath, 'stroke', 'none');
+			dojo.style(SVGpath, 'filter', 'blur(10px');
 //
 			return SVGpath;
-		}
-		,
+		},
 		nearest(x, y)
 		{
 			let hexagon = undefined;
@@ -322,8 +322,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				}
 			}
 			return hexagon;
-		}
-		,
+		},
 		clearCanvas()
 		{
 			const ctx = this.canvas.getContext('2d');

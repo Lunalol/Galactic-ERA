@@ -350,6 +350,28 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					dojo.query(`#ERAboard .ERAship[color=${this.color}]`).addClass('ERAselectable');
 					break;
 //
+				case 'combatChoice':
+					{
+						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+						dojo.setStyle(svg, 'position', 'absolute');
+						dojo.setStyle(svg, 'left', '0px');
+						dojo.setStyle(svg, 'top', '0px');
+						dojo.setStyle(svg, 'z-index', '150');
+						dojo.setStyle(svg, 'pointer-events', 'all');
+						svg.setAttribute("width", 10000);
+						svg.setAttribute("height", 10000);
+						svg.id = 'ERAcombatChoice';
+//
+						for (let location of state.args._private.combatChoice)
+						{
+							dojo.query(`[location='${location}']`, 'ERAboard').addClass('ERAselectable');
+							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + this.color + '80'));
+						}
+//
+						this.board.board.appendChild(svg);
+					}
+					break;
+//
 				case 'resolveGrowthActions':
 					dojo.query('.ERAprovisional,.ERAprovisionalBonus').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
 					break;
@@ -359,7 +381,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 				case 'growPopulation':
 					{
-//						dojo.query(`#ERAboard .ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
 						for (let [location, {population: population, growthLimit: growthLimit}] of Object.entries(state.args._private.growPopulation))
 							if (population < growthLimit)
 								dojo.query(`#ERAboard .ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
@@ -394,8 +415,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						}
 					}
 					break;
+//
 				case 'buildShips':
 					break;
+//
 				case 'tradingPhase':
 					{
 						if (this.isCurrentPlayerActive())
@@ -488,6 +511,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			dojo.destroy('ERAchoice');
 			dojo.destroy('ERApath');
+			dojo.destroy('ERAcombatChoice');
 			dojo.addClass('ERAfleets', 'ERAhide');
 //
 			dojo.query('.ERAselected').removeClass('ERAselected');
@@ -793,6 +817,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					});
 					break;
 			}
+		},
+		combatChoice: function (location)
+		{
+			if (this.gamedatas.gamestate.args._private.combatChoice.includes(location)) this.action('combatChoice', {color: this.color, location: JSON.stringify(location)});
 		},
 		gainStar: function (location)
 		{

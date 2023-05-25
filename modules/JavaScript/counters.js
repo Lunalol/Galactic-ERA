@@ -124,6 +124,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.stopEvent(event);
 						return this.bgagame.remoteViewing(counter);
 					}
+					if (this.bgagame.gamedatas.gamestate.name === 'combatChoice')
+					{
+						dojo.stopEvent(event);
+						return this.bgagame.combatChoice(location);
+					}
 					if (this.bgagame.gamedatas.gamestate.name === 'gainStar')
 					{
 						dojo.stopEvent(event);
