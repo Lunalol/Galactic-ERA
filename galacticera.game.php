@@ -33,12 +33,12 @@ class GalacticEra extends Table
 			'galacticGoal' => GALACTICGOAL,
 		];
 //
+		self::initGameStateLabels($this->GLOBALLABELS);
+//
 // Initialize domination deck
 //
 		$this->domination = self::getNew("module.common.deck");
 		$this->domination->init("domination");
-//
-		self::initGameStateLabels($this->GLOBALLABELS);
 	}
 	protected function getGameName()
 	{

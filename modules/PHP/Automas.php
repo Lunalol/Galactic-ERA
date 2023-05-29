@@ -71,80 +71,119 @@ class Automas extends APP_GameClass
 		switch (Factions::getPlayer($color))
 		{
 			case FARMERS:
-				switch ($dice)
+//
+				foreach (Ships::getAll($color) as $ship)
 				{
-					case 1:
+					switch ($dice)
+					{
+						case 1:
 // Each ship moves to (or as close as possible to) the nearest one of your stars
-						$locations = array_keys(Counters::getPopulation(Factions::getNotAutomas()));
-						foreach (Ships::getAll($color) as $ship)
-						{
+							$locations = array_keys(Counters::getPopulation(Factions::getNotAutomas()));
 							$path = self::paths($ship, $locations);
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
-						}
-						break;
-					case 2:
+							break;
+						case 2:
 // Each ship moves to (or as close as possible to) the nearest star (other than the one it may be at already)
-						$locations = [];
-						foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon)
+							$locations = [];
+							foreach (Sectors::getAll() as $sector)
 							{
-								$location = $sector . ':' . $hexagon;
-								if ($location !== $ship['location']) $locations[] = $location;
+								foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon)
+								{
+									$location = $sector . ':' . $hexagon;
+									if ($location !== $ship['location']) $locations[] = $location;
+								}
 							}
-
-						foreach (Ships::getAll($color) as $ship)
-						{
 							$path = self::paths($ship, $locations);
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
-						}
-						break;
-					case 3:
+							break;
+						case 3:
 // Each ship moves as close as possible to the center hex of its sector
-						$locations = [$ship['location'][0] . ':+0+0+0'];
-						foreach (Ships::getAll($color) as $ship)
-						{
+							$locations = [$ship['location'][0] . ':+0+0+0'];
 							$path = self::paths($ship, $locations);
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
-						}
-						break;
-					case 4:
+							break;
+						case 4:
 // Each ship moves to any star within range. If there is no star within range then it moves as close as possible to the nearest one
-						$locations = [];
-						foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = $sector . ':' . $hexagon;
-
-						foreach (Ships::getAll($color) as $ship)
-						{
+							$locations = [];
+							foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = $sector . ':' . $hexagon;
 							$path = self::paths($ship, $locations);
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
-						}
-						break;
-					case 5:
+							break;
+						case 5:
 // Each ship moves its full range in a random direction
-						throw new BgaVisibleSystemException('Farmers move not implemented');
-						break;
-					case 6:
+							throw new BgaVisibleSystemException('Farmers move not implemented');
+							break;
+						case 6:
 // No movement
-						break;
+							break;
+					}
 				}
 				break;
 			case SLAVERS:
-				switch ($dice)
 				{
-					case 1:
-						break;
-					case 2:
-						break;
-					case 3:
-						break;
-					case 4:
-						break;
-					case 5:
-						break;
-					case 6:
-						break;
+//
+					$shipList = [];
+					foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) $shipList[$location] = Ships::getAtLocation($location, $color);
+					foreach ($shipList as $location => $ships)
+					{
+						switch ($dice)
+						{
+							case 1:
+//
+// If at peace with you, they first declare war on you
+//
+								foreach (Factions::atPeace($color) as $otherColor) $bgagame->acDeclareWar($color, $otherColor, true);
+//
+// All ships then move to (or as close as possible to) the nearest one of your stars
+//
+								$locations = array_keys(Counters::getPopulation(Factions::getNotAutomas()));
+								$toMove = [];
+								foreach ($ships as $shipID)
+								{
+									$ship = Ships::get($color, $shipID);
+									$path = self::paths($ship, $locations);
+									$bgagame->possible['move'][$ship['id']] = $path['possible'];
+									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$ship['id']], true);
+									else $toMove[] = $shipID;
+								}
+								if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
+								break;
+							case 2:
+//
+// If at peace with you, they first declare war on you
+//
+								foreach (Factions::atPeace($color) as $otherColor) $bgagame->acDeclareWar($color, $otherColor, true);
+//
+								break;
+							case 3:
+// All ships move as close as possible to the center hex of their sector
+								$locations = [$location[0] . ':+0+0+0'];
+								$toMove = [];
+								foreach ($ships as $shipID)
+								{
+									$ship = Ships::get($color, $shipID);
+									$path = self::paths($ship, $locations);
+									$bgagame->possible['move'][$ship['id']] = $path['possible'];
+									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$ship['id']], true);
+									else $toMove[] = $shipID;
+								}
+								if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
+								break;
+							case 4:
+//
+								break;
+							case 5:
+//
+								break;
+							case 6:
+//
+								break;
+						}
+					}
 				}
 				break;
 			default:
@@ -225,7 +264,9 @@ class Automas extends APP_GameClass
 					case 6:
 						$counters[] = 'gainStar';
 						$counters[] = 'research';
-						$counters[] = array_rand(Factions::TECHNOLOGIES);
+						$technologies = Factions::TECHNOLOGIES;
+						if (Factions::getTechnology($color, 'Spirituality') >= 4) unset($technologies['Spirituality']);
+						$counters[] = array_rand($technologies);
 						break;
 				}
 				break;
@@ -238,14 +279,6 @@ class Automas extends APP_GameClass
 	{
 		while ($counters = Factions::getStatus($color, 'counters'))
 		{
-			$research = array_search('research', $counters);
-			if ($research !== false)
-			{
-				$technologies = array_intersect($counters, array_keys(Factions::TECHNOLOGIES));
-				$technology = array_shift($technologies);
-				$bgagame->acResearch($color, $technology, true);
-				continue;
-			}
 			$gainStar = array_search('gainStar', $counters);
 			if ($gainStar !== false)
 			{
@@ -258,6 +291,14 @@ class Automas extends APP_GameClass
 			{
 				unset($counters[$growPopulation]);
 				Factions::setStatus($color, 'counters', array_values($counters));
+				continue;
+			}
+			$research = array_search('research', $counters);
+			if ($research !== false)
+			{
+				$technologies = array_intersect($counters, array_keys(Factions::TECHNOLOGIES));
+				$technology = array_shift($technologies);
+				$bgagame->acResearch($color, $technology, true);
 				continue;
 			}
 			$buildShips = array_search('buildShips', $counters);
@@ -324,6 +365,7 @@ class Automas extends APP_GameClass
 		$nearest = array_keys($founds, min($founds));
 		shuffle($nearest);
 		$dest = array_pop($nearest);
+
 //
 		while ($possible[$dest]['MP'] < 0) $dest = $possible[$dest]['from'];
 		return ['location' => $dest, 'possible' => $possible];

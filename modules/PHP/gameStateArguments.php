@@ -57,7 +57,7 @@ trait gameStateArguments
 			'ships' => [], 'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0]),
 			'stars' => array_keys(Counters::getPopulation($color)),
 			'view' => Factions::getStatus($color, 'view'),
-			'declareWar' => Factions::canDeclareWar($color)
+			'declareWar' => Factions::atPeace($color)
 		];
 		foreach (Ships::getAll($color) as $ship)
 		{
@@ -81,7 +81,7 @@ trait gameStateArguments
 		$this->possible = [
 			'move' => [], 'scout' => [],
 			'view' => Factions::getStatus($color, 'view'),
-			'declareWar' => Factions::canDeclareWar($color)
+			'declareWar' => Factions::atPeace($color)
 		];
 		foreach (Ships::getAll($color) as $ship)
 		{

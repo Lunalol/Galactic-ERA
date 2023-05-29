@@ -128,23 +128,33 @@ trait gameStates
 			Ships::create($color, 'ship', $sector . ':+0+0+0');
 		}
 //
-// Remove the turn order counters from the game that have a number higher than the number of players.
-// Shuffle the remaining ones and give one face up to each player
-//
-		$players = self::loadPlayersBasicInfos();
 		if (self::getPlayersNumber() === 1)
 		{
 			$colors = array_diff($this->getGameinfos()['player_colors'], Factions::list());
 			shuffle($colors);
 //
-			Factions::create(array_shift($colors), FARMERS, 0);
-			Factions::create(array_shift($colors), SLAVERS, 0);
+			$farmers = array_shift($colors);
+			Factions::create($farmers, FARMERS, 0);
+			Factions::setStarPeople($farmers, 'Farmers');
+			Factions::STO($farmers);
+
+			$slavers = array_shift($colors);
+			Factions::create($slavers, SLAVERS, 0);
+			Factions::setStarPeople($slavers, 'Slavers');
+			Factions::STS($slavers);
+			Factions::gainPopulation($slavers, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
+			Factions::gainDP($slavers, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
 //
-			$order = [1, 2, 3];
-			shuffle($order);
-			foreach (Factions::list() as $color) Factions::setOrder($color, array_shift($order));
+			Factions::declareWar($farmers, $slavers);
+			Factions::declareWar($slavers, $farmers);
 		}
-		else foreach (Factions::list() as $color) Factions::setOrder($color, $players[Factions::getPlayer($color)]['player_no']);
+//
+// Remove the turn order counters from the game that have a number higher than the number of players.
+// Shuffle the remaining ones and give one face up to each player
+//
+		$order = range(1, sizeof(Factions::list()));
+		shuffle($order);
+		foreach (Factions::list() as $color) Factions::setOrder($color, array_shift($order));
 //
 		$this->gamestate->nextState('next');
 	}
@@ -165,22 +175,7 @@ trait gameStates
 		if (self::getPlayersNumber() === 2) unset($starPeoples[array_search('ICC', $starPeoples)]);
 //
 		shuffle($starPeoples);
-		foreach (Factions::list() as $color)
-		{
-			if (Factions::getPlayer($color) == FARMERS)
-			{
-				Factions::setStatus($color, 'starPeople', ['Farmers']);
-				Factions::STO($color);
-			}
-			else if (Factions::getPlayer($color) == SLAVERS)
-			{
-				Factions::setStatus($color, 'starPeople', ['Slavers']);
-				Factions::STS($color);
-				Factions::gainPopulation($color, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
-				Factions::gainDP($color, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
-			}
-			else Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
-		}
+		foreach (Factions::list() as $color) if (Factions::getPlayer($color) > 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 		/* PJL */
 //		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', array_keys($this->STARPEOPLES));
 		/* PJL */
@@ -192,17 +187,21 @@ trait gameStates
 	{
 		foreach (Factions::list() as $color)
 		{
-			$starPeople = Factions::getStatus($color, 'starPeople')[0];
-			Factions::setStarPeople($color, $starPeople);
-			Factions::setStatus($color, 'starPeople');
+			if (Factions::getPlayer($color) > 0)
+			{
+				$starPeople = Factions::getStatus($color, 'starPeople')[0];
+				Factions::setStarPeople($color, $starPeople);
+				Factions::setStatus($color, 'starPeople');
+				$starPeople = Factions::getStarPeople($color);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${STARPEOPLE}</B>'), [
-				'player_name' => Factions::getName($color),
-				'i18n' => ['STARPEOPLE'], 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($color)],
-				'faction' => ['color' => $color, 'starPeople' => $starPeople, 'alignment' => Factions::getAlignment($color)]
-				]
-			);
+				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${STARPEOPLE}</B>'), [
+					'player_name' => Factions::getName($color),
+					'i18n' => ['STARPEOPLE'], 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($color)],
+					'faction' => ['color' => $color, 'starPeople' => $starPeople, 'alignment' => Factions::getAlignment($color)]
+					]
+				);
 //* -------------------------------------------------------------------------------------------------------- */
+			}
 		}
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Alignment choice')]);
@@ -215,12 +214,12 @@ trait gameStates
 		Factions::setActivation('ALL', 'done');
 		foreach (Factions::list() as $color)
 		{
-			if (Factions::getPlayer($color) < 0) Factions::setStatus($color, 'alignment', Factions::getPlayer($color) === SLAVERS);
-//
+			if (Factions::getPlayer($color) > 0)
+			{
+				if (Factions::getStatus($color, 'alignment')) Factions::STS($color);
+				Factions::setStatus($color, 'alignment');
+			}
 			$starPeople = Factions::getStarPeople($color);
-			if (Factions::getStatus($color, 'alignment')) Factions::STS($color);
-			Factions::setStatus($color, 'alignment');
-//
 			$alignment = Factions::getAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${ALIGNMENT}</B>'), [
@@ -623,7 +622,54 @@ trait gameStates
 	}
 	function stRetreat()
 	{
-		$this->gamestate->nextState('endCombat');
+		$attacker = Factions::getActive();
+		$location = Factions::getStatus($attacker, 'combat');
+//
+		$defenders = Ships::getConflictFactions($attacker, $location);
+		if (!$defenders) return $this->gamestate->nextState('endCombat');
+		foreach ($defenders as $defender)
+		{
+			$canRetreat = Factions::getTechnology($defender, 'Spirituality') > Factions::getTechnology($attacker, 'Spirituality');
+			$canRetreat |= Factions::getTechnology($defender, 'Propulsion') > Factions::getTechnology($attacker, 'Propulsion');
+			if ($canRetreat)
+			{
+				$player_id = Factions::getPlayer($defender);
+				if ($player_id < 0)
+				{
+					Automas::retreat($this, $defender);
+					return $this->gamestate->nextState('continue');
+				}
+//
+				$this->gamestate->changeActivePlayer($player_id);
+				return $this->gamestate->nextState('retreat');
+			}
+		}
+//
+		$this->gamestate->nextState('combat');
+	}
+	function stCombat()
+	{
+		$attacker = Factions::getActive();
+		$location = Factions::getStatus($attacker, 'combat');
+//
+		$defenders = Ships::getConflictFactions($attacker, $location);
+		if (!$defenders) return $this->gamestate->nextState('endCombat');
+//
+		$CVs = [];
+		foreach (array_merge([$attacker], $defenders) as $color)
+		{
+			$CVs[$color] = Ships::CV($color, $location);
+		}
+//
+		$winners = array_keys($CVs, max($CVs));
+		$attackerIsWinner = in_array($attacker, $winners);
+		if (sizeof($winners) > 1) $attackerIsWinner = $attackerIsWinner && (max(0, ...array_map(fn($color) => Factions::getTechnology($color, 'Military'), $defenders)) < Factions::getTechnology($attacker, 'Military'));
+//
+		var_dump($attackerIsWinner);
+		die;
+//
+		$this->gamestate->changeActivePlayer($player_id);
+		return $this->gamestate->nextState('winner');
 	}
 	function stSwitchAlignment()
 	{
@@ -645,6 +691,10 @@ trait gameStates
 			$counters = Factions::getStatus($color, 'counters');
 			if (in_array('switchAlignment', $counters))
 			{
+				foreach (Factions::atWar($color) as $otherColor)
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+//* -------------------------------------------------------------------------------------------------------- */
 				Factions::switchAlignment($color);
 //
 // ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter,
@@ -652,11 +702,11 @@ trait gameStates
 // To do Research, you must have already chosen a technology for your square counter choice
 //
 //* -------------------------------------------------------------------------------------------------------- */
+
 				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
 					'player_name' => Factions::getName($color),
 					'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
-					'faction' => ['color' => $color, 'starPeople' => Factions::getStarPeople($color), 'alignment' => Factions::getAlignment($color)]
-				]);
+					'faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$counters = Factions::getStatus($color, 'counters');
 				unset($counters[array_search('switchAlignment', $counters)]);
@@ -717,6 +767,23 @@ trait gameStates
 				Factions::setStatus($color, 'counters', array_values($counters));
 			}
 		}
+		$this->gamestate->nextState('next');
+	}
+	function stGrowthPhase()
+	{
+		Factions::setActivation();
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
+			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
+		]);
+//* -------------------------------------------------------------------------------------------------------- */
+		foreach (Factions::list() as $color)
+		{
+			Factions::setStatus($color, 'counters', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
+			Factions::setStatus($color, 'used', []);
+		}
+//
+		$this->gamestate->setAllPlayersMultiactive('next');
 		$this->gamestate->nextState('next');
 	}
 	function stGrowthActions()
@@ -788,6 +855,7 @@ trait gameStates
 									$this->notifyAllPlayers('msg', clienttranslate('${player_name} accepts trading'), ['player_name' => Factions::getName($with)]);
 //* -------------------------------------------------------------------------------------------------------- */
 									Factions::setStatus($with, 'trade', [$color => ['technology' => $technologies[array_rand($technologies)], 'pending' => false]]);
+									Factions::setActivation($with, 'no');
 								}
 							}
 							else unset($inContact[$index]);

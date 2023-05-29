@@ -148,24 +148,27 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('next');
 	}
-	function acDeclareWar(string $color, string $on)
+	function acDeclareWar(string $color, string $on, $automa = false)
 	{
-		$this->checkAction('declareWar');
+		if (!$automa)
+		{
+			$this->checkAction('declareWar');
 //
-		$player_id = self::getCurrentPlayerId();
-		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-		if (!in_array($on, Factions::canDeclareWar($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
+			$player_id = self::getCurrentPlayerId();
+			if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+			if (!in_array($on, Factions::atPeace($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
+		}
 //
 		Factions::declareWar($color, $on);
 		Factions::declareWar($on, $color);
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('msg', clienttranslate('${player_name1} declares war on ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
-
-		$this->gamestate->nextState('continue');
-//
+		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acRemoteViewing(string $color, int $counter)
 	{
@@ -338,6 +341,7 @@ trait gameStateActions
 			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages enemy fleet(s) ${GPS}'), [
 				'player_name' => Factions::getName($color), 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
+		Factions::setStatus($color, 'combat', $location);
 //
 		$this->gamestate->nextState('engage');
 	}
@@ -453,17 +457,20 @@ trait gameStateActions
 				'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
 				'GPS' => $location, 'counter' => Counters::get($star)]);
 //* -------------------------------------------------------------------------------------------------------- */
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${PLANET} gains ${population} <B>population(s)</B> ${GPS}'), [
+				'PLANET' => [
+					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+				],
+				'GPS' => $location, 'population' => $population]);
+//* -------------------------------------------------------------------------------------------------------- */
 			for ($i = 0; $i < $population; $i++)
 			{
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
-					'PLANET' => [
-						'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
-						'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
-					],
-					'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
+				$this->notifyAllPlayers('placeCounter', '', ['counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 			Counters::destroy($star);
@@ -592,7 +599,7 @@ trait gameStateActions
 //
 // RIVALRY First: All players score 1 DP for every Gain Star action they do in this era.
 //
-		if ($era === 'First' && $galacticStory === RIVALRY)
+		if ($era === 'First' && $galacticStory == RIVALRY)
 		{
 			Factions::gainDP($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -655,7 +662,7 @@ trait gameStateActions
 // MIGRATIONS First: All players score 3 DP for every Grow Population action they do in this era.
 // Only Grow Population actions that generated at least one additional population are counted.
 //
-		if ($era === 'First' && $galacticStory === MIGRATIONS && (sizeof($locations) + sizeof($locationsBonus) > 0))
+		if ($era === 'First' && $galacticStory == MIGRATIONS && (sizeof($locations) + sizeof($locationsBonus) > 0))
 		{
 			Factions::gainDP($color, 3);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -713,7 +720,7 @@ trait gameStateActions
 //
 // WARS First: All players score 2 DP for every Build Ships action they do in this era.
 //
-		if ($era === 'First' && $galacticStory === WARS)
+		if ($era === 'First' && $galacticStory == WARS)
 		{
 			Factions::gainDP($color, 2);
 //* -------------------------------------------------------------------------------------------------------- */

@@ -54,6 +54,14 @@ class Ships extends APP_GameClass
 				. " WHERE location <> 'stock' AND attacker.color = '$color' AND attacker.color <> defender.color"
 				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ", true);
 	}
+	static function getConflictFactions(string $color, string $location): array
+	{
+		return self::getObjectListFromDB("SELECT DISTINCT defender.color FROM ships AS attacker"
+				. " JOIN ships AS defender USING (location)"
+				. " JOIN factions ON attacker.color = factions.color"
+				. " WHERE location = '$location' AND attacker.color = '$color' AND attacker.color <> defender.color"
+				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ", true);
+	}
 	static function getAllDatas($player_id): array
 	{
 		$ships = self::getCollectionFromDB("SELECT id,color,fleet,location,activation FROM ships ORDER BY color,fleet");
@@ -129,5 +137,39 @@ class Ships extends APP_GameClass
 			}
 		}
 		return $possible;
+	}
+	static function CV(string $color, string $location): int
+	{
+		$military = Factions::TECHNOLOGIES['Military'][Factions::getTechnology($color, 'Military')];
+//
+		$CV = 0;
+		foreach (self::getAtLocation($location, $color) as $shipID)
+		{
+			$ship = self::get($color, $shipID);
+			switch ($ship['fleet'])
+			{
+				case 'ship':
+					$CV += $military;
+					break;
+				case 'fleet':
+					$CV += $military * self::getStatus($shipID, 'ships');
+//
+// (A)ssault: Whenever this fleet is involved in combat, add 1 CV per ship in this fleet
+//
+					if (self::getStatus($shipID, 'fleet') === 'A') $CV += self::getStatus($shipID, 'ships');
+//
+// (C)ounterassault: Add 2 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat
+//
+					if (self::getStatus($shipID, 'fleet') === 'C')
+					{
+						$CV += 2 * self::getStatus($shipID, 'ships');
+					}
+//
+					break;
+				case 'homeStar':
+					break;
+			}
+		}
+		return $CV;
 	}
 }

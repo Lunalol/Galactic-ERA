@@ -89,6 +89,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						if (!(DP in index)) index[DP] = 0;
 						dojo.style(node, 'transform', `scale(.75) translate(+${index[DP] * node.clientWidth / 10}px, -${index[DP] * node.clientHeight / 5}px) `);
 						dojo.style(node, 'z-index', index[DP] + 100);
+						dojo.style(node, 'pointer-events', 'all');
 						dojo.setAttr(node, 'title', dojo.string.substitute(_('${DP} destiny points'), {DP: DP}));
 						index[DP]++;
 					}

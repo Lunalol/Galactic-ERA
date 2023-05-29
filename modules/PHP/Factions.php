@@ -89,11 +89,11 @@ class Factions extends APP_GameClass
 	}
 	static function STO(string $color): void
 	{
-		self::dbQuery("UPDATE factions SET alignment = 'STO' WHERE color = '$color'");
+		self::dbQuery("UPDATE factions SET alignment = 'STO', atWar = '[]' WHERE color = '$color'");
 	}
 	static function STS(string $color): void
 	{
-		self::dbQuery("UPDATE factions SET alignment = 'STS' WHERE color = '$color'");
+		self::dbQuery("UPDATE factions SET alignment = 'STS', atWar = '[]' WHERE color = '$color'");
 	}
 	static function getStarPeople(string $color): string
 	{
@@ -178,13 +178,22 @@ class Factions extends APP_GameClass
 		foreach (self::list() as $otherColor) if ($otherColor != $color && array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor)))))) $factions[] = $otherColor;
 		return $factions;
 	}
-	static function canDeclareWar(string $color): array
+	static function atPeace(string $color): array
 	{
-		$colors = self::list();
-		return array_values(array_diff($colors, [$color]));
+		return self::getObjectListFromDB("SELECT color FROM factions WHERE color <> '$color' AND NOT JSON_CONTAINS(atWar, '\"$color\"')", true);
+	}
+	static function atWar(string $color): array
+	{
+		return self::getObjectListFromDB("SELECT color FROM factions WHERE color <> '$color' AND JSON_CONTAINS(atWar, '\"$color\"')", true);
 	}
 	static function declareWar(string $color, string $on): void
 	{
-		self::dBQuery("UPDATE factions SET atWar = JSON_ARRAY_APPEND(atWar, '$', '$on') WHERE color = '$color'");
+		$atWar = array_merge(self::atWar($color), [$on]);
+		self::dBQuery("UPDATE factions SET atWar = '" . json_encode($atWar) . "' WHERE color = '$color'");
+	}
+	static function declarePeace(string $color, string $on): void
+	{
+		$atWar = array_diff(self::atWar($color), [$on]);
+		self::dBQuery("UPDATE factions SET atWar = '" . json_encode($atWar) . "' WHERE color = '$color'");
 	}
 }

@@ -145,7 +145,7 @@ $machinestates = [
 		'name' => 'retreat',
 		'type' => 'game',
 		'action' => 'stRetreat',
-		'transitions' => ['retreat' => 245, 'combat' => 250, 'endCombat' => 230]
+		'transitions' => ['continue' => 240, 'retreat' => 245, 'combat' => 250, 'endCombat' => 230]
 	],
 	245 => [
 		'name' => 'retreat',
@@ -158,10 +158,31 @@ $machinestates = [
 	],
 	250 => [
 		'name' => 'combat',
+		'type' => 'game',
+		'action' => 'stCombat',
+		'transitions' => ['attacker' => 255, 'continue' => 260, 'endCombat' => 230]
+	],
+	255 => [
+		'name' => 'winner',
 		'description' => clienttranslate('${actplayer} must resolve battles'),
 		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),
 		'type' => 'activeplayer',
-		'args' => 'argCombat',
+		'args' => 'argWinner',
+		'possibleactions' => ['done'],
+		'transitions' => ['continue' => 260]
+	],
+	260 => [
+		'name' => 'loser',
+		'type' => 'game',
+		'action' => 'stLoser',
+		'transitions' => ['loser' => 265, 'endCombat' => 230]
+	],
+	265 => [
+		'name' => 'loser',
+		'description' => clienttranslate('${actplayer} must resolve battles'),
+		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),
+		'type' => 'activeplayer',
+		'args' => 'argLoser',
 		'possibleactions' => ['done'],
 		'transitions' => ['endCombat' => 230]
 	],
