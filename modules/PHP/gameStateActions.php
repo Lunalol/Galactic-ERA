@@ -73,15 +73,15 @@ trait gameStateActions
 			{
 				Ships::setLocation($fleet['id'], $location);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} creates a new fleet ${GPS}'), [
-					'player_name' => Factions::getName($color), 'GPS' => $location, 'ship' => Ships::get($color, $fleetID)]);
+				$this->notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => Ships::get($color, $fleetID)]);
+//				$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} creates a new fleet ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location, 'ship' => Ships::get($color, $fleetID)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to fleet ${GPS}'), [
-				'player_name' => Factions::getName($color), 'GPS' => $location, 'N' => sizeof($ships)]);
+			$this->notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
+//			$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to fleet ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			foreach ($ships as $shipID)
 			{
@@ -163,9 +163,7 @@ trait gameStateActions
 		Factions::declareWar($on, $color);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('msg', clienttranslate('${player_name1} declares war on ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
-//* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		if (!$automa) $this->gamestate->nextState('continue');
@@ -232,28 +230,28 @@ trait gameStateActions
 		{
 			if (Ships::isShip($color, $ships[0]))
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to ${PLANET} ${GPS}'), [
-					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-					'GPS' => $location, 'N' => sizeof($ships)]);
+				$this->notifyAllPlayers('msg', clienttranslate('${N} ship(s) move to ${PLANET} ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
+//				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to ${PLANET} ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships),
+//					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves a fleet to ${PLANET} ${GPS}'), [
-					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-					'GPS' => $location]);
+				$this->notifyAllPlayers('msg', clienttranslate('A fleet moves to ${PLANET} ${GPS}'), ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
+//				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves a fleet to ${PLANET} ${GPS}'), ['GPS' => $location,
+//					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		else
 		{
 			if (Ships::isShip($color, $ships[0]))
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) ${GPS}'), [
-					'player_name' => Factions::getName($color), 'GPS' => $location, 'N' => sizeof($ships)]);
+				$this->notifyAllPlayers('msg', clienttranslate('${N} ship(s) moves ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
+//				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves a fleet ${GPS}'), [
-					'player_name' => Factions::getName($color), 'GPS' => $location]);
+				$this->notifyAllPlayers('msg', clienttranslate('A fleet is moving ${GPS}'), ['GPS' => $location]);
+//				$this->notifyAllPlayers('msg', clienttranslate('${player_name} moves a fleet ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
@@ -295,7 +293,7 @@ trait gameStateActions
 			{
 				$status = json_decode($json, JSON_OBJECT_AS_ARRAY);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('removeShip', '', ['ship' => Ships::get($color, $ship)]);
+				$this->notifyAllPlayers('removeShip', '${player_name} cancels last move', ['player_name' => Factions::getName($color), 'ship' => Ships::get($color, $ship)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::DbQuery("UPDATE ships SET activation = '$status[activation]',fleet = '$status[fleet]',location = '$status[location]', MP = $status[MP] WHERE id = $ship");
 //* -------------------------------------------------------------------------------------------------------- */

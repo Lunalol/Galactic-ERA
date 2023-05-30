@@ -3,7 +3,7 @@
  * @author Lunalol
  */
 define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
-	g_gamethemeurl + "modules/JavaScript/hexagons.js",
+	g_gamethemeurl + "modules/JavaScript/translations.js",
 	g_gamethemeurl + "modules/JavaScript/constants.js",
 	g_gamethemeurl + "modules/JavaScript/board.js",
 	g_gamethemeurl + "modules/JavaScript/factions.js",
@@ -54,7 +54,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				let nodeCounters = dojo.place(`<div class='ERAcounters' id='ERAcounters-${faction.color}'></div>`, `player_board_${faction.player_id}`, 2);
 //
 				let nodeStatus = dojo.place(`<div id='ERAstatus-${faction.color}' class='ERAstatus'></div>`, nodeCounters, 'after');
-				dojo.place(`<div class='ERAsmallOrder' title='${_('Turn order')}'><div class='ERAcounter ERAselectable ERAorder' id='ERAorder-${faction.color}'></div></div>`, nodeStatus);
+				dojo.place(`<div class='ERAsmallOrder' title='${_('Turn order')}'><div class='ERAcounter ERAselectable ERAorder' id='ERAorder-${faction.color}' faction='${faction.color}'></div></div>`, nodeStatus);
 				dojo.place(`<div class='ERAsmallOrder'></div>`, nodeStatus);
 				for (let otherFaction of Object.values(gamedatas.factions))
 				{

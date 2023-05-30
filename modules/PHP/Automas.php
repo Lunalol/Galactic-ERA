@@ -338,7 +338,7 @@ class Automas extends APP_GameClass
 		$possible = [$ship['location'] => ['MP' => $ship['MP'], 'from' => null, 'distance' => 0]];
 //
 		$locations = [$ship['location'] => 0];
-		while (sizeof($founds) !== sizeof($dests))
+		while (sizeof($founds) !== sizeof($dests) && $locations)
 		{
 			$distance = min($locations);
 			$location = array_search($distance, $locations);
@@ -347,7 +347,9 @@ class Automas extends APP_GameClass
 			if (in_array($location, $dests) && !array_key_exists($location, $founds)) $founds[$location] = $distance;
 //
 			$distance += 1;
-			foreach (Sectors::neighbors($location) as $next_location => $terrain)
+			$neighbors = Sectors::neighbors($location);
+			shuffle($neighbors);
+			foreach ($neighbors as $next_location => $terrain)
 			{
 				$next_MP = $possible[$location]['MP'] - ($terrain === Sectors::NEBULA ? 2 : 1);
 				if ($terrain === Sectors::NEUTRON) $next_MP -= 100;

@@ -598,11 +598,17 @@ trait gameStates
 			{
 				$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
-					'player_name' => Factions::getName($color), 'DICE' => $dice]);
+				$this->notifyAllPlayers('msg', clienttranslate('${DICE} is rolled'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+//				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				Automas::movement($this, $color, $dice);
 			}
+			else
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyAllPlayers('msg', clienttranslate('No ships to move'), ['player_name' => Factions::getName($color)]);
+//				$this->notifyAllPlayers('msg', clienttranslate('${player_name} has no ships to move'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+
 			Factions::setActivation($color, 'done');
 			return $this->gamestate->nextState('continue');
 		}
@@ -679,8 +685,7 @@ trait gameStates
 			{
 				$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
-					'player_name' => Factions::getName($color), 'DICE' => $dice]);
+				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				Factions::setStatus($color, 'counters', Automas::growthActions($color, intval(self::getGameStateValue('difficulty')), $dice));
 			}
@@ -702,10 +707,8 @@ trait gameStates
 // To do Research, you must have already chosen a technology for your square counter choice
 //
 //* -------------------------------------------------------------------------------------------------------- */
-
 				$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
-					'player_name' => Factions::getName($color),
-					'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
+					'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
 					'faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$counters = Factions::getStatus($color, 'counters');
