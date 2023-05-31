@@ -368,7 +368,14 @@ trait gameStateActions
 			if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
 		}
 //
-		if (Factions::getTechnology($color, $technology) === 6) throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+		if (Factions::getTechnology($color, $technology) === 6)
+		{
+//
+// When automas research a technology they already have at level 6, this has no effect instead
+//
+			if ($player_id < 0) return;
+			throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+		}
 		$level = Factions::gainTechnology($color, $technology);
 //
 // GREYS SPECIAL STO & STS: When you research a technology at level 1 you increase it to level 3
@@ -456,7 +463,7 @@ trait gameStateActions
 				'GPS' => $location, 'counter' => Counters::get($star)]);
 //* -------------------------------------------------------------------------------------------------------- */
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('${PLANET} gains ${population} <B>population(s)</B> ${GPS}'), [
+			$this->notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
@@ -624,7 +631,7 @@ trait gameStateActions
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
@@ -637,7 +644,7 @@ trait gameStateActions
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains a <B>population</B> ${GPS}'), [
+			$this->notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]

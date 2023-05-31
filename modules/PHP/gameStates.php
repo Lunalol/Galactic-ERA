@@ -23,6 +23,7 @@ trait gameStates
 // Randomly draw a galactic story tile and place it alongside the turn track in the long rectangle labeled “Galactic Story”.
 //
 		$galacticStory = array_rand($this->STORIES);
+		$galacticStory = JOURNEYS;
 		self::setGameStateInitialValue('galacticStory', $galacticStory);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', clienttranslate('Galactic Story: <B>${STORY}</B>'), ['i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]]);

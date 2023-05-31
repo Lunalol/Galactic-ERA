@@ -18,7 +18,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			let html = '<div style="display:grid;grid-template-columns:100px 500px;outline:1px solid black;">';
 			for (let [ERA, string] of Object.entries({1: _('First Era'), 2: _('Second Era'), 3: _('Third Era')}))
 			{
-				html += '<div style="padding:12px;text-align:center;outline:1px solid black;">' + _(string) + '</div>';
+				html += '<div style="padding:12px;text-align:center;outline:1px solid black;">' + (string) + '</div>';
 				html += '<div style="padding:12px;outline:1px solid black;">';
 				for (let string of galacticStory[ERA]) html += '<div style="text-align:justify;">◇ ' + string + '</div>';
 				html += '</div>';

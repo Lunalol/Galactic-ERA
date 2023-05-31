@@ -122,7 +122,8 @@ class Ships extends APP_GameClass
 			$location = array_search($MP, $locations);
 			unset($locations[$location]);
 //
-			foreach (Sectors::neighbors($location) as $next_location => $terrain)
+			$neighbors = Sectors::neighbors($location);
+			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
 			{
 				if ($terrain === Sectors::NEUTRON) continue;
 				$next_MP = $MP - ($terrain === Sectors::NEBULA ? 2 : 1);

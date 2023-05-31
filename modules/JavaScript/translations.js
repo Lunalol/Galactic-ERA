@@ -5,7 +5,7 @@ function GALATIC_STORIES(galacticStory)
 		'Journeys': {
 			1: [
 				_('Every player with the STO alignment at the end of a round scores 1 DP.'),
-				_('All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2 - player game).')
+				_('All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game).')
 			],
 			2: [
 				_('Every player with the STS alignment at the end of a round scores 1 DP.'),

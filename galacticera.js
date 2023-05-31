@@ -45,7 +45,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				{
 					let node = dojo.place(`<div id='overall_player_board_${faction.player_id}' class='player-board' id='player_board_${faction.player_id}'/></div>`, 'player_boards');
 					dojo.place(`<div class='player-name' id='player_name_${faction.player_id}' style='color:#${faction.color}'>${{1: _('Genetic Farmers'), 2: _('Slavers')}[-faction.player_id]}</div>`, node);
-					dojo.place(`<div>&nbsp</div>`, node);
+//					dojo.place(`<div>&nbsp</div>`, node);
 					dojo.place(`<div id='player_board_${faction.player_id}' class='player-board_content' id='player_board_${faction.player_id}'/></div>`, node);
 				}
 //

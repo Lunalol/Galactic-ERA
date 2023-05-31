@@ -1489,7 +1489,7 @@ class Sectors extends APP_GameClass
 				if (in_array($next2, $sectors))
 				{
 					$next_location = self::WORMHOLES[$next2]['previous'];
-					$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+					$neighbors['WORMHOLE'] = ['location' => $next_location, 'terrain' => Sectors::terrainFromLocation($next_location)];
 				}
 			}
 		}
@@ -1502,7 +1502,7 @@ class Sectors extends APP_GameClass
 				if (in_array($next2, $sectors))
 				{
 					$next_location = self::WORMHOLES[$next2]['next'];
-					$neighbors[$next_location] = Sectors::terrainFromLocation($next_location);
+					$neighbors['WORMHOLE'] = ['location' => $next_location, 'terrain' => Sectors::terrainFromLocation($next_location)];
 				}
 			}
 		}
@@ -1518,11 +1518,11 @@ class Sectors extends APP_GameClass
 					if (in_array($_sector, $sectors))
 					{
 						$_neighbor = hex_add($neighbor, $delta);
-						if (hex_length($_neighbor) <= 4) $neighbors[sprintf('%1d:%+2d%+2d%+2d', $_sector, $_neighbor['q'], $_neighbor['r'], $_neighbor['s'])] = Sectors::terrainFromHex($_sector, $_neighbor);
+						if (hex_length($_neighbor) <= 4) $neighbors[$i] = ['location' => sprintf('%1d:%+2d%+2d%+2d', $_sector, $_neighbor['q'], $_neighbor['r'], $_neighbor['s']), 'terrain' => Sectors::terrainFromHex($_sector, $_neighbor)];
 					}
 				}
 			}
-			else $neighbors[sprintf('%1d:%+2d%+2d%+2d', $sector, $neighbor['q'], $neighbor['r'], $neighbor['s'])] = Sectors::terrainFromHex($sector, $neighbor);
+			else $neighbors[$i] = ['location' => sprintf('%1d:%+2d%+2d%+2d', $sector, $neighbor['q'], $neighbor['r'], $neighbor['s']), 'terrain' => Sectors::terrainFromHex($sector, $neighbor)];
 		}
 		return $neighbors;
 	}
@@ -1535,7 +1535,9 @@ class Sectors extends APP_GameClass
 		while (!$queue->isEmpty())
 		{
 			$location = $queue->dequeue();
-			foreach (array_keys(Sectors::neighbors($location)) as $next_location)
+//
+			$neighbors = Sectors::neighbors($location);
+			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
 			{
 				if (!array_key_exists($next_location, $distance))
 				{

@@ -79,7 +79,10 @@ class Automas extends APP_GameClass
 						case 1:
 // Each ship moves to (or as close as possible to) the nearest one of your stars
 							$locations = array_keys(Counters::getPopulation(Factions::getNotAutomas()));
+//
 							$path = self::paths($ship, $locations);
+							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
+//
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
@@ -94,14 +97,20 @@ class Automas extends APP_GameClass
 									if ($location !== $ship['location']) $locations[] = $location;
 								}
 							}
+//
 							$path = self::paths($ship, $locations);
+							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
+//
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
 						case 3:
 // Each ship moves as close as possible to the center hex of its sector
 							$locations = [$ship['location'][0] . ':+0+0+0'];
+//
 							$path = self::paths($ship, $locations);
+							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
+//
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
@@ -109,13 +118,29 @@ class Automas extends APP_GameClass
 // Each ship moves to any star within range. If there is no star within range then it moves as close as possible to the nearest one
 							$locations = [];
 							foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = $sector . ':' . $hexagon;
-							$path = self::paths($ship, $locations);
+//
+							$path = self::paths($ship, $locations, true);
+							if (!$path) $path = self::paths($ship, $locations);
+							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
+//
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
 						case 5:
 // Each ship moves its full range in a random direction
-							throw new BgaVisibleSystemException('Farmers move not implemented');
+							$neighbors = Sectors::neighbors($ship['location']);
+							$direction = array_rand($neighbors);
+							while (array_key_exists($direction, $neighbors))
+							{
+								$location = $neighbors[$direction]['location'];
+								$neighbors = Sectors::neighbors($location);
+							}
+//
+							$path = self::paths($ship, [$location]);
+							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
+//
+							$bgagame->possible['move'][$ship['id']] = $path['possible'];
+							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
 						case 6:
 // No movement
@@ -130,6 +155,7 @@ class Automas extends APP_GameClass
 					foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) $shipList[$location] = Ships::getAtLocation($location, $color);
 					foreach ($shipList as $location => $ships)
 					{
+						$dice = 1;
 						switch ($dice)
 						{
 							case 1:
@@ -145,7 +171,10 @@ class Automas extends APP_GameClass
 								foreach ($ships as $shipID)
 								{
 									$ship = Ships::get($color, $shipID);
+//
 									$path = self::paths($ship, $locations);
+									if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
+//
 									$bgagame->possible['move'][$ship['id']] = $path['possible'];
 									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$ship['id']], true);
 									else $toMove[] = $shipID;
@@ -166,7 +195,10 @@ class Automas extends APP_GameClass
 								foreach ($ships as $shipID)
 								{
 									$ship = Ships::get($color, $shipID);
+//
 									$path = self::paths($ship, $locations);
+									if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
+//
 									$bgagame->possible['move'][$ship['id']] = $path['possible'];
 									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$ship['id']], true);
 									else $toMove[] = $shipID;
@@ -233,39 +265,55 @@ class Automas extends APP_GameClass
 				switch ($dice)
 				{
 					case 1:
+						// Research Military
 						$counters[] = 'research';
 						$counters[] = 'Military';
+						// Spawn ships at all 3 wormholes
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), $wormholes)));
 						break;
 					case 2:
+						// Change turn order: down
 						$counters[] = 'changeTurnOrderDown';
+						// Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
+						$counters[] = 'gainStar';
+						// Spawn ships at 2 wormholes
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 2))));
 						break;
 					case 3:
+						// Research Propulsion
 						$counters[] = 'research';
 						$counters[] = 'Propulsion';
+						// Spawn ships at 1 wormhole
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 1))));
 						break;
 					case 4:
+						// Research Robotics
 						$counters[] = 'research';
 						$counters[] = 'Robotics';
+						// Spawn ships at the center sector wormhole
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
 						break;
 					case 5:
+						// Change turn order: down
 						$counters[] = 'changeTurnOrderDown';
+						// Gain a star(**)
 						$counters[] = 'gainStar';
-//							$counters[] = 'growPopulation';
+						// Grow population (if they cannot grow any population, then they spawn ships at the center sector wormhole instead)
+						$counters[] = 'growPopulation';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
 						break;
 					case 6:
+						// Gain a neutral star (otherwise one of yours)(**)
 						$counters[] = 'gainStar';
+						// Research a randomly selected technology (determine which one immediately and use a technology counter to mark as reminder)
 						$counters[] = 'research';
 						$technologies = Factions::TECHNOLOGIES;
 						if (Factions::getTechnology($color, 'Spirituality') >= 4) unset($technologies['Spirituality']);
+						foreach (array_keys(Factions::TECHNOLOGIES) as $technologies) if (Factions::getTechnology($color, $technologies) === 6) unset($technologies[$technologies]);
 						$counters[] = array_rand($technologies);
 						break;
 				}
@@ -282,6 +330,7 @@ class Automas extends APP_GameClass
 			$gainStar = array_search('gainStar', $counters);
 			if ($gainStar !== false)
 			{
+				throw new BgaVisibleSystemException('Not implemented: gainStar');
 				unset($counters[$gainStar]);
 				Factions::setStatus($color, 'counters', array_values($counters));
 				continue;
@@ -289,6 +338,7 @@ class Automas extends APP_GameClass
 			$growPopulation = array_search('growPopulation', $counters);
 			if ($growPopulation !== false)
 			{
+				throw new BgaVisibleSystemException('Not implemented: growPopulation');
 				unset($counters[$growPopulation]);
 				Factions::setStatus($color, 'counters', array_values($counters));
 				continue;
@@ -331,7 +381,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function paths(array $ship, $dests)
+	function paths(array $ship, array $dests, bool $inRange = false)
 	{
 		$founds = [];
 //
@@ -348,12 +398,12 @@ class Automas extends APP_GameClass
 //
 			$distance += 1;
 			$neighbors = Sectors::neighbors($location);
-			shuffle($neighbors);
-			foreach ($neighbors as $next_location => $terrain)
+			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
 			{
 				$next_MP = $possible[$location]['MP'] - ($terrain === Sectors::NEBULA ? 2 : 1);
 				if ($terrain === Sectors::NEUTRON) $next_MP -= 100;
-//				if ($next_MP >= 0)
+//
+				if (!$inRange || $next_MP >= 0)
 				{
 					if (!array_key_exists($next_location, $possible) || ($possible[$next_location]['distance'] > $distance))
 					{
@@ -364,10 +414,13 @@ class Automas extends APP_GameClass
 			}
 		}
 //
-		$nearest = array_keys($founds, min($founds));
-		shuffle($nearest);
-		$dest = array_pop($nearest);
-
+		if ($inRange) $selected = array_keys($founds);
+		else $selected = array_keys($founds, min($founds));
+//
+		if (!$selected) return NULL;
+//
+		shuffle($selected);
+		$dest = array_pop($selected);
 //
 		while ($possible[$dest]['MP'] < 0) $dest = $possible[$dest]['from'];
 		return ['location' => $dest, 'possible' => $possible];

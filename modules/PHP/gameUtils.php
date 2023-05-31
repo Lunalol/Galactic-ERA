@@ -20,14 +20,14 @@ trait gameUtils
 				{
 					Counters::reveal($color, 'star', $counter);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} is <B>uninhabited</B> ${GPS}'), [
+					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
 						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				else
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('flipCounter', clienttranslate('${PLANET} is <B>uninhabited</B> ${GPS}'), [
+					$this->notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
 						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -37,12 +37,12 @@ trait gameUtils
 				{
 					Counters::reveal($color, 'star', $counter);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has a <B>primitive</B> civilization ${GPS}'), [
+					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
 						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
-				else $this->notifyAllPlayers('flipCounter', clienttranslate('${PLANET} has a <B>primitive</B> civilization ${GPS}'), [
+				else $this->notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
 //* -------------------------------------------------------------------------------------------------------- */
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
 						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
@@ -53,14 +53,14 @@ trait gameUtils
 				{
 					Counters::reveal($color, 'star', $counter);
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization ${GPS}'), [
+					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
 						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				else
 //* -------------------------------------------------------------------------------------------------------- */10
-					$this->notifyAllPlayers('flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization ${GPS}'), [
+					$this->notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
 						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
