@@ -262,7 +262,6 @@ class Automas extends APP_GameClass
 				}
 				break;
 			case SLAVERS:
-				$dice = 5;
 				switch ($dice)
 				{
 					case 1:
