@@ -55,4 +55,66 @@ class Counters extends APP_GameClass
 		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star','relic')", true);
 		return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type = '$type'", true);
 	}
+	static function gainStar(string $color, string $location): array
+	{
+		$alignment = Factions::getAlignment($color);
+//
+		$ships = Ships::getAtLocation($location, $color);
+		if (!$ships) throw new BgaVisibleSystemException('No ships at location: ' . $location);
+//
+		$stars = self::getAtLocation($location, 'star');
+		if ($stars)
+		{
+			if (sizeof($stars) > 1) throw new BgaVisibleSystemException('More than one star at location: ' . $location);
+//
+			switch (Counters::getStatus($stars[0], 'back'))
+			{
+				case 'UNINHABITED':
+					$SHIPS = 1;
+					$population = 1;
+					break;
+				case 'PRIMITIVE':
+					switch ($alignment)
+					{
+						case 'STO':
+							$SHIPS = INF;
+							$population = 0;
+						case 'STS':
+							$SHIPS = 1;
+							$population = 2;
+							break;
+					}
+					break;
+				case 'ADVANCED':
+					switch ($alignment)
+					{
+						case 'STO':
+							$SHIPS = 1;
+							$population = 3;
+							break;
+						case 'STS':
+							$SHIPS = 3 + 1;
+							$population = 1;
+							break;
+					}
+					break;
+			}
+		}
+		else
+		{
+			switch ($alignment)
+			{
+				case 'STO': // Liberate
+					$SHIPS = 1 + sizeof(Counters::getAtLocation($location, 'populationDisk'));
+					$population = sizeof(Counters::getAtLocation($location, 'populationDisk'));
+					break;
+				case 'STS': // Conquer
+					$SHIPS = 1 + sizeof(Counters::getAtLocation($location, 'populationDisk'));
+					$population = 1;
+					break;
+			}
+		}
+//
+		return [sizeof($ships) >= $SHIPS, $population];
+	}
 }

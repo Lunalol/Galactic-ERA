@@ -445,16 +445,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					foreach (Automas::startBonus($color, $dice) as $technology => $level)
 					{
-						if ($technology === 'offboard')
-						{
-							Factions::gainPopulation($color, 2);
-							Factions::gainDP($color, 2);
-//* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes 2 population discs from their population track (add to offboard power track)'), [
-								'player_name' => Factions::getName($color), 'faction' => Factions::get($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
-						}
-						else
+						if ($technology !== 'offboard')
 						{
 							Factions::setTechnology($color, $technology, $level);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -463,6 +454,7 @@ trait gameStates
 								'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
+						else self::acSpecial($color, 2);
 					}
 					break;
 			}
@@ -890,6 +882,8 @@ trait gameStates
 //
 		foreach (Factions::list() as $color)
 		{
+			if (Factions::getPlayer($color) < 0) continue;
+//	
 			$alignment = Factions::getAlignment($color);
 //
 			switch ($era)
