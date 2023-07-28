@@ -112,6 +112,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		click: function (event)
 		{
+			if (this.bgagame.board.dragging === true) return;
+//
 			const counter = event.currentTarget;
 			const location = dojo.getAttr(counter, 'location');
 //

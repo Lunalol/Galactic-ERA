@@ -16,14 +16,13 @@ trait gameStates
 	function stPrepareRoundAndDPTrack()
 	{
 //
-// Place the gra	y pawn on the left-most position of the round track (where the gray arrow is).
+// Place the gray pawn on the left-most position of the round track (where the gray arrow is).
 //
 		self::setGameStateInitialValue('round', 0);
 //
 // Randomly draw a galactic story tile and place it alongside the turn track in the long rectangle labeled “Galactic Story”.
 //
-		$galacticStory = array_rand($this->STORIES);
-		$galacticStory = JOURNEYS;
+		$galacticStory = JOURNEYS /* array_rand($this->STORIES) */;
 		self::setGameStateInitialValue('galacticStory', $galacticStory);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', clienttranslate('Galactic Story: <B>${STORY}</B>'), ['i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]]);
@@ -36,6 +35,7 @@ trait gameStates
 		self::setGameStateInitialValue('galacticGoal', $galacticGoal);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', clienttranslate('Galactic goal: <B>${GOAL}</B>'), ['i18n' => ['GOAL'], 'GOAL' => $this->GOALS[$galacticGoal]]);
+		if ($galacticGoal !== NONE) $this->notifyAllPlayers('message', clienttranslate('---- Galactic goal not implemented ----'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
@@ -883,7 +883,7 @@ trait gameStates
 		foreach (Factions::list() as $color)
 		{
 			if (Factions::getPlayer($color) < 0) continue;
-//	
+//
 			$alignment = Factions::getAlignment($color);
 //
 			switch ($era)

@@ -215,12 +215,41 @@ class Sectors extends APP_GameClass
 		],
 		14 => [
 			'+0+0+0' => Sectors::HOME,
+			'-2-1+3' => Sectors::PLANET,
+			'+2-3+1' => Sectors::PLANET,
+			'+2+1-3' => Sectors::PLANET,
+			'+0+3-3' => Sectors::PLANET,
+			'-3+3+0' => Sectors::PLANET,
+			'+1+3-4' => Sectors::PLANET,
+			'-4+3+1' => Sectors::NEBULA,
+			'-4+2+2' => Sectors::NEBULA,
+			'-4+1+3' => Sectors::NEBULA,
+			'+1-1+0' => Sectors::ASTEROIDS,
 		],
 		15 => [
 			'+0+0+0' => Sectors::HOME,
 		],
 		16 => [
 			'+0+0+0' => Sectors::HOME,
+			'+0-1+1' => Sectors::PLANET,
+			'+1+0-1' => Sectors::PLANET,
+			'+0-3+3' => Sectors::PLANET,
+			'+2+1-3' => Sectors::PLANET,
+			'-4+0+4' => Sectors::PLANET,
+			'-2+4-2' => Sectors::PLANET,
+			'-3+4-1' => Sectors::PLANET,
+			'+1-1+0' => Sectors::NEBULA,
+			'-2+0+2' => Sectors::NEBULA,
+			'-1-1+2' => Sectors::NEBULA,
+			'-2-1+3' => Sectors::NEBULA,
+			'+3+0-3' => Sectors::NEBULA,
+			'+0+3-3' => Sectors::NEBULA,
+			'-3+3+0' => Sectors::NEBULA,
+			'-2-2+4' => Sectors::NEBULA,
+			'+1+3-4' => Sectors::NEBULA,
+			'-1+4-3' => Sectors::NEBULA,
+			'+4-4+0' => Sectors::ASTEROIDS,
+			'-3-1+4' => Sectors::NEUTRON,
 		],
 		17 => [
 			'+0+0+0' => Sectors::HOME,
@@ -1410,7 +1439,7 @@ class Sectors extends APP_GameClass
 		}
 		$setup = array_merge([0], array_values($locations));
 //
-		$available = range(0, 6/* PJL: 8 */);
+		$available = range(0, 8);
 		shuffle($available);
 //
 		$sectors = array_slice($available, 0, sizeof($setup));
@@ -1507,7 +1536,9 @@ class Sectors extends APP_GameClass
 			}
 		}
 //
-		for ($i = 0; $i < 6; $i++)
+		for ($i = 0;
+			$i < 6;
+			$i++)
 		{
 			$neighbor = hex_neighbor(Hex($q, $r, $s), $i);
 			if (hex_length($neighbor) > 4)

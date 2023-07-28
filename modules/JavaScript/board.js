@@ -48,6 +48,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.style(node, 'transform-origin', 'center');
 					dojo.style(node, 'transform', `scale(1) rotate(${angle}deg)`);
 					dojo.connect($(`ERAplayerAid-${faction.color}`), 'click', (event) => {
+						dojo.stopEvent(event);
 						const playerAid = (1 + +dojo.getAttr(event.currentTarget, 'playerAid')) % 4;
 						dojo.style(event.currentTarget, 'background-image', `url(${g_gamethemeurl}img/playerAids/${playerAid}.jpg)`);
 						dojo.setAttr(event.currentTarget, 'playerAid', playerAid);
@@ -86,8 +87,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			this.dragging = false;
 //
-			dojo.connect(document, 'oncontextmenu', (event) => dojo.stopEvent(event));
-			dojo.connect(this.playarea, 'click', this, 'click');
+			dojo.connect($('leftright_page_wrapper'), 'oncontextmenu', (event) => dojo.stopEvent(event));
+			dojo.connect(this.playarea, 'click', this, 'click')
 //
 // Event listeners for drag gestures
 //
@@ -107,6 +108,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.connect(dojo.byId('ERArotateAntiClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) - 10));
 			dojo.connect(dojo.byId('ERArotateClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) + 10));
 			dojo.connect(dojo.byId('ERAhome'), 'onclick', () => this.home(this.bgagame.player_id));
+			dojo.connect(dojo.byId('ERAview'), 'onclick', () => {
+				if ($('ERAchoice')) dojo.toggleClass('ERAchoice', 'ERAhide');
+			});
 //
 			dojo.connect(this.playarea, 'gesturestart', this, () => this.zooming = this.board.scale);
 			dojo.connect(this.playarea, 'gestureend', this, () => this.zooming = null);
@@ -150,8 +154,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				this.setZoom(10 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
 				this.centerMap('0:+0+0+0');
 			}
-			if ($('ERAchoice')) dojo.toggleClass('ERAchoice', 'ERAhide');
-
 		},
 		setRotate: function (rotate)
 		{
@@ -199,11 +201,15 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		wheel: function (event)
 		{
+// Alt + Wheel
+			if (event.altKey)
+			{
+				dojo.stopEvent(event);
+				this.setRotate(parseInt(this.rotate.value) + event.deltaY / 10);
+			}
+// Ctrl + Wheel
 			if (event.ctrlKey)
 			{
-//
-// Ctrl + Wheel
-//
 				dojo.stopEvent(event);
 //
 // Update scale only when zoom factor is updated
@@ -224,14 +230,16 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		begin_drag: function (event)
 		{
-			this.dragging = true;
 //
 			this.startX = event.clientX;
 			this.startY = event.clientY;
 		},
 		drag: function (event)
 		{
-			if (this.dragging)
+			if (event.buttons !== 1) return;
+			if (Math.max(Math.abs((event.clientX - this.startX), Math.abs(event.clientY - this.startY))) >= 2) this.dragging = true;
+//
+			if (this.dragging === true)
 			{
 				this.playarea.scrollLeft -= (event.clientX - this.startX);
 				this.playarea.scrollTop -= (event.clientY - this.startY);
@@ -243,6 +251,20 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		end_drag: function ()
 		{
 			this.dragging = false;
+//			if (this.dragging)
+//			{
+//				if (this.dragging === true)
+//				{
+//					window.setTimeout(() => {
+//						this.dragging = false;
+//					});
+//				}
+//				else
+//				{
+//					window.clearTimeout(this.dragging);
+//					this.dragging = false;
+//				}
+//			}
 		},
 		centerMap: function (location)
 		{
@@ -261,6 +283,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		click: function (event)
 		{
+			if (this.dragging === true) return;
+//
 			const rect = this.playarea.getBoundingClientRect();
 			const scale = parseFloat(this.board.scale);
 			const angle = parseFloat(this.rotate.value) * Math.PI / 180.;
@@ -274,6 +298,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			];
 //
 			let location = this.nearest(x, y);
+
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
 				if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
@@ -283,7 +308,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
 			}
 			this.bgagame.restoreServerGameState();
-		},
+		}
+		,
 		drawHexagon: function (hexagon, color)
 		{
 			let shape = Array.from(hexagon.shape);
@@ -307,7 +333,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.style(SVGpath, 'filter', 'blur(10px');
 //
 			return SVGpath;
-		},
+		}
+		,
 		nearest(x, y)
 		{
 			let hexagon = undefined;
@@ -322,7 +349,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				}
 			}
 			return hexagon;
-		},
+		}
+		,
 		clearCanvas()
 		{
 			const ctx = this.canvas.getContext('2d');

@@ -114,7 +114,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
 		'args' => 'argFleets',
-		'possibleactions' => ['shipsToFleet', 'fleetToShips', 'swapFleets', 'remoteViewing', 'done', 'declareWar'],
+		'possibleactions' => ['shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done', 'declareWar'],
 		'transitions' => ['continue' => 210, 'next' => 220]
 	],
 	220 => [
@@ -124,7 +124,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argMovement',
 		'possibleactions' => ['undo', 'move', 'scout', 'remoteViewing', 'done', 'declareWar'],
-		'transitions' => ['continue' => 220, 'next' => 230]
+		'transitions' => ['undo' => 210, 'continue' => 220, 'next' => 230]
 	],
 	230 => [
 		'name' => 'combatChoice',

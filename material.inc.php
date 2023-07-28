@@ -207,12 +207,25 @@ $this->SECTORS = [
 	],
 	14 => [
 		'+0+0+0' => clienttranslate('Xilox'),
+		'-2-1+3' => clienttranslate('Neb-Heru'),
+		'+2-3+1' => clienttranslate('Aldebaran'),
+		'+2+1-3' => clienttranslate('Barnard\'s Star'),
+		'+0+3-3' => clienttranslate('Wolf 424'),
+		'-3+3+0' => clienttranslate('Alpha Centauri'),
+		'+1+3-4' => clienttranslate('Teka'),
 	],
 	15 => [
 		'+0+0+0' => clienttranslate('Xilox'),
 	],
 	16 => [
 		'+0+0+0' => clienttranslate('Rigel'),
+		'+0-1+1' => clienttranslate('Blaveh'),
+		'+1+0-1' => clienttranslate('Intibi Ra II'),
+		'+0-3+3' => clienttranslate('Betelgeuse'),
+		'+2+1-3' => clienttranslate('New Erra'),
+		'-4+0+4' => clienttranslate('P\'taah'),
+		'-2+4-2' => clienttranslate('Denala'),
+		'-3+4-1' => clienttranslate('Ectom'),
 	],
 	17 => [
 		'+0+0+0' => clienttranslate('Rigel'),

@@ -15,21 +15,21 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const galacticStoryNode = dojo.place(`<img id='ERAgalacticStory' src='${g_gamethemeurl}img/galacticStories/${this.bgagame.gamedatas.galacticStory}.png' draggable='false'>`, 'ERA-DP');
 			const galacticStory = GALATIC_STORIES(this.bgagame.gamedatas.galacticStory);
 //
-			let html = '<div style="display:grid;grid-template-columns:100px 500px;outline:1px solid black;">';
+			let html = '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid black;background:white;">';
 			for (let [ERA, string] of Object.entries({1: _('First Era'), 2: _('Second Era'), 3: _('Third Era')}))
 			{
 				html += '<div style="padding:12px;text-align:center;outline:1px solid black;">' + (string) + '</div>';
 				html += '<div style="padding:12px;outline:1px solid black;">';
-				for (let string of galacticStory[ERA]) html += '<div style="text-align:justify;">◇ ' + string + '</div>';
+				for (let string of galacticStory[ERA]) html += '<div style="text-align:justify;">◇&#x2005;' + string + '</div>';
 				html += '</div>';
 			}
 //
-			new dijit.Tooltip({connectId: galacticStoryNode, showDelay: 500, hideDelay: 0, label: html});
+			new dijit.Tooltip({connectId: galacticStoryNode, showDelay: 500, hideDelay: 0, label: html, position: ['above']});
 //
 		},
 		update: function (faction)
 		{
-			console.log('updateFaction', faction);
+//			console.log('updateFaction', faction);
 //
 			if ('domination' in faction)
 			{
@@ -158,16 +158,13 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				}
 			});
 //
-			if ('order' in faction)
-			{
-				dojo.setAttr(`ERAorder-${faction.color}`, 'order', faction.order);
-			}
+			if ('order' in faction) dojo.query(`.ERAorder[faction=${faction.color}]`).forEach((node) => dojo.setAttr(node, 'order', faction.order));
 //
 			if ('atWar' in faction)
 			{
 				const atWar = JSON.parse(faction.atWar);
-				dojo.query('.ERAcounter-peace', `ERAstatus-${faction.color}`).forEach((node) => dojo.toggleClass(node, 'ERAhide', atWar.includes(dojo.getAttr(node, 'color'))));
-				dojo.query('.ERAcounter-war', `ERAstatus-${faction.color}`).forEach((node) => dojo.toggleClass(node, 'ERAhide', !atWar.includes(dojo.getAttr(node, 'color'))));
+				dojo.query(`.ERAcounter-peace[color='${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', atWar.includes(dojo.getAttr(node, 'on'))));
+				dojo.query(`.ERAcounter-war[color='${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', !atWar.includes(dojo.getAttr(node, 'on'))));
 			}
 //
 			for (let node of dojo.query('.ERAorder').sort((a, b) => dojo.getAttr(a, 'order') - dojo.getAttr(b, 'order')))

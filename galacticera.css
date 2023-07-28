@@ -180,6 +180,12 @@ div,img {
 }
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="DP Track"> */
+#ERApanels
+{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
 #ERA-DP {
 	position: relative;
 	width: 804px;
@@ -632,7 +638,10 @@ div,img {
 	width: 89px;
 	height: 89px;
 }
-.ERAsmall{
+.ERAcounter-peace.ERAhide, .ERAcounter-war.ERAhide {
+	display:none;
+}
+.ERAsmall {
 	display: inline-block;
 	width: 22px;
 	height: 22px;

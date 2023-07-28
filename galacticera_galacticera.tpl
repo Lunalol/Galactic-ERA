@@ -1,10 +1,10 @@
 {OVERALL_GAME_HEADER}
 
-<div id='ERAplayArea'>
-	<div id='ERAfleets' class='ERAhide'></div>
-	<div id='ERAboard'></div>
-</div>
 <div id='ERApanels'>
+	<div id='ERAplayArea'>
+		<div id='ERAfleets' class='ERAhide'></div>
+		<div id='ERAboard'></div>
+	</div>
 	<div id='ERA-DP'></div>
 </div>
 <div id='ERAcontrols'>
@@ -12,6 +12,7 @@
 	<input id='ERAzoomLevel' type='range' style='vertical-align:middle;'/>
 	<span id='ERAzoomPlus' style="padding: 0px 10px;">🔎</span>
 	<span id='ERAhome' class="ERAhome fa fa-home fa-lg" style="margin: 0px 10px;padding: 0px 10px;"></span>
+	<span id='ERAview' class="ERAhome fa fa-eye fa-lg" style="margin: 0px 10px;padding: 0px 10px;"></span>
 	<span id='ERArotateAntiClockwise' style="padding: 0px 10px;">⭯</span>
 	<input id='ERArotate' type='range' min='-180' max='180' value='0' style='vertical-align:middle;'/>
 	<span id='ERArotateClockwise' style="padding: 0px 10px;">⭮</span>
@@ -42,6 +43,7 @@
 			<div class='ERAtechTrack' id='ERAtechTrack-${color}'></div>\n\
 		</div>\n\
 		<div style='display:flex;flex-direction:column;justify-content:end;width:400px'>\n\
+			<div id='ERAboardStatus-${color}' class='ERAstatus' style='flex-wrap:wrap;justify-content:start;'></div>\n\
 			<div class='ERAstarPeople' tabindex='-1'><img draggable='false'/></div>\n\
 		</div>\n\
 	</div>\n\

@@ -1,5 +1,6 @@
 <?php
 define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== false);
+define('DEBUG', 1);
 //
 // Game options
 //

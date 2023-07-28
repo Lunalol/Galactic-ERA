@@ -14,7 +14,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		place: function (ship)
 		{
-			console.info('placeShip', ship);
+//			console.info('placeShip', ship);
 //
 			if (ship.location === 'stock') return;
 //
@@ -99,7 +99,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		arrange: function (location)
 		{
 			let index = fleet = 0;
-			nodes = Array.from(dojo.query(`.ERAship[location='${location}']`)).sort((a, b) => dojo.hasAttr(a, 'fleet') ? -1 : 1);
+			nodes = Array.from(dojo.query(`.ERAship[location='${location}']`, 'ERAboard')).sort((a, b) => dojo.hasAttr(a, 'fleet') ? -1 : 1);
 			for (const node of nodes)
 			{
 				if (dojo.hasAttr(node, 'fleet'))
@@ -184,6 +184,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		click: function (event)
 		{
+			if (this.bgagame.board.dragging === true) return;
+//
 			const ship = event.currentTarget;
 			const location = dojo.getAttr(ship, 'location');
 			const color = dojo.getAttr(ship, 'color');
@@ -224,10 +226,12 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					if (this.bgagame.gamedatas.gamestate.name === 'fleets')
 					{
 						dojo.query(`#ERAboard .ERAship[color='${color}']:not([location='${location}'])`).removeClass('ERAselected');
+						dojo.query(`#ERAfleets .ERAship`).removeClass('ERAselected');
 //
 						if (dojo.hasAttr(ship, 'fleet'))
 						{
-							dojo.query(`#ERAboard .ERAship[color='${color}']:not([fleet])`).removeClass('ERAselected');
+							dojo.addClass('ERAfleets', 'ERAhide');
+							dojo.query(`#ERAboard .ERAship[color='${color}']`).removeClass('ERAselected');
 							dojo.addClass(ship, 'ERAselected');
 							return this.bgagame.fleets(location, 'fleet', dojo.query(`#ERAboard .ERAship.ERAselected`));
 						}
