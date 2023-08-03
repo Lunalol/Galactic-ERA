@@ -167,6 +167,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function retreat()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$location = self::getArg("location", AT_json, true);
+		$this->game->acRetreat($color, $location);
+//
+		self::ajaxResponse("");
+	}
 	public function selectCounters()
 	{
 		self::setAjaxMode();

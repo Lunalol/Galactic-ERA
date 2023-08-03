@@ -409,7 +409,7 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('next');
 	}
-	function acCombatChoice(string $color, string $location, bool $automa)
+	function acCombatChoice(string $color, string $location, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -417,23 +417,52 @@ trait gameStateActions
 		{
 			$this->checkAction('combatChoice');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-			if (!array_key_exists('combatChoice', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-			if (!in_array($location, $this->possible['combatChoice'])) throw new BgaVisibleSystemException('Invalid $ocation: ' . $location);
+			if (!in_array($location, $this->possible)) throw new BgaVisibleSystemException('Invalid $ocation: ' . $location);
 		}
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
 		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages enemy fleet(s) near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'GPS' => $location]);
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages enemy near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 		else
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages enemy fleet(s) ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages enemy ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 		Factions::setStatus($color, 'combat', $location);
 //
 		$this->gamestate->nextState('engage');
+	}
+	function acRetreat(string $color, string $location, bool $automa = false)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		if (!$automa)
+		{
+			$this->checkAction('retreat');
+			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+			if (!in_array($location, $this->possible)) throw new BgaVisibleSystemException('Invalid $ocation: ' . $location);
+		}
+//
+		$combatLocation = Factions::getStatus(Factions::getActive(), 'combat');
+//
+		$sector = Sectors::get($location[0]);
+		$hexagon = substr($location, 2);
+		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} retreats to ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
+		else
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} retreats ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
+		$ships = Ships::getAtLocation($combatLocation, $color);
+		foreach ($ships as $ship) Ships::setLocation($ship, $location);
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $location, 'old' => $combatLocation]);
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->gamestate->nextState('continue');
 	}
 	function acSelectCounters(string $color, array $counters): void
 	{
@@ -508,17 +537,18 @@ trait gameStateActions
 //
 		[$can, $population] = Counters::gainStar($color, $location);
 		if (!$can) throw new BgaUserException(self::_('You can\'t gain this star'));
-//* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains ${PLANET} ${GPS}'), ['GPS' => $location,
-			'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
-//* -------------------------------------------------------------------------------------------------------- */
 		foreach (Counters::getAtLocation($location, 'star') as $star)
 		{
+			self::reveal('', $location, $star);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($star)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			Counters::destroy($star);
 		}
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('msg', clienttranslate('${player_name} gains ${PLANET} ${GPS}'), ['GPS' => $location,
+			'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
+//* -------------------------------------------------------------------------------------------------------- */
 		foreach (array_map(['Counters', 'get'], Counters::getAtLocation($location, 'populationDisk')) as $populationDisk)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -556,7 +586,9 @@ trait gameStateActions
 			switch (Counters::getStatus($relic, 'back'))
 			{
 				case 0: // Ancient Pyramids
-					throw new BgaVisibleSystemException('Relic not implemented');
+					$this->notifyAllPlayers('msg', 'Relic not implemented', []);
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
 					break;
 				case 1: // Ancient Technology: Genetics
 					$technology = 'Genetics';
@@ -636,13 +668,19 @@ trait gameStateActions
 					Counters::destroy($relic);
 					break;
 				case 7: // Planetary Death Ray
-					throw new BgaVisibleSystemException('Relic not implemented');
+					$this->notifyAllPlayers('msg', 'Relic not implemented', []);
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
 					break;
 				case 8: // Defense Grid
-					throw new BgaVisibleSystemException('Relic not implemented');
+					$this->notifyAllPlayers('msg', 'Relic not implemented', []);
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
 					break;
 				case 9: // Super-Stargate
-					throw new BgaVisibleSystemException('Relic not implemented');
+					$this->notifyAllPlayers('msg', 'Relic not implemented', []);
+					$this->notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
 					break;
 			}
 		}

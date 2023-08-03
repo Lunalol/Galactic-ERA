@@ -74,24 +74,29 @@ class Automas extends APP_GameClass
 //
 				foreach (Ships::getAll($color) as $ship)
 				{
+					$location = $ship['location'];
+//
 					switch ($dice)
 					{
+//
 						case 1:
+//
 // Each ship moves to (or as close as possible to) the nearest one of your stars
+//
 							$locations = array_keys(Counters::getPopulation(Factions::getNotAutomas()));
 //
-							$path = self::paths($ship['location'], $ship['MP'], $locations);
+							$path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
 							if (DEBUG)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to (or as close as possible to) the nearest one of your stars<B>', []);
-								foreach ($path['debug']['founds'] as $location => $range)
+								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to (or as close as possible to) the nearest one of your stars</B>', []);
+								foreach ($path['debug']['founds'] as $possible => $range)
 								{
-									$sector = Sectors::get($location[0]);
-									$hexagon = substr($location, 2);
-									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $location, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
-									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $location, 'range' => $range, 'location' => $location]);
+									$sector = Sectors::get($possible[0]);
+									$hexagon = substr($possible, 2);
+									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
 								}
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							}
@@ -99,30 +104,33 @@ class Automas extends APP_GameClass
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
+//
 						case 2:
+//
 // Each ship moves to (or as close as possible to) the nearest star (other than the one it may be at already)
+//
 							$locations = [];
 							foreach (Sectors::getAll() as $sector)
 							{
 								foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon)
 								{
 									$location = $sector . ':' . $hexagon;
-									if ($location !== $ship['location']) $locations[] = $location;
+									if ($location !== $location) $locations[] = $location;
 								}
 							}
 //
-							$path = self::paths($ship['location'], $ship['MP'], $locations);
+							$path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
 							if (DEBUG)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to (or as close as possible to) the nearest star (other than the one it may be at already)<B>', []);
-								foreach ($path['debug']['founds'] as $location => $range)
+								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to (or as close as possible to) the nearest star (other than the one it may be at already)</B>', []);
+								foreach ($path['debug']['founds'] as $possible => $range)
 								{
-									$sector = Sectors::get($location[0]);
-									$hexagon = substr($location, 2);
-									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $location, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
-									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $location, 'range' => $range, 'location' => $location]);
+									$sector = Sectors::get($possible[0]);
+									$hexagon = substr($possible, 2);
+									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
 								}
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							}
@@ -130,22 +138,25 @@ class Automas extends APP_GameClass
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
+//
 						case 3:
-// Each ship moves as close as possible to the center hex of its sector
-							$locations = [$ship['location'][0] . ':+0+0+0'];
 //
-							$path = self::paths($ship['location'], $ship['MP'], $locations);
+// Each ship moves as close as possible to the center hex of its sector
+//
+							$locations = [$location[0] . ':+0+0+0'];
+//
+							$path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
 							if (DEBUG)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves as close as possible to the center hex of its sector<B>', []);
-								foreach ($path['debug']['founds'] as $location => $range)
+								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves as close as possible to the center hex of its sector</B>', []);
+								foreach ($path['debug']['founds'] as $possible => $range)
 								{
-									$sector = Sectors::get($location[0]);
-									$hexagon = substr($location, 2);
-									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $location, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
-									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $location, 'range' => $range, 'location' => $location]);
+									$sector = Sectors::get($possible[0]);
+									$hexagon = substr($possible, 2);
+									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
 								}
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							}
@@ -154,24 +165,28 @@ class Automas extends APP_GameClass
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
+//
 						case 4:
-// Each ship moves to any star within range. If there is no star within range then it moves as close as possible to the nearest one
+//
+// Each ship moves to any star within range
+// If there is no star within range then it moves as close as possible to the nearest one
+//
 							$locations = [];
 							foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = $sector . ':' . $hexagon;
 //
-							$path = self::paths($ship['location'], $ship['MP'], $locations, true);
-							if (!$path) $path = self::paths($ship['location'], $ship['MP'], $locations);
+							$path = self::paths($location, $ship['MP'], $locations, true);
+							if (!$path) $path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
 							if (DEBUG)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to any star within range. If there is no star within range then it moves as close as possible to the nearest one<B>', []);
-								foreach ($path['debug']['founds'] as $location => $range)
+								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to any star within range. If there is no star within range then it moves as close as possible to the nearest one</B>', []);
+								foreach ($path['debug']['founds'] as $possible => $range)
 								{
-									$sector = Sectors::get($location[0]);
-									$hexagon = substr($location, 2);
-									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $location, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
-									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $location, 'range' => $range, 'location' => $location]);
+									$sector = Sectors::get($possible[0]);
+									$hexagon = substr($possible, 2);
+									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
 								}
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							}
@@ -179,28 +194,31 @@ class Automas extends APP_GameClass
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
+//
 						case 5:
+//
 // Each ship moves its full range in a random direction
-							$neighbors = Sectors::neighbors($ship['location']);
+//
+							$neighbors = Sectors::neighbors($location);
 							$direction = array_rand($neighbors);
 							while (array_key_exists($direction, $neighbors))
 							{
-								$location = $neighbors[$direction]['location'];
-								$neighbors = Sectors::neighbors($location);
+								$next_location = $neighbors[$direction]['location'];
+								$neighbors = Sectors::neighbors($next_location);
 							}
 //
-							$path = self::paths($ship['location'], $ship['MP'], [$location]);
+							$path = self::paths($location, $ship['MP'], [$next_location]);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
 							if (DEBUG)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves its full range in a random direction<B>', []);
-								foreach ($path['debug']['founds'] as $location => $range)
+								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves its full range in a random direction</B>', []);
+								foreach ($path['debug']['founds'] as $possible => $range)
 								{
-									$sector = Sectors::get($location[0]);
-									$hexagon = substr($location, 2);
-									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $location, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
-									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $location, 'range' => $range, 'location' => $location]);
+									$sector = Sectors::get($possible[0]);
+									$hexagon = substr($possible, 2);
+									if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+									else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
 								}
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							}
@@ -208,12 +226,15 @@ class Automas extends APP_GameClass
 							$bgagame->possible['move'][$ship['id']] = $path['possible'];
 							$bgagame->acMove($color, $path['location'], [$ship['id']], true);
 							break;
+//
 						case 6:
+//
 // No movement
+//
 							if (DEBUG)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-								$bgagame->notifyAllPlayers('msg', '<B>No movement<B>', []);
+								$bgagame->notifyAllPlayers('msg', '<B>No movement</B>', []);
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							}
 							break;
@@ -227,9 +248,10 @@ class Automas extends APP_GameClass
 					foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) $shipList[$location] = Ships::getAtLocation($location, $color);
 					foreach ($shipList as $location => $ships)
 					{
-						$dice = 3;
+						$dice = 2;
 						switch ($dice)
 						{
+//
 							case 1:
 //
 // If at peace with you, they first declare war on you
@@ -247,13 +269,13 @@ class Automas extends APP_GameClass
 								if (DEBUG)
 								{
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
-									$bgagame->notifyAllPlayers('msg', '<B>All ships then move to (or as close as possible to) the nearest one of your stars<B>', []);
-									foreach ($path['debug']['founds'] as $location => $range)
+									$bgagame->notifyAllPlayers('msg', '<B>All ships then move to (or as close as possible to) the nearest one of your stars</B>', []);
+									foreach ($path['debug']['founds'] as $possible => $range)
 									{
-										$sector = Sectors::get($location[0]);
-										$hexagon = substr($location, 2);
-										if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $location, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
-										else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $location, 'range' => $range, 'location' => $location]);
+										$sector = Sectors::get($possible[0]);
+										$hexagon = substr($possible, 2);
+										if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+										else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
 									}
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								}
@@ -268,15 +290,110 @@ class Automas extends APP_GameClass
 								}
 								if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
 								break;
+//
 							case 2:
 //
 // If at peace with you, they first declare war on you
 //
 								foreach (Factions::atPeace($color) as $otherColor) $bgagame->acDeclareWar($color, $otherColor, true);
 //
+// All ships then move to the hex with the most hostile ships within range
+// If they have no hostile ships within range, they move as close as possible to the nearest hostile ships (no movement if no hostile ships anywhere)
+//
+								$hostiles = [];
+								foreach (Factions::atWar($color) as $enemy)
+								{
+									foreach (array_count_values(array_column(Ships::getAll($enemy, 'fleet'), 'location')) as $hostile => $count)
+									{
+										if ($hostile !== 'stock')
+										{
+											if (!array_key_exists($hostile, $hostiles)) $hostiles[$hostile] = 0;
+											$hostiles[$hostile] += $count;
+										}
+									}
+									foreach (array_count_values(array_column(Ships::getAll($enemy, 'ship'), 'location')) as $hostile => $count)
+									{
+										if ($hostile !== 'stock')
+										{
+											if (!array_key_exists($hostile, $hostiles)) $hostiles[$hostile] = 0;
+											$hostiles[$hostile] += $count;
+										}
+									}
+								}
+								if ($hostiles)
+								{
+									$MPs = [];
+									foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+									$founds = [];
+									foreach ($hostiles as $hostile => $count) if (!is_null(self::paths($location, min($MPs), [$hostile], true))) $founds[$hostile] = $count;
+									if ($founds)
+									{
+										if (DEBUG)
+										{
+											$bgagame->notifyAllPlayers('msg', '<HR>', []);
+											$bgagame->notifyAllPlayers('msg', '<B>All ships then move to the hex with the most hostile ships within range</B>', []);
+											foreach ($founds as $possible => $count)
+											{
+												$sector = Sectors::get($possible[0]);
+												$hexagon = substr($possible, 2);
+												if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} with ${count} hostile(s)', ['GPS' => $possible, 'count' => $count, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+												else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} with ${count} hostile(s)', ['GPS' => $possible, 'count' => $count, 'location' => $possible]);
+											}
+											$bgagame->notifyAllPlayers('msg', '<HR>', []);
+										}
+									}
+									else
+									{
+										foreach ($hostiles as $hostile => $count)
+										{
+											$path = self::paths($location, min($MPs), [$hostile]);
+											$founds[$hostile] = $path['possible'][$hostile]['distance'];
+										}
+										if (DEBUG)
+										{
+											$bgagame->notifyAllPlayers('msg', '<HR>', []);
+											$bgagame->notifyAllPlayers('msg', '<B>If they have no hostile ships within range, they move as close as possible to the nearest hostile ships</B>', []);
+											foreach ($founds as $possible => $range)
+											{
+												$sector = Sectors::get($possible[0]);
+												$hexagon = substr($possible, 2);
+												if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+												else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
+											}
+											$bgagame->notifyAllPlayers('msg', '<HR>', []);
+										}
+									}
+//
+									$selected = array_keys($founds, min($founds));
+									shuffle($selected);
+//
+									$path = self::paths($location, min($MPs), [array_pop($selected)]);
+//
+									$toMove = [];
+									foreach ($ships as $shipID)
+									{
+										$ship = Ships::get($color, $shipID);
+										$bgagame->possible['move'][$ship['id']] = $path['possible'];
+										if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
+										else $toMove[] = $shipID;
+									}
+									if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
+								}
+								else
+								{
+									if (DEBUG)
+									{
+										$bgagame->notifyAllPlayers('msg', '<HR>', []);
+										$bgagame->notifyAllPlayers('msg', '<B>No movement</B>', []);
+										$bgagame->notifyAllPlayers('msg', '<HR>', []);
+									}
+								}
 								break;
+//
 							case 3:
+//
 // All ships move as close as possible to the center hex of their sector
+//
 								$locations = [$location[0] . ':+0+0+0'];
 //
 								$MPs = [];
@@ -286,13 +403,13 @@ class Automas extends APP_GameClass
 								if (DEBUG)
 								{
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
-									$bgagame->notifyAllPlayers('msg', '<B>All ships move as close as possible to the center hex of their sectors<B>', []);
-									foreach ($path['debug']['founds'] as $location => $range)
+									$bgagame->notifyAllPlayers('msg', '<B>All ships move as close as possible to the center hex of their sectors</B>', []);
+									foreach ($path['debug']['founds'] as $possible => $range)
 									{
-										$sector = Sectors::get($location[0]);
-										$hexagon = substr($location, 2);
-										if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $location, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
-										else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $location, 'range' => $range, 'location' => $location]);
+										$sector = Sectors::get($possible[0]);
+										$hexagon = substr($possible, 2);
+										if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+										else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
 									}
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								}
@@ -307,14 +424,140 @@ class Automas extends APP_GameClass
 								}
 								if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
 								break;
+//
 							case 4:
 //
+// All ships move to any star within range other than their own
+// If there are none, then they move as close as possible to the nearest one.
+//
+								$locations = [];
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = $sector . ':' . $hexagon;
+								$locations = array_diff($locations, array_keys(Counters::getPopulation($color)));
+//
+								$MPs = [];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								$path = self::paths($location, min($MPs), $locations, true);
+								if (!$path) $path = self::paths($location, $ship['MP'], $locations);
+								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
+								if (DEBUG)
+								{
+									$bgagame->notifyAllPlayers('msg', '<HR>', []);
+									$bgagame->notifyAllPlayers('msg', '<B>All ships move to any star within range other than their own If there are none, then they move as close as possible to the nearest one</B>', []);
+									foreach ($path['debug']['founds'] as $possible => $range)
+									{
+										$sector = Sectors::get($possible[0]);
+										$hexagon = substr($possible, 2);
+										if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+										else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
+									}
+									$bgagame->notifyAllPlayers('msg', '<HR>', []);
+								}
+//
+								$toMove = [];
+								foreach ($ships as $shipID)
+								{
+									$ship = Ships::get($color, $shipID);
+									$bgagame->possible['move'][$ship['id']] = $path['possible'];
+									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
+									else $toMove[] = $shipID;
+								}
+								if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
 								break;
+//
 							case 5:
 //
+// All ships move to any neutral star within range
+// If there are none then they move their full range in a random direction
+//
+								$locations = [];
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation($sector . ':' . $hexagon, 'populationDisk')) $locations[] = $sector . ':' . $hexagon;
+//
+								$MPs = [];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								$path = self::paths($location, min($MPs), $locations, true);
+								if (!$path)
+								{
+									$neighbors = Sectors::neighbors($location);
+									$direction = array_rand($neighbors);
+									while (array_key_exists($direction, $neighbors))
+									{
+										$next_location = $neighbors[$direction]['location'];
+										$neighbors = Sectors::neighbors($next_location);
+									}
+									$path = self::paths($location, min($MPs), [$next_location]);
+								}
+								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
+								if (DEBUG)
+								{
+									$bgagame->notifyAllPlayers('msg', '<HR>', []);
+									$bgagame->notifyAllPlayers('msg', '<B>All ships move to any neutral star within range. If there are none then they move their full range in a random direction.</B>', []);
+									foreach ($path['debug']['founds'] as $possible => $range)
+									{
+										$sector = Sectors::get($possible[0]);
+										$hexagon = substr($possible, 2);
+										if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+										else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
+									}
+									$bgagame->notifyAllPlayers('msg', '<HR>', []);
+								}
+//
+								$toMove = [];
+								foreach ($ships as $shipID)
+								{
+									$ship = Ships::get($color, $shipID);
+									$bgagame->possible['move'][$ship['id']] = $path['possible'];
+									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
+									else $toMove[] = $shipID;
+								}
+								if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
 								break;
+//
 							case 6:
 //
+// All ships move to any neutral star within range
+// If there are none, then they do not move
+//
+								$locations = [];
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation($sector . ':' . $hexagon, 'populationDisk')) $locations[] = $sector . ':' . $hexagon;
+//
+								$MPs = [];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								$path = self::paths($location, min($MPs), $locations, true);
+								if ($path)
+								{
+									if (DEBUG)
+									{
+										$bgagame->notifyAllPlayers('msg', '<HR>', []);
+										$bgagame->notifyAllPlayers('msg', '<B>All ships move to any neutral star within range. If there are none, then they do not move</B>', []);
+										foreach ($path['debug']['founds'] as $possible => $range)
+										{
+											$sector = Sectors::get($possible[0]);
+											$hexagon = substr($possible, 2);
+											if (array_key_exists($hexagon, $bgagame->SECTORS[$sector])) $bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET} at range ${range}', ['GPS' => $possible, 'range' => $range, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+											else $bgagame->notifyAllPlayers('msg', '${GPS} ${location} at range ${range}', ['GPS' => $possible, 'range' => $range, 'location' => $possible]);
+										}
+										$bgagame->notifyAllPlayers('msg', '<HR>', []);
+									}
+//
+									$toMove = [];
+									foreach ($ships as $shipID)
+									{
+										$ship = Ships::get($color, $shipID);
+										$bgagame->possible['move'][$ship['id']] = $path['possible'];
+										if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
+										else $toMove[] = $shipID;
+									}
+									if ($toMove) $bgagame->acMove($color, $path['location'], $toMove, true);
+								}
+								else
+								{
+									if (DEBUG)
+									{
+										$bgagame->notifyAllPlayers('msg', '<HR>', []);
+										$bgagame->notifyAllPlayers('msg', '<B>No movement</B>', []);
+										$bgagame->notifyAllPlayers('msg', '<HR>', []);
+									}
+								}
 								break;
 						}
 					}
@@ -440,45 +683,102 @@ class Automas extends APP_GameClass
 			if ($gainStar !== false)
 			{
 				$shipLocations = array_unique(array_column(Ships::getAll($color), 'location'));
+				$stars = array_keys(Counters::getPopulation(Factions::getNotAutomas()));
+//
 				switch (Factions::getStatus($color, 'gainStar'))
 				{
 					case 'player':
 						// Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
 						$locations = [];
-						foreach (array_intersect($shipLocations, array_keys(Counters::getPopulation(Factions::getNotAutomas()))) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
+						foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						if ($locations)
 						{
 							shuffle($locations);
+							if (DEBUG)
+							{
+								$bgagame->notifyAllPlayers('msg', '<HR>', []);
+								$bgagame->notifyAllPlayers('msg', '<B>Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)</B>', []);
+								foreach ($locations as $location)
+								{
+									$sector = Sectors::get($location[0]);
+									$hexagon = substr($location, 2);
+									$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+								}
+								$bgagame->notifyAllPlayers('msg', '<HR>', []);
+							}
 							$locations = array_slice($locations, 0, 1);
 						}
 						else
 						{
 							foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star')) $locations[] = $location;
 							shuffle($locations);
+							if (DEBUG)
+							{
+								$bgagame->notifyAllPlayers('msg', '<HR>', []);
+								$bgagame->notifyAllPlayers('msg', '<B>Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)</B>', []);
+								foreach ($locations as $location)
+								{
+									$sector = Sectors::get($location[0]);
+									$hexagon = substr($location, 2);
+									$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+								}
+								$bgagame->notifyAllPlayers('msg', '<HR>', []);
+							}
 							$locations = array_slice($locations, 0, 2);
 						}
 						break;
 					case 'any':
 						// Gain a star(**)
 						$locations = [];
-						foreach (array_intersect($shipLocations, array_keys(Counters::getPopulation(Factions::getNotAutomas()))) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
+						foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						shuffle($locations);
+						if (DEBUG)
+						{
+							$bgagame->notifyAllPlayers('msg', '<HR>', []);
+							$bgagame->notifyAllPlayers('msg', '<B>Gain a star(**)</B>', []);
+							foreach ($locations as $location)
+							{
+								$sector = Sectors::get($location[0]);
+								$hexagon = substr($location, 2);
+								$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+							}
+							$bgagame->notifyAllPlayers('msg', '<HR>', []);
+						}
 						$locations = array_slice($locations, 0, 1);
 						break;
 					case 'neutral':
 						// Gain a neutral star (otherwise one of yours)(**)
 						$locations = [];
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
-						if (!$locations) foreach (array_intersect($shipLocations, array_keys(Counters::getPopulation(Factions::getNotAutomas()))) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
+						if (!$locations) foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						shuffle($locations);
+						if (DEBUG)
+						{
+							$bgagame->notifyAllPlayers('msg', '<HR>', []);
+							$bgagame->notifyAllPlayers('msg', '<B>Gain a neutral star (otherwise one of yours)(**)</B>', []);
+							foreach ($locations as $location)
+							{
+								$sector = Sectors::get($location[0]);
+								$hexagon = substr($location, 2);
+								$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$hexagon]]);
+							}
+							$bgagame->notifyAllPlayers('msg', '<HR>', []);
+						}
 						$locations = array_slice($locations, 0, 1);
 						break;
 					default:
 						throw new BgaVisibleSystemException('Not implemented: gainStar ' . Factions::getStatus($color, 'gainStar'));
 				}
 //
-				if ($locations) foreach ($locations as $location) $bgagame->acGainStar($color, $location, true);
+				if ($locations)
+				{
+					foreach ($locations as $location)
+					{
+						if (in_array($location, $stars)) foreach (Factions::atPeace($color) as $otherColor) $bgagame->acDeclareWar($color, $otherColor, true);
+						$bgagame->acGainStar($color, $location, true);
+					}
+				}
 				else $bgagame->acSpecial($color, 1);
 //
 				Factions::setStatus($color, 'gainStar');

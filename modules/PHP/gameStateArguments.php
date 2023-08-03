@@ -108,8 +108,17 @@ trait gameStateArguments
 		$color = Factions::getActive();
 		$player_id = Factions::getPlayer($color);
 //
-		$this->possible['combatChoice'] = Ships::getConflictLocation($color);
-		return ['_private' => [$player_id => $this->possible], 'active' => $color];
+		$this->possible = Ships::getConflictLocation($color);
+		return ['combatChoice' => $this->possible, 'active' => $color];
+	}
+	function argRetreat()
+	{
+		$attacker = Factions::getActive();
+		$defender = Factions::getStatus($attacker, 'retreat');
+		$player_id = Factions::getPlayer($defender);
+
+		$this->possible = Ships::retreatLocations($defender, Factions::getStatus($attacker, 'combat'));
+		return ['retreat' => $this->possible, 'active' => $defender];
 	}
 	function argSelectCounters()
 	{

@@ -24,6 +24,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		setup: function (gamedatas)
 		{
 			console.log("Starting game setup");
+			console.dir(gamedatas);
 //
 			this.players = {};
 			for (let faction of Object.values(gamedatas.factions)) this.players[faction.player_id] = faction.color;
@@ -159,7 +160,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		},
 		onEnteringState: function (stateName, state)
 		{
-			console.log('Entering state: ' + stateName, state);
+			console.log('Entering state: ' + stateName, state.args);
 //
 			if (!(state.args)) return;
 //
@@ -389,10 +390,32 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						svg.setAttribute("height", 10000);
 						svg.id = 'ERAcombatChoice';
 //
-						for (let location of state.args._private.combatChoice)
+						for (let location of state.args.combatChoice)
 						{
 							dojo.query(`[location='${location}']`, 'ERAboard').addClass('ERAselectable');
-							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + this.color + '80'));
+							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
+						}
+//
+						this.board.board.appendChild(svg);
+					}
+					break;
+//
+				case 'retreat':
+					{
+						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+						dojo.setStyle(svg, 'position', 'absolute');
+						dojo.setStyle(svg, 'left', '0px');
+						dojo.setStyle(svg, 'top', '0px');
+						dojo.setStyle(svg, 'z-index', '150');
+						dojo.setStyle(svg, 'pointer-events', 'all');
+						svg.setAttribute("width", 10000);
+						svg.setAttribute("height", 10000);
+						svg.id = 'ERAcombatChoice';
+//
+						for (let location of state.args.retreat)
+						{
+							dojo.query(`[location='${location}']`, 'ERAboard').addClass('ERAselectable');
+							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
 						}
 //
 						this.board.board.appendChild(svg);
@@ -877,7 +900,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		},
 		combatChoice: function (location)
 		{
-			if (this.gamedatas.gamestate.args._private.combatChoice.includes(location)) this.action('combatChoice', {color: this.color, location: JSON.stringify(location)});
+			if (this.gamedatas.gamestate.args.combatChoice.includes(location)) this.action('combatChoice', {color: this.color, location: JSON.stringify(location)});
+		},
+		retreat: function (location)
+		{
+			if (this.gamedatas.gamestate.args.retreat.includes(location)) this.action('retreat', {color: this.color, location: JSON.stringify(location)});
 		},
 		gainStar: function (location)
 		{

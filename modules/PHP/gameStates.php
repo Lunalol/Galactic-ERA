@@ -20,21 +20,14 @@ trait gameStates
 //
 		self::setGameStateInitialValue('round', 0);
 //
-// Randomly draw a galactic story tile and place it alongside the turn track in the long rectangle labeled “Galactic Story”.
-//
-		$galacticStory = JOURNEYS /* array_rand($this->STORIES) */;
-		self::setGameStateInitialValue('galacticStory', $galacticStory);
+		$galacticStory = self::getGameStateValue('galacticStory');
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', clienttranslate('Galactic Story: <B>${STORY}</B>'), ['i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]]);
 //* -------------------------------------------------------------------------------------------------------- */
-//
-// Randomly draw a galactic goal tile and place it on the spot of the same size below the turn track.
-// Introductory Game: Leave out the galactic goal for an introductory game.
-//
-		$galacticGoal = (self::getGameStateValue('game') == INTRODUCTORY) ? NONE : array_rand($this->GOALS);
-		self::setGameStateInitialValue('galacticGoal', $galacticGoal);
+		$galacticGoal = self::getGameStateValue('galacticGoal');
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('message', clienttranslate('Galactic goal: <B>${GOAL}</B>'), ['i18n' => ['GOAL'], 'GOAL' => $this->GOALS[$galacticGoal]]);
+//* -------------------------------------------------------------------------------------------------------- */
 		if ($galacticGoal !== NONE) $this->notifyAllPlayers('message', clienttranslate('---- Galactic goal not implemented ----'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
@@ -176,9 +169,9 @@ trait gameStates
 		if (self::getPlayersNumber() === 2) unset($starPeoples[array_search('ICC', $starPeoples)]);
 //
 		shuffle($starPeoples);
-		foreach (Factions::list() as $color) if (Factions::getPlayer($color) > 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
+//		foreach (Factions::list() as $color) if (Factions::getPlayer($color) > 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 		/* PJL */
-//		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', array_keys($this->STARPEOPLES));
+		foreach (Factions::list() as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
 		/* PJL */
 //
 		$this->gamestate->setAllPlayersMultiactive('next');
@@ -602,7 +595,6 @@ trait gameStates
 //				$this->notifyAllPlayers('msg', clienttranslate('${player_name} has no ships to move'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 
-			Factions::setActivation($color, 'done');
 			return $this->gamestate->nextState('continue');
 		}
 //
@@ -611,13 +603,22 @@ trait gameStates
 	}
 	function stCombatChoice()
 	{
+		$color = Factions::getActive();
+//
 		self::argCombatChoice();
-		if (!$this->possible['combatChoice'])
+		if (!$this->possible)
 		{
-			Factions::setActivation(Factions::getActive(), 'done');
+			Factions::setActivation($color, 'done');
 			return $this->gamestate->nextState('nextPlayer');
 		}
-		$this->gamestate->nextState('combatChoice');
+
+		$player_id = Factions::getPlayer($color);
+		if ($player_id < 0)
+		{
+			shuffle($this->possible['combatChoice']);
+			return self::acCombatChoice($color, array_pop($this->possible['combatChoice']), true);
+		}
+		else $this->gamestate->nextState('combatChoice');
 	}
 	function stRetreat()
 	{
@@ -626,6 +627,7 @@ trait gameStates
 //
 		$defenders = Ships::getConflictFactions($attacker, $location);
 		if (!$defenders) return $this->gamestate->nextState('endCombat');
+//
 		foreach ($defenders as $defender)
 		{
 			$canRetreat = Factions::getTechnology($defender, 'Spirituality') > Factions::getTechnology($attacker, 'Spirituality');
@@ -638,6 +640,8 @@ trait gameStates
 					Automas::retreat($this, $defender);
 					return $this->gamestate->nextState('continue');
 				}
+//
+				Factions::setStatus($attacker, 'retreat', $defender);
 //
 				$this->gamestate->changeActivePlayer($player_id);
 				return $this->gamestate->nextState('retreat');
@@ -658,13 +662,16 @@ trait gameStates
 		foreach (array_merge([$attacker], $defenders) as $color)
 		{
 			$CVs[$color] = Ships::CV($color, $location);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} combat at ${CV}'), ['player_name' => Factions::getName($color), 'CV' => $CVs[$color]]);
+//* -------------------------------------------------------------------------------------------------------- */
 		}
 //
 		$winners = array_keys($CVs, max($CVs));
 		$attackerIsWinner = in_array($attacker, $winners);
 		if (sizeof($winners) > 1) $attackerIsWinner = $attackerIsWinner && (max(0, ...array_map(fn($color) => Factions::getTechnology($color, 'Military'), $defenders)) < Factions::getTechnology($attacker, 'Military'));
 //
-		var_dump($attackerIsWinner);
+		self::sendnotifications();
 		die;
 //
 		$this->gamestate->changeActivePlayer($player_id);
@@ -676,10 +683,20 @@ trait gameStates
 		{
 			if (Factions::getPlayer($color) < 0)
 			{
-				$dice = bga_rand(1, 6);
+				if (Factions::getPlayer($color) === FARMERS && !Ships::getAll($color))
+				{
+					$dice = 6;
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					$this->notifyAllPlayers('msg', clienttranslate('${player_name} uses ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
+				}
+				else
+				{
+					$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
 				Factions::setStatus($color, 'counters', Automas::growthActions($color, intval(self::getGameStateValue('difficulty')), $dice));
 			}
 		}

@@ -106,7 +106,7 @@ $machinestates = [
 		'name' => 'movementCombatPhase',
 		'type' => 'game',
 		'action' => 'stMovementCombatPhase',
-		'transitions' => ['continue' => 200, 'nextPlayer' => 210, 'next' => 300]
+		'transitions' => ['continue' => 230, 'nextPlayer' => 210, 'next' => 300]
 	],
 	210 => [
 		'name' => 'fleets',
@@ -130,7 +130,7 @@ $machinestates = [
 		'name' => 'combatChoice',
 		'type' => 'game',
 		'action' => 'stCombatChoice',
-		'transitions' => ['combatChoice' => 235, 'nextPlayer' => 200]
+		'transitions' => ['combatChoice' => 235, 'engage' => 240, 'nextPlayer' => 200]
 	],
 	235 => [
 		'name' => 'combatChoice',
@@ -149,8 +149,8 @@ $machinestates = [
 	],
 	245 => [
 		'name' => 'retreat',
-		'description' => clienttranslate('${actplayer} must resolve battles'),
-		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),
+		'description' => clienttranslate('${actplayer} must choose a retreat location'),
+		'descriptionmyturn' => clienttranslate('${you} must choose a retreat location'),
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
 		'possibleactions' => ['retreat', 'combat'],

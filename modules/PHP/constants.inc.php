@@ -5,16 +5,17 @@ define('DEBUG', 1);
 // Game options
 //
 define('GAME', 100);
-define('DIFFICULTY', 101);
+define('GALACTICSTORY', 101);
+define('GALACTICGOAL', 102);
+define('DIFFICULTY', 103);
 //
 define('INTRODUCTORY', 0);
 define('STANDARD', 1);
+define('MANUAL', 2);
 //
 // Game globals
 //
 define('ROUND', 10);
-define('GALACTICSTORY', 20);
-define('GALACTICGOAL', 21);
 //
 // Automas (2)
 //
@@ -23,10 +24,10 @@ define('SLAVERS', -2);
 //
 // Galacic stories (4)
 //
-define('JOURNEYS', 0);
-define('MIGRATIONS', 1);
-define('RIVALRY', 2);
-define('WARS', 3);
+define('JOURNEYS', 1);
+define('MIGRATIONS', 2);
+define('RIVALRY', 3);
+define('WARS', 4);
 //
 // Galacic goals (8)
 //

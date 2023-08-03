@@ -26,11 +26,9 @@ class GalacticEra extends Table
 		parent::__construct();
 //
 		$this->GLOBALLABELS = [
-			'game' => GAME,
-			'difficulty' => DIFFICULTY,
+			'game' => GAME, 'difficulty' => DIFFICULTY,
+			'galacticStory' => GALACTICSTORY, 'galacticGoal' => GALACTICGOAL,
 			'round' => ROUND,
-			'galacticStory' => GALACTICSTORY,
-			'galacticGoal' => GALACTICGOAL,
 		];
 //
 		self::initGameStateLabels($this->GLOBALLABELS);
@@ -56,6 +54,22 @@ class GalacticEra extends Table
 		self::reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
 		self::reloadPlayersBasicInfos();
 //
+		if ($options[GAME] != MANUAL)
+		{
+//
+// Randomly draw a galactic story tile and place it alongside the turn track in the long rectangle labeled “Galactic Story”.
+//
+			while (($galacticStory = array_rand($this->STORIES)) == NONE);
+			self::setGameStateInitialValue('galacticStory', $galacticStory);
+//
+// Randomly draw a galactic goal tile and place it on the spot of the same size below the turn track.
+// Introductory Game: Leave out the galactic goal for an introductory game.
+//
+			if ($options[GAME] == INTRODUCTORY) $galacticGoal = NONE;
+			else while (($galacticGoal = array_rand($this->GOALS)) == NONE);
+			self::setGameStateInitialValue('galacticGoal', $galacticGoal);
+		}
+//
 		$this->initStatistics();
 	}
 	protected function initStatistics()
@@ -64,7 +78,7 @@ class GalacticEra extends Table
 	}
 	protected function getAllDatas()
 	{
-		$player_id = self::getCurrentPlayerId();
+		$player_id = intval(self::getCurrentPlayerId());
 //
 		$result = [];
 //

@@ -302,6 +302,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
 				if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'retreat') return this.bgagame.retreat(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);

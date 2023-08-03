@@ -79,6 +79,7 @@ class Counters extends APP_GameClass
 						case 'STO':
 							$SHIPS = INF;
 							$population = 0;
+							break;
 						case 'STS':
 							$SHIPS = 1;
 							$population = 2;

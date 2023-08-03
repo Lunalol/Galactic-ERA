@@ -1499,7 +1499,7 @@ class Sectors extends APP_GameClass
 		$hexagon = sprintf('%+2d%+2d%+2d', $hex['q'], $hex['r'], $hex['s']);
 		return array_key_exists($hexagon, $sector) ? $sector[$hexagon] : 0;
 	}
-	static function neighbors(string $location)
+	static function neighbors(string $location, bool $wormholes = true)
 	{
 		$sectors = Sectors::getAll();
 //
@@ -1509,36 +1509,37 @@ class Sectors extends APP_GameClass
 //
 // Wormholes
 //
-		if (in_array($location, array_column(self::WORMHOLES, 'next')))
+		if ($wormholes)
 		{
-			$next = $location[0] === '6' ? 1 : $location[0] + 1;
-			if (!in_array($next, $sectors))
+			if (in_array($location, array_column(self::WORMHOLES, 'next')))
 			{
-				$next2 = $next === 6 ? 1 : $next + 1;
-				if (in_array($next2, $sectors))
+				$next = $location[0] === '6' ? 1 : $location[0] + 1;
+				if (!in_array($next, $sectors))
 				{
-					$next_location = self::WORMHOLES[$next2]['previous'];
-					$neighbors['WORMHOLE'] = ['location' => $next_location, 'terrain' => Sectors::terrainFromLocation($next_location)];
+					$next2 = $next === 6 ? 1 : $next + 1;
+					if (in_array($next2, $sectors))
+					{
+						$next_location = self::WORMHOLES[$next2]['previous'];
+						$neighbors['WORMHOLE'] = ['location' => $next_location, 'terrain' => Sectors::terrainFromLocation($next_location)];
+					}
 				}
 			}
-		}
-		if (in_array($location, array_column(self::WORMHOLES, 'previous')))
-		{
-			$next = $location[0] === '1' ? 6 : $location[0] - 1;
-			if (!in_array($next, $sectors))
+			if (in_array($location, array_column(self::WORMHOLES, 'previous')))
 			{
-				$next2 = $next === 1 ? 6 : $next - 1;
-				if (in_array($next2, $sectors))
+				$next = $location[0] === '1' ? 6 : $location[0] - 1;
+				if (!in_array($next, $sectors))
 				{
-					$next_location = self::WORMHOLES[$next2]['next'];
-					$neighbors['WORMHOLE'] = ['location' => $next_location, 'terrain' => Sectors::terrainFromLocation($next_location)];
+					$next2 = $next === 1 ? 6 : $next - 1;
+					if (in_array($next2, $sectors))
+					{
+						$next_location = self::WORMHOLES[$next2]['next'];
+						$neighbors['WORMHOLE'] = ['location' => $next_location, 'terrain' => Sectors::terrainFromLocation($next_location)];
+					}
 				}
 			}
 		}
 //
-		for ($i = 0;
-			$i < 6;
-			$i++)
+		for ($i = 0; $i < 6; $i++)
 		{
 			$neighbor = hex_neighbor(Hex($q, $r, $s), $i);
 			if (hex_length($neighbor) > 4)

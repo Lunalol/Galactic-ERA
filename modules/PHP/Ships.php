@@ -139,6 +139,34 @@ class Ships extends APP_GameClass
 		}
 		return $possible;
 	}
+	static function retreatLocations($color, $location)
+	{
+		$hostiles = [];
+		foreach (Factions::atWar($color) as $enemy) $hostiles = array_merge($hostiles, array_column(Ships::getAll($enemy, 'fleet'), 'location'), array_column(Ships::getAll($enemy, 'fleet'), 'location'));
+//
+		$max = INF;
+		$distances = [$location => 0];
+//
+		$queue = new SplQueue();
+		$queue->enqueue($location);
+		while (!$queue->isEmpty())
+		{
+			$location = $queue->dequeue();
+			$distance = $distances[$location] + 1;
+//
+			$neighbors = Sectors::neighbors($location, false);
+			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
+			{
+				if (!array_key_exists($next_location, $distances) || $distance < $distances[$next_location])
+				{
+					$distances[$next_location] = $distance;
+					if (!in_array($next_location, $hostiles)) $max = $distance;
+					if ($distance < $max) $queue->enqueue($next_location);
+				}
+			}
+		}
+		return array_keys($distances, $max);
+	}
 	static function CV(string $color, string $location): int
 	{
 		$military = Factions::TECHNOLOGIES['Military'][Factions::getTechnology($color, 'Military')];

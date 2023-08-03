@@ -3,10 +3,11 @@
 // Galacic stories (4)
 //
 $this->STORIES = [
+	NONE => clienttranslate('None'),
 	JOURNEYS => clienttranslate('Journeys'),
-	MIGRATIONS => clienttranslate('Migrations'),
-	RIVALRY => clienttranslate('Rivalry'),
-	WARS => clienttranslate('Wars')
+//	MIGRATIONS => clienttranslate('Migrations'),
+//	RIVALRY => clienttranslate('Rivalry'),
+//	WARS => clienttranslate('Wars')
 ];
 //
 // Galacic goals (8)
@@ -62,23 +63,23 @@ $this->DOMINATIONCARDS = [
 // Star Peoples (17)
 //
 $this->STARPEOPLES = [
-	'Alliance' => ['STO' => clienttranslate('Alliance of Light'), 'STS' => clienttranslate('Alliance of Darkness')],
-	'Anchara' => ['STO' => clienttranslate('Anchara Coalition'), 'STS' => clienttranslate('Anchara Coalition')],
-	'Annunaki' => ['STO' => clienttranslate('Annunaki'), 'STS' => clienttranslate('Annunaki')],
+//	'Alliance' => ['STO' => clienttranslate('Alliance of Light'), 'STS' => clienttranslate('Alliance of Darkness')],
+//	'Anchara' => ['STO' => clienttranslate('Anchara Coalition'), 'STS' => clienttranslate('Anchara Coalition')],
+//	'Annunaki' => ['STO' => clienttranslate('Annunaki'), 'STS' => clienttranslate('Annunaki')],
 	'Avians' => ['STO' => clienttranslate('Avians'), 'STS' => clienttranslate('Avians')],
-	'Caninoids' => ['STO' => clienttranslate('Caninoids'), 'STS' => clienttranslate('Caninoids')],
+//	'Caninoids' => ['STO' => clienttranslate('Caninoids'), 'STS' => clienttranslate('Caninoids')],
 	'Dracos' => ['STO' => clienttranslate('Dracos'), 'STS' => clienttranslate('Dracos')],
-	'Felines' => ['STO' => clienttranslate('Felines'), 'STS' => clienttranslate('Felines')],
-	'Galactic' => ['STO' => clienttranslate('Galactic Confederation'), 'STS' => clienttranslate('Galactic Empire')],
-	'Greys' => ['STO' => clienttranslate('Greys'), 'STS' => clienttranslate('Greys')],
+//	'Felines' => ['STO' => clienttranslate('Felines'), 'STS' => clienttranslate('Felines')],
+//	'Galactic' => ['STO' => clienttranslate('Galactic Confederation'), 'STS' => clienttranslate('Galactic Empire')],
+//	'Greys' => ['STO' => clienttranslate('Greys'), 'STS' => clienttranslate('Greys')],
 	'ICC' => ['STO' => clienttranslate('ICC'), 'STS' => clienttranslate('ICC')],
-	'Mantids' => ['STO' => clienttranslate('Mantids'), 'STS' => clienttranslate('Mantids')],
-	'Mayans' => ['STO' => clienttranslate('Cosmic Mayans'), 'STS' => clienttranslate('Cosmic Mayans')],
-	'Orion' => ['STO' => clienttranslate('Orion Republic'), 'STS' => clienttranslate('Orion Empire')],
-	'Plejars' => ['STO' => clienttranslate('Plejars'), 'STS' => clienttranslate('Plejars')],
-	'Progenitors' => ['STO' => clienttranslate('Progenitors'), 'STS' => clienttranslate('Progenitors')],
-	'Rogue' => ['STO' => clienttranslate('Rogue AI'), 'STS' => clienttranslate('Rogue AI')],
-	'Yowies' => ['STO' => clienttranslate('Yowies'), 'STS' => clienttranslate('Yowies')],
+//	'Mantids' => ['STO' => clienttranslate('Mantids'), 'STS' => clienttranslate('Mantids')],
+//	'Mayans' => ['STO' => clienttranslate('Cosmic Mayans'), 'STS' => clienttranslate('Cosmic Mayans')],
+//	'Orion' => ['STO' => clienttranslate('Orion Republic'), 'STS' => clienttranslate('Orion Empire')],
+//	'Plejars' => ['STO' => clienttranslate('Plejars'), 'STS' => clienttranslate('Plejars')],
+//	'Progenitors' => ['STO' => clienttranslate('Progenitors'), 'STS' => clienttranslate('Progenitors')],
+//	'Rogue' => ['STO' => clienttranslate('Rogue AI'), 'STS' => clienttranslate('Rogue AI')],
+//	'Yowies' => ['STO' => clienttranslate('Yowies'), 'STS' => clienttranslate('Yowies')],
 	'Farmers' => ['STO' => clienttranslate('Genetic Farmers')],
 	'Slavers' => ['STS' => clienttranslate('Slavers')],
 ];
