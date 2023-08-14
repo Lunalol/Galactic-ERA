@@ -13,6 +13,18 @@ define('INTRODUCTORY', 0);
 define('STANDARD', 1);
 define('MANUAL', 2);
 //
+// Game Preferences
+//
+define('SPEED', 100);
+define('SLOW', 0);
+define('NORMAL', 1);
+define('FAST', 2);
+//
+define('CONFIRM', 101);
+define('ALWAYS', 0);
+define('MOBILE', 1);
+define('NEVER', 2);
+//
 // Game globals
 //
 define('ROUND', 10);

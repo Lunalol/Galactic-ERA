@@ -134,8 +134,8 @@ $machinestates = [
 	],
 	235 => [
 		'name' => 'combatChoice',
-		'description' => clienttranslate('${actplayer} must resolve battles'),
-		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),
+		'description' => clienttranslate('${actplayer} must choose a battle to resolve'),
+		'descriptionmyturn' => clienttranslate('${you} must choose a battle to resolve'),
 		'type' => 'activeplayer',
 		'args' => 'argCombatChoice',
 		'possibleactions' => ['combatChoice'],
@@ -149,8 +149,8 @@ $machinestates = [
 	],
 	245 => [
 		'name' => 'retreat',
-		'description' => clienttranslate('${actplayer} must choose a retreat location'),
-		'descriptionmyturn' => clienttranslate('${you} must choose a retreat location'),
+		'description' => clienttranslate('${actplayer} may choose a retreat location'),
+		'descriptionmyturn' => clienttranslate('${you} may choose a retreat location'),
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
 		'possibleactions' => ['retreat', 'combat'],
@@ -160,31 +160,25 @@ $machinestates = [
 		'name' => 'combat',
 		'type' => 'game',
 		'action' => 'stCombat',
-		'transitions' => ['attacker' => 255, 'continue' => 260, 'endCombat' => 230]
+		'transitions' => ['winner' => 255, 'endCombat' => 230]
 	],
 	255 => [
 		'name' => 'winner',
-		'description' => clienttranslate('${actplayer} must resolve battles'),
-		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),
+		'description' => clienttranslate('${actplayer} must choose ships to destroy'),
+		'descriptionmyturn' => clienttranslate('${you} must choose ships to destroy'),
 		'type' => 'activeplayer',
 		'args' => 'argWinner',
 		'possibleactions' => ['done'],
 		'transitions' => ['continue' => 260]
 	],
 	260 => [
-		'name' => 'loser',
-		'type' => 'game',
-		'action' => 'stLoser',
-		'transitions' => ['loser' => 265, 'endCombat' => 230]
-	],
-	265 => [
-		'name' => 'loser',
-		'description' => clienttranslate('${actplayer} must resolve battles'),
-		'descriptionmyturn' => clienttranslate('${you} must resolve battles'),
+		'name' => 'retreat',
+		'description' => clienttranslate('${actplayer} must choose a retreat location'),
+		'descriptionmyturn' => clienttranslate('${you} must choose a retreat location'),
 		'type' => 'activeplayer',
-		'args' => 'argLoser',
-		'possibleactions' => ['done'],
-		'transitions' => ['endCombat' => 230]
+		'args' => 'argRetreat',
+		'possibleactions' => ['retreat', 'combat'],
+		'transitions' => ['continue' => 240]
 	],
 	300 => [
 		'name' => 'growthPhase',
@@ -202,12 +196,18 @@ $machinestates = [
 		'transitions' => ['next' => 310]
 	],
 	310 => [
-		'name' => 'switchAlignment',
+		'name' => 'growthPhase',
 		'type' => 'game',
-		'action' => 'stSwitchAlignment',
+		'action' => 'stAdditionalGrowthActions',
 		'transitions' => ['next' => 320]
 	],
 	320 => [
+		'name' => 'switchAlignment',
+		'type' => 'game',
+		'action' => 'stSwitchAlignment',
+		'transitions' => ['next' => 330]
+	],
+	330 => [
 		'name' => 'changeTurnOrder',
 		'type' => 'game',
 		'action' => 'stChangeTurnOrder',

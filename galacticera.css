@@ -17,10 +17,13 @@ div,img {
     background-color:rgba(0, 0, 0, 0.5);
     color:white;
 }
+#page-content {
+	/*	zoom: 1 !important;*/
+}
+
 #game_play_area {
 	will-change: transform;
 }
-
 /* Simulate title property on mobile */
 @media (pointer: coarse), (hover: none) {
 	[title] {
@@ -61,6 +64,10 @@ div,img {
 	position: relative;
 	padding: 10px;
 	box-sizing: border-box;
+	transition: transform CALC(var(--DELAY) * 0.5ms);
+}
+#ERAoffboard.ERAfocus {
+	z-index: 1000;
 }
 
 #ERAfleets {
@@ -105,7 +112,7 @@ div,img {
 	background: url('img/pawn.png');
 	width: 45px;
 	height: 89px;
-	transition: left 1s;
+	transition: left CALC(var(--DELAY) * 1ms);
 }
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="Domination cards"> */
@@ -118,13 +125,10 @@ div,img {
 }
 .ERAdominationCard {
 	max-width: 186px;
-	transform-origin: top;
-	transition: transform 0.25s;
+	transition: transform CALC(var(--DELAY) * 0.5ms);
 }
-.ERAdominationCard:not([domination='back']):focus {
-    transform: scale(2.0);
-	transition: transform 0.25s;
-	z-index: 500;
+.ERAdominationCard.ERAfocus {
+	z-index: 1000;
 }
 .ERAdominationCard img{
 	width: 100%;
@@ -138,13 +142,10 @@ div,img {
 	flex: 1 1 20%;
 	background-size: contain;
 	background-repeat: no-repeat;
-	transform-origin: top;
-	transition: transform 0.25s;
+	transition: transform CALC(var(--DELAY) * 0.5ms);
 }
-.ERAemergencyReserve:focus {
-    transform: scale(4.0);
-	transition: transform 0.25s;
-	z-index: 500;
+.ERAemergencyReserve.ERAfocus {
+	z-index: 1000;
 }
 .ERAemergencyReserve-FF3333 {
 	background-image: url('img/emergencyReserve/FF3333.jpg');
@@ -178,6 +179,9 @@ div,img {
 #ERAboard {
     transform-origin: top left;
 }
+.ERApanel {
+	z-index: 500;
+}
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="DP Track"> */
 #ERApanels
@@ -210,6 +214,12 @@ div,img {
 	width: 714px;
 	height: 314px;
 }
+.ERApopulationTrack .ERAcounter-populationDisk {
+	opacity: 100%;
+}
+.ERApopulationTrack:hover .ERAcounter-populationDisk {
+	opacity: 50%;
+}
 .ERApanel-FF3333 .ERApopulationTrack {
 	background-image: url('img/populationTracks/FF3333.png');
 }
@@ -235,6 +245,12 @@ div,img {
 	position:relative;
 	width: 877px;
 	height: 532px;
+}
+.ERAtechTrack .ERAcounter-cube {
+	opacity: 100%;
+}
+.ERAtechTrack:hover .ERAcounter-cube {
+	opacity: 50%;
 }
 .ERApanel-FF3333 .ERAtechTrack {
 	background-image: url('img/techTracks/FF3333.png');
@@ -265,7 +281,11 @@ div,img {
 	background-size: contain;
 	width: 400px;
 	height: 400px;
-    border-radius: 10px;
+	border-radius: 10px;
+	transition: transform CALC(var(--DELAY) * 0.5ms);
+}
+.ERAplayerAid.ERAfocus {
+	z-index: 1000;
 }
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="Sectors"> */
@@ -330,21 +350,20 @@ div,img {
 }
 /* </editor-fold> */
 
-
 .ERAchoice {
 	position: absolute;
 	top: 0px;
-	height: 50vh;
+	height: fit-content;
 	width: 100%;
 	box-sizing: border-box;
-    padding: 1%;
+	padding: 1%;
 	display: flex;
 	flex-direction: row;
 	justify-content: space-evenly;
 	pointer-events: none;
 }
-.ERAchoice .ERAstarPeople:focus {
-    filter:brightness(2.0);
+.ERAchoice .ERAstarPeople.ERAselected {
+	filter:brightness(2.0);
 	transition: all 0.25s;
 }
 
@@ -356,6 +375,7 @@ div,img {
 .ERAstatus {
 	display: flex;
 	justify-content: space-evenly;
+	align-items: center;
 }
 
 .ERAtechnologies {
@@ -367,8 +387,16 @@ div,img {
 }
 .ERAsmallTechnology{
 	display: inline-block;
-	width: 18.5px;
-	height: 18.5px;
+	width: calc(74px / 2);
+	height: calc(74px / 2);
+	transform: scale(50%);
+	transform-origin: left top;
+	vertical-align: middle;
+}
+.ERAsmallerTechnology{
+	display: inline-block;
+	width: calc(74px / 4);
+	height: calc(74px / 4);
 	transform: scale(25%);
 	transform-origin: left top;
 	vertical-align: middle;
@@ -381,54 +409,36 @@ div,img {
 }
 
 .circleBlack {
-    border:white solid 1px;
-    border-radius:50%;
-    background:white;
-    display: inline-block;
-    width:14px;
-    height:14px;
-    text-align:center;
-    box-sizing:border-box;
-    vertical-align:middle;
-    margin:1px;
+	border:white solid 1px;
+	border-radius:50%;
+	background:white;
+	display: inline-block;
+	width:14px;
+	height:14px;
+	text-align:center;
+	box-sizing:border-box;
+	vertical-align:middle;
+	margin:1px;
 }
 .circleWhite {
-    border:white solid 1px;
-    display: inline-block;
-    border-radius:50%;
-    background:black;
-    width:14px;
-    height:14px;
-    text-align:center;
-    box-sizing:border-box;
-    vertical-align:middle;
-    margin:1px;
+	border:white solid 1px;
+	display: inline-block;
+	border-radius:50%;
+	background:black;
+	width:14px;
+	height:14px;
+	text-align:center;
+	box-sizing:border-box;
+	vertical-align:middle;
+	margin:1px;
 }
 
 .ERAstarPeople {
 	pointer-events: all;
-	transition: all 0.25s;
+	transition: transform CALC(var(--DELAY) * 0.5ms);
 }
-.mobile_version .ERAfaction .ERAstarPeople:focus {
-	position: fixed;
-	top: 2vh;
-	bottom: 2vh;
-	left: 2vw;
-	right: 2vw;
-	/*	width: calc(100vw - (100vw - 100%));*/
-	z-index: 5000;
-}
-.desktop_version .ERAfaction .ERAstarPeople:focus {
-	transform: scale(5.0);
-	transform-origin:right top;
-	transition: transform 0.25s;
-	z-index: 500;
-}
-.ERApanel .ERAstarPeople:focus {
-	transform: scale(3.0);
-	transform-origin:bottom;
-	transition: transform 0.25s;
-	z-index: 500;
+.ERAstarPeople.ERAfocus {
+	z-index: 1000;
 }
 .ERAstarPeople img{
 	width: 100%;
@@ -456,22 +466,22 @@ div,img {
 
 .ERAcounter {
 	background: url('img/counters.png');
-	transition: filter .25s, transform .25s;
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	z-index: 100;
 	pointer-events: none;
 }
 .ERAcounter.ERAselectable {
 	pointer-events: all;
 	filter: brightness(1.5);
-	transition: filter .25s, transform .25s;
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAcounter.ERAselected {
 	filter: brightness(2.0);
-	transition: filter .25s, transform .25s;
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAcounter:hover {
-    filter:brightness(3.0);
-	transition: filter .25s, transform .25s;
+	filter:brightness(3.0);
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 
 /* <editor-fold defaultstate="collapsed" desc="Cylinders (6)"> */
@@ -603,13 +613,6 @@ div,img {
 	width: 89px;
 	height: 89px;
 }
-.ERAsmallOrder{
-	display: inline-block;
-	width: 22px;
-	height: 22px;
-	transform: scale(25%);
-	transform-origin: left top;
-}
 .ERAorder[order='?'] {
 	display: none;
 }
@@ -642,10 +645,8 @@ div,img {
 	display:none;
 }
 .ERAsmall {
-	display: inline-block;
-	width: 22px;
-	height: 22px;
-	transform: scale(25%);
+	margin: 0px -44px -44px 0px;
+	transform: scale(50%);
 	transform-origin: left top;
 }
 .ERAcounter.ERAcounter-peace.ERAcounter-6666FF {
@@ -688,25 +689,26 @@ div,img {
 /* <editor-fold defaultstate="collapsed" desc="Ships"> */
 .ERAship {
 	background: url('img/3D.png');
-	transition: all 0.25s;
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	width: 250px;
 	height: 250px;
 	z-index: 200;
 	clip-path: path('M 85.00,130.00 C 85.90,121.57 90.92,119.10 97.00,113.87 97.00,113.87 129.00,87.20 129.00,87.20 136.09,81.48 144.56,77.52 150.86,70.83 155.60,65.80 153.48,61.46 160.04,56.65 164.42,53.44 168.94,53.82 171.63,52.02 174.85,49.86 176.64,43.83 185.00,42.33 190.56,41.33 205.17,45.03 209.96,47.93 212.34,49.38 215.12,52.58 216.49,55.00 218.98,59.41 217.17,61.63 218.92,66.00 220.46,69.85 222.45,70.85 222.89,76.00 224.20,91.18 208.40,91.59 206.10,92.58 202.81,94.01 202.06,96.97 198.90,99.30 196.40,101.14 193.74,101.40 191.63,103.51 184.99,110.15 190.89,115.67 187.40,120.91 187.40,120.91 178.00,130.00 178.00,130.00 178.00,130.00 151.00,154.99 151.00,154.99 148.24,157.68 138.07,167.38 135.00,168.11 132.27,168.76 120.06,166.01 117.00,165.00 116.59,167.62 116.04,171.41 114.16,173.42 112.26,175.45 105.48,176.38 100.48,184.00 97.18,189.03 101.54,197.53 91.96,204.03 86.90,207.47 81.64,207.42 79.18,208.56 75.99,210.04 75.23,212.93 70.96,215.47 68.72,216.80 57.41,220.42 55.00,220.27 55.00,220.27 45.00,217.51 45.00,217.51 45.00,217.51 38.00,217.51 38.00,217.51 27.95,215.83 23.12,209.95 23.06,200.00 23.06,200.00 23.06,187.00 23.06,187.00 22.46,182.15 18.77,177.35 23.70,170.00 29.32,161.62 35.85,162.93 39.82,160.69 43.25,158.75 43.88,155.52 49.01,152.53 53.86,149.71 56.66,150.58 60.00,149.02 62.73,147.74 72.65,139.28 74.86,136.91 79.51,131.90 77.48,129.25 85.00,130.00 Z');
+	filter:brightness(75%);
 	pointer-events: none;
 }
 .ERAship.ERAselectable {
 	pointer-events: all;
-    filter:brightness(2.0);
-	transition: all 0.25s;
+	filter:brightness(1.0);
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAship.ERAselected {
-    filter:brightness(3.0);
-	transition: all 0.25s;
+	filter:brightness(3.0);
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAship:hover {
-    filter:brightness(4.0);
-	transition: all 0.25s;
+	filter:brightness(4.0);
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 
 .ERAship-FF3333 {
@@ -733,12 +735,12 @@ div,img {
 	background: url('img/3D.png');
 	width: 250px;
 	height: 250px;
-	transition: all 0.25s;
-    filter:brightness(75%);
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
+	filter:brightness(75%);
 }
 .ERAhomeStar.ERAselected {
-    filter:brightness(4.0);
-	transition: filter .25s, transform .25s;
+	filter:brightness(4.0);
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAhomeStar-FF3333 {
 	background-position-x: -0px;
@@ -765,13 +767,13 @@ div,img {
 	width: 65px;
 	height: 45px;
 	clip-path: none;
-	transition: all 0.25s;
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	opacity: 75%;
 }
 .ERAship[fleet]:hover {
-    filter:brightness(2.0);
+	filter:brightness(2.0);
 	opacity: 100%;
-	transition: all 0.25s;
+	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	z-index: 500 !important;
 }
 .ERAship[fleet].ERAship-FF3333[fleet='A'] {
@@ -915,9 +917,9 @@ div,img {
 }
 .ERAsmallGrowth{
 	display: inline-block;
-	width: 22.25px;
-	height: 29.5px;
-	transform: scale(25%);
+	width: calc(89px / 2);
+	height: calc(118px / 2);
+	transform: scale(50%);
 	transform-origin: left top;
 	vertical-align: middle;
 }

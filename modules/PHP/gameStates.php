@@ -116,10 +116,10 @@ trait gameStates
 //
 		foreach (Factions::list() as $color)
 		{
-			$sector = Factions::getHomeStar($color);
-			Ships::create($color, 'ship', $sector . ':+0+0+0');
-			Ships::create($color, 'ship', $sector . ':+0+0+0');
-			Ships::create($color, 'ship', $sector . ':+0+0+0');
+			$homeStar = Ships::getHomeStar($color);
+			Ships::create($color, 'ship', $homeStar);
+			Ships::create($color, 'ship', $homeStar);
+			Ships::create($color, 'ship', $homeStar);
 		}
 //
 		if (self::getPlayersNumber() === 1)
@@ -241,7 +241,9 @@ trait gameStates
 // ANCHARA SPECIAL STS: Start with 2 additional ships.
 					if ($alignment === 'STS')
 					{
-						for ($i = 0; $i < 3; $i++)
+						for ($i = 0;
+							$i < 3;
+							$i++)
 						{
 //* -------------------------------------------------------------------------------------------------------- */
 							$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
@@ -294,7 +296,9 @@ trait gameStates
 						'LEVEL' => $level,
 					]);
 //* -------------------------------------------------------------------------------------------------------- */
-					for ($i = 0; $i < 3; $i++)
+					for ($i = 0;
+						$i < 3;
+						$i++)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
@@ -377,7 +381,9 @@ trait gameStates
 // SPECIAL STO: Start with 2 additional population discs at your home star.
 					if ($alignment === 'STO')
 					{
-						for ($i = 0; $i < 2; $i++)
+						for ($i = 0;
+							$i < 2;
+							$i++)
 						{
 							Factions::gainPopulation($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -500,7 +506,9 @@ trait gameStates
 							break;
 						case 'Ships':
 							{
-								for ($i = 0; $i < $value; $i++)
+								for ($i = 0;
+									$i < $value;
+									$i++)
 								{
 //* -------------------------------------------------------------------------------------------------------- */
 									$this->notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
@@ -615,8 +623,8 @@ trait gameStates
 		$player_id = Factions::getPlayer($color);
 		if ($player_id < 0)
 		{
-			shuffle($this->possible['combatChoice']);
-			return self::acCombatChoice($color, array_pop($this->possible['combatChoice']), true);
+			shuffle($this->possible);
+			return self::acCombatChoice($color, array_pop($this->possible), true);
 		}
 		else $this->gamestate->nextState('combatChoice');
 	}
@@ -630,24 +638,50 @@ trait gameStates
 //
 		foreach ($defenders as $defender)
 		{
+			if (Factions::getStatus($defender, 'retreat')) continue;
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('${player_name} engages ${player_name1}'), [
+				'player_name' => Factions::getName($attacker), 'player_name1' => Factions::getName($defender),
+			]);
+//* -------------------------------------------------------------------------------------------------------- */
 			$canRetreat = Factions::getTechnology($defender, 'Spirituality') > Factions::getTechnology($attacker, 'Spirituality');
 			$canRetreat |= Factions::getTechnology($defender, 'Propulsion') > Factions::getTechnology($attacker, 'Propulsion');
 			if ($canRetreat)
 			{
 				$player_id = Factions::getPlayer($defender);
-				if ($player_id < 0)
+				if ($player_id > 0)
 				{
-					Automas::retreat($this, $defender);
-					return $this->gamestate->nextState('continue');
+					Factions::setStatus($attacker, 'retreat', $defender);
+//
+					$this->gamestate->changeActivePlayer($player_id);
+					return $this->gamestate->nextState('retreat');
 				}
+				else
+				{
+					$roll = Automas::retreat($defender);
+					if ($roll)
+					{
+						$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+							'player_name' => Factions::getName($defender), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+					if ($roll && $dice > $roll)
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->notifyAllPlayers('msg', clienttranslate('${player_name} accepts combat'), ['player_name' => Factions::getName($defender)]);
+//* -------------------------------------------------------------------------------------------------------- */
+						return $this->gamestate->nextState('combat');
+					}
 //
-				Factions::setStatus($attacker, 'retreat', $defender);
+					$locations = Ships::retreatLocations($defender, Factions::getStatus($attacker, 'combat'));
+					shuffle($locations);
 //
-				$this->gamestate->changeActivePlayer($player_id);
-				return $this->gamestate->nextState('retreat');
+					return self::acRetreat($defender, array_pop($locations), true);
+				}
 			}
 		}
-//
 		$this->gamestate->nextState('combat');
 	}
 	function stCombat()
@@ -658,24 +692,127 @@ trait gameStates
 		$defenders = Ships::getConflictFactions($attacker, $location);
 		if (!$defenders) return $this->gamestate->nextState('endCombat');
 //
-		$CVs = [];
-		foreach (array_merge([$attacker], $defenders) as $color)
+		$attackerCVs = Ships::CV($attacker, $location);
+		foreach ($attackerCVs['fleet'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 		{
-			$CVs[$color] = Ships::CV($color, $location);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->notifyAllPlayers('msg', clienttranslate('${player_name} combat at ${CV}'), ['player_name' => Factions::getName($color), 'CV' => $CVs[$color]]);
+			self::notifyAllPlayers('msg', '<div style="background:#${color};">${LOG}</div>', ['color' => $attacker,
+				'LOG' => [
+					'log' => clienttranslate('<B>+ ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
+					'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
+				]
+			]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
+		if ($attackerCVs['ships']['ships'])
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', '<div style="background:#${color};">${LOG}</div>', ['color' => $attacker,
+				'LOG' => [
+					'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
+					'args' => ['CV' => $attackerCV['ships']['CV'], 'ships' => $attackerCV['ships']['ships']]
+				]
+			]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+		$attackerCV = $attackerCVs['total'];
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('msg', clienttranslate('Attacker side: ${CV} CV'), ['CV' => $attackerCV]);
+//* -------------------------------------------------------------------------------------------------------- */
+		$defenderCV = 0;
+		foreach ($defenders as $defender)
+		{
+			$defenderCVs = Ships::CV($defender, $location);
+			foreach ($defenderCVs['fleet'] as $fleet => ['CV' => $CV, 'ships' => $ships])
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', '<div style="background:#${color};">${LOG}</div>', ['color' => $defender,
+					'LOG' => [
+						'log' => clienttranslate('<B>+ ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
+						'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
+					]
+				]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+//* -------------------------------------------------------------------------------------------------------- */
+			if ($defenderCVs['ships']['ships'])
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', '<div style="background:#${color};">${LOG}</div>', ['color' => $defender,
+					'LOG' => [
+						'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
+						'args' => ['CV' => $defenderCV['ships']['CV'], 'ships' => $defenderCV['ships']['ships']]
+					]
+				]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+			$defenderCV += $defenderCVs['total'];
+		}
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('msg', clienttranslate('Defender side: ${CV} CV'), ['CV' => $defenderCV]);
+//* -------------------------------------------------------------------------------------------------------- */
 //
-		$winners = array_keys($CVs, max($CVs));
-		$attackerIsWinner = in_array($attacker, $winners);
-		if (sizeof($winners) > 1) $attackerIsWinner = $attackerIsWinner && (max(0, ...array_map(fn($color) => Factions::getTechnology($color, 'Military'), $defenders)) < Factions::getTechnology($attacker, 'Military'));
+		if ($attackerCV > $defenderCV) $attackerIsWinner = true;
+		else if ($attackerCV < $defenderCV) $attackerIsWinner = false;
+		else $attackerIsWinner = $attackerIsWinner && (max(0, ...array_map(fn($color) => Factions::getTechnology($color, 'Military'), $defenders)) < Factions::getTechnology($attacker, 'Military'));
 //
-		self::sendnotifications();
-		die;
+		if ($attackerIsWinner)
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('<B>Attacker</B> side wins the battle'), []);
+//* -------------------------------------------------------------------------------------------------------- */
+			Factions::setStatus($attacker, 'winner', $attacker);
+			Factions::setStatus($attacker, 'totalVictory', $attackerCV >= 3 * $defenderCV);
+		}
+		else
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->notifyAllPlayers('msg', clienttranslate('<B>Defender</B> side wins the battle'), []);
+//* -------------------------------------------------------------------------------------------------------- */
+			foreach ($defenders as $color)
+			{
+				$ships[$color] = 0;
+				foreach (Ships::getAtLocation($location, $color) as $shipID)
+				{
+					$ship = Ships::get($color, $shipID);
+					switch ($ship['fleet'])
+					{
+						case 'ship':
+							$ships[$color]++;
+							break;
+						case 'fleet':
+							$ships[$color] += intval(Ships::getStatus($shipID, 'ships'));
+							break;
+					}
+				}
+				$ships[$color] = $ships[$color] * 10 - Factions::getOrder($color);
+			}
+			$defender = array_search(max($ships), $ships);
+			Factions::setStatus($attacker, 'winner', $defender);
+			Factions::setStatus($attacker, 'totalVictory', $defenderCV >= 3 * $attackerCV);
+		}
 //
-		$this->gamestate->changeActivePlayer($player_id);
+		$this->gamestate->changeActivePlayer(Factions::getPlayer(Factions::getStatus($attacker, 'winner')));
 		return $this->gamestate->nextState('winner');
+	}
+	function stAdditionalGrowthActions()
+	{
+		foreach (Factions::list(false) as $color)
+		{
+			$counters = Factions::getStatus($color, 'counters');
+//
+			$oval = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+			foreach ($counters as $counter) if (in_array($counter, ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'])) $oval--;
+			if ($oval < 0)
+			{
+				$DP = $oval * 3;
+				Factions::gainDP($color, $DP);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->notifyAllPlayers('updateFaction', _('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+		}
+		return $this->gamestate->nextState('next');
 	}
 	function stSwitchAlignment()
 	{
@@ -786,7 +923,7 @@ trait gameStates
 	{
 		Factions::setActivation();
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -807,7 +944,7 @@ trait gameStates
 		Factions::setActivation($color, 'yes');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
 			'log' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -826,7 +963,7 @@ trait gameStates
 	{
 		Factions::setActivation('ALL', 'done');
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Trading Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -890,115 +1027,134 @@ trait gameStates
 	function stScoringPhase()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
+		$this->notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Scoring Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$galacticStory = self::getGameStateValue('galacticStory');
 		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
 //
-		foreach (Factions::list() as $color)
+		switch ($era)
 		{
-			if (Factions::getPlayer($color) < 0) continue;
-//
-			$alignment = Factions::getAlignment($color);
-//
-			switch ($era)
-			{
-				case 'First':
+			case 'First':
+				{
+					$this->notifyAllPlayers('msg', _('Every player with the STO alignment at the end of a round scores 1 DP'), []);
+					foreach (Factions::list(false) as $color)
 					{
-// Every player with the STO alignment at the end of a round scores 1 DP.
-						if ($alignment === 'STO')
+						if (Factions::getAlignment($color) === 'STO')
 						{
-							Factions::gainDP($color, 1);
+							$DP = 1;
+							if ($DP)
+							{
+								Factions::gainDP($color, $DP);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1, 'player_name' => Factions::getName($color)]);
+								$this->notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
+							}
 						}
-						switch ($galacticStory)
-						{
-							case JOURNEYS:
-// All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game).
-								$inContact = Factions::inContact($color, 'contact');
-								if ($inContact)
+					}
+					switch ($galacticStory)
+					{
+						case JOURNEYS:
+							$this->notifyAllPlayers('msg', _('All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game).'), []);
+							foreach (Factions::list(false) as $color)
+							{
+								$DP = sizeof(Factions::inContact($color, 'contact'));
+								if ($DP)
 								{
-									Factions::gainDP($color, sizeof($inContact));
+									Factions::gainDP($color, $DP);
 //* -------------------------------------------------------------------------------------------------------- */
-									$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1, 'player_name' => Factions::getName($color)]);
+									$this->notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
-								break;
-							case MIGRATIONS:
+							}
+							break;
+						case MIGRATIONS:
 // All players score 3 DP for every Grow Population action they do in this era.
 // Only Grow Population actions that generated at least one additional population are counted.
-								break;
-							case RIVALRY:
+							break;
+						case RIVALRY:
 // All players score 1 DP for every Gain Star action they do in this era.
-								break;
-							case WARS:
+							break;
+						case WARS:
 // All players score 2 DP for every Build Ships action they do in this era.
-								break;
-						}
+							break;
 					}
-					break;
-				case 'Second':
+				}
+				break;
+			case 'Second':
+				{
+					$this->notifyAllPlayers('msg', _('Every player with the STS alignment at the end of a round scores 1 DP'), []);
+					foreach (Factions::list(false) as $color)
 					{
-// Every player with the STS alignment at the end of a round scores 1 DP.
-						if ($alignment === 'STS')
+						if (Factions::getAlignment($color) === 'STS')
 						{
-							Factions::gainDP($color, 1);
+							$DP = 1;
+							if ($DP)
+							{
+								Factions::gainDP($color, $DP);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1, 'player_name' => Factions::getName($color)]);
+								$this->notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', _('Second Era not implemented'), []);
-						}
-						$this->notifyAllPlayers('msg', _('Second Era not implemented'), []);
-						switch ($galacticStory)
-						{
-							case JOURNEYS:
-								$this->notifyAllPlayers('msg', _('Galactic story JOURNEYS not implemented'), []);
-								break;
-							case MIGRATIONS:
-								$this->notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
-								break;
-							case RIVALRY:
-								$this->notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
-								break;
-							case WARS:
-								$this->notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
-								break;
+							}
 						}
 					}
-					break;
-				case 'Third':
+					$this->notifyAllPlayers('msg', _('Second Era not implemented'), []);
+					switch ($galacticStory)
 					{
-// Every player with the STO alignment at the end of a round scores 1 DP.
-						if ($alignment === 'STO')
+						case JOURNEYS:
+							$this->notifyAllPlayers('msg', _('Galactic story JOURNEYS not implemented'), []);
+							break;
+						case MIGRATIONS:
+							$this->notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
+							break;
+						case RIVALRY:
+							$this->notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
+							break;
+						case WARS:
+							$this->notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
+							break;
+					}
+				}
+				break;
+			case 'Third':
+				{
+					$this->notifyAllPlayers('msg', _('Every player with the STO alignment at the end of a round scores 1 DP'), []);
+					foreach (Factions::list(false) as $color)
+					{
+						if (Factions::getAlignment($color) === 'STO')
 						{
-							Factions::gainDP($color, 1);
+							$DP = 1;
+							if ($DP)
+							{
+								Factions::gainDP($color, $DP);
 //* -------------------------------------------------------------------------------------------------------- */
-							$this->notifyAllPlayers('msg', _('${player_name} gains 1 DP'), ['player_name' => Factions::getName($color)]);
+								$this->notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-						}
-						$this->notifyAllPlayers('msg', _('Third Era not implemented'), []);
-						switch ($galacticStory)
-						{
-							case JOURNEYS:
-								$this->notifyAllPlayers('msg', _('Galactic story JOURNEYS not implemented'), []);
-								break;
-							case MIGRATIONS:
-								$this->notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
-								break;
-							case RIVALRY:
-								$this->notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
-								break;
-							case WARS:
-								$this->notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
-								break;
+							}
 						}
 					}
-					break;
-			}
+					switch ($galacticStory)
+					{
+						case JOURNEYS:
+							$this->notifyAllPlayers('msg', _('Galactic story JOURNEYS not implemented'), []);
+							break;
+						case MIGRATIONS:
+							$this->notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
+							break;
+						case RIVALRY:
+							$this->notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
+							break;
+						case WARS:
+							$this->notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
+							break;
+					}
+				}
+				break;
+		}
+//
+		foreach (Factions::list(false) as $color)
+		{
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1010,7 +1166,7 @@ trait gameStates
 	{
 		$round = self::getGameStateValue('round');
 //* -------------------------------------------------------------------------------------------------------- */
-		$this->notifyAllPlayers('message', '<span class="ERA-phase">${log} ${round}/8</span>', [
+		$this->notifyAllPlayers('message', '<span class = "ERA-phase">${log} ${round}/8</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color)

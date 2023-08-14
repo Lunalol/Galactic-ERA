@@ -114,8 +114,8 @@ class Automas extends APP_GameClass
 							{
 								foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon)
 								{
-									$location = $sector . ':' . $hexagon;
-									if ($location !== $location) $locations[] = $location;
+									$star = $sector . ':' . $hexagon;
+									if ($location !== $star) $locations[] = $star;
 								}
 							}
 //
@@ -248,7 +248,6 @@ class Automas extends APP_GameClass
 					foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) $shipList[$location] = Ships::getAtLocation($location, $color);
 					foreach ($shipList as $location => $ships)
 					{
-						$dice = 2;
 						switch ($dice)
 						{
 //
@@ -567,6 +566,18 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
+	function retreat(string $color): int
+	{
+		switch (Factions::getPlayer($color))
+		{
+			case FARMERS:
+				return 0;
+			case SLAVERS:
+				return 3;
+			default:
+				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
+		}
+	}
 	function growthActions(string $color, int $difficulty, int $dice): array
 	{
 		$wormholes = self::WORMHOLES;
@@ -710,7 +721,7 @@ class Automas extends APP_GameClass
 						}
 						else
 						{
-							foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star')) $locations[] = $location;
+							foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
 							shuffle($locations);
 							if (DEBUG)
 							{

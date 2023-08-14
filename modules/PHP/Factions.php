@@ -31,9 +31,10 @@ class Factions extends APP_GameClass
 		self::DbQuery("INSERT INTO factions (color,player_id,starPeople,alignment,homeStar,atWar,status) VALUES ('$color', $player_id, 'None', 'STO', $homeStar, '[]', '{}')");
 		return self::DbGetLastId();
 	}
-	static function list(): array
+	static function list(bool $automas = true): array
 	{
-		return self::getObjectListFromDB("SELECT color FROM factions ORDER BY `order`", true);
+		if ($automas) return self::getObjectListFromDB("SELECT color FROM factions ORDER BY `order`", true);
+		return self::getObjectListFromDB("SELECT color FROM factions WHERE player_id > 0 ORDER BY `order`", true);
 	}
 	static function getAllDatas(): array
 	{

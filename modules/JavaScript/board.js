@@ -49,10 +49,15 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.style(node, 'transform', `scale(1) rotate(${angle}deg)`);
 					dojo.connect($(`ERAplayerAid-${faction.color}`), 'click', (event) => {
 						dojo.stopEvent(event);
-						const playerAid = (1 + +dojo.getAttr(event.currentTarget, 'playerAid')) % 4;
-						dojo.style(event.currentTarget, 'background-image', `url(${g_gamethemeurl}img/playerAids/${playerAid}.jpg)`);
-						dojo.setAttr(event.currentTarget, 'playerAid', playerAid);
+						if (dojo.hasClass(event.currentTarget, 'ERAfocus'))
+						{
+							const playerAid = (1 + +dojo.getAttr(event.currentTarget, 'playerAid')) % 4;
+							dojo.style(event.currentTarget, 'background-image', `url(${g_gamethemeurl}img/playerAids/${playerAid}.jpg)`);
+							dojo.setAttr(event.currentTarget, 'playerAid', playerAid);
+						}
+						else this.bgagame.focus(event.currentTarget);
 					});
+					dojo.connect($(`ERAplayerAid-${faction.color}`), 'transitionend', (event) => dojo.style(event.currentTarget, {'pointer-events': '', 'z-index': ''}));
 				}
 			}
 //
@@ -308,7 +313,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
 			}
-			this.bgagame.restoreServerGameState();
+			dojo.query('.ERAfocus').forEach((node) => {
+				dojo.style(node, {'pointer-events': 'none', 'z-index': '1000', 'transform': ``});
+				dojo.removeClass(node, 'ERAfocus');
+			});
+			if (['fleets', ''].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
 		}
 		,
 		drawHexagon: function (hexagon, color)

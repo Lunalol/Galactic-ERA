@@ -46,5 +46,19 @@ $game_options = [
 		],
 		'displaycondition' => [['type' => 'maxplayers', 'value' => 1]],
 	]
+];
 //
+$game_preferences = [
+	SPEED => ['name' => totranslate('Animation speed'), 'needReload' => false, 'default' => NORMAL,
+		'values' => [
+			SLOW => ['name' => totranslate('Slow')],
+			NORMAL => ['name' => totranslate('Normal')],
+			FAST => ['name' => totranslate('Fast')],
+		]],
+	CONFIRM => ['name' => totranslate('Confirm action'), 'needReload' => false, 'default' => MOBILE,
+		'values' => [
+			ALWAYS => ['name' => totranslate('Always')],
+			MOBILE => ['name' => totranslate('Mobile only')],
+			NEVER => ['name' => totranslate('Never')],
+		]],
 ];

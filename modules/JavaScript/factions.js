@@ -29,17 +29,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		update: function (faction)
 		{
-//			console.log('updateFaction', faction);
+			console.log('updateFaction', faction);
 //
-			if ('domination' in faction)
-			{
-				dojo.empty(`ERAdominationCards-${faction.color}`);
-				for (let domination of faction.domination)
-				{
-					let node = dojo.place(this.bgagame.format_block('ERAdominationCard', {domination: domination}), `ERAdominationCards-${faction.color}`);
-					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
-				}
-			}
 			if ('starPeople' in faction)
 			{
 				let node = dojo.query(`#ERAfaction-${faction.color} .ERAstarPeople,.ERApanel-${faction.color} .ERAstarPeople`).forEach((node) =>
@@ -64,6 +55,21 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						else dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, 'STO'));
 					}
 				});
+			}
+//
+			if ('domination' in faction)
+			{
+				dojo.empty(`ERAdominationCards-${faction.color}`);
+				for (let domination of faction.domination)
+				{
+					let node = dojo.place(this.bgagame.format_block('ERAdominationCard', {domination: domination}), `ERAdominationCards-${faction.color}`);
+					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
+					dojo.connect(node, 'click', (event) => {
+						dojo.stopEvent(event);
+						if (dojo.getAttr(event.currentTarget, 'domination') !== 'back') this.bgagame.focus(event.currentTarget);
+					});
+					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
+				}
 			}
 //
 			if ('DP' in faction)
@@ -167,10 +173,23 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.query(`.ERAcounter-war[color='${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', !atWar.includes(dojo.getAttr(node, 'on'))));
 			}
 //
+			if ('ships' in faction) dojo.query(`.ERAships[faction=${faction.color}]`).forEach((node) => node.innerHTML = faction.ships);
+//
+// Panels order
+//
 			for (let node of dojo.query('.ERAorder').sort((a, b) => dojo.getAttr(a, 'order') - dojo.getAttr(b, 'order')))
 			{
 				const faction = dojo.getAttr(node, 'faction');
-				$('player_boards').insertBefore($(`overall_player_board_${this.bgagame.gamedatas.factions[faction].player_id}`), null)
+				$('player_boards').insertBefore($(`overall_player_board_${this.bgagame.gamedatas.factions[faction].player_id}`), null);
+			}
+//
+			const node = $(`ERApanel-${faction.color}`);
+			if (node)
+			{
+				const x = this.bgagame.board.hexagons['0:+0+0+0'].x + 2.5 * (this.bgagame.board.hexagons[this.bgagame.gamedatas.factions[faction.color].homeStar + ':+0+0+0'].x - this.bgagame.board.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
+				const y = this.bgagame.board.hexagons['0:+0+0+0'].y + 2.5 * (this.bgagame.board.hexagons[this.bgagame.gamedatas.factions[faction.color].homeStar + ':+0+0+0'].y - this.bgagame.board.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
+				dojo.style(node, 'left', x + 'px');
+				dojo.style(node, 'top', y + 'px');
 			}
 		}
 	}

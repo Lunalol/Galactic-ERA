@@ -18,11 +18,10 @@ class Ships extends APP_GameClass
 	{
 		return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE color = '$color' AND id = $id");
 	}
-	static function getHomeStar(string $color = null): array
+	static function getHomeStar(string $color = null)
 	{
-		$sql = "SELECT id,location FROM ships WHERE fleet = 'homeStar'";
-		if (!is_null($color)) $sql .= " AND color ='$color'";
-		return self::getCollectionFromDB($sql, true);
+		if (is_null($color)) return self::getCollectionFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
+		return self::getUniqueValueFromDB("SELECT location FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
 	}
 	static function isShip(string $color, int $id): bool
 	{
@@ -37,7 +36,7 @@ class Ships extends APP_GameClass
 		$sql = "SELECT id FROM ships WHERE location = '$location'";
 		if (!is_null($color)) $sql .= " AND color ='$color'";
 		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
-		return self::getObjectListFromDB($sql, true);
+		return self::getObjectListFromDB($sql . " ORDER BY color,fleet", true);
 	}
 	static function getAll(string $color = null, string $fleet = null): array
 	{
@@ -167,38 +166,44 @@ class Ships extends APP_GameClass
 		}
 		return array_keys($distances, $max);
 	}
-	static function CV(string $color, string $location): int
+	static function CV(string $color, string $location): array
 	{
 		$military = Factions::TECHNOLOGIES['Military'][Factions::getTechnology($color, 'Military')];
 //
-		$CV = 0;
+		$result = ['total' => 0, 'fleets' => [], 'ships' => ['CV' => 0, 'ships' => 0]];
 		foreach (self::getAtLocation($location, $color) as $shipID)
 		{
 			$ship = self::get($color, $shipID);
 			switch ($ship['fleet'])
 			{
+//
 				case 'ship':
-					$CV += $military;
+//
+					$CV = $military;
+//
+					$result['ships']['ships']++;
+					$result['ships']['CV'] += $CV;
+					$result['total'] += $CV;
 					break;
+//
 				case 'fleet':
-					$CV += $military * self::getStatus($shipID, 'ships');
+//
+					$CV = $military * self::getStatus($shipID, 'ships');
 //
 // (A)ssault: Whenever this fleet is involved in combat, add 1 CV per ship in this fleet
 //
-					if (self::getStatus($shipID, 'fleet') === 'A') $CV += self::getStatus($shipID, 'ships');
+					if (self::getStatus($shipID, 'fleet') === 'A') $CV += 1 * self::getStatus($shipID, 'ships');
 //
 // (C)ounterassault: Add 2 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat
 //
-					if (self::getStatus($shipID, 'fleet') === 'C')
-					{
-						$CV += 2 * self::getStatus($shipID, 'ships');
-					}
+					if (self::getStatus($shipID, 'fleet') === 'C') $CV += 2 * self::getStatus($shipID, 'ships');
 //
-					break;
-				case 'homeStar':
+					$result['fleet'][Ships::getStatus($shipID, 'fleet')] = ['CV' => $CV, 'ships' => Ships::getStatus($shipID, 'ships')];
+					$result['total'] += $CV;
 					break;
 			}
 		}
-		return $CV;
+//
+		return $result;
 	}
 }

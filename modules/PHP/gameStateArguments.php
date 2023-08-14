@@ -106,7 +106,6 @@ trait gameStateArguments
 	function argCombatChoice()
 	{
 		$color = Factions::getActive();
-		$player_id = Factions::getPlayer($color);
 //
 		$this->possible = Ships::getConflictLocation($color);
 		return ['combatChoice' => $this->possible, 'active' => $color];
@@ -115,26 +114,62 @@ trait gameStateArguments
 	{
 		$attacker = Factions::getActive();
 		$defender = Factions::getStatus($attacker, 'retreat');
-		$player_id = Factions::getPlayer($defender);
 
 		$this->possible = Ships::retreatLocations($defender, Factions::getStatus($attacker, 'combat'));
 		return ['retreat' => $this->possible, 'active' => $defender];
 	}
+	function argWinner()
+	{
+		$attacker = Factions::getActive();
+		$location = Factions::getStatus($attacker, 'combat');
+//
+		$defenders = Ships::getConflictFactions($attacker, $location);
+		$winner = Factions::getStatus($attacker, 'winner');
+		$totalVictory = Factions::getStatus($attacker, 'totalVictory');
+//
+		$this->possible = ['winner' => [], 'losers' => []];
+
+		foreach (array_merge([$attacker], $defenders) as $color)
+		{
+			$ships = 0;
+			foreach (Ships::getAtLocation($location, $color) as $shipID)
+			{
+				$ship = Ships::get($color, $shipID);
+				switch ($ship['fleet'])
+				{
+					case 'ship':
+						$ships++;
+						break;
+					case 'fleet':
+						$this->possible[$color === $winner ? 'winner' : 'losers'][$color][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
+						break;
+				}
+				if ($ship > 0) $this->possible[$color === $winner ? 'winner' : 'losers'][$color]['ships'] = $ships;
+			}
+		}
+//
+		return ['winner' => $this->possible['winner'], 'losers' => $this->possible['losers'], 'totalVictory' => $totalVictory, 'active' => $winner];
+	}
 	function argSelectCounters()
 	{
-		$private = [];
+		$this->possible = [];
 		foreach (Factions::list() as $color)
 		{
 			$player_id = Factions::getPlayer($color);
 			if ($player_id > 0)
 			{
-				$private[$player_id]['color'] = $color;
-				$private[$player_id]['counters'] = Factions::getStatus($color, 'counters');
-				$private[$player_id]['N'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+				$this->possible[$player_id]['color'] = $color;
+				$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'counters');
+				$this->possible[$player_id]['N'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+//
+				$homeStar = Ships::getHomeStar($color);
+//
+				$this->possible[$player_id]['additional'] = 0;
+				foreach (Counters::getPopulation($color) as $location => $population) if ($population >= 5 && $location !== $homeStar) $this->possible[$player_id]['additional']++;
 			}
 		}
 //
-		return ['_private' => $private];
+		return ['_private' => $this->possible];
 	}
 	function argResolveGrowthActions()
 	{

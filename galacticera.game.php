@@ -94,7 +94,10 @@ class GalacticEra extends Table
 			{
 				foreach (Counters::listRevealed($color, 'star') as $counter) $result['factions'][$color]['revealed']['stars'][$counter] = Counters::getStatus($counter, 'back');
 				foreach (Counters::listRevealed($color, 'relic') as $counter) $result['factions'][$color]['revealed']['relics'][$counter] = Counters::getStatus($counter, 'back');
-				foreach (Counters::listRevealed($color, 'fleet') as $fleet) $result['factions'][$color]['revealed']['fleets'][$fleet] = Ships::getStatus($fleet, 'fleet');
+				foreach (Counters::listRevealed($color, 'fleet') as $fleet) $result['factions'][$color]['revealed']['fleets'][$fleet] = [
+						'fleet' => Ships::getStatus($fleet, 'fleet'),
+						'ships' => Ships::getStatus($fleet, 'ships')
+					];
 			}
 //
 			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][] = ($player_id === Factions::getPlayer($color)) ? $this->DOMINATIONCARDS[$domination['type']] : 'back';

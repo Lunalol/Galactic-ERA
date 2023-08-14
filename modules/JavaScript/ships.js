@@ -14,9 +14,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		place: function (ship)
 		{
-//			console.info('placeShip', ship);
-//
-			if (ship.location === 'stock') return;
+			console.info('placeShip', ship);
 //
 			switch (ship.fleet)
 			{
@@ -50,15 +48,24 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				case 'D':
 				case 'E':
 					{
-						node = dojo.place(this.bgagame.format_block('ERAship', {id: ship.id, color: ship.color, location: ship.location}), 'ERAboard');
-						dojo.setAttr(node, 'fleet', '?');
+						if (ship.location === 'stock')
+						{
+							const container = `ERAboardFleets-${ship.color}`;
+							const fleetNode = dojo.place(this.bgagame.format_block('ERAship', {id: ship.id, color: ship.color, ship: 0, location: 'stock'}), container);
+							dojo.setAttr(fleetNode, 'fleet', '?');
+						}
+						else
+						{
+							node = dojo.place(this.bgagame.format_block('ERAship', {id: ship.id, color: ship.color, location: ship.location}), 'ERAboard');
+							dojo.setAttr(node, 'fleet', '?');
 //
-						dojo.style(node, 'position', 'absolute');
-						dojo.style(node, 'left', (this.board.hexagons[ship.location].x - node.clientWidth / 2) + 'px');
-						dojo.style(node, 'top', (this.board.hexagons[ship.location].y - node.clientHeight / 2) + 'px');
-						dojo.setAttr(node, 'fleet', ship.fleet);
+							dojo.style(node, 'position', 'absolute');
+							dojo.style(node, 'left', (this.board.hexagons[ship.location].x - node.clientWidth / 2) + 'px');
+							dojo.style(node, 'top', (this.board.hexagons[ship.location].y - node.clientHeight / 2) + 'px');
+							dojo.setAttr(node, 'fleet', ship.fleet);
 //
-						dojo.connect(node, 'click', this, 'click');
+							dojo.connect(node, 'click', this, 'click');
+						}
 					}
 					break;
 //
@@ -69,8 +76,14 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		reveal: function (fleet)
 		{
+			console.info('reveal', fleet);
+//
 			let node = $(`ERAship-${fleet.id}`);
-			if (node) dojo.setAttr(node, 'fleet', fleet.fleet);
+			if (node)
+			{
+				dojo.setAttr(node, 'fleet', fleet.fleet);
+				dojo.setAttr(node, 'title', fleet.ships);
+			}
 		},
 		move: function (ships, to)
 		{
@@ -86,16 +99,17 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				this.arrange(from);
 			}
 			this.arrange(to);
-//
-		},
+		}
+		,
 		remove: function (ship)
 		{
 			console.info('removeShip', ship);
 //
 			dojo.query(`#ERAboard .ERAship[ship=${ship.id}]`).remove();
-			this.arrange(ship.location);
 //
-		},
+			if (/^\d:([+-]\d){3}$/.test(ship.location)) this.arrange(ship.location);
+		}
+		,
 		arrange: function (location)
 		{
 			let index = fleet = 0;
@@ -115,7 +129,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				}
 				index++;
 			}
-		},
+		}
+		,
 		showPath: function ()
 		{
 			dojo.destroy('ERApath');
@@ -181,7 +196,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			svg.setAttribute("height", 10000);
 			svg.id = 'ERApath';
 			this.board.board.appendChild(svg);
-		},
+		}
+		,
 		click: function (event)
 		{
 			if (this.bgagame.board.dragging === true) return;
