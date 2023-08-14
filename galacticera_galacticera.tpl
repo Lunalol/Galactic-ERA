@@ -28,6 +28,7 @@
 	var ERAhomeStar = "<div class='ERAhomeStar ERAhomeStar-${color}' id='ERAhomeStar-${id}' homeStar=${id} color='${color}' location='${location}'></div>";
 	var ERAship = "<div class='ERAship ERAship-${color}' id='ERAship-${id}' ship=${id} color='${color}' location='${location}'></div>";
 	var ERAfleet = "<div class='ERAfleet' id='ERAfleet-${fleet}' fleet='${fleet}' ships='${ships}' location='${location}' style='display:flex;flex-direction:column;align-items:center;'></div>";
+	var ERAfleetH = "<div class='ERAfleet' id='ERAfleet-${fleet}' fleet='${fleet}' ships='${ships}'' style='display:flex;flex-direction:row;align-items:center;'></div>";
 	var ERApanel = "\
 <div id='ERApanel-${color}' class='ERApanel ERApanel-${color}'>\n\
 	<div style='display:flex;flex-direction:row;justify-content:bottom;'>\n\

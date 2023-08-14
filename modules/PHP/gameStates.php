@@ -636,6 +636,12 @@ trait gameStates
 		$defenders = Ships::getConflictFactions($attacker, $location);
 		if (!$defenders) return $this->gamestate->nextState('endCombat');
 //
+		$winner = Factions::getStatus($attacker, 'winner');
+		if (in_array($winner, $defenders))
+		{
+			die;
+		}
+//
 		foreach ($defenders as $defender)
 		{
 			if (Factions::getStatus($defender, 'retreat')) continue;
@@ -710,7 +716,7 @@ trait gameStates
 			self::notifyAllPlayers('msg', '<div style="background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
 					'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
-					'args' => ['CV' => $attackerCV['ships']['CV'], 'ships' => $attackerCV['ships']['ships']]
+					'args' => ['CV' => $attackerCVs['ships']['CV'], 'ships' => $attackerCVs['ships']['ships']]
 				]
 			]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -722,6 +728,8 @@ trait gameStates
 		$defenderCV = 0;
 		foreach ($defenders as $defender)
 		{
+			Factions::setStatus($defender, 'retreat');
+//
 			$defenderCVs = Ships::CV($defender, $location);
 			foreach ($defenderCVs['fleet'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 			{
@@ -793,7 +801,7 @@ trait gameStates
 		}
 //
 		$this->gamestate->changeActivePlayer(Factions::getPlayer(Factions::getStatus($attacker, 'winner')));
-		return $this->gamestate->nextState('winner');
+		return $this->gamestate->nextState('battleLoss');
 	}
 	function stAdditionalGrowthActions()
 	{

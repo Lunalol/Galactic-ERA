@@ -59,7 +59,7 @@ class Ships extends APP_GameClass
 				. " JOIN ships AS defender USING (location)"
 				. " JOIN factions ON attacker.color = factions.color"
 				. " WHERE location = '$location' AND attacker.color = '$color' AND attacker.color <> defender.color"
-				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ", true);
+				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ORDER by `order`", true);
 	}
 	static function getAllDatas($player_id): array
 	{

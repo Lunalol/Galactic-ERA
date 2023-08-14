@@ -177,6 +177,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function battleLoss()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$ships = self::getArg("ships", AT_json, true);
+		$this->game->acBattleLoss($color, $ships);
+//
+		self::ajaxResponse("");
+	}
 	public function selectCounters()
 	{
 		self::setAjaxMode();

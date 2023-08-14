@@ -116,9 +116,9 @@ trait gameStateArguments
 		$defender = Factions::getStatus($attacker, 'retreat');
 
 		$this->possible = Ships::retreatLocations($defender, Factions::getStatus($attacker, 'combat'));
-		return ['retreat' => $this->possible, 'active' => $defender];
+		return ['retreat' => $this->possible, 'active' => $defender, 'winner' => Factions::getStatus($attacker, 'winner')];
 	}
-	function argWinner()
+	function argBattleLoss()
 	{
 		$attacker = Factions::getActive();
 		$location = Factions::getStatus($attacker, 'combat');

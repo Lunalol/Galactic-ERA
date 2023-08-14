@@ -461,6 +461,7 @@ trait gameStateActions
 		}
 //
 		Factions::setStatus($color, 'combat', $location);
+		Factions::setStatus($color, 'winner');
 		foreach (Ships::getConflictFactions($color, $location) as $defender) Factions::getStatus($defender, 'retreat');
 //
 		$this->gamestate->nextState('engage');
@@ -478,6 +479,8 @@ trait gameStateActions
 //
 		if (!$location)
 		{
+			if (Factions::getStatus(Factions::getActive(), 'winner')) throw new BgaVisibleSystemException('Retreat is mandatory');
+//
 			Factions::setStatus($color, 'retreat', 'no');
 			return $this->gamestate->nextState('continue');
 		}
@@ -498,6 +501,43 @@ trait gameStateActions
 		foreach ($ships as $ship) Ships::setLocation($ship, $location);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $location, 'old' => $combatLocation]);
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->gamestate->nextState('continue');
+	}
+	function acBattleLoss(string $color, array $ships)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('battleLoss');
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		foreach ($ships as $side => $toDestroy)
+		{
+			foreach ($toDestroy as [$faction, $Fleet])
+			{
+				$fleetID = Ships::getFleet($faction, $Fleet);
+				$fleet = Ships::get($faction, $fleetID);
+				$location = $fleet['location'];
+//
+				if (intval(Ships::getStatus($fleetID, 'ships')) === 0) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet");
+//
+				Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) - 1);
+				if (intval(Ships::getStatus($fleetID, 'ships')) === 0)
+				{
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('removeShip', clienttranslate('Fleet ${FLEET} is removed ${GPS}'), ['GPS' => $location, 'FLEET' => $Fleet, 'ship' => $fleet]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$fleet['location'] = 'stock';
+					Ships::setLocation($fleetID, $fleet['location']);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->notifyAllPlayers('placeShip', '', ['ship' => $fleet]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+				$this->notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
+			}
+		}
+//* -------------------------------------------------------------------------------------------------------- */
+		$this->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('continue');
 	}

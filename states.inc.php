@@ -160,25 +160,31 @@ $machinestates = [
 		'name' => 'combat',
 		'type' => 'game',
 		'action' => 'stCombat',
-		'transitions' => ['winner' => 255, 'endCombat' => 230]
+		'transitions' => ['battleLoss' => 255, 'endCombat' => 230]
 	],
 	255 => [
-		'name' => 'winner',
+		'name' => 'battleLoss',
 		'description' => clienttranslate('${actplayer} must choose ships to destroy'),
 		'descriptionmyturn' => clienttranslate('${you} must choose ships to destroy'),
 		'type' => 'activeplayer',
-		'args' => 'argWinner',
-		'possibleactions' => ['done'],
+		'args' => 'argBattleLoss',
+		'possibleactions' => ['battleLoss'],
 		'transitions' => ['continue' => 260]
 	],
 	260 => [
+		'name' => 'retreat',
+		'type' => 'game',
+		'action' => 'stRetreat',
+		'transitions' => ['continue' => 260, 'retreat' => 265, 'endCombat' => 230]
+	],
+	265 => [
 		'name' => 'retreat',
 		'description' => clienttranslate('${actplayer} must choose a retreat location'),
 		'descriptionmyturn' => clienttranslate('${you} must choose a retreat location'),
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
 		'possibleactions' => ['retreat', 'combat'],
-		'transitions' => ['continue' => 240]
+		'transitions' => ['continue' => 260]
 	],
 	300 => [
 		'name' => 'growthPhase',

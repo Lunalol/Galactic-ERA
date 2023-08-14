@@ -771,45 +771,65 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'retreat':
 //
-						this.addActionButton('ERAnoRetreat', _('No retreat'), () => this.action('retreat', {color: this.color, location: '""'}));
+						if (!args.winner) this.addActionButton('ERAnoRetreat', _('No retreat'), () => this.action('retreat', {color: this.color, location: '""'}));
 						break;
 //
-					case 'winner':
+					case 'battleLoss':
 //
-						dojo.empty('ERAfleets');
-						dojo.removeClass('ERAfleets', 'ERAhide');
+						this.addActionButton('ERAdone', _('Done'), () => {
+							let ships = {winner: [], losers: []};
+							dojo.query('.ERAship:not([fleet]).ERAselected', 'ERAwinner').forEach((node) => ships.winner.push([node.getAttribute('color'), node.getAttribute('ship')]));
+							dojo.query('.ERAship:not([fleet]).ERAselected', 'ERAlosers').forEach((node) => ships.losers.push([node.getAttribute('color'), node.getAttribute('ship')]));
+							this.action('battleLoss', {color: this.color, ships: JSON.stringify(ships)});
+						});
+//
+						if (args.totalVictory) dojo.place(`<span style='font-size:small;'><BR>${_('No ships are destroyed from the winning side')}</span>`, 'generalactions');
+						else dojo.place(`<span style='font-size:small;'><BR><span id='ERAtoDestroy'></span></span>`, 'generalactions');
+//
+						dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
+//
 						for (let side of ['winner', 'losers'])
 						{
+							const sideNode = dojo.place(`<div id='ERA${side}' style='flex:1 1 50%;display:flex;flex-direction:column;background:#000000C0;padding:5%;'></div>`, 'ERAchoice');
+							dojo.place(`<div style='margin:0% 0% 5% 5%;color:white;'><span style='font-weight:bold;'>${{winner: _('Winner side'), losers: _('Loser side')}[side]}&nbsp:&nbsp</span><span id='ERA${side}Lose'></span>&nbsp${_('ship(s) destroyed')}</div>`, sideNode);
+//
 							for (let color in args[side])
 							{
 								for (let [fleet, ships] of Object.entries(args[side][color]))
 								{
-									const _fleetNode = dojo.place(this.format_block('ERAfleet', {fleet: fleet, location: '', ships: ships}), 'ERAfleets');
+									const fleetNode = dojo.place(this.format_block('ERAfleetH', {fleet: fleet, ships: ships}), sideNode);
 //
 									if (fleet !== 'ships')
 									{
-										const fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: color, ship: ships, location: ''}), _fleetNode);
-										dojo.setAttr(fleetNode, 'fleet', fleet);
-										dojo.addClass(fleetNode, 'ERAselectable');
-									}
-//
-									const shipsNode = dojo.place(`<div style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
-									for (let index = 0; index < ships; index++)
-									{
-										let node = dojo.place(this.format_block('ERAship', {id: fleet, color: color, location: ''}), shipsNode);
-										dojo.style(node, 'transform', `scale(20%) translateY(${index * node.clientHeight / 4}px)`);
-										dojo.style(node, 'transform-origin', 'left top');
-										dojo.style(node, 'position', 'absolute');
+										const node = dojo.place(this.format_block('ERAship', {id: fleet, color: color, ship: ships, location: ''}), fleetNode);
+										dojo.setAttr(node, 'fleet', fleet);
+										dojo.addClass(node, 'ERAselectable');
 										dojo.connect(node, 'click', (event) => {
 											dojo.stopEvent(event);
-											if (event.detail === 1) dojo.toggleClass(node, 'ERAselected');
-											if (event.detail === 2) dojo.query(`#ERAfleets>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(node, 'ERAselected'));
+											dojo.toggleClass(event.currentTarget, 'ERAselected');
+											dojo.query(`#ERA${side}>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(event.currentTarget, 'ERAselected'));
+											this.battleLoss(args.totalVictory);
+										});
+										dojo.addClass(node, 'ERAselectable');
+									}
+//
+									for (let index = 0; index < ships; index++)
+									{
+										const shipNode = dojo.place(`<div style='width:50px;height:50px;transform:scale(20%);transform-origin:left top;margin-right:-25px'></div>`, fleetNode);
+										const node = dojo.place(this.format_block('ERAship', {id: fleet, color: color, location: ''}), shipNode);
+										dojo.connect(node, 'click', (event) => {
+											dojo.stopEvent(event);
+											if (event.detail === 1) dojo.toggleClass(event.currentTarget, 'ERAselected');
+											if (event.detail === 2)
+												dojo.query(`#ERA${side}>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(event.currentTarget, 'ERAselected'));
+											this.battleLoss(args.totalVictory);
 										});
 										dojo.addClass(node, 'ERAselectable');
 									}
 								}
 							}
 						}
+						this.battleLoss(args.totalVictory);
 						break;
 //
 					case 'selectCounters':
@@ -1078,6 +1098,18 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				else if (dojo.query(`.ERAcounter-populationDisk.ERAprovisionalBonus`).length < this.gamedatas.gamestate.args._private.bonusPopulation)
 					dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisk', location: location}), 'ERAprovisionalBonus');
 			}
+		},
+		battleLoss: function (totalVictory)
+		{
+			const winnerLose = dojo.query('.ERAship:not([fleet]).ERAselected', 'ERAwinner').length;
+			const losersLose = dojo.query('.ERAship:not([fleet]).ERAselected', 'ERAlosers').length;
+			const toDestroy = totalVictory ? 0 : Math.ceil(losersLose / 2);
+//
+			$('ERAwinnerLose').innerHTML = winnerLose;
+			$('ERAlosersLose').innerHTML = losersLose;
+			if (!totalVictory) $('ERAtoDestroy').innerHTML = dojo.string.substitute(_('You must destroy ${N} of your ships'), {N: toDestroy});
+//
+			dojo.toggleClass('ERAdone', 'disabled', winnerLose !== toDestroy);
 		},
 		onCenter: function (event)
 		{
