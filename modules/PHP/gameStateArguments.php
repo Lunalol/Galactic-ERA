@@ -72,6 +72,29 @@ trait gameStateArguments
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
+	function argAdvancedFleetTactic()
+	{
+		$this->possible = [];
+		foreach (Factions::list() as $color)
+		{
+			$player_id = Factions::getPlayer($color);
+			if ($player_id > 0)
+			{
+				$this->possible[$player_id]['color'] = $color;
+				$this->possible[$player_id]['fleets'] = array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0]);
+				foreach (Ships::getAll($color, 'fleet') as $ship)
+				{
+					$fleet = Ships::getStatus($ship['id'], 'fleet');
+//
+					$this->possible[$player_id]['fleets'][$fleet] = $ship;
+					$this->possible[$player_id]['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
+				}
+				$this->possible[$player_id]['advancedFleetTactic'] = Factions::getAdvancedFleetTactics($color);
+			}
+		}
+//
+		return ['_private' => $this->possible];
+	}
 	function argMovement()
 	{
 		$color = Factions::getActive();
@@ -129,22 +152,38 @@ trait gameStateArguments
 //
 		$this->possible = ['winner' => [], 'losers' => []];
 
-		foreach (array_merge([$attacker], $defenders) as $color)
+		$ships = 0;
+		foreach (Ships::getAtLocation($location, $attacker) as $shipID)
+		{
+			$ship = Ships::get($attacker, $shipID);
+			switch ($ship['fleet'])
+			{
+				case 'ship':
+					$ships++;
+					break;
+				case 'fleet':
+					$this->possible[$attacker === $winner ? 'winner' : 'losers'][$attacker][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
+					break;
+			}
+			if ($ship > 0) $this->possible[($attacker === $winner) ? 'winner' : 'losers'][$attacker]['ships'] = $ships;
+		}
+//
+		foreach ($defenders as $defender)
 		{
 			$ships = 0;
-			foreach (Ships::getAtLocation($location, $color) as $shipID)
+			foreach (Ships::getAtLocation($location, $defender) as $shipID)
 			{
-				$ship = Ships::get($color, $shipID);
+				$ship = Ships::get($defender, $shipID);
 				switch ($ship['fleet'])
 				{
 					case 'ship':
 						$ships++;
 						break;
 					case 'fleet':
-						$this->possible[$color === $winner ? 'winner' : 'losers'][$color][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
+						$this->possible[$attacker !== $winner ? 'winner' : 'losers'][$defender][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
 						break;
 				}
-				if ($ship > 0) $this->possible[$color === $winner ? 'winner' : 'losers'][$color]['ships'] = $ships;
+				if ($ship > 0) $this->possible[$attacker !== $winner ? 'winner' : 'losers'][$defender]['ships'] = $ships;
 			}
 		}
 //
@@ -164,6 +203,7 @@ trait gameStateArguments
 //
 				$homeStar = Ships::getHomeStar($color);
 //
+				$this->possible[$player_id]['additionalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
 				$this->possible[$player_id]['additional'] = 0;
 				foreach (Counters::getPopulation($color) as $location => $population) if ($population >= 5 && $location !== $homeStar) $this->possible[$player_id]['additional']++;
 			}
@@ -188,15 +228,17 @@ trait gameStateArguments
 				{
 					switch ($counter)
 					{
-						case 'reseach':
+						case 'research':
 							break;
 						case 'gainStar':
 							{
 								$private[$player_id]['gainStar'] = [];
-								foreach (Ships::getAll($color) as $ship)
+								foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location)
 								{
-									$star = Counters::getAtLocation($ship['location'], 'star');
-									if ($star) $private[$player_id]['gainStar'][$ship['location']] = $star;
+									$star = Counters::getAtLocation($location, 'star');
+									if ($star) $private[$player_id]['gainStar'][$location] = $star;
+									$population = Counters::getAtLocation($location, 'populationDisk');
+									if ($population) $private[$player_id]['gainStar'][$location] = $population;
 								}
 							}
 							break;

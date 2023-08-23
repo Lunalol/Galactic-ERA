@@ -60,13 +60,15 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			if ('domination' in faction)
 			{
 				dojo.empty(`ERAdominationCards-${faction.color}`);
-				for (let domination of faction.domination)
+				for (let index in faction.domination)
 				{
-					let node = dojo.place(this.bgagame.format_block('ERAdominationCard', {domination: domination}), `ERAdominationCards-${faction.color}`);
+					const domination = faction.domination[index];
+					const node = dojo.place(this.bgagame.format_block('ERAdominationCard', {index: index, domination: domination, owner: faction.color}), `ERAdominationCards-${faction.color}`);
 					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
 					dojo.connect(node, 'click', (event) => {
 						dojo.stopEvent(event);
 						if (dojo.getAttr(event.currentTarget, 'domination') !== 'back') this.bgagame.focus(event.currentTarget);
+						else if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing') this.bgagame.remoteViewing('dominationCard', event.currentTarget);
 					});
 					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
 				}
@@ -74,7 +76,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			if ('DP' in faction)
 			{
-				let player_id = +this.bgagame.gamedatas.factions[faction.color].player_id;
+				const player_id = +this.bgagame.gamedatas.factions[faction.color].player_id;
 				if (player_id === -2)
 				{
 					dojo.query('.ERAcounter-population', 'ERAoffboard').remove();
@@ -95,7 +97,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					if (player_id in this.bgagame.scoreCtrl) this.bgagame.scoreCtrl[player_id].setValue(faction.DP);
 //
 					dojo.query(`.ERAcounter-cylinder.ERAcounter-${faction.color}`, 'ERA-DP').remove();
-					let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
+					const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
 					dojo.style(node, 'position', 'absolute');
 					dojo.style(node, 'left', (faction.DP * 49) + 'px');
 //
@@ -153,6 +155,22 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'transform', 'scale(75%)');
 					}
 				}
+				if ('advancedFleetTactic' in faction)
+				{
+					const advancedFleetTactics = JSON.parse(faction.advancedFleetTactic);
+					for (fleet in advancedFleetTactics)
+					{
+						const tactic = advancedFleetTactics[fleet];
+						if (tactic)
+						{
+							const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: '2x', color: faction.color, type: 'tactic', location: fleet}), nodeTechnologiesTrack);
+							dojo.setAttr(node, 'tactic', tactic);
+							dojo.style(node, 'position', 'absolute');
+							dojo.style(node, 'left', 798 + 'px');
+							dojo.style(node, 'top', {A: 18, B: 122, C: 225, D: 329, E: 433}[fleet] + 'px');
+						}
+					}
+				}
 			}
 			dojo.query(`#ERAtechnologies-${faction.color} .ERAtechnology`).forEach((node) => {
 				const technology = dojo.getAttr(node, 'technology');
@@ -177,11 +195,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 // Panels order
 //
-			for (let node of dojo.query('.ERAorder').sort((a, b) => dojo.getAttr(a, 'order') - dojo.getAttr(b, 'order')))
-			{
-				const faction = dojo.getAttr(node, 'faction');
-				$('player_boards').insertBefore($(`overall_player_board_${this.bgagame.gamedatas.factions[faction].player_id}`), null);
-			}
+//			for (let node of dojo.query('.ERAorder', 'player_boards').sort((a, b) => dojo.getAttr(a, 'order') - dojo.getAttr(b, 'order')))
+//			{
+//				const faction = dojo.getAttr(node, 'faction');
+//				$('player_boards').insertBefore($(`overall_player_board_${this.bgagame.gamedatas.factions[faction].player_id}`), null);
+//			}
 //
 			const node = $(`ERApanel-${faction.color}`);
 			if (node)

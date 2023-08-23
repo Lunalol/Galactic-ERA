@@ -13,6 +13,10 @@ class Automas extends APP_GameClass
 	{
 		switch (Factions::getPlayer($color))
 		{
+			case AUTOMA:
+				return [
+					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${NAME}</span>',
+					'args' => ['NAME' => clienttranslate('Automa'), 'i18n' => ['NAME']]];
 			case FARMERS:
 				return [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${NAME}</span>',
@@ -58,13 +62,30 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
+	function advancedFleetTactic(string $color)
+	{
+		switch (Factions::getPlayer($color))
+		{
+			case FARMERS:
+				return null;
+			case AUTOMA:
+			case SLAVERS:
+				return array_rand(array_filter(Factions::getAdvancedFleetTactics($color), fn($tactic) => is_null($tactic)));
+			default:
+				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
+		}
+	}
 	function movement(object $bgagame, string $color, int $dice): void
 	{
 		foreach (Ships::getAll($color) as $ship)
 		{
 			$MP = Factions::TECHNOLOGIES['Propulsion'][Factions::getTechnology($color, 'Propulsion')];
 			if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += 2;
-			if (Ships::getStatus($ship['id'], 'fleet') === 'D') $MP += 1;
+			if (Ships::getStatus($ship['id'], 'fleet') === 'D')
+			{
+				$MP += 1;
+				if (Factions::getAdvancedFleetTactic($color, 'D') === '2x') $MP += 1;
+			}
 			Ships::setMP($ship['id'], $MP);
 		}
 //
@@ -114,7 +135,7 @@ class Automas extends APP_GameClass
 							{
 								foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon)
 								{
-									$star = $sector . ':' . $hexagon;
+									$star = "$sector:$hexagon";
 									if ($location !== $star) $locations[] = $star;
 								}
 							}
@@ -172,7 +193,7 @@ class Automas extends APP_GameClass
 // If there is no star within range then it moves as close as possible to the nearest one
 //
 							$locations = [];
-							foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = $sector . ':' . $hexagon;
+							foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = "$sector:$hexagon";
 //
 							$path = self::paths($location, $ship['MP'], $locations, true);
 							if (!$path) $path = self::paths($location, $ship['MP'], $locations);
@@ -430,7 +451,7 @@ class Automas extends APP_GameClass
 // If there are none, then they move as close as possible to the nearest one.
 //
 								$locations = [];
-								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = $sector . ':' . $hexagon;
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) $locations[] = "$sector:$hexagon";
 								$locations = array_diff($locations, array_keys(Counters::getPopulation($color)));
 //
 								$MPs = [];
@@ -469,7 +490,7 @@ class Automas extends APP_GameClass
 // If there are none then they move their full range in a random direction
 //
 								$locations = [];
-								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation($sector . ':' . $hexagon, 'populationDisk')) $locations[] = $sector . ':' . $hexagon;
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisk')) $locations[] = "$sector:$hexagon";
 //
 								$MPs = [];
 								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
@@ -517,7 +538,7 @@ class Automas extends APP_GameClass
 // If there are none, then they do not move
 //
 								$locations = [];
-								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation($sector . ':' . $hexagon, 'populationDisk')) $locations[] = $sector . ':' . $hexagon;
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisk')) $locations[] = "$sector:$hexagon";
 //
 								$MPs = [];
 								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
@@ -578,6 +599,10 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
+	function battleLoss(string $attacker, array $defender, bool $totalVictory)
+	{
+		return [];
+	}
 	function growthActions(string $color, int $difficulty, int $dice): array
 	{
 		$wormholes = self::WORMHOLES;
@@ -586,6 +611,8 @@ class Automas extends APP_GameClass
 		$counters = [];
 		switch (Factions::getPlayer($color))
 		{
+			case AUTOMA:
+				break;
 			case FARMERS:
 				if (!Ships::getAll($color)) $dice = 6;
 				switch ($dice)
@@ -621,55 +648,55 @@ class Automas extends APP_GameClass
 				switch ($dice)
 				{
 					case 1:
-						// Research Military
+// Research Military
 						$counters[] = 'research';
 						$counters[] = 'Military';
-						// Spawn ships at all 3 wormholes
+// Spawn ships at all 3 wormholes
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), $wormholes)));
 						break;
 					case 2:
-						// Change turn order: down
+// Change turn order: down
 						$counters[] = 'changeTurnOrderDown';
-						// Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
+// Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'player');
-						// Spawn ships at 2 wormholes
+// Spawn ships at 2 wormholes
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 2))));
 						break;
 					case 3:
-						// Research Propulsion
+// Research Propulsion
 						$counters[] = 'research';
 						$counters[] = 'Propulsion';
-						// Spawn ships at 1 wormhole
+// Spawn ships at 1 wormhole
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 1))));
 						break;
 					case 4:
-						// Research Robotics
+// Research Robotics
 						$counters[] = 'research';
 						$counters[] = 'Robotics';
-						// Spawn ships at the center sector wormhole
+// Spawn ships at the center sector wormhole
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
 						break;
 					case 5:
-						// Change turn order: down
+// Change turn order: down
 						$counters[] = 'changeTurnOrderDown';
-						// Gain a star(**)
+// Gain a star(**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'any');
-						// Grow population (if they cannot grow any population, then they spawn ships at the center sector wormhole instead)
+// Grow population (if they cannot grow any population, then they spawn ships at the center sector wormhole instead)
 //						$counters[] = 'growPopulation';
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
 						break;
 					case 6:
-						// Gain a neutral star (otherwise one of yours)(**)
+// Gain a neutral star (otherwise one of yours)(**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'neutral');
-						// Research a randomly selected technology (determine which one immediately and use a technology counter to mark as reminder)
+// Research a randomly selected technology (determine which one immediately and use a technology counter to mark as reminder)
 						$technologies = Factions::TECHNOLOGIES;
 						if (Factions::getTechnology($color, 'Spirituality') >= 4) unset($technologies['Spirituality']);
 						foreach (array_keys($technologies) as $technology) if (Factions::getTechnology($color, $technology) === 6) unset($technologies[$technology]);
@@ -699,7 +726,7 @@ class Automas extends APP_GameClass
 				switch (Factions::getStatus($color, 'gainStar'))
 				{
 					case 'player':
-						// Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
+// Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
 						$locations = [];
 						foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						if ($locations)
@@ -739,7 +766,7 @@ class Automas extends APP_GameClass
 						}
 						break;
 					case 'any':
-						// Gain a star(**)
+// Gain a star(**)
 						$locations = [];
 						foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
@@ -759,7 +786,7 @@ class Automas extends APP_GameClass
 						$locations = array_slice($locations, 0, 1);
 						break;
 					case 'neutral':
-						// Gain a neutral star (otherwise one of yours)(**)
+// Gain a neutral star (otherwise one of yours)(**)
 						$locations = [];
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						if (!$locations) foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location)[0]) $locations[] = $location;
@@ -825,6 +852,8 @@ class Automas extends APP_GameClass
 	{
 		switch (Factions::getPlayer($color))
 		{
+			case AUTOMA:
+				return 0;
 			case FARMERS:
 				switch ($alignment)
 				{

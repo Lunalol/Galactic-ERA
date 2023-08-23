@@ -31,6 +31,7 @@ define('ROUND', 10);
 //
 // Automas (2)
 //
+define('AUTOMA', 0);
 define('FARMERS', -1);
 define('SLAVERS', -2);
 //
@@ -69,3 +70,11 @@ define('MILITARY', 10);
 define('SPATIAL', 11);
 define('SPECIALSCIENTIFIC', 12);
 //
+// Gain star
+//
+define('COLONIZE', 1);
+define('SUBJUGATE', 2);
+define('LIBERATE', 3);
+define('CONQUERVS', 4);
+define('ALLY', 5);
+define('CONQUER', 6);

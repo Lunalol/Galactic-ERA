@@ -30,6 +30,10 @@ class Counters extends APP_GameClass
 	{
 		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM counters WHERE id = $id");
 	}
+	static function getAdvancedFleetTactics(string $color): array
+	{
+		return self::getCollectionFromDB("SELECT location, id FROM counters WHERE color = '$color' AND type IN ('2x', '+3 DP')", true);
+	}
 	static function getPopulation(string $color): array
 	{
 		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
@@ -45,10 +49,10 @@ class Counters extends APP_GameClass
 		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
 		return self::DbGetLastId();
 	}
-	static function isRevealed(string $color, int $id, string $type = null)
+	static function isRevealed(int $id, string $type = null): array
 	{
-		if (is_null($type)) return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type IN ('star','relic') AND id = $id)"));
-		return boolval(self::getUniqueValueFromDB("SELECT EXISTS (SELECT * FROM revealed WHERE color = '$color' AND type = '$type' AND id = $id)"));
+		if (is_null($type)) return self::getObjectListFromDB("SELECT color FROM revealed WHERE type IN ('star','relic') AND id = $id", true);
+		return self::getObjectListFromDB("SELECT color FROM revealed WHERE type = '$type' AND id = $id", true);
 	}
 	static function listRevealed(string $color, string $type = null): array
 	{
@@ -59,7 +63,24 @@ class Counters extends APP_GameClass
 	{
 		$alignment = Factions::getAlignment($color);
 //
-		$ships = Ships::getAtLocation($location, $color);
+		$ships = 0;
+		foreach (Ships::getAtLocation($location, $color) as $ship)
+		{
+			if (Ships::isShip($color, $ship)) $ships++;
+			else
+			{
+				$fleet = Ships::getStatus($ship, 'fleet');
+				$ships += Ships::getStatus($ship, 'ships');
+//
+// (B)omb: For every 2 ships in this fleet increase the ship count by 1 for purposes of conquering or liberating a star
+//
+				if ($fleet === 'A')
+				{
+					if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $ships += Ships::getStatus($ship, 'ships');
+					else $ships += intval(0.5 * Ships::getStatus($ship, 'ships'));
+				}
+			}
+		}
 		if (!$ships) throw new BgaVisibleSystemException('No ships at location: ' . $location);
 //
 		$stars = self::getAtLocation($location, 'star');
@@ -72,6 +93,7 @@ class Counters extends APP_GameClass
 				case 'UNINHABITED':
 					$SHIPS = 1;
 					$population = 1;
+					$type = COLONIZE;
 					break;
 				case 'PRIMITIVE':
 					switch ($alignment)
@@ -79,10 +101,12 @@ class Counters extends APP_GameClass
 						case 'STO':
 							$SHIPS = INF;
 							$population = 0;
+							$type = 0;
 							break;
 						case 'STS':
 							$SHIPS = 1;
 							$population = 2;
+							$type = SUBJUGATE;
 							break;
 					}
 					break;
@@ -92,30 +116,38 @@ class Counters extends APP_GameClass
 						case 'STO':
 							$SHIPS = 1;
 							$population = 3;
+							$type = ALLY;
 							break;
 						case 'STS':
 							$SHIPS = 3 + 1;
 							$population = 1;
+							$type = CONQUER;
 							break;
 					}
 					break;
 			}
+			return [$ships >= $SHIPS ? $type : 0, $population];
 		}
-		else
+		$population = Counters::getAtLocation($location, 'populationDisk');
+		if ($population)
 		{
+//
 			switch ($alignment)
 			{
 				case 'STO': // Liberate
-					$SHIPS = 1 + sizeof(Counters::getAtLocation($location, 'populationDisk'));
-					$population = sizeof(Counters::getAtLocation($location, 'populationDisk'));
+					$SHIPS = 1 + sizeof($population);
+					$population = sizeof($population);
+					$type = LIBERATE;
 					break;
 				case 'STS': // Conquer
-					$SHIPS = 1 + sizeof(Counters::getAtLocation($location, 'populationDisk'));
+					$SHIPS = 1 + sizeof($population);
 					$population = 1;
+					$type = CONQUERVS;
 					break;
 			}
+			return [$ships >= $SHIPS ? $type : 0, $population];
 		}
 //
-		return [sizeof($ships) >= $SHIPS, $population];
+		return [0, 0, 0];
 	}
 }

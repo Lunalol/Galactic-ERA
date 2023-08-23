@@ -1,3 +1,10 @@
+@font-face {
+    font-family:'ERA';
+    src:url('img/fonts/Xolonium-Regular.otf') format('opentype');
+	size-adjust: 100%;
+    ascent-override:100%;
+}
+
 html {
     background-image:url('img/orion.jpg');
 }
@@ -6,6 +13,7 @@ div,img {
 	user-select: none;
 }
 #topbar, #page-title, .whiteblock, .roundedbox, .pageheader, .pagesection, .pagesection h2 {
+	font-family: 'ERA';
     background-image:none;
     background-color:rgba(255, 255, 255, 0.75);
 }
@@ -103,6 +111,14 @@ div,img {
     font-size: 10pt;
     font-weight: bold;
 }
+.ERA-removeViewing {
+    display: block;
+    padding: 5px;
+    border-radius: 5px;
+	color: white;
+    font-size: 10pt;
+    font-weight: bold;
+}
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="Gray Pawn"> */
 .ERApawn {
@@ -126,6 +142,10 @@ div,img {
 .ERAdominationCard {
 	max-width: 186px;
 	transition: transform CALC(var(--DELAY) * 0.5ms);
+}
+.ERAdominationCard.ERAselected {
+    border-radius: 6%;
+    box-shadow: 0px 0px 10px 10px red;
 }
 .ERAdominationCard.ERAfocus {
 	z-index: 1000;
@@ -361,6 +381,7 @@ div,img {
 	flex-direction: row;
 	justify-content: space-evenly;
 	pointer-events: none;
+	z-index: 500;
 }
 .ERAchoice .ERAstarPeople.ERAselected {
 	filter:brightness(2.0);
@@ -688,6 +709,7 @@ div,img {
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="Ships"> */
 .ERAship {
+	position: absolute;
 	background: url('img/3D.png');
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	width: 250px;
@@ -696,6 +718,9 @@ div,img {
 	clip-path: path('M 85.00,130.00 C 85.90,121.57 90.92,119.10 97.00,113.87 97.00,113.87 129.00,87.20 129.00,87.20 136.09,81.48 144.56,77.52 150.86,70.83 155.60,65.80 153.48,61.46 160.04,56.65 164.42,53.44 168.94,53.82 171.63,52.02 174.85,49.86 176.64,43.83 185.00,42.33 190.56,41.33 205.17,45.03 209.96,47.93 212.34,49.38 215.12,52.58 216.49,55.00 218.98,59.41 217.17,61.63 218.92,66.00 220.46,69.85 222.45,70.85 222.89,76.00 224.20,91.18 208.40,91.59 206.10,92.58 202.81,94.01 202.06,96.97 198.90,99.30 196.40,101.14 193.74,101.40 191.63,103.51 184.99,110.15 190.89,115.67 187.40,120.91 187.40,120.91 178.00,130.00 178.00,130.00 178.00,130.00 151.00,154.99 151.00,154.99 148.24,157.68 138.07,167.38 135.00,168.11 132.27,168.76 120.06,166.01 117.00,165.00 116.59,167.62 116.04,171.41 114.16,173.42 112.26,175.45 105.48,176.38 100.48,184.00 97.18,189.03 101.54,197.53 91.96,204.03 86.90,207.47 81.64,207.42 79.18,208.56 75.99,210.04 75.23,212.93 70.96,215.47 68.72,216.80 57.41,220.42 55.00,220.27 55.00,220.27 45.00,217.51 45.00,217.51 45.00,217.51 38.00,217.51 38.00,217.51 27.95,215.83 23.12,209.95 23.06,200.00 23.06,200.00 23.06,187.00 23.06,187.00 22.46,182.15 18.77,177.35 23.70,170.00 29.32,161.62 35.85,162.93 39.82,160.69 43.25,158.75 43.88,155.52 49.01,152.53 53.86,149.71 56.66,150.58 60.00,149.02 62.73,147.74 72.65,139.28 74.86,136.91 79.51,131.90 77.48,129.25 85.00,130.00 Z');
 	filter:brightness(75%);
 	pointer-events: none;
+}
+.ERAstatus>.ERAship {
+	position: relative;
 }
 .ERAship.ERAselectable {
 	pointer-events: all;
@@ -831,58 +856,58 @@ div,img {
 	background-position-x: -3162px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='A'] {
-	background-position-x: -8015px;
+	background-position-x: -4007px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='B'] {
-	background-position-x: -8145px;
+	background-position-x: -4072px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='C'] {
-	background-position-x: -8405px;
+	background-position-x: -4137px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='D'] {
-	background-position-x: -8535px;
+	background-position-x: -4202px;
 }
 .ERAship[fleet].ERAship-FFFF00[fleet='E'] {
-	background-position-x: -8665px;
+	background-position-x: -4267px;
 }
 .ERAship[fleet].ERAship-FFFF00 {
-	background-position-x: -8275px;
+	background-position-x: -4332px;
 }
 .ERAship[fleet].ERAship-CD1FCD[fleet='A'] {
-	background-position-x: -5675px;
+	background-position-x: -2837px;
 }
 .ERAship[fleet].ERAship-CD1FCD[fleet='B'] {
-	background-position-x: -5805px;
+	background-position-x: -2902px;
 }
 .ERAship[fleet].ERAship-CD1FCD[fleet='C'] {
-	background-position-x: -6065px;
-}
-.ERAship[fleet].ERAship-CD1FCD[fleet='E'] {
-	background-position-x: -6195px;
+	background-position-x: -2967px;
 }
 .ERAship[fleet].ERAship-CD1FCD[fleet='D'] {
-	background-position-x: -6325px;
+	background-position-x: -3032px;
+}
+.ERAship[fleet].ERAship-CD1FCD[fleet='E'] {
+	background-position-x: -3097px;
 }
 .ERAship[fleet].ERAship-CD1FCD {
-	background-position-x: -5935px;
+	background-position-x: -3163px;
 }
 .ERAship[fleet].ERAship-FF9900[fleet='A'] {
-	background-position-x: -6455px;
+	background-position-x: -3227px;
 }
 .ERAship[fleet].ERAship-FF9900[fleet='B'] {
-	background-position-x: -6585px;
+	background-position-x: -3292px;
 }
 .ERAship[fleet].ERAship-FF9900[fleet='C'] {
-	background-position-x: -6845px;
+	background-position-x: -3357px;
 }
 .ERAship[fleet].ERAship-FF9900[fleet='D'] {
-	background-position-x: -6975px;
+	background-position-x: -3422px;
 }
 .ERAship[fleet].ERAship-FF9900[fleet='E'] {
-	background-position-x: -7105px;
+	background-position-x: -3487px;
 }
 .ERAship[fleet].ERAship-FF9900 {
-	background-position-x: -6715px;
+	background-position-x: -3552px;
 }
 .ERAship[fleet].ue[fleet='A'] {
 	background-position-x: -4115px;
@@ -1084,29 +1109,18 @@ div,img {
 }
 /* </editor-fold> */
 
-.ERAcounter.DP_counter_50- {
-	background-position-x: -3671px;
-	width: 148px;
-	height: 148px;
-}
-.ERAcounter.DP_counter_50 {
-	background-position-x: -3819px;
-	width: 148px;
-	height: 148px;
-}
-.ERAcounter.DP_counter_100 {
-	background-position-x: -3967px;
-	width: 148px;
-	height: 148px;
-}
-
-.ERAcounter.advanced_fleet_tactic_back {
-	background-position-x: 0 0;
-	width: 60px;
-	height: 60px;
-}
-.ERAcounter.advanced_fleet_tactic_front {
-	background-position-x: -119px;
+.ERAcounter-tactic {
 	width: 59px;
 	height: 59px;
+}
+.ERAcounter-tactic[tactic='DP'] {
+	background-position-x: -222px;
+}
+.ERAcounter-tactic[tactic='2x'] {
+	background-position-x: -281px;
+}
+#generalactions .ERAcounter-tactic {
+	display: inline-block;
+	vertical-align: middle;
+	margin: 0px 10px;
 }

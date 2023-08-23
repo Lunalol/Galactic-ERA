@@ -36,7 +36,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			for (let faction of Object.values(this.bgagame.gamedatas.factions))
 			{
-				if (faction.player_id > 0)
+				if (faction.player_id >= 0)
 				{
 					const node = dojo.place(this.bgagame.format_block('ERApanel', {color: faction.color}), 'ERAboard');
 					const angle = 60 * faction.homeStar - 210;
@@ -58,6 +58,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						else this.bgagame.focus(event.currentTarget);
 					});
 					dojo.connect($(`ERAplayerAid-${faction.color}`), 'transitionend', (event) => dojo.style(event.currentTarget, {'pointer-events': '', 'z-index': ''}));
+				}
+				if (faction.player_id == 0)
+				{
+					dojo.style(`ERApopulationTrack-${faction.color}`, 'display', 'none');
+					dojo.style(`ERAplayerAid-${faction.color}`, 'display', 'none');
 				}
 			}
 //
@@ -147,7 +152,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		home: function (player_id)
 		{
-			if (player_id in this.bgagame.players && player_id > 0)
+			if (player_id in this.bgagame.players && player_id >= 0)
 			{
 				const sector = this.bgagame.gamedatas.factions[this.bgagame.players[player_id]].homeStar;
 				this.setZoom(10 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
@@ -317,9 +322,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.style(node, {'pointer-events': 'none', 'z-index': '1000', 'transform': ``});
 				dojo.removeClass(node, 'ERAfocus');
 			});
-			if (['fleets', ''].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
-		}
-		,
+//
+			if (['fleets', 'remoteViewing'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
+		},
 		drawHexagon: function (hexagon, color)
 		{
 			let shape = Array.from(hexagon.shape);
@@ -343,8 +348,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.style(SVGpath, 'filter', 'blur(10px');
 //
 			return SVGpath;
-		}
-		,
+		},
 		nearest(x, y)
 		{
 			let hexagon = undefined;
@@ -359,8 +363,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				}
 			}
 			return hexagon;
-		}
-		,
+		},
 		clearCanvas()
 		{
 			const ctx = this.canvas.getContext('2d');

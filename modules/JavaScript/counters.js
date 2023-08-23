@@ -124,7 +124,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing')
 					{
 						dojo.stopEvent(event);
-						return this.bgagame.remoteViewing(counter);
+						return this.bgagame.remoteViewing('counter', counter);
 					}
 					if (this.bgagame.gamedatas.gamestate.name === 'combatChoice')
 					{

@@ -6,81 +6,181 @@
  */
 trait gameUtils
 {
-	function reveal(string $color, string $location, int $counter)
+	function gainTechnology(string $color, string $technology): int
 	{
-		if (Counters::isRevealed($color, $counter)) return;
+		$level = Factions::gainTechnology($color, $technology);
 //
-		$sector = Sectors::get($location[0]);
-		$hexagon = substr($location, 2);
+// YOWIES SPECIAL STO & STS: You may not have Robotics higher than level 1
 //
-		switch (Counters::getStatus($counter, 'back'))
+		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('You may not have Robotics higher than level 1'));
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+			'player_name' => Factions::getName($color),
+			'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+			'faction' => ['color' => $color, $technology => $level]
+		]);
+//* -------------------------------------------------------------------------------------------------------- */
+//
+// Spiritualty : At levels 5 and 6 you automatically switch to STO (no growth action needed for that) and may not switch back to STS again.*
+// This happens only when the level is reached (so not during the “Switch Alignment” step).
+//
+		if ($technology === 'Spirituality' && $level >= 5 && Factions::getAlignment($color) === 'STS')
 		{
-			case 'UNINHABITED':
-				if ($color)
+			Factions::switchAlignment($color);
+//
+			foreach (Factions::atWar($color) as $otherColor)
+			{
+				Factions::declarePeace($otherColor, $color);
+				Factions::declarePeace($color, $otherColor);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
+				'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
+				'faction' => Factions::get($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+// Advanced fleet tactics
+//
+		if ($technology === 'Military' && in_array($level, [2, 4, 6]))
+		{
+			if (Factions::getPlayer($color) <= 0)
+			{
+				for ($i = 0; $i < ($level === 6 ? 3 : 1); $i++)
 				{
-					Counters::reveal($color, 'star', $counter);
+					$Fleet = Automas::advancedFleetTactic($color);
+					if ($Fleet)
+					{
+						Factions::setAdvancedFleetTactic($color, $Fleet, '2x');
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
+						self::notifyAllPlayers('updateFaction', '${player_name} gets <B>${tactic}</B> on <B>${FLEET}</B> fleet', [
+							'player_name' => Factions::getName($color), 'tactic' => '2x', 'FLEET' => $Fleet,
+							'faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+					}
 				}
-				else
+			}
+			else Factions::setStatus($color, 'advancedFleetTactics', $level === 6 ? 3 : 1);
+		}
+//
+		return $level;
+	}
+	function reveal(string $color, string $type, string $id)
+	{
+		switch ($type)
+		{
+//
+			case 'dominationCard':
+//
+				[$otherColor, $index] = explode('_', $id);
+				$dominationCards = $this->domination->getPlayerHand($otherColor);
+				$dominationCard = $dominationCards[array_keys($dominationCards)[$index]];
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
+				self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div style="background:#${color};">${DOMINATION}</div>', [
+					'color' => $otherColor, 'i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$dominationCard['type']]
+				]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
-			case 'PRIMITIVE':
-				if ($color)
-				{
-					Counters::reveal($color, 'star', $counter);
+//
+			case 'fleet':
+//
+				$ship = Ships::get('', $id);
+				if (!$ship) throw new BgaVisibleSystemException("Invalid ship: $id");
+				if ($ship['fleet'] !== 'fleet') throw new BgaVisibleSystemException('Not a fleet');
+//
+				if (Factions::getTechnology($color, 'spirituality') <= Factions::getTechnology($ship['color'], 'spirituality')) throw new BgaUserException(self::_('You must have a higher spirituality level than the owner of the fleet'));
 //* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
-				else $this->notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
-//* -------------------------------------------------------------------------------------------------------- */
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
-//* -------------------------------------------------------------------------------------------------------- */
-				break;
-			case 'ADVANCED':
-				if ($color)
-				{
-					Counters::reveal($color, 'star', $counter);
-//* -------------------------------------------------------------------------------------------------------- */
-					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
-				else
-//* -------------------------------------------------------------------------------------------------------- */10
-					$this->notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
+				self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div class="ERA-removeViewing" style="background:#${color}"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
+					'color' => $ship['color'], 'GPS' => $ship['location'],
+					'LOG' => [
+						'log' => clienttranslate('<B>${fleet}</B> fleet with ${ships} ship(s)'),
+						'args' => ['fleet' => Ships::getStatus($id, 'fleet'), 'ships' => Ships::getStatus($id, 'ships')]
+					]
+				]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
-			default:
-				if ($color)
+//
+			case 'counter':
+//
+				if (in_array($color, Counters::isRevealed($id))) return;
+//
+				$location = Counters::get($id)['location'];
+				$sector = Sectors::get($location[0]);
+				$hexagon = substr($location, 2);
+//
+				switch (Counters::getStatus($id, 'back'))
 				{
-					Counters::reveal($color, 'relic', $counter);
+					case 'UNINHABITED':
+						if ($color)
+						{
+							Counters::reveal($color, 'star', $id);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						else
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+					case 'PRIMITIVE':
+						if ($color)
+						{
+							Counters::reveal($color, 'star', $id);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						else self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
+//* -------------------------------------------------------------------------------------------------------- */
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+					case 'ADVANCED':
+						if ($color)
+						{
+							Counters::reveal($color, 'star', $id);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						else
 //* -------------------------------------------------------------------------------------------------------- */10
-					$this->notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
-						'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'RELIC' => $this->RELICS[Counters::getStatus($counter, 'back')],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
+							self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+					default:
+						if ($color)
+						{
+							Counters::reveal($color, 'relic', $id);
+//* -------------------------------------------------------------------------------------------------------- */10
+							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
+								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						else
+//* -------------------------------------------------------------------------------------------------------- */10
+							self::notifyAllPlayers('flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
+								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
+								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
-				else
-//* -------------------------------------------------------------------------------------------------------- */10
-					$this->notifyAllPlayers('flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
-						'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'RELIC' => $this->RELICS[Counters::getStatus($counter, 'back')],
-						'GPS' => $location, 'counter' => ['id' => $counter, 'type' => Counters::getStatus($counter, 'back')]]);
-//* -------------------------------------------------------------------------------------------------------- */
+				break;
 		}
 	}
 }

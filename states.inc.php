@@ -82,7 +82,7 @@ $machinestates = [
 		'description' => clienttranslate('Players have to make some individual choices'),
 		'type' => 'game',
 		'action' => 'stIndividualChoices',
-		'transitions' => ['individualChoice' => 95, 'next' => 100]
+		'transitions' => ['continue' => 90, 'individualChoice' => 95, 'advancedFleetTactic' => 91, 'next' => 100]
 	],
 	95 => [
 		'name' => 'individualChoice',
@@ -92,6 +92,15 @@ $machinestates = [
 		'args' => 'argIndividualChoice',
 		'possibleactions' => ['individualChoice'],
 		'transitions' => ['nextPlayer' => 90]
+	],
+	91 => [
+		'name' => 'advancedFleetTactic',
+		'description' => clienttranslate('Some players get an advanced fleet tactic'),
+		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactic'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argAdvancedFleetTactic',
+		'possibleactions' => ['advancedFleetTactic'],
+		'transitions' => ['continue' => 91, 'next' => 100]
 	],
 //
 // Play
@@ -160,7 +169,7 @@ $machinestates = [
 		'name' => 'combat',
 		'type' => 'game',
 		'action' => 'stCombat',
-		'transitions' => ['battleLoss' => 255, 'endCombat' => 230]
+		'transitions' => ['battleLoss' => 255, 'continue' => 260, 'endCombat' => 230]
 	],
 	255 => [
 		'name' => 'battleLoss',
@@ -231,14 +240,23 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
-		'possibleactions' => ['research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['continue' => 410, 'next' => 400]
+		'possibleactions' => ['declareWar', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'transitions' => ['advancedFleetTactic' => 415, 'continue' => 410, 'next' => 400]
+	],
+	415 => [
+		'name' => 'advancedFleetTactic',
+		'description' => clienttranslate('Some players get an advanced fleet tactic'),
+		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactic'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argAdvancedFleetTactic',
+		'possibleactions' => ['advancedFleetTactic'],
+		'transitions' => ['continue' => 415, 'next' => 410]
 	],
 	500 => [
 		'name' => 'tradingPhase',
 		'type' => 'game',
 		'action' => 'stTradingPhase',
-		'transitions' => ['tradingPhase' => 510, 'next' => 550]
+		'transitions' => ['tradingPhase' => 510, 'advancedFleetTactic' => 545, 'next' => 550]
 	],
 	510 => [
 		'name' => 'tradingPhase',
@@ -248,6 +266,15 @@ $machinestates = [
 		'args' => 'argTradingPhase',
 		'possibleactions' => ['trade', 'pass'],
 		'transitions' => ['continue' => 510, 'next' => 550]
+	],
+	545 => [
+		'name' => 'advancedFleetTactic',
+		'description' => clienttranslate('Some players get an advanced fleet tactic'),
+		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactic'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argAdvancedFleetTactic',
+		'possibleactions' => ['advancedFleetTactic'],
+		'transitions' => ['continue' => 550]
 	],
 	550 => [
 		'name' => 'scoringPhase',

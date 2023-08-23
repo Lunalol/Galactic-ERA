@@ -45,6 +45,17 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function advancedFleetTactic()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$fleet = self::getArg("fleet", AT_alphanum, true);
+		$tactic = self::getArg("tactic", AT_alphanum, true);
+		$this->game->acAdvancedFleetTactic($color, $fleet, $tactic);
+//
+		self::ajaxResponse("");
+	}
 	public function shipsToFleet()
 	{
 		self::setAjaxMode();
@@ -113,8 +124,9 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
-		$counter = self::getArg("counter", AT_int, true);
-		$this->game->acRemoteViewing($color, $counter);
+		$type = self::getArg("type", AT_alphanum, true);
+		$id = self::getArg("id", AT_alphanum, true);
+		$this->game->acRemoteViewing($color, $type, $id);
 //
 		self::ajaxResponse("");
 	}

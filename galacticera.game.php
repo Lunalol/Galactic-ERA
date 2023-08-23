@@ -123,6 +123,7 @@ class GalacticEra extends Table
 	function dbSetScore(int $player_id, int $score = 0): void
 	{
 		$this->DbQuery("UPDATE player SET player_score = $score WHERE player_id = $player_id");
+		self::notifyAllPlayers('update_score', '', ['player_id' => $player_id, 'score' => $score]);
 	}
 	function dbIncScore(int $player_id, int $inc): int
 	{
@@ -156,5 +157,11 @@ class GalacticEra extends Table
 	function upgradeTableDb($from_version)
 	{
 
+	}
+	function X()
+	{
+		self::dBQuery("UPDATE factions SET `Spirituality` = 6");
+		self::dBQuery("UPDATE factions SET `Robotics` = 5");
+		self::dBQuery("UPDATE factions SET `Genetics` = 6");
 	}
 }

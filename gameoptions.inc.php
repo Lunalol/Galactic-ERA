@@ -11,7 +11,7 @@ $game_options = [
 			STANDARD => ['name' => totranslate('Standard Game')],
 			MANUAL => ['name' => totranslate('Manual setting')],
 		],
-		'default' => STANDARD,
+		'default' => INTRODUCTORY,
 	],
 	GALACTICSTORY => [
 		'name' => totranslate('Galactic story'),

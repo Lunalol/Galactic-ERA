@@ -16,6 +16,7 @@ class Ships extends APP_GameClass
 	}
 	static function get(string $color, int $id): array
 	{
+		if (!$color) return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE id = $id");
 		return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE color = '$color' AND id = $id");
 	}
 	static function getHomeStar(string $color = null)
@@ -112,6 +113,7 @@ class Ships extends APP_GameClass
 	}
 	static function movement(array $ship)
 	{
+		$neutron = Factions::getTechnology($ship['color'], 'Propulsion') >= 5;
 		$possible = [$ship['location'] => ['MP' => $ship['MP'], 'from' => null]];
 //
 		$locations = [$ship['location'] => $ship['MP']];
@@ -124,7 +126,7 @@ class Ships extends APP_GameClass
 			$neighbors = Sectors::neighbors($location);
 			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
 			{
-				if ($terrain === Sectors::NEUTRON) continue;
+				if ($terrain === Sectors::NEUTRON && !$neutron) continue;
 				$next_MP = $MP - ($terrain === Sectors::NEBULA ? 2 : 1);
 				if ($next_MP >= 0)
 				{
@@ -188,15 +190,25 @@ class Ships extends APP_GameClass
 //
 				case 'fleet':
 //
+					$fleet = self::getStatus($shipID, 'fleet');
+//
 					$CV = $military * self::getStatus($shipID, 'ships');
 //
 // (A)ssault: Whenever this fleet is involved in combat, add 1 CV per ship in this fleet
 //
-					if (self::getStatus($shipID, 'fleet') === 'A') $CV += 1 * self::getStatus($shipID, 'ships');
+					if ($fleet === 'A')
+					{
+						$CV += 1 * self::getStatus($shipID, 'ships');
+						if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $CV += 1 * self::getStatus($shipID, 'ships');
+					}
 //
 // (C)ounterassault: Add 2 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat
 //
-					if (self::getStatus($shipID, 'fleet') === 'C') $CV += 2 * self::getStatus($shipID, 'ships');
+					if ($fleet === 'C')
+					{
+						$CV += 2 * self::getStatus($shipID, 'ships');
+						if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $CV += 2 * self::getStatus($shipID, 'ships');
+					}
 //
 					$result['fleet'][Ships::getStatus($shipID, 'fleet')] = ['CV' => $CV, 'ships' => Ships::getStatus($shipID, 'ships')];
 					$result['total'] += $CV;
