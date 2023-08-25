@@ -17,7 +17,7 @@ class Factions extends APP_GameClass
 	const TECHNOLOGIES = [
 		'Military' => [null, 1, 1 /**/, 2, 3 /**/, 6, 10 /**/], // Combat value (CV) of each ship
 		'Spirituality' => [null, 0, 1, 2, 3 /**/, 4 /**/, -1 /**/], // Remote view par round
-		'Propulsion' => [null, 3, 4, 4 /**/, 5 /**/, 5 /**/, INF], // Ship range
+		'Propulsion' => [null, 3, 4, 4 /**/, 5 /**/, 5 /**/, 100], // Ship range
 		'Robotics' => [null, 0, +1, +3, +5 /**/, +7 /**/, +10 /**/], // Build ships bonus
 		'Genetics' => [null, 0, 1, 2, 3, 4 /**/, 6 /**/], // Grow population bonus
 	];

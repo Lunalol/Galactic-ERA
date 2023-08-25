@@ -123,7 +123,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
 		'args' => 'argFleets',
-		'possibleactions' => ['shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done', 'declareWar'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done'],
 		'transitions' => ['continue' => 210, 'next' => 220]
 	],
 	220 => [
@@ -132,7 +132,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may move any or all ships'),
 		'type' => 'activeplayer',
 		'args' => 'argMovement',
-		'possibleactions' => ['undo', 'move', 'scout', 'remoteViewing', 'done', 'declareWar'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'move', 'scout', 'remoteViewing', 'done'],
 		'transitions' => ['undo' => 210, 'continue' => 220, 'next' => 230]
 	],
 	230 => [
@@ -240,7 +240,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
-		'possibleactions' => ['declareWar', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
 		'transitions' => ['advancedFleetTactic' => 415, 'continue' => 410, 'next' => 400]
 	],
 	415 => [

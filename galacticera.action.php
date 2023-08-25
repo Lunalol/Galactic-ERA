@@ -119,6 +119,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function declarePeace()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$on = self::getArg("on", AT_alphanum, true);
+		$this->game->acDeclarePeace($color, $on);
+//
+		self::ajaxResponse("");
+	}
 	public function remoteViewing()
 	{
 		self::setAjaxMode();
@@ -214,8 +224,8 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
-		$technology = self::getArg("technology", AT_alphanum, true);
-		$this->game->acResearch($color, $technology);
+		$technologies = self::getArg("technologies", AT_json, true);
+		$this->game->acResearch($color, $technologies);
 //
 		self::ajaxResponse("");
 	}

@@ -210,7 +210,7 @@ class Ships extends APP_GameClass
 						if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $CV += 2 * self::getStatus($shipID, 'ships');
 					}
 //
-					$result['fleet'][Ships::getStatus($shipID, 'fleet')] = ['CV' => $CV, 'ships' => Ships::getStatus($shipID, 'ships')];
+					$result['fleets'][Ships::getStatus($shipID, 'fleet')] = ['CV' => $CV, 'ships' => Ships::getStatus($shipID, 'ships')];
 					$result['total'] += $CV;
 					break;
 			}

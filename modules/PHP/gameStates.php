@@ -246,7 +246,6 @@ trait gameStates
 		if (DEBUG)
 		{
 			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', ['Avians']);
-			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', ['Yowies']);
 			$this->gamestate->nextState('next');
 		}
 		else $this->gamestate->setAllPlayersMultiactive('next');
@@ -260,7 +259,6 @@ trait gameStates
 			$starPeople = Factions::getStatus($color, 'starPeople')[0];
 			Factions::setStarPeople($color, $starPeople);
 			Factions::setStatus($color, 'starPeople');
-			$starPeople = Factions::getStarPeople($color);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${STARPEOPLE}</B>'), [
 				'player_name' => Factions::getName($color), 'i18n' => ['STARPEOPLE'], 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($color)],
@@ -308,6 +306,7 @@ trait gameStates
 //
 		foreach (Factions::list() as $color)
 		{
+			$starPeople = Factions::getStarPeople($color);
 			$sector = Factions::getHomeStar($color);
 //
 			switch ($starPeople)
@@ -468,6 +467,7 @@ trait gameStates
 //
 		foreach (Factions::list() as $color)
 		{
+			$starPeople = Factions::getStarPeople($color);
 			$sector = Factions::getHomeStar($color);
 //
 			if ($sector !== 0)
@@ -623,16 +623,31 @@ trait gameStates
 			if (Ships::getAll($color))
 			{
 				$dice = bga_rand(1, 6);
+//
+// #offboard population : 4 - Slavers roll 2 dice and use lower one for movement and growth action results
+//
+				if ($player_id === SLAVERS && Factions::getDP($color) >= 4)
+				{
+					$dice1 = bga_rand(1, 6);
+					$dice2 = bga_rand(1, 6);
+					$dice = max($dice1, $dice2);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', clienttranslate('${DICE} is rolled'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
-//				self::notifyAllPlayers('message', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('message', clienttranslate('${DICE1} ${DICE2} are rolled'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
+					self::notifyAllPlayers('message', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
+				}
+				else
+				{
+					$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('message', clienttranslate('${DICE} is rolled'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
 				Automas::movement($this, $color, $dice);
 			}
 			else
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('message', clienttranslate('No ships to move'), ['player_name' => Factions::getName($color)]);
-//				self::notifyAllPlayers('message', clienttranslate('${player_name} has no ships to move'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 
 			return $this->gamestate->nextState('continue');
@@ -738,7 +753,7 @@ trait gameStates
 		foreach ($attackerCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', '<div style="background:#${color};">${LOG}</div>', ['color' => $attacker,
+			self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
 					'log' => clienttranslate('<B>+ ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
 					'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
@@ -749,7 +764,7 @@ trait gameStates
 		if ($attackerCVs['ships']['ships'])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', '<div style="background:#${color};">${LOG}</div>', ['color' => $attacker,
+			self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
 					'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
 					'args' => ['CV' => $attackerCVs['ships']['CV'], 'ships' => $attackerCVs['ships']['ships']]
@@ -770,7 +785,7 @@ trait gameStates
 			foreach ($defenderCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', '<div style="background:#${color};">${LOG}</div>', ['color' => $defender,
+				self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
 					'LOG' => [
 						'log' => clienttranslate('<B>+ ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
 						'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
@@ -782,7 +797,7 @@ trait gameStates
 			if ($defenderCVs['ships']['ships'])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', '<div style="background:#${color};">${LOG}</div>', ['color' => $defender,
+				self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
 					'LOG' => [
 						'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
 						'args' => ['CV' => $defenderCVs['ships']['CV'], 'ships' => $defenderCVs['ships']['ships']]
@@ -798,7 +813,7 @@ trait gameStates
 //
 		if ($attackerCV > $defenderCV) $attackerIsWinner = true;
 		else if ($attackerCV < $defenderCV) $attackerIsWinner = false;
-		else $attackerIsWinner = $attackerIsWinner && (max(0, ...array_map(fn($color) => Factions::getTechnology($color, 'Military'), $defenders)) < Factions::getTechnology($attacker, 'Military'));
+		else $attackerIsWinner = (max(0, ...array_map(fn($color) => Factions::getTechnology($color, 'Military'), $defenders)) < Factions::getTechnology($attacker, 'Military'));
 //
 		if ($attackerIsWinner)
 		{

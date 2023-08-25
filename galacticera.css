@@ -5,8 +5,8 @@
     ascent-override:100%;
 }
 
-html {
-    background-image:url('img/orion.jpg');
+html,body {
+    background-image: url("img/orion.jpg") !important;
 }
 
 div,img {

@@ -305,6 +305,52 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
+	function acDeclarePeace(string $color, string $on, $automa = false)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		if (!$automa)
+		{
+			$this->checkAction('declarePeace');
+			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+			if (!in_array($on, Factions::atWar($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
+		}
+//
+		if (Factions::getPlayer($on) <= 0)
+		{
+//
+// #offboard population : 2 - Slavers never make peace
+//
+			if (Factions::getPlayer($on) == SLAVERS && Factions::getDP($on) >= 2) throw new BgaUserException(self::_('Slavers’ Offboard Power Effects: Slavers never make peace'));
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', clienttranslate('${player_name1} proposes peace to ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
+//* -------------------------------------------------------------------------------------------------------- */
+			$dice = bga_rand(1, 6);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('message', clienttranslate('${player_name} rolls ${DICE}'), [
+				'player_name' => Factions::getName($on), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+			if ($dice > Automas::makingPeace($on))
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('message', clienttranslate('${player_name} reject peace'), ['player_name' => Factions::getName($on)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				return;
+			}
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('message', clienttranslate('${player_name} accept peace'), ['player_name' => Factions::getName($on)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+		Factions::declarePeace($color, $on);
+		Factions::declarePeace($on, $color);
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('msg', clienttranslate('${player_name1} is in peace with ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
+		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
+		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		if (!$automa) $this->gamestate->nextState('continue');
+	}
 	function acRemoteViewing(string $color, string $type, string $id)
 	{
 		$player_id = Factions::getPlayer($color);
@@ -553,55 +599,80 @@ trait gameStateActions
 //
 		$attacker = Factions::getActive();
 		$location = Factions::getStatus($attacker, 'combat');
+		$defenders = Ships::getConflictFactions($attacker, $location);
 //
-		foreach ($ships as $side => $toDestroy)
+		$toDestroy = [$attacker => ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0, 'ships' => 0]];
+		foreach ($defenders as $defender) $toDestroy[$defender] = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0, 'ships' => 0];
+//
+		foreach ($ships as $side => $_ships) foreach ($_ships as [$faction, $Fleet]) $toDestroy[$faction][$Fleet]++;
+//
+		foreach (array_merge([$attacker], $defenders) as $color)
 		{
-			foreach ($toDestroy as [$faction, $Fleet])
+			foreach ($toDestroy[$color] as $Fleet => $count)
 			{
-				if ($Fleet === 'ships')
+				if ($count)
 				{
-					$ships = Ships::getAtLocation($location, $faction, 'ship');
-					if (!$ships) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $faction");
-//
-					$shipID = array_pop($ships);
-					$ship = Ships::get($faction, $shipID);
-//
-					if (!$ship) throw new BgaVisibleSystemException("No more ships to destroy for $faction");
-					if ($ship['location'] !== $location) throw new BgaVisibleSystemException('Invalid location: ' . $location);
-					if ($ship['fleet'] !== 'ship') throw new BgaVisibleSystemException('Not a ship');
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('removeShip', '', ['ship' => $ship]);
-//* -------------------------------------------------------------------------------------------------------- */
-					Ships::destroy($shipID);
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $faction, 'ships' => 16 - sizeof(Ships::getAll($faction, 'ship'))]]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
-				else
-				{
-					$fleetID = Ships::getFleet($faction, $Fleet);
-					$fleet = Ships::get($faction, $fleetID);
-//
-					if (!$fleet) throw new BgaVisibleSystemException("Invalid fleet: $fleetID");
-					if ($fleet['location'] !== $location) throw new BgaVisibleSystemException('Invalid location: ' . $location);
-					if (intval(Ships::getStatus($fleetID, 'ships')) === 0) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $faction");
-//
-					Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) - 1);
-					if (intval(Ships::getStatus($fleetID, 'ships')) === 0)
+					switch ($Fleet)
 					{
+//
+						case 'A':
+						case 'B':
+						case 'C':
+						case 'D':
+						case 'E':
+//
+							$fleetID = Ships::getFleet($color, $Fleet);
+							$fleet = Ships::get($color, $fleetID);
+							if (!$fleet) throw new BgaVisibleSystemException("Invalid fleet: $fleetID");
+							if ($fleet['location'] !== $location) throw new BgaVisibleSystemException("Invalid location: $fleet[location]");
+//
+							Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) - $count);
+							if (intval(Ships::getStatus($fleetID, 'ships')) < 0) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $color");
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('removeShip', clienttranslate('Fleet ${FLEET} is removed ${GPS}'), ['GPS' => $location, 'FLEET' => $Fleet, 'ship' => $fleet]);
+							self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $color,
+								'LOG' => ['log' => clienttranslate('${ships} ship(s) destroyed in ${FLEET} fleet'), 'args' => ['ships' => $count, 'FLEET' => $Fleet]],
+							]);
 //* -------------------------------------------------------------------------------------------------------- */
-						$fleet['location'] = 'stock';
-						Ships::setLocation($fleetID, $fleet['location']);
+							if (intval(Ships::getStatus($fleetID, 'ships')) === 0)
+							{
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('placeShip', '', ['ship' => $fleet]);
+								self::notifyAllPlayers('removeShip', clienttranslate('Fleet ${FLEET} is removed ${GPS}'), ['GPS' => $location, 'FLEET' => $Fleet, 'ship' => $fleet]);
 //* -------------------------------------------------------------------------------------------------------- */
+								$fleet['location'] = 'stock';
+								Ships::setLocation($fleetID, $fleet['location']);
+//* -------------------------------------------------------------------------------------------------------- */
+								self::notifyAllPlayers('placeShip', '', ['ship' => $fleet]);
+//* -------------------------------------------------------------------------------------------------------- */
+							}
+							if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
+							break;
+//
+						case 'ships':
+//
+							$ships = Ships::getAtLocation($location, $color, 'ship');
+							if (!$ships) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $color");
+							for ($i = 0; $i < $count; $i++)
+							{
+								$shipID = array_pop($ships);
+								if (!$shipID) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $color");
+//* -------------------------------------------------------------------------------------------------------- */
+								self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($color, $shipID)]);
+//* -------------------------------------------------------------------------------------------------------- */
+								Ships::destroy($shipID);
+							}
+//* -------------------------------------------------------------------------------------------------------- */
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyAllPlayers('updateFaction', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $color,
+								'LOG' => ['log' => clienttranslate('${ships} single ship(s) destroyed'), 'args' => ['ships' => $count]],
+								'faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]
+							]);
+//* -------------------------------------------------------------------------------------------------------- */
+							break;
 					}
-					self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
 				}
 			}
 		}
+//
 		$this->gamestate->nextState('continue');
 	}
 	function acSelectCounters(string $color, array $counters): void
@@ -617,15 +688,16 @@ trait gameStateActions
 			if (in_array($counter, ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'])) $oval++;
 			else $square++;
 		}
-		if ($oval < $this->possible[$player_id]['N']) throw new BgaVisibleSystemException("Invalid number of oval counters: $oval < 2");
-		if ($square < 1) throw new BgaVisibleSystemException("Invalid number of square counters: $square < 1");
-		if ($oval > $this->possible[$player_id]['N'] + $this->possible[$player_id]['additional']) throw new BgaVisibleSystemException('Invalid number of oval counters: ' . $oval);
+		if ($oval < $this->possible[$player_id]['oval']) throw new BgaVisibleSystemException("Invalid number of oval counters: $oval");
+		if ($oval > $this->possible[$player_id]['oval'] + $this->possible[$player_id]['additional']) throw new BgaVisibleSystemException('Invalid number of oval counters: ' . $oval);
+		if ($square < 1 || $square > 2) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
+		if ($square === 2 && Factions::getTechnology($color, 'Robotics') < 5) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
 //
 		Factions::setStatus($color, 'counters', array_values($counters));
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 	}
-	function acResearch(string $color, string $technology, bool $automa = false)
+	function acResearch(string $color, array $technologies, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -635,28 +707,43 @@ trait gameStateActions
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 			if (!in_array('research', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'research');
-			if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
+			if (sizeof($technologies) > 1 && Factions::getTechnology($color, $technology) < 5) throw new BgaVisibleSystemException('Too much research tokens');
+			foreach ($technologies as $technology) if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
 		}
 //
-		if (Factions::getTechnology($color, $technology) === 6)
+		if (sizeof($technologies) > 1 && Factions::getTechnology($color, $technology) < 6)
 		{
+			Factions::gainDP($color, -2);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', _('${player_name} loses ${DP} DP(s)'), ['DP' => 2,
+				'player_name' => Factions::getName($color),
+				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+		foreach ($technologies as $technology)
+		{
+			if (Factions::getTechnology($color, $technology) === 6)
+			{
 //
 // When automas research a technology they already have at level 6, this has no effect instead
 //
-			if ($player_id <= 0) return;
-			throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
-		}
-		$level = self::gainTechnology($color, $technology);
+				if ($player_id <= 0) return;
+				throw new BgaVisibleSystemException('Reseach+ Effect not implemented');
+			}
+			$level = self::gainTechnology($color, $technology);
 //
 // GREYS SPECIAL STO & STS: When you research a technology at level 1 you increase it to level 3
 //
-		if (Factions::getStarPeople($color) === 'Greys' && Factions::getTechnology($color, $technology) === 2) $level = self::gainTechnology($color, $technology);
+			if (Factions::getStarPeople($color) === 'Greys' && Factions::getTechnology($color, $technology) === 2) $level = self::gainTechnology($color, $technology);
+//
+		}
 //
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('research', $counters)]);
-		unset($counters[array_search($technology, $counters)]);
+		foreach ($technologies as $technology) unset($counters[array_search($technology, $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
-		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research', $technology])));
+		foreach ($technologies as $technology) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research', $technology])));
 //
 		if (!$automa)
 		{
@@ -847,6 +934,7 @@ trait gameStateActions
 					else self::acResearch($color, 'Robotics', true);
 					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
 					Counters::destroy($relic);
+					break;
 //
 				case 5: // Ancient Technology: Spirituality
 //
@@ -937,6 +1025,9 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		if ($DP >= 5)
 		{
+//
+// #offboard population : 5+ - You immediately lose 5 DP for each new offboard population
+//
 			Factions::gainDP(Factions::getNotAutomas(), -5);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', _('${player_name} loses ${DP} DP(s)'), ['DP' => 5,

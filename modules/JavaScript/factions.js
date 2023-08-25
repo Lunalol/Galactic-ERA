@@ -50,7 +50,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					}
 					if ('alignment' in faction)
 					{
-						dojo.toggleClass(node, 'ERA-STS', faction.alignment === 'STS')
+						dojo.toggleClass(node, 'ERA-STS', faction.alignment === 'STS');
 						if (dojo.hasClass(node, 'ERA-STS')) dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, 'STS'));
 						else dojo.setAttr(node.querySelector('img'), 'src', dojo.getAttr(node, 'STO'));
 					}
@@ -96,10 +96,26 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				{
 					if (player_id in this.bgagame.scoreCtrl) this.bgagame.scoreCtrl[player_id].setValue(faction.DP);
 //
-					dojo.query(`.ERAcounter-cylinder.ERAcounter-${faction.color}`, 'ERA-DP').remove();
-					const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
+//					dojo.query(`.ERAcounter-cylinder.ERAcounter-${faction.color}`, 'ERA-DP').remove();
+					let node = $(`ERAcounter-${faction.color}-DP`);
+					if (!node) node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
 					dojo.style(node, 'position', 'absolute');
-					dojo.style(node, 'left', (faction.DP * 49) + 'px');
+//
+					let x = 00, dx = 49;
+					let y = 0, dy = 50;
+					let DP = faction.DP % 50;
+					if (DP < 0) DP += 50;
+					let score = 0;
+					while (score < DP)
+					{
+						if (score < 15) x += dx;
+						else if (score < 25) y += dy;
+						else if (score < 40) x -= dx;
+						else if (score < 50) y -= dy;
+						score += 1;
+					}
+					dojo.style(node, 'left', x + 'px');
+					dojo.style(node, 'top', y + 'px');
 //
 					let nodes = dojo.query(`#ERA-DP .ERAcounter-cylinder`);
 					let index = {};
@@ -145,8 +161,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				{
 					if (technology in faction)
 					{
-						dojo.query(`.ERAcounter-cube[location='${technology}']`, nodeTechnologiesTrack).remove();
-						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-technology', color: faction.color, type: 'cube', location: technology}), nodeTechnologiesTrack);
+//						dojo.query(`.ERAcounter-cube[location='${technology}']`, nodeTechnologiesTrack).remove();
+						let node = $(`ERAcounter-${faction.color}-${technology}`);
+						if (!node) node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-' + technology, color: faction.color, type: 'cube', location: technology}), nodeTechnologiesTrack);
 						dojo.setAttr(node, 'title', _(technology) + ' ' + faction[technology]);
 						dojo.setAttr(node, 'level', faction[technology]);
 						dojo.style(node, 'position', 'absolute');
@@ -201,14 +218,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //				$('player_boards').insertBefore($(`overall_player_board_${this.bgagame.gamedatas.factions[faction].player_id}`), null);
 //			}
 //
-			const node = $(`ERApanel-${faction.color}`);
-			if (node)
-			{
-				const x = this.bgagame.board.hexagons['0:+0+0+0'].x + 2.5 * (this.bgagame.board.hexagons[this.bgagame.gamedatas.factions[faction.color].homeStar + ':+0+0+0'].x - this.bgagame.board.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
-				const y = this.bgagame.board.hexagons['0:+0+0+0'].y + 2.5 * (this.bgagame.board.hexagons[this.bgagame.gamedatas.factions[faction.color].homeStar + ':+0+0+0'].y - this.bgagame.board.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
-				dojo.style(node, 'left', x + 'px');
-				dojo.style(node, 'top', y + 'px');
-			}
 		}
 	}
 	);

@@ -75,6 +75,18 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
+	function makingPeace(string $color): int
+	{
+		switch (Factions::getPlayer($color))
+		{
+			case FARMERS:
+				return 4;
+			case SLAVERS:
+				return 2;
+			default:
+				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
+		}
+	}
 	function movement(object $bgagame, string $color, int $dice): void
 	{
 		foreach (Ships::getAll($color) as $ship)
@@ -601,7 +613,28 @@ class Automas extends APP_GameClass
 	}
 	function battleLoss(string $attacker, array $defender, bool $totalVictory)
 	{
-		return [];
+		$attacker = Factions::getActive();
+		$location = Factions::getStatus($attacker, 'combat');
+//
+		$defenders = Ships::getConflictFactions($attacker, $location);
+		$winner = Factions::getStatus($attacker, 'winner');
+//
+		$toDestroy = ['winner' => [], 'losers' => []];
+//
+		foreach (Ships::getAtLocation($location, $attacker, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, Ships::getStatus($shipID, 'fleet')];
+		for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $attacker, 'ships')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, 'ship'];
+//
+		foreach ($defenders as $defender)
+		{
+			foreach (Ships::getAtLocation($location, $defender, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, Ships::getStatus($shipID, 'fleet')];
+			for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $defender, 'ships')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, 'ship'];
+		}
+//
+		shuffle($toDestroy['winner']);
+		if ($totalVictory) $toDestroy['winner'] = [];
+		else $toDestroy['winner'] = array_slice($toDestroy['winner'], 0, ceil(sizeof($toDestroy['losers']) / 2));
+
+		return $toDestroy;
 	}
 	function growthActions(string $color, int $difficulty, int $dice): array
 	{
@@ -835,7 +868,7 @@ class Automas extends APP_GameClass
 			{
 				$technologies = array_intersect($counters, array_keys(Factions::TECHNOLOGIES));
 				$technology = array_shift($technologies);
-				$bgagame->acResearch($color, $technology, true);
+				$bgagame->acResearch($color, [$technology], true);
 				continue;
 			}
 			$buildShips = array_search('buildShips', $counters);

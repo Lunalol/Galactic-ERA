@@ -36,17 +36,25 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			for (let faction of Object.values(this.bgagame.gamedatas.factions))
 			{
-				if (faction.player_id >= 0)
+				if (true)
 				{
+					const angle = 60 * (faction.player_id < 0 ? 1 : faction.homeStar) - 210;
+//
 					const node = dojo.place(this.bgagame.format_block('ERApanel', {color: faction.color}), 'ERAboard');
-					const angle = 60 * faction.homeStar - 210;
-					const x = this.hexagons['0:+0+0+0'].x + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].x - this.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
-					const y = this.hexagons['0:+0+0+0'].y + 2.5 * (this.hexagons[faction.homeStar + ':+0+0+0'].y - this.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
+					if (faction.player_id <= 0)
+					{
+						dojo.style(`ERApopulationTrack-${faction.color}`, 'display', 'none');
+						dojo.style(`ERAplayerAid-${faction.color}`, 'display', 'none');
+					}
+					dojo.style(node, 'transform-origin', 'center');
+					dojo.style(node, 'transform', `scale(1) rotate(${angle}deg)`);
+//
+					const x = this.hexagons['0:+0+0+0'].x + (faction.player_id < 0 ? 5.75 + +faction.player_id : 2.25) * (this.hexagons[(faction.player_id < 0 ? 1 : faction.homeStar) + ':+0+0+0'].x - this.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
+					const y = this.hexagons['0:+0+0+0'].y + (faction.player_id < 0 ? 5.75 + +faction.player_id : 2.25) * (this.hexagons[(faction.player_id < 0 ? 1 : faction.homeStar) + ':+0+0+0'].y - this.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
+//
 					dojo.style(node, 'position', 'absolute');
 					dojo.style(node, 'left', x + 'px');
 					dojo.style(node, 'top', y + 'px');
-					dojo.style(node, 'transform-origin', 'center');
-					dojo.style(node, 'transform', `scale(1) rotate(${angle}deg)`);
 					dojo.connect($(`ERAplayerAid-${faction.color}`), 'click', (event) => {
 						dojo.stopEvent(event);
 						if (dojo.hasClass(event.currentTarget, 'ERAfocus'))
@@ -58,11 +66,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						else this.bgagame.focus(event.currentTarget);
 					});
 					dojo.connect($(`ERAplayerAid-${faction.color}`), 'transitionend', (event) => dojo.style(event.currentTarget, {'pointer-events': '', 'z-index': ''}));
-				}
-				if (faction.player_id == 0)
-				{
-					dojo.style(`ERApopulationTrack-${faction.color}`, 'display', 'none');
-					dojo.style(`ERAplayerAid-${faction.color}`, 'display', 'none');
 				}
 			}
 //
@@ -308,7 +311,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			];
 //
 			let location = this.nearest(x, y);
-
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
 				if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);

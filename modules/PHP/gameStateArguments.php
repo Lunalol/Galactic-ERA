@@ -199,11 +199,13 @@ trait gameStateArguments
 			{
 				$this->possible[$player_id]['color'] = $color;
 				$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'counters');
-				$this->possible[$player_id]['N'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+				$this->possible[$player_id]['oval'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+				$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
+				$this->possible[$player_id]['square'] = 1 + (Factions::getTechnology($color, 'Robotics') >= 5 ? 1 : 0);
+				$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
 //
 				$homeStar = Ships::getHomeStar($color);
 //
-				$this->possible[$player_id]['additionalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
 				$this->possible[$player_id]['additional'] = 0;
 				foreach (Counters::getPopulation($color) as $location => $population) if ($population >= 5 && $location !== $homeStar) $this->possible[$player_id]['additional']++;
 			}
