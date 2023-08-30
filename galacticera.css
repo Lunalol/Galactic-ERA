@@ -233,6 +233,7 @@ div,img {
 	position:relative;
 	width: 714px;
 	height: 314px;
+	background-size: 100%;
 }
 .ERApopulationTrack .ERAcounter-populationDisk {
 	opacity: 100%;
@@ -241,22 +242,22 @@ div,img {
 	opacity: 50%;
 }
 .ERApanel-FF3333 .ERApopulationTrack {
-	background-image: url('img/populationTracks/FF3333.png');
+	background-image: url('img/populationTracks/FF3333.jpg');
 }
 .ERApanel-00CC00 .ERApopulationTrack {
-	background-image: url('img/populationTracks/00CC00.png');
+	background-image: url('img/populationTracks/00CC00.jpg');
 }
 .ERApanel-6666FF .ERApopulationTrack {
-	background-image: url('img/populationTracks/6666FF.png');
+	background-image: url('img/populationTracks/6666FF.jpg');
 }
 .ERApanel-FF9900 .ERApopulationTrack {
-	background-image: url('img/populationTracks/FF9900.png');
+	background-image: url('img/populationTracks/FF9900.jpg');
 }
 .ERApanel-CD1FCD .ERApopulationTrack {
-	background-image: url('img/populationTracks/CD1FCD.png');
+	background-image: url('img/populationTracks/CD1FCD.jpg');
 }
 .ERApanel-FFFF00 .ERApopulationTrack {
-	background-image: url('img/populationTracks/FFFF00.png');
+	background-image: url('img/populationTracks/FFFF00.jpg');
 }
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="Technology Track"> */
@@ -265,6 +266,7 @@ div,img {
 	position:relative;
 	width: 877px;
 	height: 532px;
+	background-size: 100%;
 }
 .ERAtechTrack .ERAcounter-cube {
 	opacity: 100%;
@@ -273,22 +275,22 @@ div,img {
 	opacity: 50%;
 }
 .ERApanel-FF3333 .ERAtechTrack {
-	background-image: url('img/techTracks/FF3333.png');
+	background-image: url('img/techTracks/FF3333.jpg');
 }
 .ERApanel-00CC00 .ERAtechTrack {
-	background-image: url('img/techTracks/00CC00.png');
+	background-image: url('img/techTracks/00CC00.jpg');
 }
 .ERApanel-6666FF .ERAtechTrack {
-	background-image: url('img/techTracks/6666FF.png');
+	background-image: url('img/techTracks/6666FF.jpg');
 }
 .ERApanel-FF9900 .ERAtechTrack {
-	background-image: url('img/techTracks/FF9900.png');
+	background-image: url('img/techTracks/FF9900.jpg');
 }
 .ERApanel-CD1FCD .ERAtechTrack {
-	background-image: url('img/techTracks/CD1FCD.png');
+	background-image: url('img/techTracks/CD1FCD.jpg');
 }
 .ERApanel-FFFF00 .ERAtechTrack {
-	background-image: url('img/techTracks/FFFF00.png');
+	background-image: url('img/techTracks/FFFF00.jpg');
 }
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="Player aids"> */
@@ -719,8 +721,13 @@ div,img {
 	filter:brightness(75%);
 	pointer-events: none;
 }
-.ERAstatus>.ERAship {
+.ERAstatus .ERAship, .ERAfleets .ERAship {
 	position: relative;
+}
+.ERAfleets .ERAship:not([fleet]) {
+	transform-origin: left top;
+	transform: scale(20%);
+	margin-bottom: -450%;
 }
 .ERAship.ERAselectable {
 	pointer-events: all;

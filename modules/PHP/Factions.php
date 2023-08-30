@@ -197,10 +197,13 @@ class Factions extends APP_GameClass
 		$locations = array_unique(array_merge(array_column(Ships::getAll($color), 'location'), array_keys(Counters::getPopulation($color))));
 //
 		$factions = [];
-		foreach (self::atPeace($color) as $otherColor)
+		foreach (self::list() as $otherColor)
 		{
-			$inContact = array_diff(array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor))))), ['stock']);
-			if ($inContact) $factions[] = $otherColor;
+			if ($otherColor !== $color)
+			{
+				$inContact = array_diff(array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor))))), ['stock']);
+				if ($inContact) $factions[] = $otherColor;
+			}
 		}
 //
 		return $factions;

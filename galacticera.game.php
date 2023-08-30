@@ -118,12 +118,12 @@ class GalacticEra extends Table
 	}
 	function dbGetScore(int $player_id): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id='$player_id'"));
+		return intval(self::getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id=$player_id"));
 	}
-	function dbSetScore(int $player_id, int $score = 0): void
+	function dbSetScore(int $player_id, int $score, int $score_aux = 0): void
 	{
-		$this->DbQuery("UPDATE player SET player_score = $score WHERE player_id = $player_id");
-		self::notifyAllPlayers('update_score', '', ['player_id' => $player_id, 'score' => $score]);
+		self::DbQuery("UPDATE player SET player_score=$score, player_score_aux=$score_aux WHERE player_id = $player_id");
+		self::notifyAllPlayers('updateScore', '', ['player_id' => $player_id, 'score' => $score]);
 	}
 	function dbIncScore(int $player_id, int $inc): int
 	{
@@ -157,11 +157,5 @@ class GalacticEra extends Table
 	function upgradeTableDb($from_version)
 	{
 
-	}
-	function X()
-	{
-		self::dBQuery("UPDATE factions SET `Spirituality` = 6");
-		self::dBQuery("UPDATE factions SET `Robotics` = 5");
-		self::dBQuery("UPDATE factions SET `Genetics` = 6");
 	}
 }

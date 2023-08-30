@@ -315,6 +315,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'retreat') return this.bgagame.retreat(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'retreatE') return this.bgagame.retreat(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
@@ -325,7 +326,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.removeClass(node, 'ERAfocus');
 			});
 //
-			if (['fleets', 'remoteViewing'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
+			if (['fleets', 'remoteViewing', 'movement'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
 		},
 		drawHexagon: function (hexagon, color)
 		{

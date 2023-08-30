@@ -6,6 +6,17 @@
  */
 trait gameUtils
 {
+	function ERA()
+	{
+		return [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
+	}
+	function gainDP(string $color, int $delta): int
+	{
+		$player_id = Factions::getPlayer($color);
+		if ($player_id > 0) self::dbIncScore($player_id, $delta);
+//
+		return Factions::gainDP($color, $delta);
+	}
 	function gainTechnology(string $color, string $technology): int
 	{
 		$level = Factions::gainTechnology($color, $technology);

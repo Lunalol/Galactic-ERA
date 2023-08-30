@@ -132,7 +132,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may move any or all ships'),
 		'type' => 'activeplayer',
 		'args' => 'argMovement',
-		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'move', 'scout', 'remoteViewing', 'done'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'done'],
 		'transitions' => ['undo' => 210, 'continue' => 220, 'next' => 230]
 	],
 	230 => [
@@ -154,12 +154,21 @@ $machinestates = [
 		'name' => 'retreat',
 		'type' => 'game',
 		'action' => 'stRetreat',
-		'transitions' => ['continue' => 240, 'retreat' => 245, 'combat' => 250, 'endCombat' => 230]
+		'transitions' => ['continue' => 240, 'retreat' => 245, 'retreatE' => 246, 'combat' => 250, 'endCombat' => 230]
 	],
 	245 => [
 		'name' => 'retreat',
 		'description' => clienttranslate('${actplayer} may choose a retreat location'),
 		'descriptionmyturn' => clienttranslate('${you} may choose a retreat location'),
+		'type' => 'activeplayer',
+		'args' => 'argRetreat',
+		'possibleactions' => ['retreat', 'combat'],
+		'transitions' => ['continue' => 240]
+	],
+	246 => [
+		'name' => 'retreatE',
+		'description' => clienttranslate('${actplayer} may choose a retreat location'),
+		'descriptionmyturn' => clienttranslate('${you} may choose a retreat location for your (E)vade fleet only'),
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
 		'possibleactions' => ['retreat', 'combat'],
@@ -256,7 +265,7 @@ $machinestates = [
 		'name' => 'tradingPhase',
 		'type' => 'game',
 		'action' => 'stTradingPhase',
-		'transitions' => ['tradingPhase' => 510, 'advancedFleetTactic' => 545, 'next' => 550]
+		'transitions' => ['tradingPhase' => 510, 'next' => 540]
 	],
 	510 => [
 		'name' => 'tradingPhase',
@@ -265,7 +274,13 @@ $machinestates = [
 		'type' => 'multipleactiveplayer',
 		'args' => 'argTradingPhase',
 		'possibleactions' => ['trade', 'pass'],
-		'transitions' => ['continue' => 510, 'next' => 550]
+		'transitions' => ['continue' => 510, 'next' => 540]
+	],
+	540 => [
+		'name' => 'tradingPhaseEnd',
+		'type' => 'game',
+		'action' => 'stTradingPhaseEnd',
+		'transitions' => ['advancedFleetTactic' => 545, 'next' => 550]
 	],
 	545 => [
 		'name' => 'advancedFleetTactic',
@@ -274,7 +289,7 @@ $machinestates = [
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactic',
 		'possibleactions' => ['advancedFleetTactic'],
-		'transitions' => ['continue' => 550]
+		'transitions' => ['continue' => 545, 'next' => 550]
 	],
 	550 => [
 		'name' => 'scoringPhase',

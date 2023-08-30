@@ -2,7 +2,7 @@
 
 <div id='ERApanels'>
 	<div id='ERAplayArea'>
-		<div id='ERAfleets' class='ERAhide'></div>
+		<div id='ERAfleets' class='ERAfleets ERAhide'></div>
 		<div id='ERAboard'></div>
 	</div>
 	<div id='ERA-DP'></div>

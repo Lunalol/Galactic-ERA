@@ -61,7 +61,22 @@ class Counters extends APP_GameClass
 	}
 	static function gainStar(string $color, string $location): array
 	{
-		$alignment = Factions::getAlignment($color);
+		$orion = false;
+//
+		$populations = Counters::getAtLocation($location, 'populationDisk');
+		if ($populations)
+		{
+			$sizeOfPopulation = sizeof($populations);
+			$otherColor = Counters::get($populations[0])['color'];
+//
+// ORION STO & STS: Your population counts double for being conquered
+//
+			if (Factions::getStarPeople($otherColor) === 'Orion')
+			{
+				$orion = true;
+				$sizeOfPopulation *= 2;
+			}
+		}
 //
 		$ships = 0;
 		foreach (Ships::getAtLocation($location, $color) as $ship)
@@ -74,7 +89,7 @@ class Counters extends APP_GameClass
 //
 // (B)omb: For every 2 ships in this fleet increase the ship count by 1 for purposes of conquering or liberating a star
 //
-				if ($fleet === 'A')
+				if ($fleet === 'B' && !$orion)
 				{
 					if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $ships += Ships::getStatus($ship, 'ships');
 					else $ships += intval(0.5 * Ships::getStatus($ship, 'ships'));
@@ -96,7 +111,7 @@ class Counters extends APP_GameClass
 					$type = COLONIZE;
 					break;
 				case 'PRIMITIVE':
-					switch ($alignment)
+					switch (Factions::getAlignment($color))
 					{
 						case 'STO':
 							$SHIPS = INF;
@@ -111,7 +126,7 @@ class Counters extends APP_GameClass
 					}
 					break;
 				case 'ADVANCED':
-					switch ($alignment)
+					switch (Factions::getAlignment($color))
 					{
 						case 'STO':
 							$SHIPS = 1;
@@ -120,32 +135,48 @@ class Counters extends APP_GameClass
 							break;
 						case 'STS':
 							$SHIPS = 3 + 1;
+//
+// ORION STO & STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)
+//
+							if (Factions::getStarPeople($color) === 'Orion') $SHIPS = 1;
+//
 							$population = 1;
 							$type = CONQUER;
 							break;
 					}
 					break;
 			}
-			return [$ships >= $SHIPS ? $type : 0, $population];
+			return [$ships >= $SHIPS ? $type : 0, $SHIPS, $population];
 		}
-		$population = Counters::getAtLocation($location, 'populationDisk');
-		if ($population)
-		{
 //
-			switch ($alignment)
+		if ($populations)
+		{
+			$sizeOfPopulation = sizeof($populations);
+			$otherColor = Counters::get($populations[0])['color'];
+//
+// ORION STO & STS: Your population counts double for being conquered
+//
+			if (Factions::getStarPeople($otherColor) === 'Orion') $sizeOfPopulation *= 2;
+//
+			switch (Factions::getAlignment($color))
 			{
 				case 'STO': // Liberate
-					$SHIPS = 1 + sizeof($population);
-					$population = sizeof($population);
+					$SHIPS = 1 + $sizeOfPopulation;
+					$population = $sizeOfPopulation;
 					$type = LIBERATE;
 					break;
 				case 'STS': // Conquer
-					$SHIPS = 1 + sizeof($population);
+					$SHIPS = 1 + $sizeOfPopulation;
+//
+// ORION STO & STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)
+//
+					if (Factions::getStarPeople($color) === 'Orion') $SHIPS = 1;
+//
 					$population = 1;
 					$type = CONQUERVS;
 					break;
 			}
-			return [$ships >= $SHIPS ? $type : 0, $population];
+			return [$ships >= $SHIPS ? $type : 0, $SHIPS, $population];
 		}
 //
 		return [0, 0, 0];

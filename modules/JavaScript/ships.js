@@ -140,6 +140,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			const color = dojo.getAttr(selected[0], 'color');
 			let paths = this.bgagame.gamedatas.gamestate.args._private['move'][dojo.getAttr(selected[0], 'ship')];
+			if (paths === undefined) return;
 //
 			let possible = Object.keys(paths);
 			selected.forEach((node) =>
@@ -277,6 +278,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 							if (dojo.getAttr(node, 'ship') in this.bgagame.gamedatas.gamestate.args._private['scout']) scout = true;
 						});
 						dojo.toggleClass('ERAscoutButton', 'disabled', !scout);
+//
+						if (dojo.getAttr(ship, 'fleet')) return this.bgagame.fleets(location, 'fleet', dojo.query(`#ERAboard .ERAship.ERAselected`));
+						return this.bgagame.fleets(location, 'ships', dojo.query(`#ERAboard .ERAship.ERAselected`));
 					}
 				}
 			}

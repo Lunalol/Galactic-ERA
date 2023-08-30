@@ -75,7 +75,7 @@ $this->STARPEOPLES = [
 //	'ICC' => ['STO' => clienttranslate('ICC'), 'STS' => clienttranslate('ICC')],
 //	'Mantids' => ['STO' => clienttranslate('Mantids'), 'STS' => clienttranslate('Mantids')],
 //	'Mayans' => ['STO' => clienttranslate('Cosmic Mayans'), 'STS' => clienttranslate('Cosmic Mayans')],
-//	'Orion' => ['STO' => clienttranslate('Orion Republic'), 'STS' => clienttranslate('Orion Empire')],
+	'Orion' => ['STO' => clienttranslate('Orion Republic'), 'STS' => clienttranslate('Orion Empire')],
 //	'Plejars' => ['STO' => clienttranslate('Plejars'), 'STS' => clienttranslate('Plejars')],
 //	'Progenitors' => ['STO' => clienttranslate('Progenitors'), 'STS' => clienttranslate('Progenitors')],
 //	'Rogue' => ['STO' => clienttranslate('Rogue AI'), 'STS' => clienttranslate('Rogue AI')],

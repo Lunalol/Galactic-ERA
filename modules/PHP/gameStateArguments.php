@@ -106,6 +106,7 @@ trait gameStateArguments
 			'view' => Factions::getStatus($color, 'view'),
 			'declareWar' => Factions::atPeace($color)
 		];
+//
 		foreach (Ships::getAll($color) as $ship)
 		{
 			if ($ship['activation'] !== 'done' && $ship['location'] !== 'stock')
@@ -122,6 +123,14 @@ trait gameStateArguments
 			}
 			$counters = array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), $revealed);
 			if ($counters) $this->possible['scout'][$ship['id']] = $counters;
+		}
+//
+		foreach (Ships::getAll($color, 'fleet') as $ship)
+		{
+			$fleet = Ships::getStatus($ship['id'], 'fleet');
+//
+			$this->possible['fleets'][$fleet] = $ship;
+			$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 		}
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];

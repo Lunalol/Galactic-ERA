@@ -70,7 +70,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					{
 						dojo.connect(dojo.place(`<div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace' color='${faction.color}' on='${otherFaction.color}'  title='${_('Declare war')}'></div>`, nodeStatus), 'click', (event) => {
 							dojo.stopEvent(event);
-							const name = $(`player_name_${otherFaction.player_id}`).innerHTML;
+							const name = $(`player_name_${otherFaction.player_id}`).children[0].innerHTML;
 							this.confirmationDialog(dojo.string.substitute(_('Declare war on ${on}'), {on: `<span style='background:#${otherFaction.color}'>${name}</span>`}), () =>
 							{
 								this.action('declareWar', {color: faction.color, on: otherFaction.color});
@@ -78,7 +78,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						});
 						dojo.connect(dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}'  class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war' color='${faction.color}' on='${otherFaction.color}'></div>`, nodeStatus), 'click', (event) => {
 							dojo.stopEvent(event);
-							const name = $(`player_name_${otherFaction.player_id}`).innerHTML;
+							const name = $(`player_name_${otherFaction.player_id}`).children[0].innerHTML;
 							this.confirmationDialog(dojo.string.substitute(_('Propose peace to ${on}'), {on: `<span style='background:#${otherFaction.color}'>${name}</span>`}), () =>
 							{
 								this.action('declarePeace', {color: faction.color, on: otherFaction.color});
@@ -454,6 +454,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					break;
 //
 				case 'retreat':
+				case 'retreatE':
 					{
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 						dojo.setStyle(svg, 'position', 'absolute');
@@ -641,6 +642,58 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					if (args._private.view === 0) dojo.style('ERAviewButton', 'filter', 'grayscale(1)');
 				}
 //
+				if ('_private' in args && 'fleets' in args._private)
+				{
+					dojo.empty('ERAfleets');
+					for (let [fleet, {location: location, ships: ships}] of Object.entries(args._private.fleets))
+					{
+						const _fleetNode = dojo.place(this.format_block('ERAfleet', {fleet: fleet, location: location, ships: ships}), 'ERAfleets');
+//
+						dojo.place(`<div class='ERAfleetAction' style="color:white;"></div>`, _fleetNode);
+						const fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, ship: ships, location: location}), _fleetNode);
+						dojo.setAttr(fleetNode, 'fleet', fleet);
+//
+						const shipsNode = dojo.place(`<div style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
+						for (let index = 0; index < ships; index++)
+						{
+							let node = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, location: location}), shipsNode);
+							dojo.addClass(node, 'ERAselectable');
+							dojo.connect(node, 'click', (event) => {
+								dojo.stopEvent(event);
+								if (event.detail === 1) dojo.toggleClass(node, 'ERAselected');
+								if (event.detail === 2) dojo.query(`#ERAfleets>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(node, 'ERAselected'));
+							});
+						}
+//
+						dojo.connect(fleetNode, 'click', (event) => {
+							dojo.stopEvent(event);
+							const fleet = dojo.getAttr(event.currentTarget, 'fleet');
+							const shipsToFleet = dojo.query(`#ERAboard .ERAship.ERAselected:not([fleet])`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
+							if (shipsToFleet.length)
+							{
+								dojo.empty('ERAfleets');
+								return this.action('shipsToFleet', {color: this.color, fleet: fleet, ships: JSON.stringify(shipsToFleet)});
+							}
+							const fleetToShips = dojo.query(`#ERAfleets .ERAship.ERAselected[ship='${fleet}']:not([fleet])`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
+							if (fleetToShips.length)
+							{
+								dojo.empty('ERAfleets');
+								return this.action('fleetToShips', {color: this.color, fleet: fleet, ships: fleetToShips.length});
+							}
+							const fleetToFleet = dojo.query(`#ERAfleets .ERAship.ERAselected:not([ship='${fleet}']):not([fleet])`);
+							if (fleetToFleet.length)
+							{
+								dojo.empty('ERAfleets');
+								return this.action('fleetToFleet', {color: this.color, from: dojo.getAttr(fleetToFleet[0], 'ship'), to: fleet, ships: fleetToFleet.length});
+							}
+							const fleets = dojo.query(`#ERAboard .ERAship.ERAselected[fleet]`).reduce((L, node) => [...L, node.getAttribute('fleet')], [fleet]);
+							dojo.empty('ERAfleets');
+							this.action('swapFleets', {color: this.color, fleets: JSON.stringify(fleets)});
+						}
+						);
+					}
+				}
+//
 				switch (stateName)
 				{
 					case 'starPeopleChoice':
@@ -687,12 +740,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							dojo.toggleClass(fleetNode, 'ERAselectable', !args._private.advancedFleetTactic[fleet]);
 //
 							const shipsNode = dojo.place(`<div style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
-							for (let index = 0; index < ships; index++)
-							{
-								let node = dojo.place(this.format_block('ERAship', {id: fleet, color: args._private.color, location: location}), shipsNode);
-								dojo.style(node, 'transform', `scale(20%) translateY(${index * node.clientHeight / 4}px)`);
-								dojo.style(node, 'transform-origin', 'left top');
-							}
+							for (let index = 0; index < ships; index++) dojo.place(this.format_block('ERAship', {id: fleet, color: args._private.color, location: location}), shipsNode);
 //
 							dojo.connect(fleetNode, 'click', (event) => {
 								dojo.stopEvent(event);
@@ -724,57 +772,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'fleets':
 //
-						dojo.empty('ERAfleets');
-						for (let [fleet, {location: location, ships: ships}] of Object.entries(args._private.fleets))
-						{
-							const _fleetNode = dojo.place(this.format_block('ERAfleet', {fleet: fleet, location: location, ships: ships}), 'ERAfleets');
-//
-							dojo.place(`<div class='ERAfleetAction' style="color:white;"></div>`, _fleetNode);
-							const fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, ship: ships, location: location}), _fleetNode);
-							dojo.setAttr(fleetNode, 'fleet', fleet);
-//
-							const shipsNode = dojo.place(`<div style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
-							for (let index = 0; index < ships; index++)
-							{
-								let node = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, location: location}), shipsNode);
-								dojo.style(node, 'transform', `scale(20%) translateY(${index * node.clientHeight / 4}px)`);
-								dojo.style(node, 'transform-origin', 'left top');
-								dojo.addClass(node, 'ERAselectable');
-								dojo.connect(node, 'click', (event) => {
-									dojo.stopEvent(event);
-									if (event.detail === 1) dojo.toggleClass(node, 'ERAselected');
-									if (event.detail === 2) dojo.query(`#ERAfleets>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(node, 'ERAselected'));
-								});
-							}
-//
-//							dojo.style(fleetNode, 'pointer-events', 'all');
-							dojo.connect(fleetNode, 'click', (event) => {
-								dojo.stopEvent(event);
-								const fleet = dojo.getAttr(event.currentTarget, 'fleet');
-								const shipsToFleet = dojo.query(`#ERAboard .ERAship.ERAselected:not([fleet])`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
-								if (shipsToFleet.length)
-								{
-									dojo.empty('ERAfleets');
-									return this.action('shipsToFleet', {color: this.color, fleet: fleet, ships: JSON.stringify(shipsToFleet)});
-								}
-								const fleetToShips = dojo.query(`#ERAfleets .ERAship.ERAselected[ship='${fleet}']:not([fleet])`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
-								if (fleetToShips.length)
-								{
-									dojo.empty('ERAfleets');
-									return this.action('fleetToShips', {color: this.color, fleet: fleet, ships: fleetToShips.length});
-								}
-								const fleetToFleet = dojo.query(`#ERAfleets .ERAship.ERAselected:not([ship='${fleet}']):not([fleet])`);
-								if (fleetToFleet.length)
-								{
-									dojo.empty('ERAfleets');
-									return this.action('fleetToFleet', {color: this.color, from: dojo.getAttr(fleetToFleet[0], 'ship'), to: fleet, ships: fleetToFleet.length});
-								}
-								const fleets = dojo.query(`#ERAboard .ERAship.ERAselected[fleet]`).reduce((L, node) => [...L, node.getAttribute('fleet')], [fleet]);
-								dojo.empty('ERAfleets');
-								this.action('swapFleets', {color: this.color, fleets: JSON.stringify(fleets)});
-							}
-							);
-						}
 						this.addActionButton('ERAdoneButton', _('Go to Movement phase'), () => {
 							const node = $('ERAdoneButton');
 							if (node.count)
@@ -798,7 +795,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'movement':
 //
-						this.addActionButton('ERAundoButton', _('undo'), () => this.action('undo', {color: this.color}));
+						this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
 //
 						this.addActionButton('ERAscoutButton', _('Scout'), () => {
 							const ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
@@ -835,6 +832,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						break;
 //
 					case 'retreat':
+					case 'retreatE':
 //
 						if (!args.winner) this.addActionButton('ERAnoRetreat', _('No retreat'), () => this.action('retreat', {color: this.color, location: '""'}));
 						break;
@@ -1115,13 +1113,14 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			switch (type)
 			{
-				case 'ships':
-					dojo.query(`#ERAfleets .ERAship`).removeClass('ERAselectable');
 //
+				case 'ships':
+//
+					dojo.query(`#ERAfleets .ERAship`).removeClass('ERAselectable');
 					dojo.query('#ERAfleets .ERAfleet').forEach((node) => {
 						let hide = true;
 						let fleetLocation = dojo.getAttr(node, 'location');
-						if ((fleetLocation === 'stock' && this.gamedatas.gamestate.args._private.stars.includes(location)) || fleetLocation === location)
+						if (fleetLocation === location || (this.gamedatas.gamestate.name === 'fleets' && fleetLocation === 'stock' && this.gamedatas.gamestate.args._private.stars.includes(location)))
 						{
 							hide = false;
 							node.querySelector('.ERAfleetAction').innerHTML = '⟱';
@@ -1130,15 +1129,23 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						dojo.toggleClass(node, 'ERAhide', hide);
 					});
 					break;
+//
 				case 'fleet':
+//
 					const fleet = dojo.getAttr(nodes[0], 'fleet');
 					dojo.query('#ERAfleets .ERAfleet').forEach((node) => {
 						let hide = true;
+						let fleetLocation = dojo.getAttr(node, 'location');
 						if (fleet !== dojo.getAttr(node, 'fleet'))
 						{
-							if (this.gamedatas.gamestate.args._private.stars.includes(location))
+							if (fleetLocation === location)
 							{
-								let fleetLocation = dojo.getAttr(node, 'location');
+								node.querySelector('.ERAfleetAction').innerHTML = '⇚⇛';
+								dojo.query('>.ERAship', node).addClass('ERAselectable');
+								hide = false;
+							}
+							else if (this.gamedatas.gamestate.name === 'fleets' && this.gamedatas.gamestate.args._private.stars.includes(location))
+							{
 								if (fleetLocation === 'stock') hide = false;
 								if (this.gamedatas.gamestate.args._private.stars.includes(fleetLocation)) hide = false;
 								node.querySelector('.ERAfleetAction').innerHTML = '⇚⇛';
@@ -1251,7 +1258,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			{
 				args.processed = true;
 				if ('GPS' in args) {
-					this.board.centerMap(args.GPS);
+					if (!this.isCurrentPlayerActive()) this.board.centerMap(args.GPS);
 					args.GPS = `<span onclick="gameui.onCenter(event)" location='${args.GPS}'>📌</span>`;
 				}
 				if ('DICE' in args) args.DICE = `<span class='ERAdice' style='background-position-x:-${30 * (args.DICE - 1)}px'></span>`;
