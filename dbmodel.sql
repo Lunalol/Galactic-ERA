@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `undo`
 (
     `undoID` INT,`id` INT,
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
-    `type` ENUM ('move', 'done'),
+    `type` ENUM ('create', 'destroy', 'move', 'done'),
     `status` JSON,
     PRIMARY KEY(`undoID`,`id`,`color`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;

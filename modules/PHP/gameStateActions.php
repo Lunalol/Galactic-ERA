@@ -84,10 +84,15 @@ trait gameStateActions
 		if ($ships)
 		{
 			$fleetID = Ships::getFleet($color, $Fleet);
-			Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + sizeof($ships));
+			$fleet = Ships::get($color, $fleetID);
+//
+// UNDO
+//
+			$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
+			$json = self::escapeStringForDB(json_encode(array_merge($fleet, ['Fleet' => Ships::getStatus($fleetID, 'fleet'), 'ships' => Ships::getStatus($fleetID, 'ships')])));
+			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$fleetID,'$color','move','$json')");
 //
 			$location = Ships::get($color, $ships[0])['location'];
-			$fleet = Ships::get($color, $fleetID);
 			if ($fleet['location'] === 'stock')
 			{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -97,15 +102,23 @@ trait gameStateActions
 				Ships::setLocation($fleetID, $fleet['location']);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => $fleet]);
+//* -------------------------------------------------------------------------------------------------------- */
 			}
+			Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + sizeof($ships));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$MP = INF;
+			$MP = $fleet['MP'];
 			foreach ($ships as $shipID)
 			{
 				$ship = Ships::get($color, $shipID);
-				$MP = min($ship['MP'], $MP);
+//
+// UNDO
+//
+				$json = self::escapeStringForDB(json_encode($ship));
+				self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$shipID,'$color','create','$json')");
+//
+				if ($ship['activation'] !== 'no') $MP = min($ship['MP'], $MP);
 				if (!$ship) throw new BgaVisibleSystemException('Invalid ship: ' . $shipID);
 				if ($ship['location'] !== $location) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 				if ($ship['fleet'] !== 'ship') throw new BgaVisibleSystemException('Not a ship');
@@ -150,8 +163,13 @@ trait gameStateActions
 //
 			if (intval(Ships::getStatus($fleetID, 'ships')) < $ships) throw new BgaVisibleSystemException('Not enough ships: ' . $ships);
 //
-			Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) - $ships);
+// UNDO
 //
+			$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
+			$json = self::escapeStringForDB(json_encode(array_merge($fleet, ['Fleet' => Ships::getStatus($fleetID, 'fleet'), 'ships' => Ships::getStatus($fleetID, 'ships')])));
+			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$fleetID,'$color','move','$json')");
+//
+			Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) - $ships);
 			if (intval(Ships::getStatus($fleetID, 'ships')) === 0)
 			{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -166,10 +184,15 @@ trait gameStateActions
 //
 			for ($i = 0; $i < $ships; $i++)
 			{
-				$ship = Ships::create($color, 'ship', $location);
-				self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get($color, $ship)]);
-				Ships::setMP($ship, $MP);
-				Ships::setActivation($ship, $MP == 0 ? 'done' : 'yes');
+				$shipID = Ships::create($color, 'ship', $location);
+//
+// UNDO
+//
+				self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$shipID,'$color','destroy','[]')");
+//
+				self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get($color, $shipID)]);
+				Ships::setMP($shipID, $MP);
+				Ships::setActivation($shipID, $MP == 0 ? 'done' : 'yes');
 			}
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) leave fleet ${GPS}'), ['GPS' => $location, 'N' => $ships]);
@@ -196,6 +219,10 @@ trait gameStateActions
 		{
 			$fromID = Ships::getFleet($color, $from);
 			$fromFleet = Ships::get($color, $fromID);
+//
+			$toID = Ships::getFleet($color, $to);
+			$toFleet = Ships::get($color, $toID);
+//
 			$fromFleetMP = $fromFleet['MP'];
 			if ($from === 'D')
 			{
@@ -204,8 +231,6 @@ trait gameStateActions
 			}
 			if ($fromFleetMP < 0) throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn.'));
 //
-			$toID = Ships::getFleet($color, $to);
-			$toFleet = Ships::get($color, $toID);
 			$toFleetMP = $toFleet['MP'];
 			if ($to === 'D')
 			{
@@ -216,8 +241,15 @@ trait gameStateActions
 //
 			if (intval(Ships::getStatus($fromID, 'ships')) < $ships) throw new BgaVisibleSystemException('Not enough ships: ' . $ships);
 //
-			$location = $fromFleet['location'];
+// UNDO
 //
+			$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
+			$json = self::escapeStringForDB(json_encode(array_merge($fromFleet, ['Fleet' => Ships::getStatus($fromID, 'fleet'), 'ships' => Ships::getStatus($fromID, 'ships')])));
+			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$fromID,'$color','move','$json')");
+			$json = self::escapeStringForDB(json_encode(array_merge($toFleet, ['Fleet' => Ships::getStatus($toID, 'fleet'), 'ships' => Ships::getStatus($toID, 'ships')])));
+			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$toID,'$color','move','$json')");
+//
+			$location = $fromFleet['location'];
 			if ($toFleet['location'] === 'stock')
 			{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -506,8 +538,7 @@ trait gameStateActions
 		$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color' AND type = 'move'");
 		if ($undoID)
 		{
-			$toUndo = self::getCollectionFromDB("SELECT id, status FROM `undo` WHERE color = '$color' AND undoID = $undoID AND type = 'move'", true);
-			foreach ($toUndo as $ship => $json)
+			foreach (self::getCollectionFromDB("SELECT id, status FROM `undo` WHERE color = '$color' AND undoID = $undoID AND type = 'move'", true) as $ship => $json)
 			{
 				$status = json_decode($json, JSON_OBJECT_AS_ARRAY);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -517,12 +548,40 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get($color, $ship)]);
 //* -------------------------------------------------------------------------------------------------------- */
+				if (array_key_exists('Fleet', $status)) Ships::setStatus($ship, 'fleet', $status['Fleet']);
+				if (array_key_exists('ships', $status)) Ships::setStatus($ship, 'ships', $status['ships']);
+//
 				foreach (Counters::isRevealed($ship, 'fleet') as $otherColor)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => Ships::getStatus($ship, 'fleet'), 'ships' => Ships::getStatus($ship, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
+			}
+			foreach (self::getCollectionFromDB("SELECT id, status FROM `undo` WHERE color = '$color' AND undoID = $undoID AND type = 'create'", true) as $ship => $json)
+			{
+				$status = json_decode($json, JSON_OBJECT_AS_ARRAY);
+//
+				self::DbQuery("INSERT ships SET id = $ship,color = '$status[color]', activation = '$status[activation]',fleet = '$status[fleet]',location = '$status[location]', MP = $status[MP]");
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get($color, $ship)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				if (array_key_exists('Fleet', $status)) Ships::setStatus($ship, 'fleet', $status['Fleet']);
+				if (array_key_exists('ships', $status)) Ships::setStatus($ship, 'ships', $status['ships']);
+//
+				foreach (Counters::isRevealed($ship, 'fleet') as $otherColor)
+				{
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => Ships::getStatus($ship, 'fleet'), 'ships' => Ships::getStatus($ship, 'ships')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+			}
+			foreach (self::getCollectionFromDB("SELECT id, status FROM `undo` WHERE color = '$color' AND undoID = $undoID AND type = 'destroy'", true) as $ship => $json)
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($color, $ship)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				Ships::destroy($ship);
 			}
 			self::DbQuery("DELETE FROM `undo` WHERE color = '$color' AND undoID = $undoID");
 		}
