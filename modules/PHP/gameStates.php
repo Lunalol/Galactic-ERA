@@ -9,7 +9,7 @@ trait gameStates
 	function stStartOfSetup()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Setup')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Setup')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
@@ -22,20 +22,20 @@ trait gameStates
 //
 		$galacticStory = self::getGameStateValue('galacticStory');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', clienttranslate('Galactic Story: <B>${STORY}</B>'), ['i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]]);
+		self::notifyAllPlayers('msg', clienttranslate('Galactic Story: <B>${STORY}</B>'), ['i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$galacticGoal = self::getGameStateValue('galacticGoal');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', clienttranslate('Galactic goal: <B>${GOAL}</B>'), ['i18n' => ['GOAL'], 'GOAL' => $this->GOALS[$galacticGoal]]);
+		self::notifyAllPlayers('msg', clienttranslate('Galactic goal: <B>${GOAL}</B>'), ['i18n' => ['GOAL'], 'GOAL' => $this->GOALS[$galacticGoal]]);
 //* -------------------------------------------------------------------------------------------------------- */
-		if ($galacticGoal !== NONE) self::notifyAllPlayers('message', clienttranslate('---- Galactic goal not implemented ----'), []);
+		if ($galacticGoal !== NONE) self::notifyAllPlayers('msg', clienttranslate('---- Galactic goal not implemented ----'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
 	function stSetUpBoard()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Set Up Board')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Set Up Board')]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Select randomly sectors and place them in location
@@ -221,7 +221,7 @@ trait gameStates
 	function stStarPeople()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Star People choice')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Star People choice')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$starPeoples = array_keys($this->STARPEOPLES);
 //
@@ -269,7 +269,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Alignment choice')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Alignment choice')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		if (FAST_START)
 		{
@@ -302,7 +302,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Star People Starting Bonus')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Star People Starting Bonus')]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Star people starting bonus
@@ -320,7 +320,7 @@ trait gameStates
 					{
 						self::dbSetScore(Factions::getPlayer($color), self::gainDP($color, 2));
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('message', clienttranslate('${player_name} gains <B>2 DP</B>'), ['player_name' => Factions::getName($color)]);
+						self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 DP</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
 // ANCHARA SPECIAL STS: Start with 2 additional ships
@@ -449,7 +449,7 @@ trait gameStates
 //
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${player_name} rolls ${DICE}'), [
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 						'player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 					foreach (Automas::startBonus($color, $dice) as $technology => $level)
@@ -461,7 +461,7 @@ trait gameStates
 			}
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Sector Starting Bonus')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Sector Starting Bonus')]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Home Star bonus
@@ -480,7 +480,7 @@ trait gameStates
 						case 'Grow':
 							Factions::setStatus($color, 'bonus', 'Grow');
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyAllPlayers('message', clienttranslate('${player_name} gains a free <B>growth action</B> in the first round'), [
+							self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B> in the first round'), [
 								'player_name' => Factions::getName($color),
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -497,14 +497,14 @@ trait gameStates
 									{
 										Factions::setActivation($color, 'no');
 //* -------------------------------------------------------------------------------------------------------- */
-										self::notifyAllPlayers('message', clienttranslate('${player_name} may not have Robotics higher than level 1'), ['player_name' => Factions::getName($color)]);
+										self::notifyAllPlayers('msg', clienttranslate('${player_name} may not have Robotics higher than level 1'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 									}
 									else if ($current > 1)
 									{
 										Factions::setActivation($color, 'no');
 //* -------------------------------------------------------------------------------------------------------- */
-										self::notifyAllPlayers('message', clienttranslate('${player_name} has already <B>${TECHNOLOGY}</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],]);
+										self::notifyAllPlayers('msg', clienttranslate('${player_name} has already <B>${TECHNOLOGY}</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology],]);
 //* -------------------------------------------------------------------------------------------------------- */
 									}
 									else self::gainTechnology($color, $technology);
@@ -527,14 +527,14 @@ trait gameStates
 						case 'Population':
 							{
 //* -------------------------------------------------------------------------------------------------------- */
-								self::notifyAllPlayers('message', clienttranslate('${player_name} gains <B>2 populations</B>'), ['player_name' => Factions::getName($color)]);
+								self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 populations</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
 							break;
 						case 'Grow':
 							{
 //* -------------------------------------------------------------------------------------------------------- */
-								self::notifyAllPlayers('message', clienttranslate('${player_name} gains a free <B>growth action</B>'), ['player_name' => Factions::getName($color)]);
+								self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
 							break;
@@ -546,7 +546,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Individual choices')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Individual choices')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
@@ -585,7 +585,7 @@ trait gameStates
 			return $this->gamestate->nextState('individualChoice');
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-phase">${log}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Start of game')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -631,7 +631,7 @@ trait gameStates
 		Factions::setStatus($color, 'view', Factions::TECHNOLOGIES['Spirituality'][Factions::getTechnology($color, 'Spirituality')]);
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${log}</span>', [
 			'log' => ['log' => clienttranslate('${player_name} Move/Combat Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
@@ -649,22 +649,22 @@ trait gameStates
 					$dice2 = bga_rand(1, 6);
 					$dice = max($dice1, $dice2);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${DICE1} ${DICE2} are rolled'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
-					self::notifyAllPlayers('message', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('msg', clienttranslate('${DICE1} ${DICE2} are rolled'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
+					self::notifyAllPlayers('msg', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				else
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${DICE} is rolled'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('msg', clienttranslate('${DICE} is rolled'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				Automas::movement($this, $color, $dice);
 			}
 			else
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', clienttranslate('No ships to move'), ['player_name' => Factions::getName($color)]);
+				self::notifyAllPlayers('msg', clienttranslate('No ships to move'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 
 			return $this->gamestate->nextState('continue');
@@ -729,11 +729,14 @@ trait gameStates
 //
 					if (Factions::getAdvancedFleetTactic($defender, 'E') === '2x')
 					{
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${player_name} reveals an (E)vade fleet (2x)'), ['player_name' => Factions::getName($defender)]);
+//* -------------------------------------------------------------------------------------------------------- */
 						$attackerCVs = Ships::CV($attacker, $location);
-						foreach ($attackerCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
+						foreach ($attackerCVs['fleets'] as $fleet => ['ships' => $ships])
 						{
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyPlayer($player_id, 'message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+							self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 								'LOG' => [
 									'log' => clienttranslate('<B>${fleet}</B> fleet with ${ships} ship(s)'),
 									'args' => ['fleet' => $fleet, 'ships' => $ships]
@@ -744,7 +747,7 @@ trait gameStates
 						if ($attackerCVs['ships']['ships'])
 						{
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyPlayer($player_id, 'message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+							self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 								'LOG' => [
 									'log' => clienttranslate('${ships} single ship(s))'),
 									'args' => ['ships' => $attackerCVs['ships']['ships']]
@@ -752,6 +755,12 @@ trait gameStates
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
+					}
+					else
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${player_name} reveals an (E)vade fleet'), ['player_name' => Factions::getName($defender)]);
+//* -------------------------------------------------------------------------------------------------------- */
 					}
 //
 					$this->gamestate->changeActivePlayer($player_id);
@@ -772,14 +781,14 @@ trait gameStates
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${player_name} rolls ${DICE}'), [
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 						'player_name' => Factions::getName($defender), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				if ($roll && $dice > $roll)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${player_name} accepts combat'), ['player_name' => Factions::getName($defender)]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} accepts combat'), ['player_name' => Factions::getName($defender)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					Factions::setStatus($defender, 'retreat', 'no');
 					return $this->gamestate->nextState('continue');
@@ -804,11 +813,13 @@ trait gameStates
 		$defenders = Ships::getConflictFactions($attacker, $location);
 		if (!$defenders) return $this->gamestate->nextState('endCombat');
 //
+		Factions::setStatus($attacker, 'retreat');
+//
 		$attackerCVs = Ships::CV($attacker, $location);
 		foreach ($attackerCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+			self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
 					'log' => clienttranslate('<B>+ ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
 					'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
@@ -819,7 +830,7 @@ trait gameStates
 		if ($attackerCVs['ships']['ships'])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+			self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
 					'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
 					'args' => ['CV' => $attackerCVs['ships']['CV'], 'ships' => $attackerCVs['ships']['ships']]
@@ -829,7 +840,7 @@ trait gameStates
 		}
 		$attackerCV = $attackerCVs['total'];
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', clienttranslate('Attacker side: ${CV} CV'), ['CV' => $attackerCV]);
+		self::notifyAllPlayers('msg', clienttranslate('Attacker side: ${CV} CV'), ['CV' => $attackerCV]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$defenderCV = 0;
 		foreach ($defenders as $defender)
@@ -840,7 +851,7 @@ trait gameStates
 			foreach ($defenderCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
+				self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
 					'LOG' => [
 						'log' => clienttranslate('<B>+ ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
 						'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
@@ -852,7 +863,7 @@ trait gameStates
 			if ($defenderCVs['ships']['ships'])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
+				self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
 					'LOG' => [
 						'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
 						'args' => ['CV' => $defenderCVs['ships']['CV'], 'ships' => $defenderCVs['ships']['ships']]
@@ -863,7 +874,7 @@ trait gameStates
 			$defenderCV += $defenderCVs['total'];
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', clienttranslate('Defender side: ${CV} CV'), ['CV' => $defenderCV]);
+		self::notifyAllPlayers('msg', clienttranslate('Defender side: ${CV} CV'), ['CV' => $defenderCV]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 		if ($attackerCV > $defenderCV) $attackerIsWinner = true;
@@ -874,7 +885,7 @@ trait gameStates
 		{
 			$totalVictory = $attackerCV >= 3 * $defenderCV;
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', clienttranslate('<B>Attacker</B> side wins the battle'), []);
+			self::notifyAllPlayers('msg', clienttranslate('<B>Attacker</B> side wins the battle'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 			$bonus = false;
 			foreach (Ships::getAtLocation($location, $attacker, 'fleet')as $fleet) $bonus |= Factions::getAdvancedFleetTactic($attacker, Ships::getStatus($fleet, 'fleet')) === '2x';
@@ -892,7 +903,7 @@ trait gameStates
 		{
 			$totalVictory = $defenderCV >= 3 * $attackerCV;
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', clienttranslate('<B>Defender</B> side wins the battle'), []);
+			self::notifyAllPlayers('msg', clienttranslate('<B>Defender</B> side wins the battle'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 			$ships = [];
 			foreach ($defenders as $defender)
@@ -929,7 +940,7 @@ trait gameStates
 		}
 //
 		Factions::setStatus($attacker, 'winner', $winner);
-		Factions::setStatus($attacker, 'totalVictory',);
+		Factions::setStatus($attacker, 'totalVictory', $totalVictory);
 //
 // JOURNEYS Second : All players score 2 DP for every battle they win outside of their home star sector
 // Battles where all opposing ships retreated before combat are not counted
@@ -942,7 +953,7 @@ trait gameStates
 				if (intval($location[0]) !== Factions::getHomeStar($color) && $player_id > 0)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', _('All players score 2 DP for every battle they win outside of their home star sector'), []);
+					self::notifyAllPlayers('msg', _('All players score 2 DP for every battle they win outside of their home star sector'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 					$DP = 2;
 					self::gainDP($color, $DP);
@@ -988,14 +999,14 @@ trait gameStates
 				{
 					$dice = 6;
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${player_name} uses ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} uses ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				else
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				Factions::setStatus($color, 'counters', Automas::growthActions($color, intval(self::getGameStateValue('difficulty')), $dice));
@@ -1033,7 +1044,7 @@ trait gameStates
 				else
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('message', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				$counters = Factions::getStatus($color, 'counters');
@@ -1053,7 +1064,7 @@ trait gameStates
 			if (in_array('changeTurnOrderUp', $counters))
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', clienttranslate('${player_name} goes <B>up</B> in turn order'), [
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} goes <B>up</B> in turn order'), [
 					'player_name' => Factions::getName($color),
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1077,7 +1088,7 @@ trait gameStates
 			if (in_array('changeTurnOrderDown', $counters))
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', clienttranslate('${player_name} goes <B>down</B> in turn order'), [
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} goes <B>down</B> in turn order'), [
 					'player_name' => Factions::getName($color),
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1101,7 +1112,7 @@ trait gameStates
 	{
 		Factions::setActivation();
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Growth Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1122,7 +1133,7 @@ trait gameStates
 		Factions::setActivation($color, 'yes');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${log}</span>', [
 			'log' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1141,7 +1152,7 @@ trait gameStates
 	{
 		Factions::setActivation('ALL', 'done');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Trading Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1184,21 +1195,21 @@ trait gameStates
 								{
 									$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('message', clienttranslate('${player_name} rolls ${DICE}'), [
+									self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 										'player_name' => Factions::getName($with), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 								if ($roll && $dice > $roll)
 								{
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('message', clienttranslate('${player_name} denies trading'), ['player_name' => Factions::getName($with)]);
+									self::notifyAllPlayers('msg', clienttranslate('${player_name} denies trading'), ['player_name' => Factions::getName($with)]);
 //* -------------------------------------------------------------------------------------------------------- */
 									unset($inContact[$index]);
 								}
 								else
 								{
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('message', clienttranslate('${player_name} accepts trading'), ['player_name' => Factions::getName($with)]);
+									self::notifyAllPlayers('msg', clienttranslate('${player_name} accepts trading'), ['player_name' => Factions::getName($with)]);
 //* -------------------------------------------------------------------------------------------------------- */
 									Factions::setStatus($with, 'trade', [$color => ['technology' => $technologies[array_rand($technologies)], 'pending' => false]]);
 									Factions::setActivation($with, 'no');
@@ -1228,7 +1239,7 @@ trait gameStates
 	function stScoringPhase()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class = "ERA-subphase">${log}</span>', [
+		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${log}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Scoring Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1241,7 +1252,7 @@ trait gameStates
 //
 // JOURNEYS First : Every player with the STO alignment at the end of a round scores 1 DP
 //
-					self::notifyAllPlayers('message', _('Every player with the STO alignment at the end of a round scores 1 DP'), []);
+					self::notifyAllPlayers('msg', _('Every player with the STO alignment at the end of a round scores 1 DP'), []);
 					foreach (Factions::list(false) as $color)
 					{
 						if (Factions::getAlignment($color) === 'STO')
@@ -1262,7 +1273,7 @@ trait gameStates
 //
 // JOURNEYS First : All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game)
 //
-							self::notifyAllPlayers('message', _('All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game)'), []);
+							self::notifyAllPlayers('msg', _('All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game)'), []);
 							foreach (Factions::list(false) as $color)
 							{
 								$DP = sizeof(Factions::inContact($color, 'contact'));
@@ -1293,7 +1304,7 @@ trait gameStates
 //
 // JOURNEYS Second : Every player with the STS alignment at the end of a round scores 1 DP
 //
-					self::notifyAllPlayers('message', _('Every player with the STS alignment at the end of a round scores 1 DP'), []);
+					self::notifyAllPlayers('msg', _('Every player with the STS alignment at the end of a round scores 1 DP'), []);
 					foreach (Factions::list(false) as $color)
 					{
 						if (Factions::getAlignment($color) === 'STS')
@@ -1314,7 +1325,7 @@ trait gameStates
 //
 // JOURNEYS Second : Every player “at war” with at least one other player at the end of the round scores 1 DP
 //
-							self::notifyAllPlayers('message', _('Every player “at war” with at least one other player at the end of the round scores 1 DP'), []);
+							self::notifyAllPlayers('msg', _('Every player “at war” with at least one other player at the end of the round scores 1 DP'), []);
 							foreach (Factions::list(false) as $color)
 							{
 								$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 1;
@@ -1331,7 +1342,7 @@ trait gameStates
 //
 // MIGRATIONS Second : Every player “at war” with at least one other player at the end of the round scores 1 DP
 //
-							self::notifyAllPlayers('message', _('Every player “at war” with at least one other player at the end of the round scores 1 DP'), []);
+							self::notifyAllPlayers('msg', _('Every player “at war” with at least one other player at the end of the round scores 1 DP'), []);
 							foreach (Factions::list(false) as $color)
 							{
 								$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 1;
@@ -1343,13 +1354,13 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 							}
-							self::notifyAllPlayers('message', _('Galactic story MIGRATIONS not implemented'), []);
+							self::notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
 							break;
 						case RIVALRY:
 //
 // RIVALRY Second : Every player “at war” with at least one other player at the end of the round scores 1 DP
 //
-							self::notifyAllPlayers('message', _('Every player “at war” with at least one other player at the end of the round scores 1 DP'), []);
+							self::notifyAllPlayers('msg', _('Every player “at war” with at least one other player at the end of the round scores 1 DP'), []);
 							foreach (Factions::list(false) as $color)
 							{
 								$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 1;
@@ -1361,13 +1372,13 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 							}
-							self::notifyAllPlayers('message', _('Galactic story RIVALRY not implemented'), []);
+							self::notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
 							break;
 						case WARS:
 //
 // RIVALRY Second : Every player “at war” with at least one other player at the end of the round scores 2 DP
 //
-							self::notifyAllPlayers('message', _('Every player “at war” with at least one other player at the end of the round scores 2 DP'), []);
+							self::notifyAllPlayers('msg', _('Every player “at war” with at least one other player at the end of the round scores 2 DP'), []);
 							foreach (Factions::list(false) as $color)
 							{
 								$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 2;
@@ -1379,7 +1390,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 							}
-							self::notifyAllPlayers('message', _('Galactic story WARS not implemented'), []);
+							self::notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
 							break;
 					}
 				}
@@ -1389,7 +1400,7 @@ trait gameStates
 //
 // JOURNEYS Third : Every player with the STO alignment at the end of a round scores 1 DP
 //
-					self::notifyAllPlayers('message', _('Every player with the STO alignment at the end of a round scores 1 DP'), []);
+					self::notifyAllPlayers('msg', _('Every player with the STO alignment at the end of a round scores 1 DP'), []);
 					foreach (Factions::list(false) as $color)
 					{
 						if (Factions::getAlignment($color) === 'STO')
@@ -1415,7 +1426,7 @@ trait gameStates
 							{
 								foreach (['Spirituality', 'Propulsion'] as $technology)
 								{
-									self::notifyAllPlayers('message', _('At the end of the round, each player who researched ${technology} in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their ${technology} level'), ['technology' => $technology]);
+									self::notifyAllPlayers('msg', _('At the end of the round, each player who researched ${technology} in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their ${technology} level'), ['technology' => $technology]);
 									if (in_array($technology, Factions::getStatus($color, 'used')))
 									{
 										$best = [];
@@ -1433,13 +1444,13 @@ trait gameStates
 							}
 							break;
 						case MIGRATIONS:
-							self::notifyAllPlayers('message', _('Galactic story MIGRATIONS not implemented'), []);
+							self::notifyAllPlayers('msg', _('Galactic story MIGRATIONS not implemented'), []);
 							break;
 						case RIVALRY:
-							self::notifyAllPlayers('message', _('Galactic story RIVALRY not implemented'), []);
+							self::notifyAllPlayers('msg', _('Galactic story RIVALRY not implemented'), []);
 							break;
 						case WARS:
-							self::notifyAllPlayers('message', _('Galactic story WARS not implemented'), []);
+							self::notifyAllPlayers('msg', _('Galactic story WARS not implemented'), []);
 							break;
 					}
 				}
@@ -1459,7 +1470,7 @@ trait gameStates
 	{
 		$round = self::getGameStateValue('round');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class = "ERA-phase">${log} ${round}/8</span>', [
+		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${log} ${round}/8</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color)
@@ -1474,15 +1485,15 @@ trait gameStates
 		if ($round < 8) return $this->gamestate->nextState('nextRound');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Game End Scoring')]);
+		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Game End Scoring')]);
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Every player scores DP equal to the highest number on their population track without a disc')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Every player scores DP equal to the highest number on their population track without a disc')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list(false) as $color)
 		{
 			$populationScore[$color] = Factions::POPULATION[Factions::getPopulation($color)];
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', _('${player_name} gains ${DP} DP(s)'), ['DP' => $populationScore[$color], 'player_name' => Factions::getName($color)]);
+			self::notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => $populationScore[$color], 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
@@ -1502,7 +1513,7 @@ trait gameStates
 			}
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('message', '<span class="ERA-subphase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$sectors = [];
 		foreach (Factions::list() as $color)
@@ -1528,7 +1539,7 @@ trait gameStates
 						$DP = 4;
 						self::gainDP($color, $DP);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('message', _('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color)]);
+						self::notifyAllPlayers('msg', _('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
 				}

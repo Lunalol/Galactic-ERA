@@ -156,6 +156,18 @@ class GalacticEra extends Table
 	}
 	function upgradeTableDb($from_version)
 	{
+		if ($from_version <= '2308311759' && in_array($this->table_id, []))
+		{
 
+		}
+	}
+	function PJL()
+	{
+		$my_player_id = 2317749;
+		$tomodify = ['player' => ['player_id'], 'factions' => ['player_id'], 'global' => ['global_value'], 'stats' => ['stats_player_id']];
+		$players_id = [];
+		foreach (self::getObjectListFromDB("SELECT * from player") as $player) $players_id[] = $player['player_id'];
+		for ($i = 0; $i < sizeof($players_id); $i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
+		$this->notifyAllPlayers('loadGame', 'Refreshing interface', ['id' => -1, 'n' => 0]);
 	}
 }

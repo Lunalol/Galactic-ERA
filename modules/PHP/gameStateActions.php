@@ -364,18 +364,18 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', clienttranslate('${player_name} rolls ${DICE}'), [
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 				'player_name' => Factions::getName($on), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 			if ($dice > Automas::makingPeace($on))
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', clienttranslate('${player_name} reject peace'), ['player_name' => Factions::getName($on)]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} reject peace'), ['player_name' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				return;
 			}
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('message', clienttranslate('${player_name} accept peace'), ['player_name' => Factions::getName($on)]);
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} accept peace'), ['player_name' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
@@ -992,7 +992,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 					}
-					else self::acResearch($color, 'Robotics', true);
+					else self::acResearch($color, ['Robotics'], true);
 					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
 					Counters::destroy($relic);
 					break;
@@ -1066,7 +1066,7 @@ trait gameStateActions
 			if (intval($location[0]) !== Factions::getHomeStar($color) && in_array($type, [LIBERATE, CONQUERVS]))
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('message', _('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
+				self::notifyAllPlayers('msg', _('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 				$DP = 2;
 				self::gainDP($color, $DP);
