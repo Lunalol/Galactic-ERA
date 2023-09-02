@@ -815,7 +815,11 @@ trait gameStates
 //
 		Factions::setStatus($attacker, 'retreat');
 //
-		$attackerCVs = Ships::CV($attacker, $location);
+		$attackerAssault = Ships::get($attacker, Ships::getFleet($attacker, 'A'))['location'] === $location;
+		$defenderAssault = false;
+		foreach ($defenders as $defender) $defenderAssault = $defenderAssault || Ships::get($defender, Ships::getFleet($defender, 'A'))['location'] === $location;
+//
+		$attackerCVs = Ships::CV($attacker, $location, $defenderAssault);
 		foreach ($attackerCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -847,7 +851,7 @@ trait gameStates
 		{
 			Factions::setStatus($defender, 'retreat');
 //
-			$defenderCVs = Ships::CV($defender, $location);
+			$defenderCVs = Ships::CV($defender, $location, $attackerAssault);
 			foreach ($defenderCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
