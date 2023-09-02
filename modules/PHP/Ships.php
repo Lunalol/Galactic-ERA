@@ -168,7 +168,7 @@ class Ships extends APP_GameClass
 		}
 		return array_keys($distances, $max);
 	}
-	static function CV(string $color, string $location): array
+	static function CV(string $color, string $location, bool $assault = false): array
 	{
 		$military = Factions::TECHNOLOGIES['Military'][Factions::getTechnology($color, 'Military')];
 //
@@ -204,7 +204,7 @@ class Ships extends APP_GameClass
 //
 // (C)ounterassault: Add 2 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat
 //
-					if ($fleet === 'C')
+					if ($fleet === 'C' && $assault)
 					{
 						$CV += 2 * self::getStatus($shipID, 'ships');
 						if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $CV += 2 * self::getStatus($shipID, 'ships');
