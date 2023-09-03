@@ -156,6 +156,11 @@ class GalacticEra extends Table
 	}
 	function upgradeTableDb($from_version)
 	{
+		if ($from_version <= '2309012311')
+		{
+			self::DbQuery("DELETE FROM `undo`");
+			self::DbQuery("ALTER TABLE `undo` MODIFY `type` ENUM ('create', 'destroy', 'move', 'done')");
+		}
 		if ($from_version <= '2308311759' && in_array($this->table_id, []))
 		{
 
@@ -169,5 +174,19 @@ class GalacticEra extends Table
 		foreach (self::getObjectListFromDB("SELECT * from player") as $player) $players_id[] = $player['player_id'];
 		for ($i = 0; $i < sizeof($players_id); $i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
 		$this->notifyAllPlayers('loadGame', 'Refreshing interface', ['id' => -1, 'n' => 0]);
+	}
+//
+	function STS()
+	{
+		foreach (Factions::list() as $color) Factions::STS($color);
+	}
+	function STO()
+	{
+		foreach (Factions::list() as $color) Factions::STO($color);
+	}
+	function COMBAT()
+	{
+		foreach (Ships::getAll(null, 'ship') as $ship) Ships::setLocation($ship['id'], '6:+0+0+0');
+		foreach (Ships::getAll(null, 'fleet') as $fleet) if ($fleet['location'] !== 'stock') Ships::setLocation($fleet['id'], '6:+0+0+0');
 	}
 }

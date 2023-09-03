@@ -113,7 +113,28 @@ class Ships extends APP_GameClass
 	}
 	static function movement(array $ship)
 	{
-		$neutron = Factions::getTechnology($ship['color'], 'Propulsion') >= 5;
+		$propulsion = Factions::getTechnology($ship['color'], 'Propulsion');
+		$propulsion = 5;
+//
+// Stargate 1
+//
+		if ($propulsion === 3 || $propulsion === 4) $ownStars = Counters::getPopulation($ship['color']);
+//
+// Stargate 2
+//
+		if ($propulsion === 5)
+		{
+			$stars = [];
+// Neutral stars
+			foreach (Counters::getAllDatas() as $counter) if ($counter['type'] === 'star') $stars[] = $counter['location'];
+// Own stars
+			foreach (array_keys(Counters::getPopulation($ship['color'])) as $location) $stars[] = $location;
+// Non in war with faction stars
+			foreach (Factions::atPeace($ship['color']) as $color) foreach (array_keys(Counters::getPopulation($color)) as $location) $stars[] = $location;
+// Neutron stars
+			foreach (Sectors::stars(true) as $location) $stars[] = $location;
+		}
+//
 		$possible = [$ship['location'] => ['MP' => $ship['MP'], 'from' => null]];
 //
 		$locations = [$ship['location'] => $ship['MP']];
@@ -124,9 +145,18 @@ class Ships extends APP_GameClass
 			unset($locations[$location]);
 //
 			$neighbors = Sectors::neighbors($location);
+//
+// Stargate 1
+//
+			if ($propulsion === 3 || $propulsion === 4) if (array_key_exists($location, $ownStars)) foreach ($ownStars as $next_location => $population) if ($next_location !== $location && $population >= 3) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+//
+// Stargate 2
+//
+			if ($propulsion === 5) if (in_array($location, $stars)) foreach ($stars as $next_location) if ($next_location !== $location) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+//
 			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
 			{
-				if ($terrain === Sectors::NEUTRON && !$neutron) continue;
+				if ($terrain === Sectors::NEUTRON && $propulsion < 5) continue;
 				$next_MP = $MP - ($terrain === Sectors::NEBULA ? 2 : 1);
 				if ($next_MP >= 0)
 				{

@@ -39,8 +39,11 @@ class Counters extends APP_GameClass
 		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
 //
 		$homeStar = Ships::getHomeStar($color);
-		if (array_key_exists($homeStar, $populations)) $populations[$homeStar] += 6;
-		else $populations[$homeStar] = 6;
+		if ($homeStar)
+		{
+			if (array_key_exists($homeStar, $populations)) $populations[$homeStar] += 6;
+			else $populations[$homeStar] = 6;
+		}
 //
 		return $populations;
 	}

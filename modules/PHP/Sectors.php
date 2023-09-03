@@ -1487,6 +1487,26 @@ class Sectors extends APP_GameClass
 	{
 		return intval(self::getUniqueValueFromDB("SELECT sector FROM sectors WHERE position = $position"));
 	}
+	static function stars(bool $neutron): array
+	{
+		$locations = [];
+		foreach (self::getAllDatas() as $position => $sector)
+		{
+			foreach (self::SECTORS[$sector['sector']] as $location => $terrain)
+			{
+				if ($neutron)
+				{
+					if ($terrain === self::NEUTRON) $locations[] = "$position:$location";
+				}
+				else
+				{
+					if ($terrain === self::HOME) $locations[] = "$position:$location";
+					if ($terrain === self::PLANET) $locations[] = "$position:$location";
+				}
+			}
+		}
+		return $locations;
+	}
 	static function terrainFromLocation(string $location): int
 	{
 		if ($location === 'stock') return 0;

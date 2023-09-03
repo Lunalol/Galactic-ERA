@@ -417,18 +417,18 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			switch (stateName)
 			{
 				case 'remoteViewing':
-					dojo.query('#ERAboard .ERAcounter-star:not([back]').addClass('ERAselectable').addClass('ERAselected');
-					dojo.query('#ERAboard .ERAcounter-relic:not([back]').addClass('ERAselectable').addClass('ERAselected');
-					dojo.query(`#ERAboard .ERAship[fleet]:not(.ERAship-${state.args.active})`).addClass('ERAselectable').addClass('ERAselected');
-					dojo.query('#ERAboard .ERAdominationCard[domination="back"]').addClass('ERAselectable').addClass('ERAselected');
+					dojo.query('#ERAboard>.ERAcounter-star:not([back]').addClass('ERAselectable').addClass('ERAselected');
+					dojo.query('#ERAboard>.ERAcounter-relic:not([back]').addClass('ERAselectable').addClass('ERAselected');
+					dojo.query(`#ERAboard>.ERAship[fleet]:not(.ERAship-${state.args.active})`).addClass('ERAselectable').addClass('ERAselected');
+					dojo.query('#ERAboard>.ERAdominationCard[domination="back"]').addClass('ERAselectable').addClass('ERAselected');
 					break;
 //
 				case 'fleets':
-					dojo.query(`#ERAboard .ERAship[color=${this.color}]`).addClass('ERAselectable');
+					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable');
 					break;
 //
 				case 'movement':
-					dojo.query(`#ERAboard .ERAship[color=${this.color}]`).addClass('ERAselectable');
+					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable');
 					break;
 //
 				case 'combatChoice':
@@ -476,6 +476,12 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					}
 					break;
 //
+				case 'selectCounters':
+					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
+					dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
+					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
+					break;
+//
 				case 'resolveGrowthActions':
 					dojo.query('.ERAprovisional,.ERAprovisionalBonus').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
 					break;
@@ -490,23 +496,23 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 				case 'bonusPopulation':
 					{
-						dojo.query(`#ERAboard .ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
+						dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
 						for (let [location, {population: population, growthLimit: growthLimit}] of Object.entries(state.args._private.growPopulation))
-							dojo.query(`#ERAboard .ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 					}
 					break;
 //
 				case 'buildShips':
 					{
-						dojo.query(`#ERAboard .ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
+						dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
 						for (let location of state.args._private.buildShips)
-							dojo.query(`#ERAboard .ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 					}
 					break;
 //
 				case 'gainStar':
 					{
-						dojo.query(`#ERAboard .ERAship[color=${this.color}]`).addClass('ERAselectable');
+						dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable');
 						dojo.query(`.ERAcounter-peace`, `ERAstatus-${this.color}`).addClass('ERAselectable');
 						for (let location in state.args._private.gainStar)
 						{
