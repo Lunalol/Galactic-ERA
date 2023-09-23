@@ -19,6 +19,16 @@ trait gameUtils
 	}
 	function gainTechnology(string $color, string $technology): int
 	{
+		if (Factions::getTechnology($color, $technology) === 6)
+		{
+//
+// When automas research a technology they already have at level 6, this has no effect instead
+//
+			if (Factions::getPlayer($color) <= 0) return 0;
+			self::notifyAllPlayers('msg', 'Reseach+ Effect not implemented', []);
+			return 0;
+		}
+//
 		$level = Factions::gainTechnology($color, $technology);
 //
 // YOWIES SPECIAL STO & STS: You may not have Robotics higher than level 1
@@ -62,13 +72,13 @@ trait gameUtils
 			{
 				for ($i = 0; $i < ($level === 6 ? 3 : 1); $i++)
 				{
-					$Fleet = Automas::advancedFleetTactic($color);
+					$Fleet = Automas::advancedFleetTactics($color);
 					if ($Fleet)
 					{
-						Factions::setAdvancedFleetTactic($color, $Fleet, '2x');
+						Factions::setAdvancedFleetTactics($color, $Fleet, '2x');
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('updateFaction', '${player_name} gets <B>${tactic}</B> on <B>${FLEET}</B> fleet', [
-							'player_name' => Factions::getName($color), 'tactic' => '2x', 'FLEET' => $Fleet,
+						self::notifyAllPlayers('updateFaction', '${player_name} gets <B>${tactics}</B> on <B>${FLEET}</B> fleet', [
+							'player_name' => Factions::getName($color), 'tactics' => '2x', 'FLEET' => $Fleet,
 							'faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
@@ -98,7 +108,7 @@ trait gameUtils
 //
 			case 'fleet':
 //
-				$ship = Ships::get('', $id);
+				$ship = Ships::get($id);
 				if (!$ship) throw new BgaVisibleSystemException("Invalid ship: $id");
 				if ($ship['fleet'] !== 'fleet') throw new BgaVisibleSystemException('Not a fleet');
 //

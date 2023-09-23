@@ -161,6 +161,10 @@ class GalacticEra extends Table
 			self::DbQuery("DELETE FROM `undo`");
 			self::DbQuery("ALTER TABLE `undo` MODIFY `type` ENUM ('create', 'destroy', 'move', 'done')");
 		}
+		if ($from_version <= '2309031545')
+		{
+			self::DbQuery("ALTER TABLE `factions` CHANGE `advancedFleetTactic` `advancedFleetTactics` JSON");
+		}
 		if ($from_version <= '2308311759' && in_array($this->table_id, []))
 		{
 

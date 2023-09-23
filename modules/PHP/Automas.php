@@ -62,7 +62,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function advancedFleetTactic(string $color)
+	function advancedFleetTactics(string $color)
 	{
 		switch (Factions::getPlayer($color))
 		{
@@ -70,7 +70,7 @@ class Automas extends APP_GameClass
 				return null;
 			case AUTOMA:
 			case SLAVERS:
-				return array_rand(array_filter(Factions::getAdvancedFleetTactics($color), fn($tactic) => is_null($tactic)));
+				return array_rand(array_filter(Factions::getAllAdvancedFleetTactics($color), fn($tactics) => is_null($tactics)));
 			default:
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
@@ -96,7 +96,7 @@ class Automas extends APP_GameClass
 			if (Ships::getStatus($ship['id'], 'fleet') === 'D')
 			{
 				$MP += 1;
-				if (Factions::getAdvancedFleetTactic($color, 'D') === '2x') $MP += 1;
+				if (Factions::getAdvancedFleetTactics($color, 'D') === '2x') $MP += 1;
 			}
 			Ships::setMP($ship['id'], $MP);
 		}
@@ -277,8 +277,39 @@ class Automas extends APP_GameClass
 			case SLAVERS:
 				{
 //
+// At the start of their turn, the Slavers transfer all their ships into a single fleet for every hex where they already have a fleet
+//
+					foreach (array_unique(array_column(Ships::getAll($color, 'fleet'), 'location')) as $location)
+					{
+						if ($location !== 'stock')
+						{
+							$ships = Ships::getAtLocation($location, $color, 'ship');
+							if ($ships)
+							{
+								$fleets = Ships::getAtLocation($location, $color, 'fleet');
+								shuffle($fleets);
+								$fleetID = array_pop($fleets);
+//
+								Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + sizeof($ships));
+//* -------------------------------------------------------------------------------------------------------- */
+								$bgagame->notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
+//* -------------------------------------------------------------------------------------------------------- */
+								foreach ($ships as $shipID)
+								{
+//* -------------------------------------------------------------------------------------------------------- */
+									$bgagame->notifyAllPlayers('removeShip', '', ['ship' => Ships::get($shipID)]);
+//* -------------------------------------------------------------------------------------------------------- */
+									Ships::destroy($shipID);
+								}
+//* -------------------------------------------------------------------------------------------------------- */
+								$bgagame->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
+//* -------------------------------------------------------------------------------------------------------- */
+							}
+						}
+					}
+//
 					$shipList = [];
-					foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) $shipList[$location] = Ships::getAtLocation($location, $color);
+					foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if ($location !== 'stock') $shipList[$location] = Ships::getAtLocation($location, $color);
 					foreach ($shipList as $location => $ships)
 					{
 						switch ($dice)
@@ -295,7 +326,7 @@ class Automas extends APP_GameClass
 								$locations = array_keys(Counters::getPopulation(Factions::getNotAutomas()));
 //
 								$MPs = [];
-								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 								$path = self::paths($location, min($MPs), $locations);
 								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
 								if (DEBUG)
@@ -315,7 +346,7 @@ class Automas extends APP_GameClass
 								$toMove = [];
 								foreach ($ships as $shipID)
 								{
-									$ship = Ships::get($color, $shipID);
+									$ship = Ships::get($shipID);
 									$bgagame->possible['move'][$ship['id']] = $path['possible'];
 									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
 									else $toMove[] = $shipID;
@@ -355,7 +386,7 @@ class Automas extends APP_GameClass
 								if ($hostiles)
 								{
 									$MPs = [];
-									foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+									foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 									$founds = [];
 									foreach ($hostiles as $hostile => $count) if (!is_null(self::paths($location, min($MPs), [$hostile], true))) $founds[$hostile] = $count;
 									if ($founds)
@@ -404,7 +435,7 @@ class Automas extends APP_GameClass
 									$toMove = [];
 									foreach ($ships as $shipID)
 									{
-										$ship = Ships::get($color, $shipID);
+										$ship = Ships::get($shipID);
 										$bgagame->possible['move'][$ship['id']] = $path['possible'];
 										if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
 										else $toMove[] = $shipID;
@@ -429,7 +460,7 @@ class Automas extends APP_GameClass
 								$locations = [$location[0] . ':+0+0+0'];
 //
 								$MPs = [];
-								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 								$path = self::paths($location, min($MPs), $locations);
 								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
 								if (DEBUG)
@@ -449,7 +480,7 @@ class Automas extends APP_GameClass
 								$toMove = [];
 								foreach ($ships as $shipID)
 								{
-									$ship = Ships::get($color, $shipID);
+									$ship = Ships::get($shipID);
 									$bgagame->possible['move'][$ship['id']] = $path['possible'];
 									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
 									else $toMove[] = $shipID;
@@ -467,7 +498,7 @@ class Automas extends APP_GameClass
 								$locations = array_diff($locations, array_keys(Counters::getPopulation($color)));
 //
 								$MPs = [];
-								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 								$path = self::paths($location, min($MPs), $locations, true);
 								if (!$path) $path = self::paths($location, $ship['MP'], $locations);
 								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
@@ -488,7 +519,7 @@ class Automas extends APP_GameClass
 								$toMove = [];
 								foreach ($ships as $shipID)
 								{
-									$ship = Ships::get($color, $shipID);
+									$ship = Ships::get($shipID);
 									$bgagame->possible['move'][$ship['id']] = $path['possible'];
 									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
 									else $toMove[] = $shipID;
@@ -505,7 +536,7 @@ class Automas extends APP_GameClass
 								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisk')) $locations[] = "$sector:$hexagon";
 //
 								$MPs = [];
-								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 								$path = self::paths($location, min($MPs), $locations, true);
 								if (!$path)
 								{
@@ -536,7 +567,7 @@ class Automas extends APP_GameClass
 								$toMove = [];
 								foreach ($ships as $shipID)
 								{
-									$ship = Ships::get($color, $shipID);
+									$ship = Ships::get($shipID);
 									$bgagame->possible['move'][$ship['id']] = $path['possible'];
 									if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
 									else $toMove[] = $shipID;
@@ -553,7 +584,7 @@ class Automas extends APP_GameClass
 								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisk')) $locations[] = "$sector:$hexagon";
 //
 								$MPs = [];
-								foreach ($ships as $shipID) $MPs[] = Ships::get($color, $shipID)['MP'];
+								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 								$path = self::paths($location, min($MPs), $locations, true);
 								if ($path)
 								{
@@ -574,7 +605,7 @@ class Automas extends APP_GameClass
 									$toMove = [];
 									foreach ($ships as $shipID)
 									{
-										$ship = Ships::get($color, $shipID);
+										$ship = Ships::get($shipID);
 										$bgagame->possible['move'][$ship['id']] = $path['possible'];
 										if ($ship['fleet'] === 'fleet') $bgagame->acMove($color, $path['location'], [$shipID], true);
 										else $toMove[] = $shipID;
@@ -606,34 +637,34 @@ class Automas extends APP_GameClass
 			case FARMERS:
 				return 0;
 			case SLAVERS:
-				return 3;
+				return 4;
 			default:
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function battleLoss(string $attacker, array $defender, bool $totalVictory)
+	function battleLoss(string $attacker, array $defenders, bool $totalVictory)
 	{
-		$attacker = Factions::getActive();
 		$location = Factions::getStatus($attacker, 'combat');
-//
-		$defenders = Ships::getConflictFactions($attacker, $location);
 		$winner = Factions::getStatus($attacker, 'winner');
 //
 		$toDestroy = ['winner' => [], 'losers' => []];
-//
-		foreach (Ships::getAtLocation($location, $attacker, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, Ships::getStatus($shipID, 'fleet')];
-		for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $attacker, 'ships')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, 'ship'];
-//
-		foreach ($defenders as $defender)
+		if (Factions::getPlayer($winner) === SLAVERS)
 		{
-			foreach (Ships::getAtLocation($location, $defender, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, Ships::getStatus($shipID, 'fleet')];
-			for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $defender, 'ships')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, 'ship'];
+//
+			foreach (Ships::getAtLocation($location, $attacker, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, Ships::getStatus($shipID, 'fleet')];
+			for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $attacker, 'ship')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, 'ships'];
+//
+			foreach ($defenders as $defender)
+			{
+				foreach (Ships::getAtLocation($location, $defender, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, Ships::getStatus($shipID, 'fleet')];
+				for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $defender, 'ship')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, 'ships'];
+			}
+//
+			shuffle($toDestroy['winner']);
+			if ($totalVictory) $toDestroy['winner'] = [];
+			else $toDestroy['winner'] = array_slice($toDestroy['winner'], 0, ceil(sizeof($toDestroy['losers']) / 2));
 		}
 //
-		shuffle($toDestroy['winner']);
-		if ($totalVictory) $toDestroy['winner'] = [];
-		else $toDestroy['winner'] = array_slice($toDestroy['winner'], 0, ceil(sizeof($toDestroy['losers']) / 2));
-
 		return $toDestroy;
 	}
 	function growthActions(string $color, int $difficulty, int $dice): array
@@ -653,40 +684,47 @@ class Automas extends APP_GameClass
 					case 1:
 						$counters[] = 'research';
 						$counters[] = 'Military';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 						break;
 					case 2:
 						$counters[] = 'research';
 						$counters[] = 'Spirituality';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 						break;
 					case 3:
 						$counters[] = 'research';
 						$counters[] = 'Propulsion';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 						break;
 					case 4:
 						$counters[] = 'research';
 						$counters[] = 'Robotics';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 						break;
 					case 5:
 						$counters[] = 'research';
 						$counters[] = 'Genetics';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 						break;
 					case 6:
 						$counters[] = 'changeTurnOrderUp';
 						$counters[] = 'buildShips';
-						Factions::setStatus($color, 'buildShips', array_slice($wormholes, 0, 1));
+						Factions::setStatus($color, 'buildShips', array_combine(array_slice($wormholes, 0, 1), [1]));
 						break;
 				}
 				break;
 			case SLAVERS:
+				$ships = $difficulty + Factions::ships($color);
 				switch ($dice)
 				{
 					case 1:
 // Research Military
 						$counters[] = 'research';
 						$counters[] = 'Military';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 // Spawn ships at all 3 wormholes
 						$counters[] = 'buildShips';
-						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), $wormholes)));
+						Factions::setStatus($color, 'buildShips', array_combine($wormholes, [$ships, $ships, $ships]));
 						break;
 					case 2:
 // Change turn order: down
@@ -696,23 +734,25 @@ class Automas extends APP_GameClass
 						Factions::setStatus($color, 'gainStar', 'player');
 // Spawn ships at 2 wormholes
 						$counters[] = 'buildShips';
-						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 2))));
+						Factions::setStatus($color, 'buildShips', array_combine(array_slice($wormholes, 0, 2), [$ships, $ships]));
 						break;
 					case 3:
 // Research Propulsion
 						$counters[] = 'research';
 						$counters[] = 'Propulsion';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 // Spawn ships at 1 wormhole
 						$counters[] = 'buildShips';
-						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), array_slice($wormholes, 0, 1))));
+						Factions::setStatus($color, 'buildShips', array_combine(array_slice($wormholes, 0, 1), [$ships]));
 						break;
 					case 4:
 // Research Robotics
 						$counters[] = 'research';
 						$counters[] = 'Robotics';
+						if (Factions::getTechnology($color, 'robotics') >= 5) self::randomTechnology($color, $counters);
 // Spawn ships at the center sector wormhole
 						$counters[] = 'buildShips';
-						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
+						Factions::setStatus($color, 'buildShips', array_combine([self::WORMHOLES[0]], [$ships]));
 						break;
 					case 5:
 // Change turn order: down
@@ -723,28 +763,30 @@ class Automas extends APP_GameClass
 // Grow population (if they cannot grow any population, then they spawn ships at the center sector wormhole instead)
 //						$counters[] = 'growPopulation';
 						$counters[] = 'buildShips';
-						Factions::setStatus($color, 'buildShips', array_merge(...array_fill(0, $difficulty + Factions::ships($color), [self::WORMHOLES[0]])));
+						Factions::setStatus($color, 'buildShips', array_combine([self::WORMHOLES[0]], [$ships]));
 						break;
 					case 6:
 // Gain a neutral star (otherwise one of yours)(**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'neutral');
 // Research a randomly selected technology (determine which one immediately and use a technology counter to mark as reminder)
-						$technologies = Factions::TECHNOLOGIES;
-						if (Factions::getTechnology($color, 'Spirituality') >= 4) unset($technologies['Spirituality']);
-						foreach (array_keys($technologies) as $technology) if (Factions::getTechnology($color, $technology) === 6) unset($technologies[$technology]);
-						if ($technologies)
-						{
-							$counters[] = 'research';
-							$counters[] = array_rand($technologies);
-						}
+						$counters[] = 'research';
+						self::randomTechnology($color, $counters);
 						break;
 				}
 				break;
 			default:
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
+//
 		return $counters;
+	}
+	function randomTechnology(string $color, array &$counters)
+	{
+		$technologies = array_diff_key(Factions::TECHNOLOGIES, $counters);
+		if (Factions::getPlayer($color) === SLAVERS && Factions::getTechnology($color, 'Spirituality') >= 4) unset($technologies['Spirituality']);
+		foreach (array_keys($technologies) as $technology) if (Factions::getTechnology($color, $technology) === 6) unset($technologies[$technology]);
+		if ($technologies) $counters[] = array_rand($technologies);
 	}
 	function actions(object $bgagame, string $color): void
 	{
@@ -867,14 +909,34 @@ class Automas extends APP_GameClass
 			if ($research !== false)
 			{
 				$technologies = array_intersect($counters, array_keys(Factions::TECHNOLOGIES));
-				$technology = array_shift($technologies);
-				$bgagame->acResearch($color, [$technology], true);
+				while ($technology = array_shift($technologies)) $bgagame->acResearch($color, [$technology], true);
 				continue;
 			}
 			$buildShips = array_search('buildShips', $counters);
 			if ($buildShips !== false)
 			{
-				$bgagame->acBuildShips($color, Factions::getStatus($color, 'buildShips'), true);
+				$toBuild = ['fleets' => [], 'ships' => []];
+				foreach (Factions::getStatus($color, 'buildShips') as $location => $ships)
+				{
+					if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16)
+					{
+						$fleets = Ships::getAtLocation($location, $color, 'fleet');
+						if (!$fleets) $fleets = Ships::getAtLocation('stock', $color, 'fleet');
+						if ($fleets)
+						{
+							shuffle($fleets);
+							$fleet = Ships::get(array_pop($fleets));
+//
+							$Fleet = Ships::getStatus($fleet['id'], 'fleet');
+							if ($fleet['location'] === 'stock') $toBuild['fleets'][$Fleet] = $location;
+//
+							for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $Fleet;
+						}
+					}
+					else for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $location;
+				}
+
+				$bgagame->acBuildShips($color, $toBuild, true);
 				Factions::setStatus($color, 'buildShips');
 				continue;
 			}

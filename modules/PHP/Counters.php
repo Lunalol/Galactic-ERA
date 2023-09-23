@@ -34,7 +34,7 @@ class Counters extends APP_GameClass
 	{
 		return self::getCollectionFromDB("SELECT location, id FROM counters WHERE color = '$color' AND type IN ('2x', '+3 DP')", true);
 	}
-	static function getPopulation(string $color): array
+	static function getPopulation(string $color, bool $blocking = false): array
 	{
 		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
 //
@@ -45,7 +45,15 @@ class Counters extends APP_GameClass
 			else $populations[$homeStar] = 6;
 		}
 //
+		if ($blocking) foreach ($populations as $location => $population) if (self::isBlocked($color, $location)) unset($populations[$location]);
+//
 		return $populations;
+	}
+	static function isBlocked(string $color, string $location)
+	{
+		if (Factions::getTechnology($color, 'Spirituality') >= 5) return false;
+		foreach (Factions::atWar($color) as $otherColor) if (Ships::getAtLocation($location, $otherColor)) return true;
+		return false;
 	}
 	static function reveal(string $color, string $type, int $id)
 	{
@@ -64,13 +72,21 @@ class Counters extends APP_GameClass
 	}
 	static function gainStar(string $color, string $location): array
 	{
+		if (self::isBlocked($color, $location)) return [0, 0, 0];
+//
 		$orion = false;
 //
+		$sizeOfPopulation = 0;
+//
+		$homeStar = Ships::getAtLocation($location, null, 'homeStar');
+		if ($homeStar) $sizeOfPopulation += 6;
+//
 		$populations = Counters::getAtLocation($location, 'populationDisk');
-		if ($populations)
+		if ($populations) $sizeOfPopulation += sizeof($populations);
+//
+		if ($sizeOfPopulation)
 		{
-			$sizeOfPopulation = sizeof($populations);
-			$otherColor = Counters::get($populations[0])['color'];
+			$otherColor = $homeStar ? Ships::get($homeStar[0])['color'] : Counters::get($populations[0])['color'];
 //
 // ORION STO & STS: Your population counts double for being conquered
 //
@@ -94,7 +110,7 @@ class Counters extends APP_GameClass
 //
 				if ($fleet === 'B' && !$orion)
 				{
-					if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $ships += Ships::getStatus($ship, 'ships');
+					if (Factions::getAdvancedFleetTactics($color, $fleet) === '2x') $ships += Ships::getStatus($ship, 'ships');
 					else $ships += intval(0.5 * Ships::getStatus($ship, 'ships'));
 				}
 			}
@@ -152,10 +168,8 @@ class Counters extends APP_GameClass
 			return [$ships >= $SHIPS ? $type : 0, $SHIPS, $population];
 		}
 //
-		if ($populations)
+		if ($sizeOfPopulation)
 		{
-			$sizeOfPopulation = sizeof($populations);
-			$otherColor = Counters::get($populations[0])['color'];
 //
 // ORION STO & STS: Your population counts double for being conquered
 //

@@ -118,8 +118,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.connect(dojo.byId('ERAzoomMinus'), 'onclick', () => this.setZoom(Math.pow(10., (parseInt(this.zoomLevel.value) - 5) / 100), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2));
 			dojo.connect(dojo.byId('ERAzoomPlus'), 'onclick', () => this.setZoom(Math.pow(10., (parseInt(this.zoomLevel.value) + 5) / 100), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2));
 			dojo.connect(this.rotate, 'oninput', this, () => this.setRotate(event.target.value));
-			dojo.connect(dojo.byId('ERArotateAntiClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) - 10));
-			dojo.connect(dojo.byId('ERArotateClockwise'), 'onclick', () => this.setRotate(parseInt(this.rotate.value) + 10));
+			dojo.connect(dojo.byId('ERArotateAntiClockwise'), 'onclick', () => this.setRotate(Math.round(parseInt(this.rotate.value) / 30 - 1) * 30));
+			dojo.connect(dojo.byId('ERArotateClockwise'), 'onclick', () => this.setRotate(Math.round(parseInt(this.rotate.value) / 30 + 1) * 30));
 			dojo.connect(dojo.byId('ERAhome'), 'onclick', () => this.home(this.bgagame.player_id));
 			dojo.connect(dojo.byId('ERAview'), 'onclick', () => {
 				if ($('ERAchoice')) dojo.toggleClass('ERAchoice', 'ERAhide');
@@ -170,6 +170,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		setRotate: function (rotate)
 		{
+			if (rotate > 180) rotate -= 360;
+			if (rotate < -180) rotate += 360;
 //
 // Calc scale and store in session
 //
@@ -317,6 +319,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				if (this.bgagame.gamedatas.gamestate.name === 'retreat') return this.bgagame.retreat(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'retreatE') return this.bgagame.retreat(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'buriedShips') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
@@ -326,7 +329,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.removeClass(node, 'ERAfocus');
 			});
 //
-			if (['fleets', 'remoteViewing', 'movement'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
+			if (['fleets', 'buriedShips', 'remoteViewing', 'movement'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
+			if (!['buriedShips', 'buildShips'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
 		},
 		drawHexagon: function (hexagon, color)
 		{
@@ -345,6 +349,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			path += 'Z';
 //
 			const SVGpath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+			dojo.setAttr(SVGpath, 'id', hexagon.sector + ':' + hexagon.hexagon);
 			dojo.setAttr(SVGpath, 'd', path);
 			dojo.setAttr(SVGpath, 'fill', color);
 			dojo.setAttr(SVGpath, 'stroke', 'none');

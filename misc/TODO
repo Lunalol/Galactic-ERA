@@ -13,20 +13,13 @@ SOLO:
 /* NOT IMPLEMENTED */
 /*******************/
 
-6.1.3 Handling Fleets
-    • Fleet Tactics : (C)
 6.2.5 Gain Star
     • Involuntary Home Star Evacuation
     • Voluntary Home Star Evacuation
     • Gaining Technology
     • End of Population Track
-6.2.7 Build Ships
-    • Handling fleets
 6.2.8 Research
     • Research+ Effect
-7. Additional Details
-7.1 Propulsion Special Effects
-7.2 Blocking
 7.3 When to Declare War
 7.4 Domination Cards
 9. Variants
@@ -47,6 +40,7 @@ SOLO:
 6.1 Move/Combat Phase
 6.1.1 Movement
 6.1.2 Combat
+6.1.3 Handling Fleets
 6.2 Growth Phase
 6.2.1 Select Counters
 6.2.2 Switch Alignment
@@ -57,6 +51,9 @@ SOLO:
 6.2.9 “Free” Growth Actions
 6.3 Trading Technology Phase
 6.4 Scoring Phase
+7. Additional Details
+7.1 Propulsion Special Effects
+7.2 Blocking
 8. Game End
 8.1 Game End Scoring
 8.2 Winner
@@ -67,8 +64,8 @@ SOLO:
     • Yowies
 11.2 Technologies:
     • Military:     (1-6)
-    • Spirituality: (1-6) except hostile cannot bloc you & "ascend"
-    • Propulsion:   (1-6) except Stargate & teleport
+    • Spirituality: (1-6)
+    • Propulsion:   (1-6) except teleport
     • Robotics:     (1-6)
     • Genetics:     (1-6)
 11.4 Galactic Stories

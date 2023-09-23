@@ -29,6 +29,10 @@ div,img {
 	/*	zoom: 1 !important;*/
 }
 
+.midSizeDialog {
+	max-width: fit-content;
+}
+
 #game_play_area {
 	will-change: transform;
 }
@@ -1116,18 +1120,24 @@ div,img {
 }
 /* </editor-fold> */
 
-.ERAcounter-tactic {
+.ERAcounter-tactics {
 	width: 59px;
 	height: 59px;
 }
-.ERAcounter-tactic[tactic='DP'] {
+.ERAcounter-tactics[tactics='DP'] {
 	background-position-x: -222px;
 }
-.ERAcounter-tactic[tactic='2x'] {
+.ERAcounter-tactics[tactics='2x'] {
 	background-position-x: -281px;
 }
-#generalactions .ERAcounter-tactic {
+#generalactions .ERAcounter-tactics {
 	display: inline-block;
 	vertical-align: middle;
 	margin: 0px 10px;
+}
+
+path.ERAselected
+{
+	stroke: white;
+	stroke-width: 20;
 }

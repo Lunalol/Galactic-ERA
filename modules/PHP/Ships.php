@@ -14,10 +14,9 @@ class Ships extends APP_GameClass
 	{
 		self::DbQuery("DELETE FROM ships WHERE id = $id");
 	}
-	static function get(string $color, int $id): array
+	static function get(int $id): array
 	{
-		if (!$color) return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE id = $id");
-		return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE color = '$color' AND id = $id");
+		return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE id = $id");
 	}
 	static function getHomeStar(string $color = null)
 	{
@@ -28,7 +27,7 @@ class Ships extends APP_GameClass
 	{
 		return boolval(self::getUniqueValueFromDB("SELECT fleet = 'ship' FROM ships WHERE color = '$color' AND id = $id"));
 	}
-	static function getFleet(string $color, string $fleet): int
+	static function getFleet(string $color, string $fleet)
 	{
 		return self::getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND status->'$.fleet' = '$fleet'");
 	}
@@ -37,6 +36,7 @@ class Ships extends APP_GameClass
 		$sql = "SELECT id FROM ships WHERE location = '$location'";
 		if (!is_null($color)) $sql .= " AND color ='$color'";
 		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
+		else $sql .= " AND fleet <> 'homeStar'";
 		return self::getObjectListFromDB($sql . " ORDER BY color,fleet", true);
 	}
 	static function getAll(string $color = null, string $fleet = null): array
@@ -52,6 +52,7 @@ class Ships extends APP_GameClass
 				. " JOIN ships AS defender USING (location)"
 				. " JOIN factions ON attacker.color = factions.color"
 				. " WHERE location <> 'stock' AND attacker.color = '$color' AND attacker.color <> defender.color"
+				. " AND attacker.fleet <> 'homeStar' AND defender.fleet <> 'homeStar'"
 				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ", true);
 	}
 	static function getConflictFactions(string $color, string $location): array
@@ -60,6 +61,7 @@ class Ships extends APP_GameClass
 				. " JOIN ships AS defender USING (location)"
 				. " JOIN factions ON attacker.color = factions.color"
 				. " WHERE location = '$location' AND attacker.color = '$color' AND attacker.color <> defender.color"
+				. " AND attacker.fleet <> 'homeStar' AND defender.fleet <> 'homeStar'"
 				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ORDER by `order`", true);
 	}
 	static function getAllDatas($player_id): array
@@ -114,11 +116,10 @@ class Ships extends APP_GameClass
 	static function movement(array $ship)
 	{
 		$propulsion = Factions::getTechnology($ship['color'], 'Propulsion');
-		$propulsion = 5;
 //
 // Stargate 1
 //
-		if ($propulsion === 3 || $propulsion === 4) $ownStars = Counters::getPopulation($ship['color']);
+		if ($propulsion === 3 || $propulsion === 4) $ownStars = Counters::getPopulation($ship['color'], true);
 //
 // Stargate 2
 //
@@ -133,6 +134,8 @@ class Ships extends APP_GameClass
 			foreach (Factions::atPeace($ship['color']) as $color) foreach (array_keys(Counters::getPopulation($color)) as $location) $stars[] = $location;
 // Neutron stars
 			foreach (Sectors::stars(true) as $location) $stars[] = $location;
+//
+			foreach ($stars as $index => $location) if (self::isBlocked($ship['color'], $location)) unset($stars[$index]);
 		}
 //
 		$possible = [$ship['location'] => ['MP' => $ship['MP'], 'from' => null]];
@@ -154,10 +157,13 @@ class Ships extends APP_GameClass
 //
 			if ($propulsion === 5) if (in_array($location, $stars)) foreach ($stars as $next_location) if ($next_location !== $location) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
 //
-			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
+			foreach ($neighbors as $type => ['location' => $next_location, 'terrain' => $terrain])
 			{
 				if ($terrain === Sectors::NEUTRON && $propulsion < 5) continue;
+//
 				$next_MP = $MP - ($terrain === Sectors::NEBULA ? 2 : 1);
+				if ($type === 'WORMHOLE' && Counters::isBlocked($ship['color'], $next_location)) $next_MP = 0;
+//
 				if ($next_MP >= 0)
 				{
 					if (!array_key_exists($next_location, $possible) || ($possible[$next_location]['MP'] < $next_MP))
@@ -205,7 +211,7 @@ class Ships extends APP_GameClass
 		$result = ['total' => 0, 'fleets' => [], 'ships' => ['CV' => 0, 'ships' => 0]];
 		foreach (self::getAtLocation($location, $color) as $shipID)
 		{
-			$ship = self::get($color, $shipID);
+			$ship = self::get($shipID);
 			switch ($ship['fleet'])
 			{
 //
@@ -229,7 +235,7 @@ class Ships extends APP_GameClass
 					if ($fleet === 'A')
 					{
 						$CV += 1 * self::getStatus($shipID, 'ships');
-						if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $CV += 1 * self::getStatus($shipID, 'ships');
+						if (Factions::getAdvancedFleetTactics($color, $fleet) === '2x') $CV += 1 * self::getStatus($shipID, 'ships');
 					}
 //
 // (C)ounterassault: Add 2 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat
@@ -237,7 +243,7 @@ class Ships extends APP_GameClass
 					if ($fleet === 'C' && $assault)
 					{
 						$CV += 2 * self::getStatus($shipID, 'ships');
-						if (Factions::getAdvancedFleetTactic($color, $fleet) === '2x') $CV += 2 * self::getStatus($shipID, 'ships');
+						if (Factions::getAdvancedFleetTactics($color, $fleet) === '2x') $CV += 2 * self::getStatus($shipID, 'ships');
 					}
 //
 					$result['fleets'][Ships::getStatus($shipID, 'fleet')] = ['CV' => $CV, 'ships' => Ships::getStatus($shipID, 'ships')];

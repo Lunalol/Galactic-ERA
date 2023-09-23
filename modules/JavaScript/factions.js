@@ -13,7 +13,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 // Setup DP
 //
 			const galacticStoryNode = dojo.place(`<img id='ERAgalacticStory' src='${g_gamethemeurl}img/galacticStories/${this.bgagame.gamedatas.galacticStory}.png' draggable='false'>`, 'ERA-DP');
-			const galacticStory = GALATIC_STORIES(this.bgagame.gamedatas.galacticStory);
+			const galacticStory = bgagame.GALATIC_STORIES[this.bgagame.gamedatas.galacticStory];
 //
 			let html = '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid black;background:white;">';
 			for (let [ERA, string] of Object.entries({1: _('First Era'), 2: _('Second Era'), 3: _('Third Era')}))
@@ -161,7 +161,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				{
 					if (technology in faction)
 					{
-//						dojo.query(`.ERAcounter-cube[location='${technology}']`, nodeTechnologiesTrack).remove();
 						let node = $(`ERAcounter-${faction.color}-${technology}`);
 						if (!node) node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-' + technology, color: faction.color, type: 'cube', location: technology}), nodeTechnologiesTrack);
 						dojo.setAttr(node, 'title', _(technology) + ' ' + faction[technology]);
@@ -172,16 +171,16 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'transform', 'scale(75%)');
 					}
 				}
-				if ('advancedFleetTactic' in faction)
+				if ('advancedFleetTactics' in faction)
 				{
-					const advancedFleetTactics = JSON.parse(faction.advancedFleetTactic);
+					const advancedFleetTactics = JSON.parse(faction.advancedFleetTactics);
 					for (fleet in advancedFleetTactics)
 					{
-						const tactic = advancedFleetTactics[fleet];
-						if (tactic)
+						const tactics = advancedFleetTactics[fleet];
+						if (tactics)
 						{
-							const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: '2x', color: faction.color, type: 'tactic', location: fleet}), nodeTechnologiesTrack);
-							dojo.setAttr(node, 'tactic', tactic);
+							const node = dojo.place(this.bgagame.format_block('ERAcounter', {id: '2x', color: faction.color, type: 'tactics', location: fleet}), nodeTechnologiesTrack);
+							dojo.setAttr(node, 'tactics', tactics);
 							dojo.style(node, 'position', 'absolute');
 							dojo.style(node, 'left', 798 + 'px');
 							dojo.style(node, 'top', {A: 18, B: 122, C: 225, D: 329, E: 433}[fleet] + 'px');
@@ -189,13 +188,15 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					}
 				}
 			}
-			dojo.query(`#ERAtechnologies-${faction.color} .ERAtechnology`).forEach((node) => {
+			dojo.query(`#ERAtechnologies-${faction.color} [technology]`).forEach((node) => {
 				const technology = dojo.getAttr(node, 'technology');
 				if (technology in faction)
 				{
+					dojo.setAttr(node, 'level', faction[technology]);
+//
 					let html = '';
 					for (let i = 1; i <= 6; i++) html += `<span class='${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
-					node.innerHTML = html;
+					node.children[0].innerHTML = html;
 				}
 			});
 //

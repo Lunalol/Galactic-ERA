@@ -10,7 +10,7 @@ class Factions extends APP_GameClass
 //
 // Build ships
 //
-	const BUILD = [0, 0, 2, 5, 9, 14, 20, 27, 35];
+	const BUILD = [0 + 6, 0 + 6, 2 + 6, 5 + 6, 9 + 6, 14 + 6, 20 + 6, 27 + 6, 35 + 6];
 //
 // Technology levels
 //
@@ -33,7 +33,7 @@ class Factions extends APP_GameClass
 	static function create(string $color, int $player_id, int $homeStar): int
 	{
 		$json = self::escapeStringForDB(json_encode(['A' => null, 'B' => null, 'C' => null, 'D' => null, 'E' => null], JSON_FORCE_OBJECT));
-		self::DbQuery("INSERT INTO factions (color,player_id,starPeople,alignment,homeStar,atWar,advancedFleetTactic,status) VALUES ('$color', $player_id, 'None', 'STO', $homeStar, '[]','$json', '{}')");
+		self::DbQuery("INSERT INTO factions (color,player_id,starPeople,alignment,homeStar,atWar,advancedFleetTactics,status) VALUES ('$color', $player_id, 'None', 'STO', $homeStar, '[]','$json', '{}')");
 		return self::DbGetLastId();
 	}
 	static function list(bool $automas = true): array
@@ -43,11 +43,11 @@ class Factions extends APP_GameClass
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactic,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions ORDER by `order`");
+		return self::getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions ORDER by `order`");
 	}
 	static function get(string $color): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactic,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions WHERE color = '$color'");
+		return self::getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions WHERE color = '$color'");
 	}
 	static function getNext()
 	{
@@ -156,17 +156,17 @@ class Factions extends APP_GameClass
 	{
 		return self::getCollectionFromDB("SELECT color, player_id FROM factions WHERE status->'$.advancedFleetTactics'", true);
 	}
-	static function getAdvancedFleetTactics(string $color): array
+	static function getAllAdvancedFleetTactics(string $color): array
 	{
-		return json_decode(self::getUniqueValueFromDB("SELECT advancedFleetTactic FROM factions WHERE color = '$color'"), JSON_OBJECT_AS_ARRAY);
+		return json_decode(self::getUniqueValueFromDB("SELECT advancedFleetTactics FROM factions WHERE color = '$color'"), JSON_OBJECT_AS_ARRAY);
 	}
-	static function getAdvancedFleetTactic(string $color, string $fleet)
+	static function getAdvancedFleetTactics(string $color, string $fleet)
 	{
-		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(advancedFleetTactic->'$.$fleet') FROM factions WHERE color = '$color'");
+		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(advancedFleetTactics->'$.$fleet') FROM factions WHERE color = '$color'");
 	}
-	static function setAdvancedFleetTactic(string $color, string $fleet, string $tactic): void
+	static function setAdvancedFleetTactics(string $color, string $fleet, string $tactics): void
 	{
-		self::DbQuery("UPDATE factions SET advancedFleetTactic = JSON_SET(advancedFleetTactic, '$.$fleet', '$tactic') WHERE color = '$color'");
+		self::DbQuery("UPDATE factions SET advancedFleetTactics = JSON_SET(advancedFleetTactics, '$.$fleet', '$tactics') WHERE color = '$color'");
 	}
 	static function getStatus(string $color, string $status)
 	{
@@ -183,11 +183,13 @@ class Factions extends APP_GameClass
 	}
 	static function ships(string $color): int
 	{
+		$population = max(6, array_sum(Counters::getPopulation($color, true)));
+//
 		$ships = self::TECHNOLOGIES['Robotics'][self::getTechnology($color, 'Robotics')];
 		foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $ships++;
-		foreach (self::BUILD as $population)
+		foreach (self::BUILD as $step)
 		{
-			if ($population > self::getPopulation($color)) break;
+			if ($step > $population) break;
 			$ships++;
 		}
 		return $ships;
@@ -218,7 +220,7 @@ class Factions extends APP_GameClass
 	}
 	static function declareWar(string $color, string $on): void
 	{
-		$atWar = array_merge(self::atWar($color), [$on]);
+		$atWar = array_unique(array_merge(self::atWar($color), [$on]));
 		self::dBQuery("UPDATE factions SET atWar = '" . json_encode($atWar) . "' WHERE color = '$color'");
 	}
 	static function declarePeace(string $color, string $on = ''): void

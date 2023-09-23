@@ -51,8 +51,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						if (ship.location === 'stock')
 						{
 							const container = `ERAboardFleets-${ship.color}`;
-							const fleetNode = dojo.place(this.bgagame.format_block('ERAship', {id: ship.id, color: ship.color, ship: 0, location: 'stock'}), container);
-							dojo.setAttr(fleetNode, 'fleet', '?');
+							node = dojo.place(this.bgagame.format_block('ERAship', {id: ship.id, color: ship.color, ship: 0, location: 'stock'}), container);
+							dojo.setAttr(node, 'fleet', '?');
 						}
 						else
 						{

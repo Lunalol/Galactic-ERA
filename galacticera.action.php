@@ -45,14 +45,25 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
-	public function advancedFleetTactic()
+	public function advancedFleetTactics()
 	{
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
 		$fleet = self::getArg("fleet", AT_alphanum, true);
-		$tactic = self::getArg("tactic", AT_alphanum, true);
-		$this->game->acAdvancedFleetTactic($color, $fleet, $tactic);
+		$tactics = self::getArg("tactics", AT_alphanum, true);
+		$this->game->acAdvancedFleetTactics($color, $fleet, $tactics);
+//
+		self::ajaxResponse("");
+	}
+	public function buriedShips()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$fleet = self::getArg("fleet", AT_alphanum, true);
+		$ships = self::getArg("ships", AT_int, true);
+		$this->game->acBuriedShips($color, $fleet, $ships);
 //
 		self::ajaxResponse("");
 	}
@@ -255,8 +266,8 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
-		$locations = self::getArg("locations", AT_json, true);
-		$this->game->acBuildShips($color, $locations);
+		$buildShips = self::getArg("buildShips", AT_json, true);
+		$this->game->acBuildShips($color, $buildShips);
 //
 		self::ajaxResponse("");
 	}

@@ -46,6 +46,36 @@ trait gameStates
 //
 		foreach (self::loadPlayersBasicInfos() as $player_id => $player) Factions::create($player['player_color'], $player_id, $setup[$player['player_no']]);
 //
+// Setup Automa for SOLO game
+//
+		if (self::getPlayersNumber() === 1)
+		{
+			$colors = array_diff($this->getGameinfos()['player_colors'], Factions::list());
+			shuffle($colors);
+//
+			$farmers = array_shift($colors);
+			Factions::create($farmers, FARMERS, 0);
+			Factions::setStarPeople($farmers, 'Farmers');
+			Factions::STO($farmers);
+
+			$slavers = array_shift($colors);
+			Factions::create($slavers, SLAVERS, 0);
+			Factions::setStarPeople($slavers, 'Slavers');
+			Factions::STS($slavers);
+			Factions::gainPopulation($slavers, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
+			self::gainDP($slavers, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
+//
+			Ships::reveal($slavers, 'fleet', Ships::create($slavers, 'fleet', 'stock', ['fleet' => 'A']));
+			Ships::reveal($slavers, 'fleet', Ships::create($slavers, 'fleet', 'stock', ['fleet' => 'B']));
+			Ships::reveal($slavers, 'fleet', Ships::create($slavers, 'fleet', 'stock', ['fleet' => 'C']));
+			$ship = Ships::create($slavers, 'fleet', 'stock', ['fleet' => 'D']);
+			foreach (Factions::list(false) as $otherColor) Ships::reveal($otherColor, 'fleet', $ship);
+			Ships::reveal($slavers, 'fleet', Ships::create($slavers, 'fleet', 'stock', ['fleet' => 'E']));
+//
+			Factions::declareWar($farmers, $slavers);
+			Factions::declareWar($slavers, $farmers);
+		}
+//
 // Setup Automa for two players game
 //
 		if (self::getPlayersNumber() === 2)
@@ -58,35 +88,29 @@ trait gameStates
 
 			$starPeoples = array_keys($this->STARPEOPLES);
 //
-// Automas
-//
 			unset($starPeoples[array_search('Farmers', $starPeoples)]);
 			unset($starPeoples[array_search('Slavers', $starPeoples)]);
 //
 			shuffle($starPeoples);
-// PJL		$starPeople = array_pop($starPeoples);
-			$starPeople = 'Yowies';
+			$starPeople = array_pop($starPeoples);
+//
 			Factions::setStarPeople($automa, $starPeople);
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${STARPEOPLE}</B>'), [
-				'player_name' => Factions::getName($automa),
-				'i18n' => ['STARPEOPLE'], 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($automa)],
-				'faction' => ['color' => $automa, 'starPeople' => $starPeople, 'alignment' => Factions::getAlignment($automa)]
-				]
-			);
-//* -------------------------------------------------------------------------------------------------------- */
 			Factions::STO($automa);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${ALIGNMENT}</B>'), [
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} is playing <B>${STARPEOPLE}</B> <B>${ALIGNMENT}</B>'), [
 				'player_name' => Factions::getName($automa),
-				'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($automa),
-				'faction' => ['color' => $automa, 'starPeople' => $starPeople, 'alignment' => 'STO']
+				'i18n' => ['ALIGNMENT', 'STARPEOPLE'],
+				'ALIGNMENT' => Factions::getAlignment($automa), 'STARPEOPLE' => $this->STARPEOPLES[$starPeople][Factions::getAlignment($automa)],
+				'faction' => ['color' => $automa, 'starPeople' => $starPeople, 'alignment' => Factions::getAlignment($automa)]
 			]);
+//* -------------------------------------------------------------------------------------------------------- */
 		}
 //
 		foreach (Factions::list() as $color)
 		{
 			$sector = Factions::getHomeStar($color);
+			if ($sector === 0) continue;
+//
 			Ships::create($color, 'homeStar', $sector . ':+0+0+0');
 //
 			$stars = array_filter(Sectors::SECTORS[Sectors::get($sector)], fn($e) => $e == Sectors::PLANET);
@@ -132,7 +156,7 @@ trait gameStates
 				Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'B']));
 				Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'C']));
 				$ship = Ships::create($color, 'fleet', 'stock', ['fleet' => 'D']);
-				foreach (Factions::list() as $otherColor) Ships::reveal($otherColor, 'fleet', $ship);
+				foreach (Factions::list(false) as $otherColor) Ships::reveal($otherColor, 'fleet', $ship);
 				Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'E']));
 //
 			}
@@ -188,27 +212,6 @@ trait gameStates
 			Ships::create($color, 'ship', $homeStar);
 		}
 //
-		if (self::getPlayersNumber() === 1)
-		{
-			$colors = array_diff($this->getGameinfos()['player_colors'], Factions::list());
-			shuffle($colors);
-//
-			$farmers = array_shift($colors);
-			Factions::create($farmers, FARMERS, 0);
-			Factions::setStarPeople($farmers, 'Farmers');
-			Factions::STO($farmers);
-
-			$slavers = array_shift($colors);
-			Factions::create($slavers, SLAVERS, 0);
-			Factions::setStarPeople($slavers, 'Slavers');
-			Factions::STS($slavers);
-			Factions::gainPopulation($slavers, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
-			self::gainDP($slavers, Automas::DIFFICULTY[self::getGameStateValue('difficulty')]);
-//
-			Factions::declareWar($farmers, $slavers);
-			Factions::declareWar($slavers, $farmers);
-		}
-//
 // Remove the turn order counters from the game that have a number higher than the number of players.
 // Shuffle the remaining ones and give one face up to each player
 //
@@ -242,7 +245,7 @@ trait gameStates
 // PJL  foreach (Factions::list(false) as $color) if (Factions::getPlayer($color) >= 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 //
 // PJL
-		foreach (Factions::list(false) as $color) if (Factions::getPlayer($color) >= 0) Factions::setStatus($color, 'starPeople', $starPeoples);
+		foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
 //
 		if (FAST_START)
 		{
@@ -331,7 +334,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 								'player_name' => Factions::getName($color),
-								'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
+								'ship' => Ships::get(Ships::create($color, 'ship', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
@@ -359,7 +362,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 							'player_name' => Factions::getName($color),
-							'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
+							'ship' => Ships::get(Ships::create($color, 'ship', $sector . ':+0+0+0'))
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
@@ -369,7 +372,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 						'player_name' => Factions::getName($color),
-						'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
+						'ship' => Ships::get(Ships::create($color, 'ship', $sector . ':+0+0+0'))
 					]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -382,7 +385,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('removeShip', clienttranslate('${player_name} loses one ship'), [
 							'player_name' => Factions::getName($color),
-							'ship' => Ships::get($color, $shipID),
+							'ship' => Ships::get($shipID),
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Ships::destroy($shipID);
@@ -393,7 +396,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 							'player_name' => Factions::getName($color),
-							'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
+							'ship' => Ships::get(Ships::create($color, 'ship', $sector . ':+0+0+0'))
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
@@ -409,7 +412,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 								'player_name' => Factions::getName($color),
-								'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
+								'ship' => Ships::get(Ships::create($color, 'ship', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
@@ -518,7 +521,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 									self::notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [
 										'player_name' => Factions::getName($color),
-										'ship' => Ships::get($color, Ships::create($color, 'ship', $sector . ':+0+0+0'))
+										'ship' => Ships::get(Ships::create($color, 'ship', $sector . ':+0+0+0'))
 									]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
@@ -526,16 +529,16 @@ trait gameStates
 							break;
 						case 'Population':
 							{
+								for ($i = 0; $i < $value; $i++)
+								{
+									Factions::gainPopulation($color, 1);
 //* -------------------------------------------------------------------------------------------------------- */
-								self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 populations</B>'), ['player_name' => Factions::getName($color)]);
+									self::notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
+										'player_name' => Factions::getName($color),
+										'counter' => Counters::get(Counters::create($color, 'populationDisk', $sector . ':+0+0+0'))
+									]);
 //* -------------------------------------------------------------------------------------------------------- */
-							}
-							break;
-						case 'Grow':
-							{
-//* -------------------------------------------------------------------------------------------------------- */
-								self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a free <B>growth action</B>'), ['player_name' => Factions::getName($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
+								}
 							}
 							break;
 					}
@@ -608,7 +611,7 @@ trait gameStates
 //
 		$players = array_values(Factions::advancedFleetTactics());
 		if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;
-		$this->gamestate->nextState('advancedFleetTactic');
+		$this->gamestate->nextState('advancedFleetTactics');
 	}
 	function stStartOfRound()
 	{
@@ -637,7 +640,9 @@ trait gameStates
 		$player_id = Factions::getPlayer($color);
 		if ($player_id < 0)
 		{
-			if (Ships::getAll($color))
+			$ships = false;
+			foreach (Ships::getAll($color) as $ship) if ($ship['location'] !== 'stock') $ships = true;
+			if ($ships)
 			{
 				$dice = bga_rand(1, 6);
 //
@@ -663,9 +668,11 @@ trait gameStates
 				Automas::movement($this, $color, $dice);
 			}
 			else
+			{
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('No ships to move'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+			}
 
 			return $this->gamestate->nextState('continue');
 		}
@@ -722,12 +729,12 @@ trait gameStates
 					return $this->gamestate->nextState('retreat');
 				}
 //
-				$Evade = Ships::get($defender, Ships::getFleet($defender, 'E'))['location'] === $location;
+				$Evade = Ships::get(Ships::getFleet($defender, 'E'))['location'] === $location;
 				if ($Evade)
 				{
 					Factions::setStatus($attacker, 'retreat', $defender);
 //
-					if (Factions::getAdvancedFleetTactic($defender, 'E') === '2x')
+					if (Factions::getAdvancedFleetTactics($defender, 'E') === '2x')
 					{
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('msg', clienttranslate('${player_name} reveals an (E)vade fleet (2x)'), ['player_name' => Factions::getName($defender)]);
@@ -785,7 +792,7 @@ trait gameStates
 						'player_name' => Factions::getName($defender), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
-				if ($roll && $dice > $roll)
+				if ($roll && $dice >= $roll)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} accepts combat'), ['player_name' => Factions::getName($defender)]);
@@ -815,9 +822,18 @@ trait gameStates
 //
 		Factions::setStatus($attacker, 'retreat');
 //
-		$attackerAssault = Ships::get($attacker, Ships::getFleet($attacker, 'A'))['location'] === $location;
+		$fleet = Ships::getFleet($attacker, 'A');
+		$attackerAssault = $fleet && Ships::get($fleet)['location'] === $location;
 		$defenderAssault = false;
-		foreach ($defenders as $defender) $defenderAssault = $defenderAssault || Ships::get($defender, Ships::getFleet($defender, 'A'))['location'] === $location;
+		foreach ($defenders as $defender)
+		{
+			$fleet = Ships::getFleet($defender, 'A');
+			if ($fleet && Ships::get($fleet)['location'] === $location)
+			{
+				$defenderAssault = true;
+				break;
+			}
+		}
 //
 		$attackerCVs = Ships::CV($attacker, $location, $defenderAssault);
 		foreach ($attackerCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
@@ -892,7 +908,7 @@ trait gameStates
 			self::notifyAllPlayers('msg', clienttranslate('<B>Attacker</B> side wins the battle'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 			$bonus = false;
-			foreach (Ships::getAtLocation($location, $attacker, 'fleet')as $fleet) $bonus |= Factions::getAdvancedFleetTactic($attacker, Ships::getStatus($fleet, 'fleet')) === '2x';
+			foreach (Ships::getAtLocation($location, $attacker, 'fleet')as $fleet) $bonus |= Factions::getAdvancedFleetTactics($attacker, Ships::getStatus($fleet, 'fleet')) === 'DP';
 			if ($bonus)
 			{
 				$DP = 3;
@@ -913,7 +929,7 @@ trait gameStates
 			foreach ($defenders as $defender)
 			{
 				$bonus = false;
-				foreach (Ships::getAtLocation($location, $defender, 'fleet') as $fleet) $bonus |= Factions::getAdvancedFleetTactic($defender, Ships::getStatus($fleet, 'fleet')) === 'DP';
+				foreach (Ships::getAtLocation($location, $defender, 'fleet') as $fleet) $bonus |= Factions::getAdvancedFleetTactics($defender, Ships::getStatus($fleet, 'fleet')) === 'DP';
 				if ($bonus)
 				{
 					$DP = 3;
@@ -926,7 +942,7 @@ trait gameStates
 				$ships[$defender] = 0;
 				foreach (Ships::getAtLocation($location, $defender) as $shipID)
 				{
-					$ship = Ships::get($defender, $shipID);
+					$ship = Ships::get($shipID);
 					switch ($ship['fleet'])
 					{
 						case 'ship':
@@ -981,10 +997,18 @@ trait gameStates
 			$counters = Factions::getStatus($color, 'counters');
 //
 			$oval = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
-			foreach ($counters as $counter) if (in_array($counter, ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'])) $oval--;
-			if ($oval < 0)
+			$square = 1;
+			foreach ($counters as $counter)
 			{
-				$DP = $oval * Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
+				if (in_array($counter, ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'])) $oval--;
+				if (in_array($counter, array_keys(Factions::TECHNOLOGIES,))) $square--;
+			}
+//
+			$DP = 0;
+			if ($oval < 0) $DP += $oval * Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
+			if ($square < 0 && Factions::getTechnology($color, 'Robotics') < 6) $DP += $square * 2;
+			if ($DP)
+			{
 				self::gainDP($color, $DP);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', _('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
@@ -992,6 +1016,12 @@ trait gameStates
 			}
 		}
 		return $this->gamestate->nextState('next');
+	}
+	function stBuriedShips()
+	{
+		$color = Factions::getActive();
+		['location' => $location, 'ships' => $buriedShips] = Factions::getStatus($color, 'buriedShips');
+		if ($buriedShips === 0) return $this->gamestate->nextState('next');
 	}
 	function stSwitchAlignment()
 	{
@@ -1236,9 +1266,20 @@ trait gameStates
 	}
 	function stTradingPhaseEnd()
 	{
+//
+// #offboard population : 3 - Slavers gain 1 technology level in a trading phase in which they did not trade.
+//
+		$slavers = Factions::getAutoma(SLAVERS);
+		if ($slavers && Factions::getDP($slavers) >= 3 && !Factions::getStatus($slavers, 'trade'))
+		{
+			$technologies = [];
+			Automas::randomTechnology($slavers, $technologies);
+			while ($technology = array_shift($technologies)) self::acResearch($slavers, [$technology], true);
+		}
+//
 		$players = array_values(Factions::advancedFleetTactics());
 		if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;
-		$this->gamestate->nextState('advancedFleetTactic');
+		$this->gamestate->nextState('advancedFleetTactics');
 	}
 	function stScoringPhase()
 	{
