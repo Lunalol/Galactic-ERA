@@ -85,6 +85,18 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.setAttr(node, 'title', fleet.ships);
 			}
 		},
+		homeStarEvacuation: function (homeStar, to)
+		{
+			console.info('homeStarEvacuation', homeStar, to);
+//
+			const node = $(`ERAhomeStar-${homeStar}`);
+			dojo.style(node, 'left', this.board.hexagons[to].x - node.clientWidth / 2 + 'px');
+			dojo.style(node, 'top', this.board.hexagons[to].y - node.clientHeight / 2 + 'px');
+			const from = dojo.getAttr(node, 'location');
+			dojo.setAttr(node, 'location', to);
+			this.bgagame.counters.arrange(from);
+			this.bgagame.counters.arrange(to);
+		},
 		move: function (ships, to)
 		{
 			console.info('moveShips', ships, to);
@@ -99,8 +111,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				this.arrange(from);
 			}
 			this.arrange(to);
-		}
-		,
+		},
 		remove: function (ship)
 		{
 			console.info('removeShip', ship);
@@ -108,8 +119,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.query(`#ERAboard .ERAship[ship=${ship.id}]`).remove();
 //
 			if (/^\d:([+-]\d){3}$/.test(ship.location)) this.arrange(ship.location);
-		}
-		,
+		},
 		arrange: function (location)
 		{
 			let index = fleet = 0;
@@ -129,8 +139,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				}
 				index++;
 			}
-		}
-		,
+		},
 		showPath: function ()
 		{
 			dojo.destroy('ERApath');
@@ -213,6 +222,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				{
 					dojo.stopEvent(event);
 //
+					if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation')
+					{
+						dojo.stopEvent(event);
+						return this.bgagame.homeStarEvacuation(location);
+					}
 					if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing')
 					{
 						dojo.stopEvent(event);

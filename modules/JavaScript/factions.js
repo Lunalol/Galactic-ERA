@@ -15,11 +15,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const galacticStoryNode = dojo.place(`<img id='ERAgalacticStory' src='${g_gamethemeurl}img/galacticStories/${this.bgagame.gamedatas.galacticStory}.png' draggable='false'>`, 'ERA-DP');
 			const galacticStory = bgagame.GALATIC_STORIES[this.bgagame.gamedatas.galacticStory];
 //
-			let html = '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid black;background:white;">';
+			let html = '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
 			for (let [ERA, string] of Object.entries({1: _('First Era'), 2: _('Second Era'), 3: _('Third Era')}))
 			{
-				html += '<div style="padding:12px;text-align:center;outline:1px solid black;">' + (string) + '</div>';
-				html += '<div style="padding:12px;outline:1px solid black;">';
+				html += '<div style="padding:12px;text-align:center;outline:1px solid grey;">' + (string) + '</div>';
+				html += '<div style="padding:12px;outline:1px solid grey;">';
 				for (let string of galacticStory[ERA]) html += '<div style="text-align:justify;">◇&#x2005;' + string + '</div>';
 				html += '</div>';
 			}

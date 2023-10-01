@@ -206,7 +206,7 @@ trait gameStates
 //
 		foreach (Factions::list(false) as $color)
 		{
-			$homeStar = Ships::getHomeStar($color);
+			$homeStar = Ships::getHomeStarLocation($color);
 			Ships::create($color, 'ship', $homeStar);
 			Ships::create($color, 'ship', $homeStar);
 			Ships::create($color, 'ship', $homeStar);
@@ -652,7 +652,7 @@ trait gameStates
 				{
 					$dice1 = bga_rand(1, 6);
 					$dice2 = bga_rand(1, 6);
-					$dice = max($dice1, $dice2);
+					$dice = min($dice1, $dice2);
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${DICE1} ${DICE2} are rolled'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
 					self::notifyAllPlayers('msg', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
@@ -1036,6 +1036,16 @@ trait gameStates
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} uses ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
+				else if (Factions::getPlayer($color) === SLAVERS && Factions::getDP($color) >= 4)
+				{
+					$dice1 = bga_rand(1, 6);
+					$dice2 = bga_rand(1, 6);
+					$dice = min($dice1, $dice2);
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${DICE1} ${DICE2} are rolled'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
+					self::notifyAllPlayers('msg', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
 				else
 				{
 					$dice = bga_rand(1, 6);
@@ -1176,6 +1186,15 @@ trait gameStates
 		{
 			if ($player_id < 0) Automas::actions($this, $color);
 			Factions::setActivation($color, 'done');
+//
+			foreach (Factions::list(false) as $color)
+			{
+				if (Factions::getStatus($color, 'evacuate'))
+				{
+					$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
+					return $this->gamestate->nextState('evacuate');
+				}
+			}
 			return $this->gamestate->nextState('continue');
 		}
 //
@@ -1597,7 +1616,7 @@ trait gameStates
 // If this is also a tie, then use the turn order
 // The player who is first in turn order among those tied wins
 //
-			$tie = sizeof(Counters::getPopulation($color)) * 10 + (self::getPlayersNumber() - Factions::getOrder($color));
+			$tie = sizeof(Counters::getPopulations($color)) * 10 + (self::getPlayersNumber() - Factions::getOrder($color));
 //
 			$player_id = Factions::getPlayer($color);
 			self::dbSetScore($player_id, self::dbGetScore($player_id), $tie);

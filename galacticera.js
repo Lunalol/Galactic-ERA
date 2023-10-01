@@ -65,7 +65,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					1: [_('')],
 					2: [_('You may do 1 remote view per round')],
 					3: [_('You may do 2 remote views per round')],
-					4: [_('You may do 3 remote views per round'), _('You may trade technologies without being in contact'), ('Hostile ships cannot block you')],
+					4: [_('You may do 3 remote views per round'), _('You may trade technologies without being in contact')],
 					5: [_('You may do 4 remote views per round'), _('You may trade technologies without being in contact'), _('Hostile ships cannot block you')],
 					6: [_('You may do an unlimited number of remote views per round'), _('You may trade technologies without being in contact'), ('Hostile ships cannot block you')],
 					'6+': _('')
@@ -109,13 +109,13 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					const technologyLevel = dojo.getAttr(node, 'level');
 //
 					let html = `<H2>${technology}</H2>`;
-					html += '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid black;background:white;">';
-					html += '<div style="padding:12px;text-align:center;outline:1px solid black;font-style:italic;font-weight:bold;">' + _('Level') + '</div>';
-					html += '<div style="padding:12px;text-align:center;outline:1px solid black;font-style:italic;font-weight:bold;">' + _('Effect') + '</div>';
+					html += '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
+					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Level') + '</div>';
+					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Effect') + '</div>';
 					for (let [level, strings] of Object.entries(this.TECHNOLOGIES[technology]))
 					{
-						html += `<div style="padding:12px;text-align:center;outline:1px solid black;${level <= technologyLevel ? 'font-weight:bold;' : ''}">${level}</div>`;
-						html += `<div style="padding:12px;outline:1px solid black;${level <= technologyLevel ? 'font-weight:bold;' : ''}">`;
+						html += `<div style="padding:12px;text-align:center;outline:1px solid grey;${level <= technologyLevel ? 'font-weight:bold;' : ''}">${level}</div>`;
+						html += `<div style="padding:12px;outline:1px solid grey;${level <= technologyLevel ? 'font-weight:bold;' : ''}">`;
 						for (let string of strings) html += '<div style="text-align:justify;">' + string + '</div>';
 						html += '</div>';
 					}
@@ -233,7 +233,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 									});
 								}
 							});
-						this.addTooltip(`ERApeace-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} in peace with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to declare War') : '');
+						this.addTooltip(`ERApeace-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} in <B>peace</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to declare War') : '');
 						const nodeWar = dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}'  class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war ERAselectable' color='${faction.color}' on='${otherFaction.color}'></div>`, nodeStatus);
 						if (this.player_id === +faction.player_id) dojo.connect(nodeWar, 'click', (event) => {
 								dojo.stopEvent(event);
@@ -245,7 +245,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 									});
 								}
 							});
-						this.addTooltip(`ERAwar-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} at war with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to propose Peace') : '');
+						this.addTooltip(`ERAwar-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} at <B>war</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to propose Peace') : '');
 					}
 				}
 				this.factions.update(faction);
@@ -806,6 +806,33 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						}
 					}
 					break;
+//
+				case 'homeStarEvacuation':
+//
+					if (this.isCurrentPlayerActive())
+					{
+						this.board.centerMap(state.args._private.homeStar);
+//
+						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+						dojo.setStyle(svg, 'position', 'absolute');
+						dojo.setStyle(svg, 'left', '0px');
+						dojo.setStyle(svg, 'top', '0px');
+						dojo.setStyle(svg, 'z-index', '1');
+						dojo.setStyle(svg, 'pointer-events', 'all');
+						svg.setAttribute("width", 10000);
+						svg.setAttribute("height", 10000);
+						svg.id = 'ERAstars';
+//
+						svg.appendChild(this.board.drawHexagon(this.board.hexagons[state.args._private.homeStar], "#" + state.args._private.color + 'C0'));
+						for (let location of state.args._private.evacuate)
+						{
+							dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args._private.color + 'C0'));
+						}
+//
+						this.board.board.appendChild(svg);
+					}
+					break;
 			}
 		},
 		onLeavingState: function (stateName)
@@ -1204,7 +1231,16 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'resolveGrowthActions':
 //
-						this.addActionButton('ERApassButton', _('End turn'), () => this.action('pass', {color: this.color}), null, false, 'red');
+						this.addActionButton('ERApassButton', _('End turn'), () => {
+							if (args._private.counters.length)
+							{
+								this.confirmationDialog(_('You have unused growth action(s)'), () =>
+								{
+									this.action('pass', {color: this.color});
+								});
+							}
+							else this.action('pass', {color: this.color});
+						}, null, false, 'red');
 						break;
 //
 					case 'research':
@@ -1313,6 +1349,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.subscribe('moveShips', (notif) => this.ships.move(notif.args.ships, notif.args.location));
 			dojo.subscribe('revealShip', (notif) => this.ships.reveal(notif.args.ship));
 			dojo.subscribe('removeShip', (notif) => this.ships.remove(notif.args.ship));
+			dojo.subscribe('homeStarEvacuation', (notif) => this.ships.homeStarEvacuation(notif.args.homeStar, notif.args.location));
 //
 			this.setSynchronous();
 		},
@@ -1329,6 +1366,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			this.notifqueue.setSynchronous('moveShips', DELAY / 2);
 			this.notifqueue.setSynchronous('revealShip', DELAY / 2);
 			this.notifqueue.setSynchronous('removeShip', DELAY / 2);
+			this.notifqueue.setSynchronous('homeStarEvacuation', DELAY);
 //
 		},
 		focus: function (node)
@@ -1433,6 +1471,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					});
 					break;
 			}
+		},
+		homeStarEvacuation: function (location)
+		{
+			if (this.gamedatas.gamestate.args._private.evacuate.includes(location)) this.action('homeStarEvacuation', {color: this.color, location: JSON.stringify(location)});
 		},
 		combatChoice: function (location)
 		{

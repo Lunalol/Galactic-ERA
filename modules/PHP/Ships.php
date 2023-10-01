@@ -20,6 +20,11 @@ class Ships extends APP_GameClass
 	}
 	static function getHomeStar(string $color = null)
 	{
+		if (is_null($color)) return self::getObjectListFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
+		return self::getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
+	}
+	static function getHomeStarLocation(string $color = null)
+	{
 		if (is_null($color)) return self::getCollectionFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
 		return self::getUniqueValueFromDB("SELECT location FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
 	}
@@ -119,7 +124,7 @@ class Ships extends APP_GameClass
 //
 // Stargate 1
 //
-		if ($propulsion === 3 || $propulsion === 4) $ownStars = Counters::getPopulation($ship['color'], true);
+		if ($propulsion === 3 || $propulsion === 4) $ownStars = Counters::getPopulations($ship['color'], true);
 //
 // Stargate 2
 //
@@ -129,9 +134,9 @@ class Ships extends APP_GameClass
 // Neutral stars
 			foreach (Counters::getAllDatas() as $counter) if ($counter['type'] === 'star') $stars[] = $counter['location'];
 // Own stars
-			foreach (array_keys(Counters::getPopulation($ship['color'])) as $location) $stars[] = $location;
+			foreach (array_keys(Counters::getPopulations($ship['color'])) as $location) $stars[] = $location;
 // Non in war with faction stars
-			foreach (Factions::atPeace($ship['color']) as $color) foreach (array_keys(Counters::getPopulation($color)) as $location) $stars[] = $location;
+			foreach (Factions::atPeace($ship['color']) as $color) foreach (array_keys(Counters::getPopulations($color)) as $location) $stars[] = $location;
 // Neutron stars
 			foreach (Sectors::stars(true) as $location) $stars[] = $location;
 //
@@ -151,7 +156,7 @@ class Ships extends APP_GameClass
 //
 // Stargate 1
 //
-			if ($propulsion === 3 || $propulsion === 4) if (array_key_exists($location, $ownStars)) foreach ($ownStars as $next_location => $population) if ($next_location !== $location && $population >= 3) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+			if ($propulsion === 3 || $propulsion === 4) if (array_key_exists($location, $ownStars) && $ownStars[$location] >= 3) foreach ($ownStars as $next_location => $population) if ($next_location !== $location && $population >= 3) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
 //
 // Stargate 2
 //

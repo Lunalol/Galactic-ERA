@@ -121,6 +121,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				if (dojo.hasClass(counter, 'ERAselectable'))
 				{
+					if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation')
+					{
+						dojo.stopEvent(event);
+						return this.bgagame.homeStarEvacuation(location);
+					}
 					if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing')
 					{
 						dojo.stopEvent(event);

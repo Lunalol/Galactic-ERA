@@ -190,6 +190,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function homeStarEvacuation()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$location = self::getArg("location", AT_json, true);
+		$this->game->acHomeStarEvacuation($color, $location);
+//
+		self::ajaxResponse("");
+	}
 	public function combatChoice()
 	{
 		self::setAjaxMode();
@@ -246,7 +256,7 @@ class action_galacticera extends APP_GameAction
 //
 		$color = self::getArg("color", AT_alphanum, true);
 		$location = self::getArg("location", AT_json, true);
-		$this->game->acGainStar($color, $location);
+		$this->game->acGainStar($color, [$location]);
 //
 		self::ajaxResponse("");
 	}

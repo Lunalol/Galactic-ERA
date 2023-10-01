@@ -241,7 +241,7 @@ $machinestates = [
 		'name' => 'growthActions',
 		'type' => 'game',
 		'action' => 'stGrowthActions',
-		'transitions' => ['continue' => 400, 'nextPlayer' => 410, 'next' => 500]
+		'transitions' => ['continue' => 400, 'evacuate' => 430, 'nextPlayer' => 410, 'next' => 500]
 	],
 	410 => [
 		'name' => 'resolveGrowthActions',
@@ -249,8 +249,9 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
+//		'action' => 'stResolveGrowthActions',
 		'possibleactions' => ['declareWar', 'declarePeace', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'next' => 400]
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'evacuate' => 435, 'continue' => 410, 'next' => 400]
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',
@@ -269,6 +270,24 @@ $machinestates = [
 		'action' => 'stBuriedShips',
 		'args' => 'argBuriedShips',
 		'possibleactions' => ['buildShips', 'done'],
+		'transitions' => ['continue' => 410]
+	],
+	430 => [
+		'name' => 'homeStarEvacuation',
+		'description' => clienttranslate('${actplayer} must evacuate its Home Star'),
+		'descriptionmyturn' => clienttranslate('${you} must evacuate your Home Star'),
+		'type' => 'activeplayer',
+		'args' => 'argHomeStarEvacuation',
+		'possibleactions' => ['homeStarEvacuation'],
+		'transitions' => ['continue' => 400]
+	],
+	435 => [
+		'name' => 'homeStarEvacuation',
+		'description' => clienttranslate('${actplayer} may evacuate its Home Star'),
+		'descriptionmyturn' => clienttranslate('${you} may evacuate your Home Star'),
+		'type' => 'activeplayer',
+		'args' => 'argHomeStarEvacuation',
+		'possibleactions' => ['homeStarEvacuation'],
 		'transitions' => ['continue' => 410]
 	],
 	500 => [

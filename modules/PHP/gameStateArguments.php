@@ -55,7 +55,7 @@ trait gameStateArguments
 //
 		$this->possible = [
 			'ships' => [], 'fleets' => array_fill_keys(Ships::FLEETS, ['location' => null, 'ships' => 0]),
-			'stars' => array_keys(Counters::getPopulation($color)),
+			'stars' => array_keys(Counters::getPopulations($color)),
 			'view' => Factions::getStatus($color, 'view'),
 			'declareWar' => Factions::atPeace($color)
 		];
@@ -213,10 +213,10 @@ trait gameStateArguments
 				$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
 				$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
 //
-				$homeStar = Ships::getHomeStar($color);
+				$homeStar = Ships::getHomeStarLocation($color);
 //
 				$this->possible[$player_id]['additional'] = 0;
-				foreach (Counters::getPopulation($color, true) as $location => $population) if ($population >= 5 && $location !== $homeStar) $this->possible[$player_id]['additional']++;
+				foreach (Counters::getPopulations($color, true) as $location => $population) if ($population >= 5 && $location !== $homeStar) $this->possible[$player_id]['additional']++;
 			}
 		}
 //
@@ -249,7 +249,7 @@ trait gameStateArguments
 				case 'growPopulation':
 					{
 						$this->possible['growPopulation'] = [];
-						foreach (Counters::getPopulation($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
+						foreach (Counters::getPopulations($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
 						$this->possible['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
 					}
 					break;
@@ -257,7 +257,7 @@ trait gameStateArguments
 					{
 						$this->possible['newShips'] = Factions::ships($color);
 						$this->possible['stars'] = [];
-						foreach (Counters::getPopulation($color, true) as $location => $population) if ($population >= Factions::SHIPYARDS[Factions::getTechnology($color, 'Robotics')]) $this->possible['stars'][] = $location;
+						foreach (Counters::getPopulations($color, true) as $location => $population) if ($population >= Factions::SHIPYARDS[Factions::getTechnology($color, 'Robotics')]) $this->possible['stars'][] = $location;
 //
 						foreach (Ships::getAll($color) as $ship)
 						{
@@ -283,6 +283,24 @@ trait gameStateArguments
 		}
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters];
+	}
+	function argHomeStarEvacuation()
+	{
+		$this->possible = [];
+		foreach (Factions::list() as $color)
+		{
+			$player_id = Factions::getPlayer($color);
+			if ($player_id > 0 && Factions::getStatus($color, 'evacuate'))
+			{
+				$this->possible[$player_id]['color'] = $color;
+				$this->possible[$player_id]['homeStar'] = Ships::getHomeStarLocation($color);
+//
+				$populations = Counters::getPopulations($color, true);
+				$this->possible[$player_id]['evacuate'] = array_keys($populations, max($populations));
+			}
+		}
+//
+		return ['_private' => $this->possible];
 	}
 	function argBuriedShips()
 	{

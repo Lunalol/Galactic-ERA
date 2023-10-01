@@ -183,7 +183,7 @@ class Factions extends APP_GameClass
 	}
 	static function ships(string $color): int
 	{
-		$population = max(6, array_sum(Counters::getPopulation($color, true)));
+		$population = max(6, array_sum(Counters::getPopulations($color, true)));
 //
 		$ships = self::TECHNOLOGIES['Robotics'][self::getTechnology($color, 'Robotics')];
 		foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $ships++;
@@ -196,14 +196,14 @@ class Factions extends APP_GameClass
 	}
 	static function inContact(string $color): array
 	{
-		$locations = array_unique(array_merge(array_column(Ships::getAll($color), 'location'), array_keys(Counters::getPopulation($color))));
+		$locations = array_unique(array_merge(array_column(Ships::getAll($color), 'location'), array_keys(Counters::getPopulations($color))));
 //
 		$factions = [];
 		foreach (self::list() as $otherColor)
 		{
 			if ($otherColor !== $color)
 			{
-				$inContact = array_diff(array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulation($otherColor))))), ['stock']);
+				$inContact = array_diff(array_intersect($locations, array_unique(array_merge(array_column(Ships::getAll($otherColor), 'location'), array_keys(Counters::getPopulations($otherColor))))), ['stock']);
 				if ($inContact) $factions[] = $otherColor;
 			}
 		}

@@ -315,6 +315,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			let location = this.nearest(x, y);
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
+				if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation') return this.bgagame.homeStarEvacuation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'retreat') return this.bgagame.retreat(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'retreatE') return this.bgagame.retreat(location);

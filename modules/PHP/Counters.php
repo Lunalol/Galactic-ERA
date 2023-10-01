@@ -34,11 +34,11 @@ class Counters extends APP_GameClass
 	{
 		return self::getCollectionFromDB("SELECT location, id FROM counters WHERE color = '$color' AND type IN ('2x', '+3 DP')", true);
 	}
-	static function getPopulation(string $color, bool $blocking = false): array
+	static function getPopulations(string $color, bool $blocking = false): array
 	{
 		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
 //
-		$homeStar = Ships::getHomeStar($color);
+		$homeStar = Ships::getHomeStarLocation($color);
 		if ($homeStar)
 		{
 			if (array_key_exists($homeStar, $populations)) $populations[$homeStar] += 6;
@@ -49,10 +49,11 @@ class Counters extends APP_GameClass
 //
 		return $populations;
 	}
-	static function isBlocked(string $color, string $location)
+	static function isBlocked(string $color, string $location, string $willDeclareWarOn = '')
 	{
 		if (Factions::getTechnology($color, 'Spirituality') >= 5) return false;
 		foreach (Factions::atWar($color) as $otherColor) if (Ships::getAtLocation($location, $otherColor)) return true;
+		if ($willDeclareWarOn && Ships::getAtLocation($location, $willDeclareWarOn)) return true;
 		return false;
 	}
 	static function reveal(string $color, string $type, int $id)
@@ -70,7 +71,7 @@ class Counters extends APP_GameClass
 		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star','relic')", true);
 		return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type = '$type'", true);
 	}
-	static function gainStar(string $color, string $location): array
+	static function gainStar(string $color, string $location, bool $willDeclareWar = false): array
 	{
 		if (self::isBlocked($color, $location)) return [0, 0, 0];
 //
@@ -87,10 +88,11 @@ class Counters extends APP_GameClass
 		if ($sizeOfPopulation)
 		{
 			$otherColor = $homeStar ? Ships::get($homeStar[0])['color'] : Counters::get($populations[0])['color'];
+			if ($willDeclareWar && self::isBlocked($color, $location, $otherColor)) return [0, 0, 0];
 //
-// ORION STO & STS: Your population counts double for being conquered
+// ORION STO: Your population counts double for being conquered
 //
-			if (Factions::getStarPeople($otherColor) === 'Orion')
+			if (Factions::getStarPeople($otherColor) === 'Orion' && Factions::getAlignment($color) === 'STO')
 			{
 				$orion = true;
 				$sizeOfPopulation *= 2;
@@ -155,9 +157,9 @@ class Counters extends APP_GameClass
 						case 'STS':
 							$SHIPS = 3 + 1;
 //
-// ORION STO & STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)
+// ORION STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)
 //
-							if (Factions::getStarPeople($color) === 'Orion') $SHIPS = 1;
+							if (Factions::getStarPeople($color) === 'Orion' && Factions::getAlignment($color) === 'STS') $SHIPS = 1;
 //
 							$population = 1;
 							$type = CONQUER;
@@ -170,11 +172,6 @@ class Counters extends APP_GameClass
 //
 		if ($sizeOfPopulation)
 		{
-//
-// ORION STO & STS: Your population counts double for being conquered
-//
-			if (Factions::getStarPeople($otherColor) === 'Orion') $sizeOfPopulation *= 2;
-//
 			switch (Factions::getAlignment($color))
 			{
 				case 'STO': // Liberate
@@ -185,9 +182,9 @@ class Counters extends APP_GameClass
 				case 'STS': // Conquer
 					$SHIPS = 1 + $sizeOfPopulation;
 //
-// ORION STO & STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)
+// ORION STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)
 //
-					if (Factions::getStarPeople($color) === 'Orion') $SHIPS = 1;
+					if (Factions::getStarPeople($color) === 'Orion' && Factions::getAlignment($color) === 'STS') $SHIPS = 1;
 //
 					$population = 1;
 					$type = CONQUERVS;
