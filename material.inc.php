@@ -7,7 +7,7 @@ $this->STORIES = [
 	JOURNEYS => clienttranslate('Journeys'),
 //	MIGRATIONS => clienttranslate('Migrations'),
 //	RIVALRY => clienttranslate('Rivalry'),
-//	WARS => clienttranslate('Wars')
+//	WAR => clienttranslate('War')
 ];
 //
 // Galacic goals (8)
@@ -76,7 +76,7 @@ $this->STARPEOPLES = [
 //	'Mantids' => ['STO' => clienttranslate('Mantids'), 'STS' => clienttranslate('Mantids')],
 //	'Mayans' => ['STO' => clienttranslate('Cosmic Mayans'), 'STS' => clienttranslate('Cosmic Mayans')],
 	'Orion' => ['STO' => clienttranslate('Orion Republic'), 'STS' => clienttranslate('Orion Empire')],
-//	'Plejars' => ['STO' => clienttranslate('Plejars'), 'STS' => clienttranslate('Plejars')],
+	'Plejars' => ['STO' => clienttranslate('Plejars'), 'STS' => clienttranslate('Plejars')],
 //	'Progenitors' => ['STO' => clienttranslate('Progenitors'), 'STS' => clienttranslate('Progenitors')],
 //	'Rogue' => ['STO' => clienttranslate('Rogue AI'), 'STS' => clienttranslate('Rogue AI')],
 	'Yowies' => ['STO' => clienttranslate('Yowies'), 'STS' => clienttranslate('Yowies')],

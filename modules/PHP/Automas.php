@@ -911,8 +911,12 @@ class Automas extends APP_GameClass
 //
 				Factions::setStatus($color, 'gainStar');
 //
-				foreach (Factions::getStatus($color, 'steal') as $otherColor)
+				$steal = Factions::getStatus($color, 'steal');
+				if ($steal)
 				{
+					['from' => $otherColor, 'levels' => $levels] = $steal;
+					Factions::setStatus($color, 'steal');
+//
 					$technologies = [];
 					foreach (array_keys(Factions::TECHNOLOGIES) as $technology)
 					{
@@ -926,7 +930,7 @@ class Automas extends APP_GameClass
 //* -------------------------------------------------------------------------------------------------------- */
 						$bgagame->notifyAllPlayers('msg', clienttranslate('<B>${TECHNOLOGY} is stealed at ${player_name}</B>'), ['player_name' => Factions::getName($otherColor), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $bgagame->TECHNOLOGIES[$technology]]);
 //* -------------------------------------------------------------------------------------------------------- */
-						$bgagame->acResearch($color, [$technology], true);
+						for ($i = 0; $i < $levels; $i++) $bgagame->gainTechnology($color, $technology);
 					}
 				}
 				continue;

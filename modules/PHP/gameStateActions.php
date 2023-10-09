@@ -6,6 +6,16 @@
  */
 trait gameStateActions
 {
+	function acLevelOfDifficulty(int $levelOfDifficulty): void
+	{
+		$this->checkAction('levelOfDifficulty');
+//
+		self::setGameStateValue('difficulty', $levelOfDifficulty);
+		$slavers = Factions::getAutoma(SLAVERS);
+		if ($slavers) self::acSpecial($slavers, Automas::DIFFICULTY[$levelOfDifficulty]);
+//
+		$this->gamestate->nextState('next');
+	}
 	function acStarPeopleChoice(string $color, string $starPeople): void
 	{
 		$player_id = Factions::getPlayer($color);
@@ -111,7 +121,7 @@ trait gameStateActions
 				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => $ships]);
 //* -------------------------------------------------------------------------------------------------------- */
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 				self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
 			}
 			else
@@ -191,7 +201,7 @@ trait gameStateActions
 			}
 			Ships::setMP($fleetID, $MP);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+			self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 			self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
@@ -379,10 +389,10 @@ trait gameStateActions
 			Ships::setStatus($first, 'fleet', $fleets[1]);
 			Ships::setStatus($second, 'fleet', $fleets[0]);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('revealShip', '', ['ship' => ['id' => $first, 'fleet' => $fleets[1] === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+			self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $first, 'fleet' => $fleets[1] === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 			self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $first, 'fleet' => $fleets[1], 'ships' => Ships::getStatus($first, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('revealShip', '', ['ship' => ['id' => $second, 'fleet' => $fleets[0] === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+			self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $second, 'fleet' => $fleets[0] === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 			self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $second, 'fleet' => $fleets[0], 'ships' => Ships::getStatus($second, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
@@ -454,10 +464,12 @@ trait gameStateActions
 //
 		if (Factions::getPlayer($on) <= 0)
 		{
+			if (Factions::getStatus($on, 'peace')) throw new BgaUserException(self::_('You can make peace only once by round'));
 //
 // #offboard population : 2 - Slavers never make peace
 //
 			if (Factions::getPlayer($on) == SLAVERS && Factions::getDP($on) >= 2) throw new BgaUserException(self::_('Slavers’ Offboard Power Effects: Slavers never make peace'));
+			Factions::setStatus($on, 'peace', 'once per round');
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${player_name1} proposes peace to ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -674,6 +686,26 @@ trait gameStateActions
 		Factions::setActivation($color, 'done');
 //
 		$this->gamestate->nextState('next');
+	}
+	function acStealTechnology(string $color, string $technology)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('stealTechnology');
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if ($technology && !array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
+//
+		['from' => $from, 'levels' => $levels] = Factions::getStatus($color, 'steal');
+		Factions::setStatus($color, 'steal');
+//
+		if (!$technology) return $this->gamestate->nextState('continue');
+//
+		for ($i = 0; $i < $levels; $i++) self::gainTechnology($color, $technology);
+//
+		$players = array_values(Factions::advancedFleetTactics());
+		if ($this->gamestate->setPlayersMultiactive($players, 'continue', true)) return;
+		$this->gamestate->nextState('advancedFleetTactics');
 	}
 	function acHomeStarEvacuation(string $color, string $location)
 	{
@@ -1018,7 +1050,7 @@ trait gameStateActions
 					else throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
 				}
 				if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
-				Factions::setStatus($color, 'steal', $sizeOfPopulation >= 6 ? [$otherColor, $otherColor] : [$otherColor]);
+				Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
 			}
 //
 			foreach (Counters::getAtLocation($location, 'star') as $star)
@@ -1134,7 +1166,7 @@ trait gameStateActions
 //
 // YOWIES SPECIAL STO & STS: When you get the Ancient Technology: Robotics relic you get 2 ships at that star instead of a level (use the same restrictions as for the Buried Ships relic
 //
-						if (Factions::getStarPeople($color) === 'Yowie')
+						if (Factions::getStarPeople($color) === 'Yowies')
 						{
 							$newShips = 2;
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1201,12 +1233,13 @@ trait gameStateActions
 				if (intval($location[0]) !== Factions::getHomeStar($color) && in_array($type, [LIBERATE, CONQUERVS]))
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', _('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
+					self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 					$DP = 2;
 					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 			}
@@ -1216,8 +1249,9 @@ trait gameStateActions
 			if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'First' && $player_id > 0)
 			{
 				self::gainDP($color, 1);
+				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
 					'player_name' => Factions::getName($color),
 					'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1232,6 +1266,11 @@ trait gameStateActions
 //
 		if (!$automa)
 		{
+			if (Factions::getStatus($color, 'steal'))
+			{
+				$this->gamestate->nextState('stealTechnology');
+				return;
+			}
 			if ($newShips)
 			{
 				Factions::setStatus($color, 'buriedShips', ['location' => $location, 'ships' => $newShips]);
@@ -1250,23 +1289,26 @@ trait gameStateActions
 	}
 	function acSpecial($color, $N)
 	{
-		Factions::gainPopulation($color, $N);
-		$DP = self::gainDP($color, $N);
-//* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes ${N} population disc(s) (add to offboard power track)'), [
-			'player_name' => Factions::getName($color), 'faction' => Factions::get($color), 'N' => $N]);
-//* -------------------------------------------------------------------------------------------------------- */
-		if ($DP >= 5)
+		if ($N > 0)
 		{
+			Factions::gainPopulation($color, $N);
+			$DP = self::gainDP($color, $N);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes ${N} population disc(s) (add to offboard power track)'), [
+				'player_name' => Factions::getName($color), 'faction' => Factions::get($color), 'N' => $N]);
+//* -------------------------------------------------------------------------------------------------------- */
+			if ($DP >= 5)
+			{
 //
 // #offboard population : 5+ - You immediately lose 5 DP for each new offboard population
 //
-			self::gainDP(Factions::getNotAutomas(), -5);
+				self::gainDP(Factions::getNotAutomas(), -5);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', _('${player_name} loses ${DP} DP(s)'), ['DP' => 5,
-				'player_name' => Factions::getName(Factions::getNotAutomas()),
-				'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => 5,
+					'player_name' => Factions::getName(Factions::getNotAutomas()),
+					'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
 //* -------------------------------------------------------------------------------------------------------- */
+			}
 		}
 		$counters = Factions::getStatus($color, 'counters');
 		if ($counters)
@@ -1332,8 +1374,9 @@ trait gameStateActions
 		if ($era === 'First' && $galacticStory == MIGRATIONS && (sizeof($locations) + sizeof($locationsBonus) > 0) && $player_id > 0)
 		{
 			self::gainDP($color, 3);
+			self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s)'), ['DP' => 3,
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => 3,
 				'player_name' => Factions::getName($color),
 				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1368,7 +1411,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => $fleet]);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+			self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 			if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
@@ -1386,7 +1429,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${ships} ship(s) join fleet ${GPS}'), ['GPS' => $fleet['location'], 'ships' => $ships]);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 				if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
@@ -1422,13 +1465,14 @@ trait gameStateActions
 			$galacticStory = self::getGameStateValue('galacticStory');
 			$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
 //
-// WARS First: All players score 2 DP for every Build Ships action they do in this era.
+// WAR First: All players score 2 DP for every Build Ships action they do in this era.
 //
-			if ($era === 'First' && $galacticStory == WARS && $player_id > 0)
+			if ($era === 'First' && $galacticStory == WAR && $player_id > 0)
 			{
 				self::gainDP($color, 2);
+				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', _('${player_name} gains ${DP} DP(s) '), ['DP' => 2,
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s) '), ['DP' => 2,
 					'player_name' => Factions::getName($color),
 					'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1437,44 +1481,26 @@ trait gameStateActions
 //
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
-	function acTrade(string $from, string $to, string $technology)
+	function acTrade(string $from, string $to, string $technology, $toTeach = null)
 	{
 		$player_id = Factions::getPlayer($from);
 //
-		$this->checkAction('trade');
+		$this->checkPossibleAction('trade');
 		if ($player_id != Factions::getPlayer($from)) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
+		if (Factions::getActivation($from) === 'done') throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
 //
 		if (!$to)
 		{
 			Factions::setActivation($from, 'done');
-			$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
-			if (sizeof($this->gamestate->getActivePlayerList()) < 2) $this->gamestate->setAllPlayersNonMultiactive('next');
-			else $this->gamestate->nextState('continue');
-			return;
+			if ($this->gamestate->setPlayerNonMultiactive($player_id, 'next')) return;
+			return $this->gamestate->nextState('continue');
 		}
 //
 		$automas = Factions::getPlayer($to) <= 0;
-		if ($automas && $technology === 'accept') $technology = 'confirm';
 //
 		$fromStatus = Factions::getStatus($from, 'trade');
 		switch ($technology)
 		{
-			case 'accept':
-				{
-					if (!array_key_exists($to, $fromStatus)) throw new BgaUserException(self::_('You must choose what you are getting'));
-					$toStatus = Factions::getStatus($to, 'trade');
-					if (!array_key_exists($from, $toStatus)) throw new BgaUserException(self::_('Other player must choose what you are teaching'));
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyPlayer(Factions::getPlayer($from), 'msg', clienttranslate('Waiting from confirmation of ${player_name}'), [
-						'player_name' => Factions::getName($to)]);
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyPlayer(Factions::getPlayer($to), 'trade', '', [
-						'from' => $from, 'to' => $to]);
-//* -------------------------------------------------------------------------------------------------------- */
-					$toStatus[$from]['pending'] = true;
-					Factions::setStatus($to, 'trade', $toStatus);
-				}
-				break;
 			case 'confirm':
 				{
 					if (!array_key_exists($to, $fromStatus)) throw new BgaUserException(self::_('You must choose what you are getting'));
@@ -1483,11 +1509,12 @@ trait gameStateActions
 //
 					foreach ([$from => $fromStatus[$to]['technology'], $to => $toStatus[$from]['technology']] as $color => $technology) self::gainTechnology($color, $technology);
 //
-					if ($this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($from), 'next')) return;
+					Factions::setActivation($from, 'done');
+					Factions::setActivation($to, 'done');
+//
+					if ($player_id > 0 && $this->gamestate->setPlayerNonMultiactive($player_id, 'next')) return;
 					if ($this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($to), 'next')) return;
-					if (sizeof($this->gamestate->getActivePlayerList()) < 2) $this->gamestate->setAllPlayersNonMultiactive('next');
-					else $this->gamestate->nextState('continue');
-					return;
+					return $this->gamestate->nextState('continue');
 				}
 				break;
 			case 'refuse':
@@ -1504,6 +1531,11 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 							unset($toStatus[$from]);
 							Factions::setStatus($to, 'trade', $toStatus);
+//
+							$otherPlayer = Factions::getPlayer($to);
+							if ($otherPlayer) self::dbSetPlayerMultiactive($otherPlayer, 1);
+							self::dbSetPlayerMultiactive($player_id, 1);
+							$this->gamestate->updateMultiactiveOrNextState('next');
 						}
 					}
 				}
@@ -1514,9 +1546,47 @@ trait gameStateActions
 					{
 						$old = $fromStatus[$to]['technology'];
 						unset($fromStatus[$to]);
-						if ($technology !== $old) $fromStatus[$to] = ['technology' => $technology, 'pending' => false];
+						if ($technology !== $old)
+						{
+							$fromStatus[$to] = ['technology' => $technology, 'pending' => false];
+							self::dbSetPlayerMultiactive($player_id, 0);
+						}
+						else self::dbSetPlayerMultiactive($player_id, 1);
 					}
-					else $fromStatus[$to] = ['technology' => $technology, 'pending' => false];
+					else
+					{
+						$fromStatus[$to] = ['technology' => $technology, 'pending' => false];
+						self::dbSetPlayerMultiactive($player_id, 0);
+//
+						$toStatus = Factions::getStatus($to, 'trade');
+						if ($automas)
+						{
+							if (!array_key_exists($from, $toStatus))
+							{
+								$toStatus[$from] = ['technology' => $toTeach, 'pending' => false];
+								Factions::setStatus($to, 'trade', $toStatus);
+							}
+							self::dbSetPlayerMultiactive($player_id, 1);
+							Factions::setStatus($from, 'trade', $fromStatus);
+							return self::acTrade($to, $from, 'confirm');
+						}
+//
+						if (array_key_exists($from, $toStatus))
+						{
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyPlayer(Factions::getPlayer($from), 'msg', clienttranslate('Waiting from confirmation of ${player_name}'), [
+								'player_name' => Factions::getName($to)]);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyPlayer(Factions::getPlayer($to), 'trade', '', ['from' => $from, 'to' => $to]);
+//* -------------------------------------------------------------------------------------------------------- */
+							$toStatus[$from]['pending'] = true;
+							Factions::setStatus($to, 'trade', $toStatus);
+//
+							self::dbSetPlayerMultiactive(Factions::getPlayer($to), 1);
+						}
+					}
+//
+					$this->gamestate->updateMultiactiveOrNextState('next');
 				}
 		}
 		Factions::setStatus($from, 'trade', $fromStatus);

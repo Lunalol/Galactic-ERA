@@ -15,6 +15,15 @@ class action_galacticera extends APP_GameAction
 			self::trace("Complete reinitialization of board game");
 		}
 	}
+	public function levelOfDifficulty()
+	{
+		self::setAjaxMode();
+//
+		$levelOfDifficulty = intval(self::getArg("levelOfDifficulty", AT_int, true));
+		$this->game->acLevelOfDifficulty($levelOfDifficulty,);
+//
+		self::ajaxResponse("");
+	}
 	public function starPeopleChoice()
 	{
 		self::setAjaxMode();
@@ -190,6 +199,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function stealTechnology()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$technology = self::getArg("technology", AT_alphanum, true);
+		$this->game->acStealTechnology($color, $technology);
+//
+		self::ajaxResponse("");
+	}
 	public function homeStarEvacuation()
 	{
 		self::setAjaxMode();
@@ -288,7 +307,8 @@ class action_galacticera extends APP_GameAction
 		$from = self::getArg("from", AT_alphanum, true);
 		$to = self::getArg("to", AT_alphanum, true);
 		$technology = self::getArg("technology", AT_alphanum, true);
-		$this->game->acTrade($from, $to, $technology);
+		$toTeach = self::getArg("toTeach", AT_alphanum, false);
+		$this->game->acTrade($from, $to, $technology, $toTeach);
 //
 		self::ajaxResponse("");
 	}

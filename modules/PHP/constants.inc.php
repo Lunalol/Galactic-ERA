@@ -41,7 +41,7 @@ define('SLAVERS', -2);
 define('JOURNEYS', 1);
 define('MIGRATIONS', 2);
 define('RIVALRY', 3);
-define('WARS', 4);
+define('WAR', 4);
 //
 // Galacic goals (8)
 //

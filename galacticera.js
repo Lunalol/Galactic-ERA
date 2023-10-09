@@ -48,7 +48,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				},
 				Migrations: {},
 				Rivalry: {},
-				Wars: {}
+				War: {}
 			};
 //
 			this.TECHNOLOGIES = {
@@ -59,16 +59,16 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					4: [_('CV of each ship is 3'), _('You get 1 additional advanced fleet tactic')],
 					5: [_('CV of each ship is 6')],
 					6: [_('CV of each ship is 10'), _('You get 3 additional advanced fleet tactics')],
-					'6+': _('')
+					'6+': ''
 				},
 				Spirituality: {
-					1: [_('')],
+					1: [''],
 					2: [_('You may do 1 remote view per round')],
 					3: [_('You may do 2 remote views per round')],
 					4: [_('You may do 3 remote views per round'), _('You may trade technologies without being in contact')],
 					5: [_('You may do 4 remote views per round'), _('You may trade technologies without being in contact'), _('Hostile ships cannot block you')],
 					6: [_('You may do an unlimited number of remote views per round'), _('You may trade technologies without being in contact'), ('Hostile ships cannot block you')],
-					'6+': _('')
+					'6+': ''
 				},
 				Propulsion: {
 					1: [_('Ship range is 3')],
@@ -77,10 +77,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					4: [_('Ship range is 5'), _('You can use Stargate 1 connections')],
 					5: [_('Ship range is 5'), _('You can use Stargate 2 connections'), _('You may enter Neutron Star hexes')],
 					6: [_('You can move your ships anywhere, including Neutron Star hexes')],
-					'6+': _('')
+					'6+': ''
 				},
 				Robotics: {
-					1: [_('')],
+					1: [''],
 					2: [_('Add 1 ship when doing Build Ships')],
 					3: [_('Add 3 ships when doing Build Ships')],
 					4: [_('Add 5 ships when doing Build Ships'), _('Place new ships at any non-blocked stars of yours with 3+ population')],
@@ -88,16 +88,16 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						_('During growth phase, you may select 2 square counters, you lose 2 DP if you do this')],
 					6: [_('Add 10 ships when doing Build Ships'), _('Place new ships at any non-blocked stars of yours'),
 						_('During growth phase, you may select 2 square counters without losing DP for doing this')],
-					'6+': _('')
+					'6+': ''
 				},
 				Genetics: {
-					1: [_('')],
+					1: [''],
 					2: [_('You get 1 bonus population when doing Grow Population')],
 					3: [_('You get 2 bonus population when doing Grow Population')],
 					4: [_('You get 3 bonus population when doing Grow Population')],
 					5: [_('You get 4 bonus population when doing Grow Population'), _('Only lose 2 DP per additional growth action counter selected')],
 					6: [_('You get 6 bonus population when doing Grow Population'), _('Only lose 1 DP per additional growth action counter selected')],
-					'6+': _('')
+					'6+': ''
 				}
 			};
 //
@@ -115,7 +115,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					for (let [level, strings] of Object.entries(this.TECHNOLOGIES[technology]))
 					{
 						html += `<div style="padding:12px;text-align:center;outline:1px solid grey;${level <= technologyLevel ? 'font-weight:bold;' : ''}">${level}</div>`;
-						html += `<div style="padding:12px;outline:1px solid grey;${level <= technologyLevel ? 'font-weight:bold;' : ''}">`;
+						html += `<div style="padding:12px;outline:1px solid grey;${level <= technologyLevel ? 'font-weight:bold;' : 'color:lightgrey;'}">`;
 						for (let string of strings) html += '<div style="text-align:justify;">' + string + '</div>';
 						html += '</div>';
 					}
@@ -440,10 +440,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 												dojo.toggleClass('ERAselectButton', 'disabled', !this.checkGrowthActions());
 											}
 										}
-										if (stateName === 'individualChoice')
-										{
-											this.action('individualChoice', {color: this.color, technology: counter});
-										}
+										if (stateName === 'individualChoice') this.action('individualChoice', {color: this.color, technology: counter});
+										if (stateName === 'stealTechnology') this.action('stealTechnology', {color: this.color, technology: counter});
 									}
 								});
 							}
@@ -529,6 +527,70 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			switch (stateName)
 			{
+				case 'levelOfDifficulty':
+				{
+					this.levelOfDifficulty = new ebg.popindialog();
+					this.levelOfDifficulty.create('ERAlevelOfDifficulty');
+					this.levelOfDifficulty.setTitle(_("Level of difficulty"));
+//
+					html = `<div style='display:grid;grid-template-columns: 2fr 1fr 3fr;column-gap:10px;align-items:center;'>`;
+//
+					html += `<div></div>`;
+					html += `<div style='text-align:center;font-weight:bold;'>${_('High-scores')}</div>`;
+					html += `<div></div>`;
+//
+					html += `<div id='ERA-0' data-level='0' class='ERAbutton bgabutton bgabutton_${true ? 'green' : 'red'}'>${_('Easy')}</div>`;
+					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[0] ? state.args.legacy[0] : _('No high-score')}</div>`;
+					html += `<div style='font-style:italic;'>${_('+0 ship bonus')}</div>`;
+//
+					html += `<div id='ERA-1' data-level='1' class='ERAbutton bgabutton bgabutton_${state.args.legacy[0] > 0 ? 'green' : 'red'}'>${_('Standard')}</div>`;
+					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[1] ? state.args.legacy[1] : _('No high-score')} </div>`;
+					html += `<div style='font-style:italic;'>${_('+1 ship bonus')}</div>`;
+//
+					html += `<div id='ERA-2' data-level='2' class='ERAbutton bgabutton bgabutton_${state.args.legacy[1] > 0 ? 'green' : 'red'}'>${_('Hard')}</div>`;
+					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[2] ? state.args.legacy[2] : _('No high-score')} </div>`;
+					html += `<div style='font-style:italic;'>${_('+2 ship bonus<BR>One disc removed from Slavers’ population track')}</div>`;
+//
+					html += `<div id='ERA-3' data-level='3' class='ERAbutton bgabutton bgabutton_${state.args.legacy[2] > 0 ? 'green' : 'red'}'>${_('Insane')}</div>`;
+					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[3] ? state.args.legacy[3] : _('No high-score')} </div>`;
+					html += `<div style='font-style:italic;'>${_('+3 ship bonus<BR>Two discs removed from Slavers’ population track')}</div>`;
+//
+					html += `<div id='ERAgoButton' class='bgabutton bgabutton_big bgabutton_blue'>${_('Go to game')}</div>`;
+					html += `<div></div>`;
+					html += `<div id='ERAmsg' style='color:red;font-weight:bold;'></div>`;
+					html += `</div>`;
+//
+					this.levelOfDifficulty.setContent(html);
+					this.levelOfDifficulty.hideCloseIcon();
+					this.levelOfDifficulty.show();
+//
+					let level = 4;
+					while (--level > 0) if (state.args.legacy[level - 1] > 0) break;
+					dojo.addClass(`ERA-${level}`, 'ERAselected');
+//
+					this.connectClass('ERAbutton', 'click', (event) => {
+//
+						dojo.query('.ERAbutton').removeClass('ERAselected');
+						dojo.addClass(event.currentTarget, 'ERAselected');
+//
+						const level = +event.currentTarget.dataset.level;
+						const check = (level === 0) || (state.args.legacy[level - 1] > 0);
+						$('ERAmsg').innerHTML = check ? '' : _('You must play at least one game at all easier levels');
+						dojo.toggleClass('ERAgoButton', 'disabled', !check);
+					});
+//
+					dojo.connect($('ERAgoButton'), 'click', () => {
+						const node = $('popin_ERAlevelOfDifficulty').querySelector('.ERAbutton.ERAselected');
+						if (node)
+						{
+							this.action('levelOfDifficulty', {levelOfDifficulty: node.dataset.level});
+							this.levelOfDifficulty.destroy();
+							delete this.levelOfDifficulty;
+						}
+					});
+//
+					break;
+				}
 				case 'remoteViewing':
 					dojo.query('#ERAboard>.ERAcounter-star:not([back]').addClass('ERAselectable').addClass('ERAselected');
 					dojo.query('#ERAboard>.ERAcounter-relic:not([back]').addClass('ERAselectable').addClass('ERAselected');
@@ -569,6 +631,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				case 'retreat':
 				case 'retreatE':
 					{
+						dojo.query(`.ERAship[color=${this.color}][location='${state.args.location}']`, 'ERAboard').addClass('ERAselectable');
+//
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 						dojo.setStyle(svg, 'position', 'absolute');
 						dojo.setStyle(svg, 'left', '0px');
@@ -613,6 +677,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
 					dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
 					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
+					dojo.query(`#ERAboard>.ERAcounter-star`).addClass('ERAselectable ERAselected');
 					break;
 //
 				case 'resolveGrowthActions':
@@ -724,7 +789,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 				case 'tradingPhase':
 					{
-						if (this.isCurrentPlayerActive())
+						if (/*this.isCurrentPlayerActive()*/ 'trade' in state.args._private)
 						{
 							dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
 //
@@ -743,6 +808,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 									dojo.toggleClass(node, 'ERAhide', level >= state.args._private[technology]);
 									dojo.toggleClass(node, 'ERAselectable', !dojo.hasClass(node, 'ERAdisabled'));
 									dojo.toggleClass(node, 'ERAselected', to in state.args._private.trade && from in state.args._private.trade[to] && state.args._private.trade[to][from].technology === technology)
+//
+									if (to === state.args.automa) dojo.connect(node, 'click', () => {
+											dojo.query('.ERAcounter.ERAcounter-technology', 'ERAchoice').removeClass('ERAselected');
+											dojo.addClass(node, 'ERAselected');
+										});
 								}
 //
 								const toColor = dojo.place(`<div style='display: flex;flex-direction: column;flex: 1 1 auto;align-items: center;' class='ERAtrade' id='ERAtradeTo-${from}-${to}'></div>`, container);
@@ -754,19 +824,26 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 									dojo.toggleClass(node, 'ERAselectable', !dojo.hasClass(node, 'ERAdisabled'));
 									dojo.toggleClass(node, 'ERAselected', from in state.args._private.trade && to in state.args._private.trade[from] && state.args._private.trade[from][to].technology === technology)
 //
-									dojo.connect(node, 'click', () => this.action('trade', {from: from, to: to, technology: technology}))
+									dojo.connect(node, 'click', () => {
+										if (to === state.args.automa) {
+											const nodes = dojo.query('.ERAcounter.ERAcounter-technology.ERAselected');
+											if (nodes.length !== 1) this.showMessage(_('You must choose what to teach first'), 'error');
+											else this.action('trade', {from: from, to: to, technology: technology, toTeach: nodes[0].getAttribute('counter')});
+										}
+										else this.action('trade', {from: from, to: to, technology: technology});
+									})
 								}
 								const node = dojo.place('<div style="display: flex;justify-content: space-between;"></div>', _container);
 								const refuse = dojo.place(`<div class='bgabutton'>${_('Refuse trade')}</div>`, node);
 								dojo.style(refuse, 'background', '#' + to + '80');
 								dojo.style(refuse, 'pointer-events', 'all');
 								dojo.connect(refuse, 'click', () => this.action('trade', {from: from, to: to, technology: 'refuse'}))
-								const accept = dojo.place(`<div class='bgabutton'>${_('Accept trade')}</div>`, node);
-								dojo.style(accept, 'background', '#' + to + '80');
-								dojo.style(accept, 'pointer-events', 'all');
-								if (from in state.args._private.trade && to in state.args._private.trade[from] && state.args._private.trade[from][to].pending) dojo.addClass(accept, 'ERAdisabled', );
-								if (to in state.args._private.trade && from in state.args._private.trade[to] && state.args._private.trade[to][from].pending) dojo.addClass(accept, 'ERAdisabled', );
-								dojo.connect(accept, 'click', () => this.action('trade', {from: from, to: to, technology: 'accept'}))
+//								const accept = dojo.place(`<div class='bgabutton'>${_('Accept trade')}</div>`, node);
+//								dojo.style(accept, 'background', '#' + to + '80');
+//								dojo.style(accept, 'pointer-events', 'all');
+//								if (from in state.args._private.trade && to in state.args._private.trade[from] && state.args._private.trade[from][to].pending) dojo.addClass(accept, 'ERAdisabled', );
+//								if (to in state.args._private.trade && from in state.args._private.trade[to] && state.args._private.trade[to][from].pending) dojo.addClass(accept, 'ERAdisabled', );
+//								dojo.connect(accept, 'click', () => this.action('trade', {from: from, to: to, technology: 'accept'}))
 							}
 //
 							let html = '';
@@ -1243,6 +1320,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						}, null, false, 'red');
 						break;
 //
+					case 'stealTechnology':
+//
+						this.addActionButton('ERAcancelButton', _('No gain'), () => this.action('stealTechnology', {color: this.color, technology: ''}));
+						break;
 					case 'research':
 //
 						this.addActionButton('ERAcancelButton', _('Cancel'), () => this.restoreServerGameState());
@@ -1351,6 +1432,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.subscribe('removeShip', (notif) => this.ships.remove(notif.args.ship));
 			dojo.subscribe('homeStarEvacuation', (notif) => this.ships.homeStarEvacuation(notif.args.homeStar, notif.args.location));
 //
+			this.notifqueue.setIgnoreNotificationCheck('revealShip', (notif) => (this.player_id === +notif.args.player_id));
+//
 			this.setSynchronous();
 		},
 		setSynchronous()
@@ -1364,7 +1447,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			this.notifqueue.setSynchronous('placeShip', DELAY);
 			this.notifqueue.setSynchronous('moveShips', DELAY / 2);
-			this.notifqueue.setSynchronous('revealShip', DELAY / 2);
+//			this.notifqueue.setSynchronous('revealShip', DELAY / 2);
 			this.notifqueue.setSynchronous('removeShip', DELAY / 2);
 			this.notifqueue.setSynchronous('homeStarEvacuation', DELAY);
 //
@@ -1621,7 +1704,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		action: function (action, args =
 		{}, success = () => {}, fail = undefined)
 		{
-			if (this.checkAction(action))
+			if ((action === 'trade' && this.checkPossibleActions(action)) || this.checkAction(action))
 			{
 				args.lock = true;
 				this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);

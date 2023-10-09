@@ -140,7 +140,7 @@ class Ships extends APP_GameClass
 // Neutron stars
 			foreach (Sectors::stars(true) as $location) $stars[] = $location;
 //
-			foreach ($stars as $index => $location) if (self::isBlocked($ship['color'], $location)) unset($stars[$index]);
+			foreach ($stars as $index => $location) if (Counters::isBlocked($ship['color'], $location)) unset($stars[$index]);
 		}
 //
 		$possible = [$ship['location'] => ['MP' => $ship['MP'], 'from' => null]];

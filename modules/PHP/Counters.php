@@ -32,7 +32,7 @@ class Counters extends APP_GameClass
 	}
 	static function getAdvancedFleetTactics(string $color): array
 	{
-		return self::getCollectionFromDB("SELECT location, id FROM counters WHERE color = '$color' AND type IN ('2x', '+3 DP')", true);
+		return self::getCollectionFromDB("SELECT location, id FROM counters WHERE color = '$color' AND type IN ('2x', 'DP')", true);
 	}
 	static function getPopulations(string $color, bool $blocking = false): array
 	{

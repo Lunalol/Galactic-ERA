@@ -1,5 +1,5 @@
 <?php
-//
+// TEST for p1ngouin
 require_once(APP_GAMEMODULE_PATH . 'module/table/table.game.php');
 require_once('modules/PHP/constants.inc.php');
 require_once('modules/PHP/hexagons.php');
@@ -74,7 +74,25 @@ class GalacticEra extends Table
 	}
 	protected function initStatistics()
 	{
-
+		self::initStat('player', 'DP', 0);
+		self::initStat('player', 'DP_GS', 0);
+		self::initStat('player', 'DP_GG', 0);
+		self::initStat('player', 'DP_AFT', 0);
+		self::initStat('player', 'DP_DC_A', 0);
+		self::initStat('player', 'DP_DC_B', 0);
+//
+// Legacy
+//
+		foreach (array_keys(self::loadPlayersBasicInfos()) as $player_id)
+		{
+			$datas = self::retrieveLegacyData($player_id, 'ALPHA');
+			$legacy = $datas ? json_decode($datas['ALPHA']) : [0 => '', 1 => '', 2 => '', 3 => ''];
+//
+			if ($legacy[0] !== '') self::initStat('player', 'easy', $legacy[0], $player_id);
+			if ($legacy[1] !== '') self::initStat('player', 'standard', $legacy[1], $player_id);
+			if ($legacy[2] !== '') self::initStat('player', 'hard', $legacy[2], $player_id);
+			if ($legacy[3] !== '') self::initStat('player', 'insane', $legacy[3], $player_id);
+		}
 	}
 	protected function getAllDatas()
 	{
@@ -115,6 +133,19 @@ class GalacticEra extends Table
 		$result['counters'] = Counters::getAllDatas();
 //
 		return $result;
+	}
+	/**
+	 * Changes values of multiactivity in db, does not sent notifications.
+	 * To send notifications after use updateMultiactiveOrNextState
+	 * @param number $player_id, player id <=0 or null - means ALL
+	 * @param number $value - 1 multiactive, 0 non multiactive
+	 */
+	function dbSetPlayerMultiactive($player_id = -1, $value = 1)
+	{
+		$value = $value ? 1 : 0;
+		$sql = "UPDATE player SET player_is_multiactive = '$value' WHERE player_zombie = 0 and player_eliminated = 0";
+		if ($player_id > 0) $sql .= " AND player_id = $player_id";
+		self::DbQuery($sql);
 	}
 	function dbGetScore(int $player_id): int
 	{

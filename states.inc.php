@@ -75,23 +75,23 @@ $machinestates = [
 		'description' => clienttranslate('Sector Starting Bonus'),
 		'type' => 'game',
 		'action' => 'stBonus',
-		'transitions' => ['next' => 90]
+		'transitions' => ['next' => 85]
 	],
-	90 => [
+	85 => [
 		'name' => 'individualChoices',
 		'description' => clienttranslate('Players have to make some individual choices'),
 		'type' => 'game',
 		'action' => 'stIndividualChoices',
-		'transitions' => ['continue' => 90, 'individualChoice' => 95, 'advancedFleetTactics' => 91, 'next' => 100]
+		'transitions' => ['continue' => 85, 'individualChoice' => 90, 'advancedFleetTactics' => 91, 'next' => 95]
 	],
-	95 => [
+	90 => [
 		'name' => 'individualChoice',
 		'description' => clienttranslate('${actplayer} have to make some individual choices'),
 		'descriptionmyturn' => clienttranslate('${you} must choose a different technology field to start with level 2'),
 		'type' => 'activeplayer',
 		'args' => 'argIndividualChoice',
 		'possibleactions' => ['individualChoice'],
-		'transitions' => ['nextPlayer' => 90]
+		'transitions' => ['nextPlayer' => 85]
 	],
 	91 => [
 		'name' => 'advancedFleetTactics',
@@ -100,7 +100,22 @@ $machinestates = [
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
-		'transitions' => ['continue' => 91, 'next' => 100]
+		'transitions' => ['continue' => 91, 'next' => 95]
+	],
+	95 => [
+		'name' => 'startOfGame',
+		'type' => 'game',
+		'action' => 'stStartOfGame',
+		'transitions' => ['levelOfDifficulty' => 96, 'next' => 100]
+	],
+	96 => [
+		'name' => 'levelOfDifficulty',
+		'description' => clienttranslate('${actplayer} must choose a level of difficulty'),
+		'descriptionmyturn' => clienttranslate('${you} must choose a level of difficulty'),
+		'type' => 'activeplayer',
+		'args' => 'argLevelOfDifficulty',
+		'possibleactions' => ['levelOfDifficulty'],
+		'transitions' => ['next' => 100]
 	],
 //
 // Play
@@ -251,7 +266,7 @@ $machinestates = [
 		'args' => 'argResolveGrowthActions',
 //		'action' => 'stResolveGrowthActions',
 		'possibleactions' => ['declareWar', 'declarePeace', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'evacuate' => 435, 'continue' => 410, 'next' => 400]
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'evacuate' => 435, 'stealTechnology' => 440, 'continue' => 410, 'next' => 400]
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',
@@ -289,6 +304,16 @@ $machinestates = [
 		'args' => 'argHomeStarEvacuation',
 		'possibleactions' => ['homeStarEvacuation'],
 		'transitions' => ['continue' => 410]
+	],
+	440 => [
+		'name' => 'stealTechnology',
+		'description' => clienttranslate('${actplayer} can gain ${levels} level(s) in one technology field'),
+		'descriptionmyturn' => clienttranslate('${you} can gain ${levels} level(s) in one technology field'),
+		'type' => 'activeplayer',
+		'args' => 'argStealTechnology',
+		'action' => 'stStealTechnology',
+		'possibleactions' => ['stealTechnology'],
+		'transitions' => ['advancedFleetTactics' => 415, 'continue' => 410]
 	],
 	500 => [
 		'name' => 'tradingPhase',

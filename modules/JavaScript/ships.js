@@ -128,13 +128,13 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				if (dojo.hasAttr(node, 'fleet'))
 				{
-					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
+					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${-10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
 					dojo.style(node, 'z-index', 200 + fleet);
 					fleet++;
 				}
 				else
 				{
-					dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
+					dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${-10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
 					dojo.style(node, 'z-index', 205 + index);
 				}
 				index++;

@@ -6,6 +6,15 @@
  */
 trait gameStateArguments
 {
+	function argLevelOfDifficulty()
+	{
+		$player_id = self::getActivePlayerId();
+//
+		$datas = self::retrieveLegacyData($player_id, 'ALPHA');
+		$legacy = $datas ? json_decode($datas['ALPHA']) : [0 => '', 1 => '', 2 => '', 3 => ''];
+//
+		return ['legacy' => $legacy];
+	}
 	function argStarPeople()
 	{
 		$private = [];
@@ -146,9 +155,10 @@ trait gameStateArguments
 	{
 		$attacker = Factions::getActive();
 		$defender = Factions::getStatus($attacker, 'retreat');
-
-		$this->possible = Ships::retreatLocations($defender, Factions::getStatus($attacker, 'combat'));
-		return ['retreat' => $this->possible, 'active' => $defender, 'winner' => Factions::getStatus($attacker, 'winner')];
+		$location = Factions::getStatus($attacker, 'combat');
+//
+		$this->possible = Ships::retreatLocations($defender, $location);
+		return ['retreat' => $this->possible, 'active' => $defender, 'winner' => Factions::getStatus($attacker, 'winner'), 'location' => $location];
 	}
 	function argBattleLoss()
 	{
@@ -284,6 +294,18 @@ trait gameStateArguments
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters];
 	}
+	function argStealTechnology()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		['from' => $from, 'levels' => $levels] = Factions::getStatus($color, 'steal');
+//
+		$this->possible = ['counters' => [], 'color' => $color];
+		foreach (array_keys($this->TECHNOLOGIES) as $technology) if (Factions::getTechnology($color, $technology) < Factions::getTechnology($from, $technology)) $this->possible['counters'][] = $technology;
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'levels' => $levels];
+	}
 	function argHomeStarEvacuation()
 	{
 		$this->possible = [];
@@ -328,10 +350,14 @@ trait gameStateArguments
 		$private = [];
 		foreach (Factions::list() as $from)
 		{
+//
 			$player_id = Factions::getPlayer($from);
 			if ($player_id > 0)
 			{
 				$private[$player_id]['color'] = $from;
+//
+				if (Factions::getActivation($from) === 'done') continue;
+//
 				$private[$player_id]['trade'][$from] = Factions::getStatus($from, 'trade');
 				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($from, $technology);
 				foreach (Factions::getStatus($from, 'inContact') as $to)
@@ -347,6 +373,6 @@ trait gameStateArguments
 				}
 			}
 		}
-		return ['_private' => $private];
+		return ['_private' => $private, 'automa' => Factions::getAutoma()];
 	}
 }
