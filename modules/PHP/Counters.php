@@ -155,6 +155,17 @@ class Counters extends APP_GameClass
 							$type = ALLY;
 							break;
 						case 'STS':
+//
+// PLEJARS STS: May "ally" with advanced neutrals
+//
+							if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($color) === 'STS')
+							{
+								$SHIPS = 1;
+								$population = 3;
+								$type = ALLY;
+								break;
+							}
+//
 							$SHIPS = 3 + 1;
 //
 // ORION STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)

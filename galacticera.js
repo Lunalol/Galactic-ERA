@@ -115,7 +115,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					for (let [level, strings] of Object.entries(this.TECHNOLOGIES[technology]))
 					{
 						html += `<div style="padding:12px;text-align:center;outline:1px solid grey;${level <= technologyLevel ? 'font-weight:bold;' : ''}">${level}</div>`;
-						html += `<div style="padding:12px;outline:1px solid grey;${level <= technologyLevel ? 'font-weight:bold;' : 'color:lightgrey;'}">`;
+						html += `<div style="padding:12px;outline:1px solid grey;${level === technologyLevel ? 'font-weight:bold;' : 'color:lightgrey;'}">`;
 						for (let string of strings) html += '<div style="text-align:justify;">' + string + '</div>';
 						html += '</div>';
 					}
@@ -1121,7 +1121,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'fleets':
 //
-						this.addActionButton('ERAdoneButton', _('Go to Movement phase'), () => {
+//						this.board.centerMap(this.gamedatas.factions[this.players[this.player_id]].homeStar + ':+0+0+0');
+//
+						if (args.undo) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
+//
+						this.addActionButton('ERAdoneButton', _('Go to Movement step'), () => {
 							const node = $('ERAdoneButton');
 							if (node.count)
 							{
@@ -1144,7 +1148,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'movement':
 //
-						this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
+						if (args.undo) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
 //
 						this.addActionButton('ERAscoutButton', _('Scout'), () => {
 							const ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
@@ -1248,7 +1252,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'selectCounters':
 //
-						this.board.centerMap(this.gamedatas.factions[this.players[this.player_id]].homeStar + ':+0+0+0');
+//						this.board.centerMap(this.gamedatas.factions[this.players[this.player_id]].homeStar + ':+0+0+0');
 //
 						this.addActionButton('ERAcancelButton', _('Cancel'), () => this.restoreServerGameState());
 						this.addActionButton('ERAselectButton', dojo.string.substitute(_('Select Growth Actions (${oval})'), {oval: args._private.oval}), () =>
@@ -1296,7 +1300,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							const node = dojo.place(`<span><BR>${_('Additional action(s):')}</span>`, 'generalactions');
 							for (i = 0; i < args._private.additional; i++)
 							{
-								dojo.connect(dojo.place(`<span index='${i}' class=' ERAadditionalAction action-button bgabutton bgabutton_small bgabutton_blue'>${args._private.additionalOvalCost} DP</span>`, node), 'click', (event) => {
+								dojo.connect(dojo.place(`<span index='${i}' class=' ERAadditionalAction action-button bgabutton bgabutton_small bgabutton_blue'>-${args._private.additionalOvalCost} DP</span>`, node), 'click', (event) => {
 									dojo.toggleClass(event.currentTarget, 'bgabutton_blue bgabutton_red');
 									args._private.oval = this.last_server_state.args._private.oval + dojo.query('.ERAadditionalAction.bgabutton_red').length;
 									$('ERAselectButton').innerHTML = dojo.string.substitute(_('Select Growth Actions (${oval})'), {oval: args._private.oval});
@@ -1306,7 +1310,14 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						}
 						break;
 //
+					case 'homeStarEvacuation':
+//
+						if (args._private.volontary) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('homeStarEvacuation', {color: this.color}));
+						break;
+//
 					case 'resolveGrowthActions':
+//
+						if (args.evacuation) this.addActionButton('ERAevacuationButton', _('Voluntary Home Star Evacuation'), () => this.action('homeStarEvacuation', {color: this.color}));
 //
 						this.addActionButton('ERApassButton', _('End turn'), () => {
 							if (args._private.counters.length)

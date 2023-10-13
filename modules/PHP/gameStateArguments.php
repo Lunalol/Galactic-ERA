@@ -79,7 +79,8 @@ trait gameStateArguments
 			}
 		}
 //
-		return ['_private' => [$player_id => $this->possible], 'active' => $color];
+		return ['_private' => [$player_id => $this->possible],
+			'active' => $color, 'undo' => +self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'")];
 	}
 	function argAdvancedFleetTactics()
 	{
@@ -142,7 +143,8 @@ trait gameStateArguments
 			$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 		}
 //
-		return ['_private' => [$player_id => $this->possible], 'active' => $color];
+		return ['_private' => [$player_id => $this->possible],
+			'active' => $color, 'undo' => +self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'")];
 	}
 	function argCombatChoice()
 	{
@@ -251,8 +253,8 @@ trait gameStateArguments
 						{
 							$star = Counters::getAtLocation($location, 'star');
 							if ($star) $this->possible['gainStar'][$location] = $star;
-							$population = Counters::getAtLocation($location, 'populationDisk');
-							if ($population) $this->possible['gainStar'][$location] = $population;
+							$populations = Counters::getAtLocation($location, 'populationDisk');
+							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][$location] = $populations;
 						}
 					}
 					break;
@@ -292,7 +294,11 @@ trait gameStateArguments
 			foreach (Factions::getStatus($otherColor, 'used') as $counter) $counters[$otherColor]['used'][] = $counter;
 		}
 //
-		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters];
+		$homeStar = Ships::getHomeStarLocation($color);
+		$evacuation = false;
+		foreach (Factions::atWar($color) as $otherColor) if (Ships::getAtLocation($homeStar, $otherColor)) $evacuation = true;
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters, 'evacuation' => $evacuation];
 	}
 	function argStealTechnology()
 	{
@@ -316,6 +322,7 @@ trait gameStateArguments
 			{
 				$this->possible[$player_id]['color'] = $color;
 				$this->possible[$player_id]['homeStar'] = Ships::getHomeStarLocation($color);
+				$this->possible[$player_id]['volontary'] = Factions::getStatus($color, 'evacuate') === 'volontary';
 //
 				$populations = Counters::getPopulations($color, true);
 				$this->possible[$player_id]['evacuate'] = array_keys($populations, max($populations));

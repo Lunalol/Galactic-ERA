@@ -96,7 +96,7 @@ $machinestates = [
 	91 => [
 		'name' => 'advancedFleetTactics',
 		'description' => clienttranslate('Some players get an advanced fleet tactics'),
-		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactics'),
+		'descriptionmyturn' => clienttranslate('${you} get an advanced fleet tactics'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
@@ -138,7 +138,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
 		'args' => 'argFleets',
-		'possibleactions' => ['declareWar', 'declarePeace', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done'],
 		'transitions' => ['continue' => 210, 'next' => 220]
 	],
 	220 => [
@@ -265,8 +265,8 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
 //		'action' => 'stResolveGrowthActions',
-		'possibleactions' => ['declareWar', 'declarePeace', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'evacuate' => 435, 'stealTechnology' => 440, 'continue' => 410, 'next' => 400]
+		'possibleactions' => ['declareWar', 'declarePeace', 'homeStarEvacuation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'homeStarEvacuation' => 435, 'stealTechnology' => 440, 'continue' => 410, 'next' => 400]
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',

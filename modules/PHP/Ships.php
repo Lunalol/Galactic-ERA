@@ -183,11 +183,14 @@ class Ships extends APP_GameClass
 	}
 	static function retreatLocations($color, $location)
 	{
-		$hostiles = [];
-		foreach (Factions::atWar($color) as $enemy) $hostiles = array_merge($hostiles, array_column(Ships::getAll($enemy, 'fleet'), 'location'), array_column(Ships::getAll($enemy, 'fleet'), 'location'));
+		$propulsion = Factions::getTechnology($color, 'Propulsion');
 //
-		$max = INF;
+		$hostiles = [];
+		foreach (Factions::atWar($color) as $enemy) $hostiles = array_merge($hostiles, array_column(Ships::getAll($enemy, 'fleet'), 'location'), array_column(Ships::getAll($enemy, 'ship'), 'location'));
+//
+		$min = INF;
 		$distances = [$location => 0];
+		$locations = [];
 //
 		$queue = new SplQueue();
 		$queue->enqueue($location);
@@ -202,12 +205,16 @@ class Ships extends APP_GameClass
 				if (!array_key_exists($next_location, $distances) || $distance < $distances[$next_location])
 				{
 					$distances[$next_location] = $distance;
-					if (!in_array($next_location, $hostiles)) $max = $distance;
-					if ($distance < $max) $queue->enqueue($next_location);
+					if (!($terrain === Sectors::NEUTRON && $propulsion < 5) && !in_array($next_location, $hostiles))
+					{
+						$locations[$distance][] = $next_location;
+						$min = min($min, $distance);
+					}
+					if ($distance < $min) $queue->enqueue($next_location);
 				}
 			}
 		}
-		return array_keys($distances, $max);
+		return $locations[$min];
 	}
 	static function CV(string $color, string $location, bool $assault = false): array
 	{

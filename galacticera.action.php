@@ -214,7 +214,7 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
-		$location = self::getArg("location", AT_json, true);
+		$location = self::getArg("location", AT_json, false);
 		$this->game->acHomeStarEvacuation($color, $location);
 //
 		self::ajaxResponse("");

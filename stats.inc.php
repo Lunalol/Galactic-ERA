@@ -19,6 +19,8 @@ $stats_type = [
 		"DP_AFT" => ["id" => 103, "name" => totranslate("DP: +3 DP Advanced Fleet Tactics"), "type" => "int"],
 		"DP_DC_A" => ["id" => 104, "name" => totranslate("DP: Domination card (A)"), "type" => "int"],
 		"DP_DC_B" => ["id" => 105, "name" => totranslate("DP: Domination card (B)"), "type" => "int"],
+		"DP_POP" => ["id" => 106, "name" => totranslate("DP: Population Bonus"), "type" => "int"],
+		"DP_MAJ" => ["id" => 107, "name" => totranslate("DP: Sector Majority"), "type" => "int"],
 //
 		"easy" => ["id" => 201, "name" => totranslate('Best Solo score (easy)'), "type" => "int"],
 		"standard" => ["id" => 202, "name" => totranslate('Best Solo score (standard)'), "type" => "int"],

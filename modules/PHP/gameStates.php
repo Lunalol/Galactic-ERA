@@ -243,7 +243,7 @@ trait gameStates
 //
 		shuffle($starPeoples);
 // PJL
-		if (sizeof($starPeoples) < 2 * self::getPlayersNumber()) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
+		if (true || sizeof($starPeoples) < 2 * self::getPlayersNumber()) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
 		else foreach (Factions::list(false) as $color) if (Factions::getPlayer($color) >= 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 // PJL
 		if (FAST_START)
@@ -451,7 +451,7 @@ trait gameStates
 //
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), [
 						'player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 					foreach (Automas::startBonus($color, $dice) as $technology => $level)
@@ -623,7 +623,7 @@ trait gameStates
 	{
 		$round = self::incGameStateValue('round', 1);
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('updateRound', '<span class="ERA-phase">${log} ${round}/8</span>', [
+		self::notifyAllPlayers('updateRound', '<span class="ERA-phase">${log} ${round}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('Start of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		Ships::setActivation();
@@ -794,7 +794,7 @@ trait gameStates
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), [
 						'player_name' => Factions::getName($defender), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
@@ -1073,7 +1073,7 @@ trait gameStates
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				Factions::setStatus($color, 'counters', Automas::growthActions($color, intval(self::getGameStateValue('difficulty')), $dice));
@@ -1271,21 +1271,21 @@ trait gameStates
 								{
 									$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+									self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), [
 										'player_name' => Factions::getName($with), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
 								if ($roll && $dice > $roll)
 								{
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('msg', clienttranslate('${player_name} denies trading'), ['player_name' => Factions::getName($with)]);
+									self::notifyAllPlayers('msg', clienttranslate('${player_name} not willing to trade'), ['player_name' => Factions::getName($with)]);
 //* -------------------------------------------------------------------------------------------------------- */
 									unset($inContact[$index]);
 								}
 								else
 								{
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('msg', clienttranslate('${player_name} accepts trading'), ['player_name' => Factions::getName($with)]);
+									self::notifyAllPlayers('msg', clienttranslate('${player_name} willing to trade'), ['player_name' => Factions::getName($with)]);
 //* -------------------------------------------------------------------------------------------------------- */
 									Factions::setStatus($with, 'trade', [$color => ['technology' => $technologies[array_rand($technologies)], 'pending' => false]]);
 									Factions::setActivation($with, 'no');
@@ -1566,7 +1566,7 @@ trait gameStates
 	{
 		$round = self::getGameStateValue('round');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${log} ${round}/8</span>', [
+		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${log} ${round}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color)
@@ -1603,6 +1603,7 @@ trait gameStates
 				if ($i < $populationScore[$color])
 				{
 					self::gainDP($color, 1);
+					self::incStat(1, 'DP_POP', Factions::getPlayer($color));
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1635,7 +1636,7 @@ trait gameStates
 					{
 						$DP = 4;
 						self::gainDP($color, $DP);
-//						self::incStat($DP, 'DP_GS', $player_id);
+						self::incStat($DP, 'DP_MAJ', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('msg', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */

@@ -90,6 +90,7 @@ trait gameStateActions
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if ($Fleet && !array_key_exists($Fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $Fleet);
+		if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ships'));
 //
 		if ($ships)
 		{
@@ -234,6 +235,7 @@ trait gameStateActions
 			if ($MP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn.'));
 //
 			if (intval(Ships::getStatus($fleetID, 'ships')) < $ships) throw new BgaVisibleSystemException('Not enough ships: ' . $ships);
+			if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ships'));
 //
 // UNDO
 //
@@ -674,6 +676,9 @@ trait gameStateActions
 			}
 		}
 //
+		self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
+
+//
 		$this->gamestate->nextState('continue');
 	}
 	function acPass(string $color): void
@@ -707,12 +712,27 @@ trait gameStateActions
 		if ($this->gamestate->setPlayersMultiactive($players, 'continue', true)) return;
 		$this->gamestate->nextState('advancedFleetTactics');
 	}
-	function acHomeStarEvacuation(string $color, string $location)
+	function acHomeStarEvacuation(string $color, $location)
 	{
 		$player_id = Factions::getPlayer($color);
 //
 		$this->checkAction('homeStarEvacuation');
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if (!$location)
+		{
+			if (Factions::getStatus($color, 'evacuate') === 'volontary')
+			{
+				Factions::setStatus($color, 'evacuate');
+				return $this->gamestate->nextState('continue');
+			}
+//
+			if (Factions::getStatus($color, 'evacuate')) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+			Factions::setStatus($color, 'evacuate', 'volontary');
+			return $this->gamestate->nextState('homeStarEvacuation');
+		}
+//
 		if (!array_key_exists($player_id, $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!array_key_exists('evacuate', $this->possible[$player_id])) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!in_array($location, $this->possible[$player_id]['evacuate'])) throw new BgaVisibleSystemException('Invalid $ocation: ' . $location);
@@ -1395,6 +1415,7 @@ trait gameStateActions
 			if (!array_key_exists('stars', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 			if ($this->gamestate->state()['name'] == !'buriedShips' && !in_array('buildShips', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'buildShips');
 //			foreach ($locations as $location) if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+			if (sizeof(Ships::getAll($color, 'ship')) + sizeof($buildShips['ships']) > 16) throw new BgaUserException(self::_('No more ships'));
 		}
 //
 		foreach ($buildShips['fleets'] as $Fleet => $location)
