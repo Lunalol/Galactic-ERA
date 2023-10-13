@@ -464,7 +464,7 @@ trait gameStateActions
 //
 		if (Factions::getPlayer($on) <= 0)
 		{
-			if (Factions::getStatus($on, 'peace')) throw new BgaUserException(self::_('You can make peace only once by round'));
+			if (Factions::getStatus($on, 'peace')) throw new BgaUserException(self::_('You can make peace only once per round'));
 //
 // #offboard population : 2 - Slavers never make peace
 //
@@ -493,7 +493,7 @@ trait gameStateActions
 		Factions::declarePeace($color, $on);
 		Factions::declarePeace($on, $color);
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('${player_name1} is in peace with ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
+		self::notifyAllPlayers('msg', clienttranslate('${player_name1} is at peace with ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1485,7 +1485,7 @@ trait gameStateActions
 	{
 		$player_id = Factions::getPlayer($from);
 //
-		$this->checkPossibleAction('trade');
+		$this->gamestate->checkPossibleAction('trade');
 		if ($player_id != Factions::getPlayer($from)) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
 		if (Factions::getActivation($from) === 'done') throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
 //
