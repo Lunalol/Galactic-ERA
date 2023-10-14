@@ -779,9 +779,9 @@ class Automas extends APP_GameClass
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'any');
 // Grow population (if they cannot grow any population, then they spawn ships at the center sector wormhole instead)
-//						$counters[] = 'growPopulation';
-						$counters[] = 'buildShips';
-						Factions::setStatus($color, 'buildShips', array_combine([self::WORMHOLES[0]], [$ships]));
+						$counters[] = 'growPopulation';
+//						$counters[] = 'buildShips';
+						Factions::setStatus($color, 'growPopulation', array_combine([self::WORMHOLES[0]], [$ships]));
 						break;
 					case 6:
 // Gain a neutral star (otherwise one of yours)(**)
@@ -938,7 +938,30 @@ class Automas extends APP_GameClass
 			$growPopulation = array_search('growPopulation', $counters);
 			if ($growPopulation !== false)
 			{
-				throw new BgaVisibleSystemException('Not implemented: growPopulation');
+				$locations = [];
+//
+				$bgagame->possible = ['growPopulation' => []];
+				foreach (Counters::getPopulations($color, true) as $location => $population)
+				{
+					$bgagame->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
+					if ($bgagame->possible['growPopulation'][$location]['population'] < $bgagame->possible['growPopulation'][$location]['growthLimit']) $locations[] = $location;
+				}
+				$bgagame->possible['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
+//
+				$locationsBonus = array_keys($bgagame->possible['growPopulation']);
+				shuffle($locationsBonus);
+				$locationsBonus = array_slice($locationsBonus, 0, $bgagame->possible['bonusPopulation']);
+//
+				if (!$locations && !$locationsBonus)
+				{
+// If they cannot grow any population, then they spawn ships at the center sector wormhole instead
+					$counters[] = 'buildShips';
+					Factions::setStatus($color, 'buildShips', Factions::getStatus($color, 'growPopulation'));
+				}
+				else $bgagame->acGrowPopulation($color, $locations, $locationsBonus, true);
+//
+				Factions::setStatus($color, 'growPopulation');
+//
 				unset($counters[$growPopulation]);
 				Factions::setStatus($color, 'counters', array_values($counters));
 				continue;
