@@ -46,47 +46,95 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						_('At the end of the round, each player who researched Spirituality in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level. The same applies for Propulsion. A Research action that did not result in an increased technology level does not count, neither for scoring nor for preventing scoring. (*)')
 					]
 				},
-				Migrations: {},
-				Rivalry: {},
-				War: {}
+				Migrations: {
+					1: [
+						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+					],
+					2: [
+						_('Every player with the STS alignment at the end of a round scores 1 DP'),
+					],
+					3: [
+						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+					]
+				},
+				Rivalry: {
+					1: [
+						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+					],
+					2: [
+						_('Every player with the STS alignment at the end of a round scores 1 DP'),
+					],
+					3: [
+						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+					]
+				},
+				War: {
+					1: [
+						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+					],
+					2: [
+						_('Every player with the STS alignment at the end of a round scores 1 DP'),
+					],
+					3: [
+						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+					]
+				}
 			};
 //
 			this.TECHNOLOGIES = {
 				Military: {
 					1: [_('The combat value (CV) of each ship is 1')],
-					2: [_('CV of each ship is 1'), _('You get 1 advanced fleet tactic')],
+					2: [_('CV of each ship is 1'),
+						_('You get 1 advanced fleet tactic')],
 					3: [_('CV of each ship is 2')],
-					4: [_('CV of each ship is 3'), _('You get 1 additional advanced fleet tactic')],
+					4: [_('CV of each ship is 3'),
+						_('You get 1 additional advanced fleet tactic')],
 					5: [_('CV of each ship is 6')],
-					6: [_('CV of each ship is 10'), _('You get 3 additional advanced fleet tactics')],
+					6: [_('CV of each ship is 10'),
+						_('You get 3 additional advanced fleet tactics')],
 					'6+': ''
 				},
 				Spirituality: {
 					1: [''],
 					2: [_('You may do 1 remote view per round')],
 					3: [_('You may do 2 remote views per round')],
-					4: [_('You may do 3 remote views per round'), _('You may trade technologies without being in contact')],
-					5: [_('You may do 4 remote views per round'), _('You may trade technologies without being in contact'), _('Hostile ships cannot block you')],
-					6: [_('You may do an unlimited number of remote views per round'), _('You may trade technologies without being in contact'), ('Hostile ships cannot block you')],
+					4: [_('You may do 3 remote views per round'),
+						_('You may trade technologies without being in contact')],
+					5: [_('You may do 4 remote views per round'),
+						_('You may trade technologies without being in contact'),
+						_('Hostile ships cannot block you')],
+					6: [_('You may do an unlimited number of remote views per round'),
+						_('You may trade technologies without being in contact'),
+						_('Hostile ships cannot block you'),
+						_('Any population you lose is put to the side (“ascends”) instead of returning to the population track')],
 					'6+': ''
 				},
 				Propulsion: {
 					1: [_('Ship range is 3')],
 					2: [_('Ship range is 4')],
-					3: [_('Ship range is 4'), _('You can use Stargate 1 connections')],
-					4: [_('Ship range is 5'), _('You can use Stargate 1 connections')],
-					5: [_('Ship range is 5'), _('You can use Stargate 2 connections'), _('You may enter Neutron Star hexes')],
-					6: [_('You can move your ships anywhere, including Neutron Star hexes')],
+					3: [_('Ship range is 4'),
+						_('You can use Stargate 1 connections')],
+					4: [_('Ship range is 5'),
+						_('You can use Stargate 1 connections')],
+					5: [_('Ship range is 5'),
+						_('You can use Stargate 2 connections'),
+						_('You may enter Neutron Star hexes'),
+						_('You can teleport 1 population disc (as a free action in growth phase, blockable).')],
+					6: [_('You can move your ships anywhere, including Neutron Star hexes'),
+						_('You can teleport up to 3 population discs (as a free action in growth phase, blockable)')],
 					'6+': ''
 				},
 				Robotics: {
 					1: [''],
 					2: [_('Add 1 ship when doing Build Ships')],
 					3: [_('Add 3 ships when doing Build Ships')],
-					4: [_('Add 5 ships when doing Build Ships'), _('Place new ships at any non-blocked stars of yours with 3+ population')],
-					5: [_('Add 7 ships when doing Build Ships'), _('Place new ships at any non-blocked stars of yours with 2+ population'),
+					4: [_('Add 5 ships when doing Build Ships'),
+						_('Place new ships at any non-blocked stars of yours with 3+ population')],
+					5: [_('Add 7 ships when doing Build Ships'),
+						_('Place new ships at any non-blocked stars of yours with 2+ population'),
 						_('During growth phase, you may select 2 square counters, you lose 2 DP if you do this')],
-					6: [_('Add 10 ships when doing Build Ships'), _('Place new ships at any non-blocked stars of yours'),
+					6: [_('Add 10 ships when doing Build Ships'),
+						_('Place new ships at any non-blocked stars of yours'),
 						_('During growth phase, you may select 2 square counters without losing DP for doing this')],
 					'6+': ''
 				},
@@ -95,11 +143,46 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					2: [_('You get 1 bonus population when doing Grow Population')],
 					3: [_('You get 2 bonus population when doing Grow Population')],
 					4: [_('You get 3 bonus population when doing Grow Population')],
-					5: [_('You get 4 bonus population when doing Grow Population'), _('Only lose 2 DP per additional growth action counter selected')],
-					6: [_('You get 6 bonus population when doing Grow Population'), _('Only lose 1 DP per additional growth action counter selected')],
+					5: [_('You get 4 bonus population when doing Grow Population'),
+						_('Only lose 2 DP per additional growth action counter selected')],
+					6: [_('You get 6 bonus population when doing Grow Population'),
+						_('Only lose 1 DP per additional growth action counter selected')],
 					'6+': ''
 				}
 			};
+//
+			this.GROWTHACTIONS = {
+				'changeTurnOrderUp': [_('Change Turn Order UP'),
+					('First, all players who selected an “up” (green arrow pointing up) turn order change counter switch to one position earlier in turn order.<BR>Do this by starting with the smallest number and then continuing in numerical order.<BR>Each such player exchanges their octagonal turn order counter with the player who has the next smaller number.<BR>For a player who already had the number 1 of the turn order at the start of the phase such a counter does nothing though.')
+				],
+				'changeTurnOrderDown': [_('Change Turn Order DOWN'),
+					_('Secondly, all players who selected a “down” (red arrow pointing down) turn order change counter switch to one position later in turn order (swapping with the next greater number).<BR>Do this as above, but starting with the greatest number and then continuing in reverse numerical order.<BR>For a player who already had the greatest turn order number at the start of the phase such a counter does nothing though.')
+				],
+				'buildShips': [
+					_('Build Ships'),
+					_('Get additional ships as indicated by your population track, plus 1 per asteroid system where you have a ship and your bonus from Robotics.<BR>Place at any of your stars with 4+ population.')
+				],
+				'spawnShips': [
+					_('Spawn Ships'),
+					_('“Spawning ships” is a special type of growth action that only the automas have.')
+				],
+				'buildShips': [
+					_('Build Ships'),
+					_('Get additional ships as indicated by your population track, plus 1 per asteroid system where you have a ship and your bonus from Robotics.<BR>Place at any of your stars with 4+ population.')
+				],
+				'gainStar': [
+					_('Gain Star'),
+					_('Take one star of your choice where you have the required number of ships as shown by the table on your star people tile.')],
+				'growPopulation': [
+					_('Grow Population'),
+					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics.')],
+				'research': [
+					_('Research'),
+					_('You must also select a square technology counter before revealing.<BR>Go up 1 level in the selected technology.')],
+				'switchAlignment': [
+					_('Switch Alignment'),
+					_('Happens immediately when the action is revealed.<BR>Flip your star people tile over to the other side.<BR>You are automatically at peace with everyone then.')],
+			}
 //
 			this.ERAtechnologyTooltips = new dijit.Tooltip({
 				showDelay: 500, hideDelay: 0,
@@ -108,7 +191,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					const technology = dojo.getAttr(node, 'technology');
 					const technologyLevel = dojo.getAttr(node, 'level');
 //
-					let html = `<H2>${technology}</H2>`;
+					let html = `<H2>${_(technology)}</H2>`;
 					html += '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Level') + '</div>';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Effect') + '</div>';
@@ -329,8 +412,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			{
 				for (color in state.args.counters)
 				{
-					for (let counter of state.args.counters[color].available)
+					for (const index in state.args.counters[color].available)
 					{
+						const counter = state.args.counters[color].available[index];
 						switch (counter)
 						{
 							case 'Military':
@@ -338,14 +422,17 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							case 'Propulsion':
 							case 'Robotics':
 							case 'Genetics':
-								node = dojo.place(`<div class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='availableGrowthAction-${color}-${index}' class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology ERAselectable' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								this.addTooltip(node.id, _(counter), '');
 								break;
 							default:
-								node = dojo.place(`<div class='ERAsmallGrowth'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='availableGrowthAction-${color}-${index}' class='ERAsmallGrowth'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth ERAselectable' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								this.addTooltip(node.id, ...this.GROWTHACTIONS[(counter === 'buildShips' && this.gamedatas.factions[color].player_id < 0) ? 'spawnShips' : counter]);
 						}
 					}
-					for (let counter of state.args.counters[color].used)
+					for (const index in state.args.counters[color].used)
 					{
+						const counter = state.args.counters[color].used[index];
 						switch (counter)
 						{
 							case 'Military':
@@ -353,10 +440,12 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							case 'Propulsion':
 							case 'Robotics':
 							case 'Genetics':
-								node = dojo.place(`<div class='ERAsmallTechnology' style='filter:grayscale(1);'><div class='ERAcounter ERAcounter-technology' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='usedGrowthAction-${color}-${index}' class='ERAsmallTechnology' style='filter:opacity(25%);'><div class='ERAcounter ERAcounter-technology ERAselectable' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								this.addTooltip(node.id, _(counter), '');
 								break;
 							default:
-								node = dojo.place(`<div class='ERAsmallGrowth' style='filter:grayscale(1);'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='usedGrowthAction-${color}-${index}' class='ERAsmallGrowth' style='filter:opacity(25%);'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth ERAselectable' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								this.addTooltip(node.id, ...this.GROWTHACTIONS[(counter === 'buildShips' && this.gamedatas.factions[color].player_id < 0) ? 'spawnShips' : counter]);
 						}
 					}
 				}
@@ -408,8 +497,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				const technologyNode = dojo.place("<div style='display:flex;flex-flow:row wrap;justify-content:right;margin-right:1%;gap:1%;'></div>", root);
 				const turnOrderNode = dojo.place("<div style='display:flex;flex-flow:row wrap;justify-content:right;margin-right:1%;gap:1%;'></div>", root);
 //
-				for (const counter of state.args._private.counters)
+				for (const index in state.args._private.counters)
 				{
+					const counter = state.args._private.counters[index];
 					switch (counter)
 					{
 						case 'Military':
@@ -419,9 +509,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						case 'Genetics':
 							{
 								const container = dojo.place('<div></div>', technologyNode);
-								const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + counter, color: state.args._private.color, type: 'technology', location: ''}), container);
+								const node = dojo.place(this.format_block('ERAcounter', {id: 'growthAction-' + index, color: state.args._private.color, type: 'technology', location: ''}), container);
 								dojo.setAttr(node, 'counter', counter);
 								dojo.addClass(node, 'ERAselectable');
+								this.addTooltip(node.id, _(counter), '');
 								dojo.connect(node, 'click', (event) => {
 									if (this.isCurrentPlayerActive())
 									{
@@ -450,9 +541,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						case 'changeTurnOrderDown':
 							{
 								const container = dojo.place('<div></div>', turnOrderNode);
-								const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + counter, color: state.args._private.color, type: 'turnOrder', subtype: counter, location: ''}), container);
+								const node = dojo.place(this.format_block('ERAcounter', {id: 'growthAction-' + index, color: state.args._private.color, type: 'turnOrder', subtype: counter, location: ''}), container);
 								dojo.setAttr(node, 'counter', counter);
 								dojo.addClass(node, 'ERAselectable');
+								this.addTooltip(node.id, ...this.GROWTHACTIONS[counter]);
 								dojo.connect(node, 'click', (event) => {
 									if (this.isCurrentPlayerActive())
 									{
@@ -476,9 +568,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						default:
 						{
 							const container = dojo.place("<div></div>", growthNode);
-							const node = dojo.place(this.format_block('ERAcounter', {id: 'counters-' + counter, color: state.args._private.color, type: 'growth', subtype: counter, location: ''}), container);
+							const node = dojo.place(this.format_block('ERAcounter', {id: 'growthAction-' + index, color: state.args._private.color, type: 'growth', subtype: counter, location: ''}), container);
 							dojo.setAttr(node, 'counter', counter);
 							dojo.addClass(node, 'ERAselectable');
+							this.addTooltip(node.id, ...this.GROWTHACTIONS[counter]);
 							dojo.connect(node, 'click', (event) => {
 								if (this.isCurrentPlayerActive())
 								{
@@ -1312,12 +1405,17 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'homeStarEvacuation':
 //
-						if (args._private.volontary) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('homeStarEvacuation', {color: this.color}));
+						if (args._private.volontary) this.addActionButton('ERAundoButton', _('Cancel'), () => this.action('homeStarEvacuation', {color: this.color}));
 						break;
 //
 					case 'resolveGrowthActions':
 //
 						if (args.evacuation) this.addActionButton('ERAevacuationButton', _('Voluntary Home Star Evacuation'), () => this.action('homeStarEvacuation', {color: this.color}));
+						if ('teleport' in args._private)
+							this.addActionButton('ERAteleportButton', _('Teleport population') + ` (${args._private.teleport})`, () => {
+								this.setClientState('teleport', {possibleactions: ['teleport'
+									], descriptionmyturn: dojo.string.substitute(_('${you} can teleport ${population} population disk(s)'), {you: '${you}', population: args._private.teleport})});
+							});
 //
 						this.addActionButton('ERApassButton', _('End turn'), () => {
 							if (args._private.counters.length)

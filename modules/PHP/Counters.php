@@ -156,7 +156,7 @@ class Counters extends APP_GameClass
 							break;
 						case 'STS':
 //
-// PLEJARS STS: May "ally" with advanced neutrals
+// PLEJARS STO: May "ally" with advanced neutrals
 //
 							if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($color) === 'STS')
 							{

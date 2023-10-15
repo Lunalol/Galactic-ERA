@@ -138,15 +138,15 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				}
 			});
 //
-// Event listeners for hiding units/markers
+// Event listeners for hiding ships/counters
 //
 			document.addEventListener('keydown', (event) => {
-				if (event.key === 'Shift') dojo.addClass(this.board, 'ERAhideUnits');
-				if (event.key === 'Control') dojo.addClass(this.board, 'ERAhideMarkers');
+				if (event.key === 'Shift') dojo.addClass(this.board, 'ERAhideShips');
+				if (event.key === 'Control') dojo.addClass(this.board, 'ERAhideCounters');
 			});
 			document.addEventListener('keyup', (event) => {
-				if (event.key === 'Shift') dojo.removeClass(this.board, 'ERAhideUnits');
-				if (event.key === 'Control') dojo.removeClass(this.board, 'ERAhideMarkers');
+				if (event.key === 'Shift') dojo.removeClass(this.board, 'ERAhideShips');
+				if (event.key === 'Control') dojo.removeClass(this.board, 'ERAhideCounters');
 			});
 			window.onblur = () => {
 				dojo.removeClass(this.board, 'ERAhideUnits');

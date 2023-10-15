@@ -294,11 +294,19 @@ trait gameStateArguments
 			foreach (Factions::getStatus($otherColor, 'used') as $counter) $counters[$otherColor]['used'][] = $counter;
 		}
 //
+		$teleport = Factions::TELEPORT[Factions::getTechnology($color, 'Propulsion')];
+		if ($teleport)
+		{
+			$this->possible['teleport'] = $teleport;
+			$this->possible['populations'] = Counters::getPopulations($color, true);
+		}
+//
 		$homeStar = Ships::getHomeStarLocation($color);
 		$evacuation = false;
 		foreach (Factions::atWar($color) as $otherColor) if (Ships::getAtLocation($homeStar, $otherColor)) $evacuation = true;
 //
-		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters, 'evacuation' => $evacuation];
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters, 'evacuation' => $evacuation
+		];
 	}
 	function argStealTechnology()
 	{

@@ -65,17 +65,17 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
-	public function buriedShips()
-	{
-		self::setAjaxMode();
-//
-		$color = self::getArg("color", AT_alphanum, true);
-		$fleet = self::getArg("fleet", AT_alphanum, true);
-		$ships = self::getArg("ships", AT_int, true);
-		$this->game->acBuriedShips($color, $fleet, $ships);
-//
-		self::ajaxResponse("");
-	}
+//	public function buriedShips()
+//	{
+//		self::setAjaxMode();
+////
+//		$color = self::getArg("color", AT_alphanum, true);
+//		$fleet = self::getArg("fleet", AT_alphanum, true);
+//		$ships = self::getArg("ships", AT_int, true);
+//		$this->game->acBuriedShips($color, $fleet, $ships);
+////
+//		self::ajaxResponse("");
+//	}
 	public function shipsToFleet()
 	{
 		self::setAjaxMode();

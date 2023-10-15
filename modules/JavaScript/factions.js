@@ -100,6 +100,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					let node = $(`ERAcounter-${faction.color}-DP`);
 					if (!node) node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
 					dojo.style(node, 'position', 'absolute');
+					dojo.setAttribute(node, 'location', faction.DP);
 //
 					let x = 00, dx = 49;
 					let y = 0, dy = 50;

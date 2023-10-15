@@ -22,13 +22,17 @@ class Factions extends APP_GameClass
 		'Genetics' => [null, 0, 1, 2, 3, 4 /**/, 6 /**/], // Grow population bonus
 	];
 //
-// Population requirement for Shipyards;
+// Population requirement for Shipyards
 //
 	const SHIPYARDS = [null, 4, 4, 4, 3, 2, 1];
 //
-// Additional growth action cost;
+// Additional growth action cost
 //
 	const ADDITIONAL = [null, 3, 3, 3, 3, 2, 1];
+//
+// Teleport population
+//
+	const TELEPORT = [null, 0, 0, 0, 0, 1, 3];
 //
 	static function create(string $color, int $player_id, int $homeStar): int
 	{

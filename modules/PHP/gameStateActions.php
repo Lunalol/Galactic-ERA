@@ -66,7 +66,7 @@ trait gameStateActions
 //
 		Factions::setAdvancedFleetTactics($color, $Fleet, $tactics);
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('updateFaction', '${player_name} gets <B>${tactics}</B> on <B>${FLEET}</B> fleet', [
+		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gets <B>${tactics}</B> on <B>${FLEET}</B> fleet'), [
 			'player_name' => Factions::getName($color), 'tactics' => $tactics, 'FLEET' => $Fleet,
 			'faction' => Factions::get($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -82,69 +82,69 @@ trait gameStateActions
 			$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 		}
 	}
-	function acBuriedShips(string $color, string $Fleet, int $ships)
-	{
-		$player_id = Factions::getPlayer($color);
-//
-		$this->checkAction('buriedShips');
-		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if ($Fleet && !array_key_exists($Fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $Fleet);
-		if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ships'));
-//
-		if ($ships)
-		{
-			['location' => $location, 'ships' => $buriedShips] = Factions::getStatus($color, 'buriedShips');
-//
-			$buriedShips -= $ships;
-			if ($buriedShips < 0) throw new BgaVisibleSystemException("Invalid ships: $ships > $buriedShips");
-//
-			Factions::setStatus($color, 'buriedShips', ['location' => $location, 'ships' => $buriedShips]);
-//
-			if ($Fleet)
-			{
-				$fleetID = Ships::getFleet($color, $Fleet);
-				$fleet = Ships::get($fleetID);
-//
-				if ($fleet['location'] === 'stock')
-				{
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($fleetID)]);
-//* -------------------------------------------------------------------------------------------------------- */
-					$fleet['location'] = $location;
-					Ships::setLocation($fleetID, $fleet['location']);
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => $fleet]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
-				Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + $ships);
-//* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => $ships]);
-//* -------------------------------------------------------------------------------------------------------- */
-//* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
-				self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
-			}
-			else
-			{
-//* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
-					'player_name' => Factions::getName($color), 'SHIPS' => $ships,
-					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
-				]);
-//* -------------------------------------------------------------------------------------------------------- */
-				for ($i = 0; $i < $ships; $i++)
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get(Ships::create($color, 'ship', $location))]);
-//* -------------------------------------------------------------------------------------------------------- */
-			}
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
-//* -------------------------------------------------------------------------------------------------------- */
-		}
-//
-		$this->gamestate->nextState('continue');
-	}
+//	function acBuriedShips(string $color, string $Fleet, int $ships)
+//	{
+//		$player_id = Factions::getPlayer($color);
+////
+//		$this->checkAction('buriedShips');
+//		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+//		if ($Fleet && !array_key_exists($Fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $Fleet);
+//		if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ships'));
+////
+//		if ($ships)
+//		{
+//			['location' => $location, 'ships' => $buriedShips] = Factions::getStatus($color, 'buriedShips');
+////
+//			$buriedShips -= $ships;
+//			if ($buriedShips < 0) throw new BgaVisibleSystemException("Invalid ships: $ships > $buriedShips");
+////
+//			Factions::setStatus($color, 'buriedShips', ['location' => $location, 'ships' => $buriedShips]);
+////
+//			if ($Fleet)
+//			{
+//				$fleetID = Ships::getFleet($color, $Fleet);
+//				$fleet = Ships::get($fleetID);
+////
+//				if ($fleet['location'] === 'stock')
+//				{
+////* -------------------------------------------------------------------------------------------------------- */
+//					self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($fleetID)]);
+////* -------------------------------------------------------------------------------------------------------- */
+//					$fleet['location'] = $location;
+//					Ships::setLocation($fleetID, $fleet['location']);
+////* -------------------------------------------------------------------------------------------------------- */
+//					self::notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => $fleet]);
+////* -------------------------------------------------------------------------------------------------------- */
+//				}
+//				Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + $ships);
+////* -------------------------------------------------------------------------------------------------------- */
+//				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => $ships]);
+////* -------------------------------------------------------------------------------------------------------- */
+////* -------------------------------------------------------------------------------------------------------- */
+//				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+//				self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
+//			}
+//			else
+//			{
+////* -------------------------------------------------------------------------------------------------------- */
+//				self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
+//					'player_name' => Factions::getName($color), 'SHIPS' => $ships,
+//					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+//				]);
+////* -------------------------------------------------------------------------------------------------------- */
+//				for ($i = 0; $i < $ships; $i++)
+////* -------------------------------------------------------------------------------------------------------- */
+//					self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get(Ships::create($color, 'ship', $location))]);
+////* -------------------------------------------------------------------------------------------------------- */
+//			}
+////* -------------------------------------------------------------------------------------------------------- */
+//			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
+////* -------------------------------------------------------------------------------------------------------- */
+//		}
+////
+//		$this->gamestate->nextState('continue');
+//	}
 	function acShipsToFleet(string $color, string $Fleet, array $ships)
 	{
 		$player_id = Factions::getPlayer($color);
@@ -426,8 +426,11 @@ trait gameStateActions
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 		foreach (Ships::getAll($color) as $ship) foreach (array_diff(array_merge(Counters::getAtLocation($ship['location'], 'star'), Counters::getAtLocation($ship['location'], 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
 //
-		$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
-		self::DbQuery("INSERT INTO `undo` VALUES ($undoID,0,'$color','done','[]')");
+		if ($this->gamestate->state()['name'] === 'fleets')
+		{
+			$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
+			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,0,'$color','done','[]')");
+		}
 //
 		$this->gamestate->nextState('next');
 	}
@@ -442,7 +445,13 @@ trait gameStateActions
 			if (!in_array($on, Factions::atPeace($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
 		}
 //
-		if (Factions::getAlignment($color) === 'STO') throw new BgaUserException(self::_('You can\'t declare war now'));
+// PLEJARS STS: May declare war on STS players during your movement
+//
+		if (Factions::getAlignment($color) === 'STO')
+		{
+			if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) ;
+			else throw new BgaUserException(self::_('You can\'t declare war now'));
+		}
 //
 		Factions::declareWar($color, $on);
 		Factions::declareWar($on, $color);
@@ -595,11 +604,14 @@ trait gameStateActions
 			$location = $next_location;
 		}
 //
-		$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
+		if ($player_id > 0) $undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
 		foreach ($ships as $ship)
 		{
-			$json = self::escapeStringForDB(json_encode(Ships::get($ship)));
-			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$ship,'$color','move','$json')");
+			if ($player_id > 0)
+			{
+				$json = self::escapeStringForDB(json_encode(Ships::get($ship)));
+				self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$ship,'$color','move','$json')");
+			}
 //
 			$MP = $this->possible['move'][$ship][$location]['MP'];
 			Ships::setMP($ship, $MP);
@@ -623,7 +635,7 @@ trait gameStateActions
 			{
 				$status = json_decode($json, JSON_OBJECT_AS_ARRAY);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('removeShip', '${player_name} cancels last move', ['player_name' => Factions::getName($color), 'ship' => Ships::get($ship)]);
+				self::notifyAllPlayers('removeShip', clienttranslate('${player_name} cancels last move'), ['player_name' => Factions::getName($color), 'ship' => Ships::get($ship)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::DbQuery("UPDATE ships SET activation = '$status[activation]',fleet = '$status[fleet]',location = '$status[location]', MP = $status[MP] WHERE id = $ship");
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1100,6 +1112,18 @@ trait gameStateActions
 					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} liberates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
 //* -------------------------------------------------------------------------------------------------------- */
+//
+// PLEJARS STS: You get 2 DP every time you liberate a star (in addition to other DP gained for this)
+//
+					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS')
+					{
+						$DP = 2;
+						self::gainDP($color, $DP);
+						self::incStat($DP, 'DP_SP', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
 					break;
 				case CONQUER:
 				case CONQUERVS:
@@ -1253,13 +1277,13 @@ trait gameStateActions
 				if (intval($location[0]) !== Factions::getHomeStar($color) && in_array($type, [LIBERATE, CONQUERVS]))
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
+					if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 					$DP = 2;
 					self::gainDP($color, $DP);
 					self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+					self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 			}
@@ -1268,12 +1292,14 @@ trait gameStateActions
 //
 			if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'First' && $player_id > 0)
 			{
-				self::gainDP($color, 1);
+//* -------------------------------------------------------------------------------------------------------- */
+				if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
+//* -------------------------------------------------------------------------------------------------------- */
+				$DP = 1;
+				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => 1,
-					'player_name' => Factions::getName($color),
-					'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 //
@@ -1415,7 +1441,6 @@ trait gameStateActions
 			if (!array_key_exists('stars', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 			if ($this->gamestate->state()['name'] == !'buriedShips' && !in_array('buildShips', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'buildShips');
 //			foreach ($locations as $location) if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
-			if (sizeof(Ships::getAll($color, 'ship')) + sizeof($buildShips['ships']) > 16) throw new BgaUserException(self::_('No more ships'));
 		}
 //
 		foreach ($buildShips['fleets'] as $Fleet => $location)
@@ -1436,6 +1461,8 @@ trait gameStateActions
 			if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
+//
+		$remainingShips = 16 - sizeof(Ships::getAll($color, 'ship'));
 //
 		foreach (array_count_values($buildShips['ships']) as $location => $ships)
 		{
@@ -1467,9 +1494,11 @@ trait gameStateActions
 						'player_name' => Factions::getName($color), 'ships' => $ships,
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
+				$remainingShips -= $ships;
+				if ($remainingShips < 0) throw new BgaUserException(self::_('No more ships'));
 				for ($i = 0; $i < $ships; $i++) self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get(Ships::create($color, 'ship', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
+				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => $remainingShips]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 		}
