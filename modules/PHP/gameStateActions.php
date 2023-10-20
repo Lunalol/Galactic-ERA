@@ -733,7 +733,7 @@ trait gameStateActions
 //
 		if (!$location)
 		{
-			if (Factions::getStatus($color, 'evacuate') === 'volontary')
+			if (Factions::getStatus($color, 'evacuate') === 'voluntary')
 			{
 				Factions::setStatus($color, 'evacuate');
 				return $this->gamestate->nextState('continue');
@@ -741,7 +741,7 @@ trait gameStateActions
 //
 			if (Factions::getStatus($color, 'evacuate')) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-			Factions::setStatus($color, 'evacuate', 'volontary');
+			Factions::setStatus($color, 'evacuate', 'voluntary');
 			return $this->gamestate->nextState('homeStarEvacuation');
 		}
 //
@@ -795,6 +795,8 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		Factions::setStatus($color, 'evacuate');
+//
+		self::starsBecomingUninhabited($previousLocation);
 //
 		$this->gamestate->nextState('continue');
 	}
@@ -1000,8 +1002,7 @@ trait gameStateActions
 		}
 		if ($oval < $this->possible[$player_id]['oval']) throw new BgaVisibleSystemException("Invalid number of oval counters: $oval");
 		if ($oval > $this->possible[$player_id]['oval'] + $this->possible[$player_id]['additional']) throw new BgaVisibleSystemException('Invalid number of oval counters: ' . $oval);
-		if ($square < 1 || $square > 2) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
-		if ($square === 2 && Factions::getTechnology($color, 'Robotics') < 5) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
+		if ($square < 1 || $square > $this->possible[$player_id]['square']) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
 //
 		Factions::setStatus($color, 'counters', array_values($counters));
 //
@@ -1017,7 +1018,7 @@ trait gameStateActions
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 			if (!in_array('research', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'research');
-			if (sizeof($technologies) > 1 && Factions::getTechnology($color, 'Robotics') < 5) throw new BgaVisibleSystemException('Too much research tokens');
+//			if (sizeof($technologies) > 1 && Factions::getTechnology($color, 'Robotics') < 5) throw new BgaVisibleSystemException('Too much research tokens');
 			foreach ($technologies as $technology) if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
 		}
 //
@@ -1115,7 +1116,7 @@ trait gameStateActions
 //
 // PLEJARS STS: You get 2 DP every time you liberate a star (in addition to other DP gained for this)
 //
-					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS')
+					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($color) === 'STO')
 					{
 						$DP = 2;
 						self::gainDP($color, $DP);
