@@ -225,6 +225,9 @@ trait gameStateArguments
 				$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
 				$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
 //
+//				$this->possible[$player_id]['square'] = 6; //PJL
+//				$this->possible[$player_id]['additionalSquareCost'] = 0; //PJL
+//
 				$homeStar = Ships::getHomeStarLocation($color);
 //
 				$this->possible[$player_id]['additional'] = 0;
@@ -330,10 +333,34 @@ trait gameStateArguments
 			{
 				$this->possible[$player_id]['color'] = $color;
 				$this->possible[$player_id]['homeStar'] = Ships::getHomeStarLocation($color);
-				$this->possible[$player_id]['volontary'] = Factions::getStatus($color, 'evacuate') === 'volontary';
+				$this->possible[$player_id]['voluntary'] = Factions::getStatus($color, 'evacuate') === 'voluntary';
 //
 				$populations = Counters::getPopulations($color, true);
+				unset($populations[Ships::getHomeStarLocation($color)]);
 				$this->possible[$player_id]['evacuate'] = array_keys($populations, max($populations));
+//
+				if (!$this->possible[$player_id]['evacuate'])
+				{
+					$sector = Sectors::get(Factions::getHomeStar($color));
+					$current = Hex(0, 0, 0);
+					for ($radius = 1; $radius <= 4; $radius++)
+					{
+						$current = hex_neighbor($current, 4);
+						for ($direction = 0; $direction < 6; $direction++)
+						{
+							for ($count = 0; $count < $radius; $count++)
+							{
+								$hexagon = sprintf('%+2d%+2d%+2d', $current['q'], $current['r'], $current['s']);
+								$location = Factions::getHomeStar($color) . ':' . $hexagon;
+								if (!array_key_exists($hexagon, Sectors::SECTORS[$sector]) && !Ships::getAtLocation($location))
+								{
+									$this->possible[$player_id]['evacuate'][] = $location;
+								}
+								$current = hex_neighbor($current, $direction);
+							}
+						}
+					}
+				}
 			}
 		}
 //

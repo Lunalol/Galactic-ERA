@@ -204,4 +204,18 @@ trait gameUtils
 				break;
 		}
 	}
+	function starsBecomingUninhabited($location)
+	{
+		if (!Counters::getAtLocation($location, 'populationDisk'))
+		{
+			$sector = Sectors::get($location[0]);
+			$hexagon = substr($location, 2);
+			if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+			{
+				$star = Counters::create('neutral', 'star', $location, ['back' => 'UNINHABITED']);
+				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get($star)]);
+				self::reveal('', 'counter', $star);
+			}
+		}
+	}
 }

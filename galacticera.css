@@ -1,8 +1,8 @@
 @font-face {
-    font-family:'ERA';
-    src:url('img/fonts/Xolonium-Regular.otf') format('opentype');
+    font-family: 'ERA';
+    src: url('img/fonts/Xolonium-Regular.otf') format('opentype');
 	size-adjust: 100%;
-    ascent-override:100%;
+    ascent-override: 100%;
 }
 
 html,body {
@@ -13,9 +13,11 @@ div,img {
 	user-select: none;
 }
 #topbar, #page-title, .whiteblock, .roundedbox, .pageheader, .pagesection, .pagesection h2 {
-	font-family: 'ERA';
     background-image:none;
     background-color:rgba(255, 255, 255, 75%);
+}
+#maintitlebar_content {
+	font-family: 'ERA';
 }
 .player-board {
     background-color:rgba(0, 0, 0, 50%);
@@ -112,18 +114,22 @@ div,img {
 
 /* <editor-fold defaultstate="collapsed" desc="Logs"> */
 .ERA-phase {
+	font-family: 'ERA';
 	display: block;
 	padding: 5px;
 	border-radius: 5px;
     background-color: #fcb062;
+	color: black;
     font-size: 12pt;
     font-weight: bold;
 }
 .ERA-subphase {
+	font-family: 'ERA';
     display: block;
     padding: 5px;
     border-radius: 5px;
     background-color: #8E6031;
+	color: black;
     font-size: 10pt;
     font-weight: bold;
 }

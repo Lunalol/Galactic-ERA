@@ -1179,6 +1179,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							dojo.place(`<div class='ERAfleetAction' style="color:white;"></div>`, _fleetNode);
 							const fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: args._private.color, ship: ships, location: location}), _fleetNode);
 							dojo.setAttr(fleetNode, 'fleet', fleet);
+							dojo.toggleClass(_fleetNode, 'ERAhide', args._private.advancedFleetTactics[fleet]);
 							dojo.toggleClass(fleetNode, 'ERAselectable', !args._private.advancedFleetTactics[fleet]);
 //
 							const shipsNode = dojo.place(`<div style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
@@ -1405,7 +1406,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'homeStarEvacuation':
 //
-						if (args._private.volontary) this.addActionButton('ERAundoButton', _('Cancel'), () => this.action('homeStarEvacuation', {color: this.color}));
+						if (args._private.voluntary) this.addActionButton('ERAundoButton', _('Cancel'), () => this.action('homeStarEvacuation', {color: this.color}));
 						break;
 //
 					case 'resolveGrowthActions':
@@ -1552,12 +1553,12 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 			this.notifqueue.setSynchronous('placeCounter', DELAY / 2);
 			this.notifqueue.setSynchronous('flipCounter', DELAY);
-			this.notifqueue.setSynchronous('removeCounter', DELAY / 2);
+			this.notifqueue.setSynchronous('removeCounter', DELAY / 4);
 //
 			this.notifqueue.setSynchronous('placeShip', DELAY);
 			this.notifqueue.setSynchronous('moveShips', DELAY / 2);
 //			this.notifqueue.setSynchronous('revealShip', DELAY / 2);
-			this.notifqueue.setSynchronous('removeShip', DELAY / 2);
+			this.notifqueue.setSynchronous('removeShip', DELAY / 4);
 			this.notifqueue.setSynchronous('homeStarEvacuation', DELAY);
 //
 		},
@@ -1744,9 +1745,10 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		},
 		battleLoss: function (totalVictory)
 		{
+			const winner = dojo.query('.ERAship:not([fleet])', 'ERAwinner').length;
 			const winnerLose = dojo.query('.ERAship:not([fleet]).ERAselected', 'ERAwinner').length;
 			const losersLose = dojo.query('.ERAship:not([fleet]).ERAselected', 'ERAlosers').length;
-			const toDestroy = totalVictory ? 0 : Math.ceil(losersLose / 2);
+			const toDestroy = totalVictory ? 0 : Math.min(winner, Math.ceil(losersLose / 2));
 //
 			$('ERAwinnerLose').innerHTML = winnerLose;
 			$('ERAlosersLose').innerHTML = losersLose;
