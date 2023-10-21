@@ -206,7 +206,7 @@ trait gameUtils
 	}
 	function starsBecomingUninhabited($location)
 	{
-		if (!Counters::getAtLocation($location, 'populationDisk'))
+		if (!Counters::getAtLocation($location, 'populationDisc'))
 		{
 			$sector = Sectors::get($location[0]);
 			$hexagon = substr($location, 2);

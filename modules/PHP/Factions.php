@@ -78,8 +78,9 @@ class Factions extends APP_GameClass
 	{
 		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id = $automa");
 	}
-	static function getNotAutomas(): string
+	static function getNotAutomas(string $color = ''): string
 	{
+		if ($color) return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id > 0 AND color <> '$color'");
 		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id > 0");
 	}
 	static function getName(string $color)

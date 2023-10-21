@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `counters`
 (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
-    `type` ENUM ('star','relic','wormhole','populationDisk'),
+    `type` ENUM ('star','relic','wormhole','populationDisc'),
     `location` CHAR(8),
 	`status` JSON,
     INDEX (`type`),INDEX (`color`)

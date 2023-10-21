@@ -143,9 +143,9 @@ class Ships extends APP_GameClass
 			foreach ($stars as $index => $location) if (Counters::isBlocked($ship['color'], $location)) unset($stars[$index]);
 		}
 //
-		$possible = [$ship['location'] => ['MP' => $ship['MP'], 'from' => null]];
+		$possible = [$ship['location'] => ['MP' => intval($ship['MP']), 'from' => null]];
 //
-		$locations = [$ship['location'] => $ship['MP']];
+		$locations = [$ship['location'] => intval($ship['MP'])];
 		while ($locations)
 		{
 			$MP = max($locations);

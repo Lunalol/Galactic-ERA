@@ -128,7 +128,7 @@ trait gameStates
 				foreach (array_keys($stars) as $hexagon)
 				{
 					$distance = hex_length(Hex(...sscanf($hexagon, '%2d%2d%2d')));
-					for ($i = 0; $i < $distance; $i++) Counters::create($color, 'populationDisk', "$sector:$hexagon");
+					for ($i = 0; $i < $distance; $i++) Counters::create($color, 'populationDisc', "$sector:$hexagon");
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, $distance)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -427,7 +427,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
 								'player_name' => Factions::getName($color),
-								'counter' => Counters::get(Counters::create($color, 'populationDisk', $sector . ':+0+0+0'))
+								'counter' => Counters::get(Counters::create($color, 'populationDisc', $sector . ':+0+0+0'))
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
@@ -534,7 +534,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 									self::notifyAllPlayers('placeCounter', clienttranslate('${player_name} gains a <B>population</B>'), [
 										'player_name' => Factions::getName($color),
-										'counter' => Counters::get(Counters::create($color, 'populationDisk', $sector . ':+0+0+0'))
+										'counter' => Counters::get(Counters::create($color, 'populationDisc', $sector . ':+0+0+0'))
 									]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
@@ -725,10 +725,12 @@ trait gameStates
 			$canRetreat |= Factions::getTechnology($defender, 'Propulsion') > Factions::getTechnology($attacker, 'Propulsion');
 //
 			$player_id = Factions::getPlayer($defender);
-			if ($player_id > 0)
+			if ($player_id >= 0)
 			{
 				if ($winner || $canRetreat)
 				{
+					if ($player_id === 0) $player_id = Factions::getPlayer(Factions::getNotAutomas($attacker));
+//
 					Factions::setStatus($attacker, 'retreat', $defender);
 //
 					$this->gamestate->changeActivePlayer($player_id);
@@ -738,6 +740,8 @@ trait gameStates
 				$Evade = Ships::get(Ships::getFleet($defender, 'E'))['location'] === $location;
 				if ($Evade)
 				{
+					if ($player_id === 0) throw new BgaVisibleSystemException('Automas EVADE not implemented');;
+//
 					Factions::setStatus($attacker, 'retreat', $defender);
 //
 					if (Factions::getAdvancedFleetTactics($defender, 'E') === '2x')
@@ -762,7 +766,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 								'LOG' => [
-									'log' => clienttranslate('${ships} single ship(s))'),
+									'log' => clienttranslate('${ships} ship piece(s)'),
 									'args' => ['ships' => $attackerCVs['ships']['ships']]
 								]
 							]);
@@ -858,7 +862,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
-					'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
+					'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} ship piece(s)'),
 					'args' => ['CV' => $attackerCVs['ships']['CV'], 'ships' => $attackerCVs['ships']['ships']]
 				]
 			]);
@@ -891,7 +895,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
 					'LOG' => [
-						'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} single ship(s))'),
+						'log' => clienttranslate('<B>+ ${CV}</B>: ${ships} ship piece(s)'),
 						'args' => ['CV' => $defenderCVs['ships']['CV'], 'ships' => $defenderCVs['ships']['ships']]
 					]
 				]);
@@ -994,7 +998,8 @@ trait gameStates
 		}
 //
 		$player_id = Factions::getPlayer(Factions::getStatus($attacker, 'winner'));
-		if ($player_id <= 0) return self::acBattleLoss($winner, Automas::battleLoss($attacker, $defenders, $totalVictory), true);
+		if ($player_id < 0) return self::acBattleLoss($winner, Automas::battleLoss($attacker, $defenders, $totalVictory), true);
+		if ($player_id === 0) $player_id = Factions::getPlayer(Factions::getNotAutomas($attacker));
 //
 		$this->gamestate->changeActivePlayer($player_id);
 		return $this->gamestate->nextState('battleLoss');
@@ -1050,6 +1055,7 @@ trait gameStates
 	{
 		foreach (Factions::list() as $color)
 		{
+			if (Factions::getPlayer($color) === 0) Factions::setStatus($color, 'counters', []);
 			if (Factions::getPlayer($color) < 0)
 			{
 				if (Factions::getPlayer($color) === FARMERS && !Ships::getAll($color))
@@ -1064,7 +1070,6 @@ trait gameStates
 					$dice1 = bga_rand(1, 6);
 					$dice2 = bga_rand(1, 6);
 					$dice = min($dice1, $dice2);
-					$dice = 5;
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE1} ${DICE2}'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
 					self::notifyAllPlayers('msg', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);

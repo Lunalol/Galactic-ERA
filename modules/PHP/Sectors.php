@@ -1594,7 +1594,7 @@ class Sectors extends APP_GameClass
 				if (!array_key_exists($next_location, $distance))
 				{
 					$distance[$next_location] = $distance[$location] + 1;
-					if (Counters::getAtLocation($next_location, 'populationDisk')) return $distance[$next_location];
+					if (Counters::getAtLocation($next_location, 'populationDisc')) return $distance[$next_location];
 					if (Ships::getAtLocation($next_location, null, 'homeStar')) return $distance[$next_location];
 					$queue->enqueue($next_location);
 				}

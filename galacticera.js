@@ -240,7 +240,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				let nodeCounters = dojo.place(`<div class='ERAcounters' id='ERAcounters-${faction.color}'></div>`, `player_board_${faction.player_id}`, 2);
 //
 				let nodeStatus = dojo.place(`<div id='ERAstatus-${faction.color}' class='ERAstatus'></div>`, nodeCounters, 'after');
-				dojo.place(`<div class='ERAsmall ERAcounter ERAselectable ERAorder' id='ERAorder-${faction.color}' faction='${faction.color}'></div>`, nodeStatus);
+				dojo.place(`<div class='ERAsmall ERAcounter ERAorder' id='ERAorder-${faction.color}' faction='${faction.color}'></div>`, nodeStatus);
 				this.addTooltip(`ERAorder-${faction.color}`, _('Turn order'), '');
 //
 				if ($(container = `ERAboardShips-${faction.color}`))
@@ -271,7 +271,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				dojo.style(nodeStarPeople, 'flex', '1 1 50%');
 //
 				let nodeTechnologies = dojo.place(this.format_block('ERAtechnologies', {color: faction.color}), nodeFaction);
-				let nodePopulation = dojo.place(`<div>${'Population disks'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeTechnologies);
+				let nodePopulation = dojo.place(`<div>${'Population discs'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeTechnologies);
 // Farmers
 				if (+faction.player_id === -1) dojo.style(nodePopulation, 'display', 'none');
 // Slavers
@@ -422,11 +422,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							case 'Propulsion':
 							case 'Robotics':
 							case 'Genetics':
-								node = dojo.place(`<div id='availableGrowthAction-${color}-${index}' class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology ERAselectable' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='availableGrowthAction-${color}-${index}' class='ERAsmallTechnology'><div class='ERAcounter ERAcounter-technology' counter='${counter}'/></div>`, `ERAcounters-${color}`);
 								this.addTooltip(node.id, _(counter), '');
 								break;
 							default:
-								node = dojo.place(`<div id='availableGrowthAction-${color}-${index}' class='ERAsmallGrowth'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth ERAselectable' counter='${counter}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='availableGrowthAction-${color}-${index}' class='ERAsmallGrowth'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth' counter='${counter}'/></div>`, `ERAcounters-${color}`);
 								this.addTooltip(node.id, ...this.GROWTHACTIONS[(counter === 'buildShips' && this.gamedatas.factions[color].player_id < 0) ? 'spawnShips' : counter]);
 						}
 					}
@@ -634,19 +634,19 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					html += `<div id='ERA-0' data-level='0' class='ERAbutton bgabutton bgabutton_${true ? 'green' : 'red'}'>${_('Easy')}</div>`;
 					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[0] ? state.args.legacy[0] : _('No high-score')}</div>`;
-					html += `<div style='font-style:italic;'>${_('+0 ship bonus')}</div>`;
+					html += `<div style='font-style:italic;'>${_('+0 ship bonus for Slavers')}</div>`;
 //
 					html += `<div id='ERA-1' data-level='1' class='ERAbutton bgabutton bgabutton_${state.args.legacy[0] > 0 ? 'green' : 'red'}'>${_('Standard')}</div>`;
 					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[1] ? state.args.legacy[1] : _('No high-score')} </div>`;
-					html += `<div style='font-style:italic;'>${_('+1 ship bonus')}</div>`;
+					html += `<div style='font-style:italic;'>${_('+1 ship bonus for Slavers')}</div>`;
 //
 					html += `<div id='ERA-2' data-level='2' class='ERAbutton bgabutton bgabutton_${state.args.legacy[1] > 0 ? 'green' : 'red'}'>${_('Hard')}</div>`;
 					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[2] ? state.args.legacy[2] : _('No high-score')} </div>`;
-					html += `<div style='font-style:italic;'>${_('+2 ship bonus<BR>One disc removed from Slavers’ population track')}</div>`;
+					html += `<div style='font-style:italic;'>${_('+2 ship bonus for Slavers<BR>One disc removed from Slavers’ population track')}</div>`;
 //
 					html += `<div id='ERA-3' data-level='3' class='ERAbutton bgabutton bgabutton_${state.args.legacy[2] > 0 ? 'green' : 'red'}'>${_('Insane')}</div>`;
 					html += `<div style='text-align:center;font-weight:bold;'>${state.args.legacy[3] ? state.args.legacy[3] : _('No high-score')} </div>`;
-					html += `<div style='font-style:italic;'>${_('+3 ship bonus<BR>Two discs removed from Slavers’ population track')}</div>`;
+					html += `<div style='font-style:italic;'>${_('+3 ship bonus for Slavers<BR>Two discs removed from Slavers’ population track')}</div>`;
 //
 					html += `<div id='ERAgoButton' class='bgabutton bgabutton_big bgabutton_blue'>${_('Go to game')}</div>`;
 					html += `<div></div>`;
@@ -696,7 +696,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					break;
 //
 				case 'movement':
-					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable');
+					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable').style('opacity', '75%');
+					if (this.isCurrentPlayerActive()) for (const ship in state.args._private.move) dojo.style(`ERAship-${ship}`, 'opacity', '');
 					break;
 //
 				case 'combatChoice':
@@ -767,16 +768,16 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 //
 				case 'selectCounters':
-					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
-					dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
-					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
-					dojo.query(`#ERAboard>.ERAcounter-star`).addClass('ERAselectable ERAselected');
+//					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
+//					dojo.query(`#ERAboard>.ERAcounter-populationDisc.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
+//					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
+//					dojo.query(`#ERAboard>.ERAcounter-star`).addClass('ERAselectable ERAselected');
 					break;
 //
 				case 'resolveGrowthActions':
-					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
-					dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
-					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
+//					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
+//					dojo.query(`#ERAboard>.ERAcounter-populationDisc.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
+//					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
 					dojo.query('.ERAprovisional,.ERAprovisionalBonus').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
 					break;
 //
@@ -796,7 +797,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						{
 							if (population < growthLimit)
 							{
-								dojo.query(`#ERAboard .ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
+								dojo.query(`#ERAboard .ERAcounter-populationDisc.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 								svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
 							}
 						}
@@ -820,7 +821,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable').addClass('ERAselected');
 						for (let [location, {population: population, growthLimit: growthLimit}] of Object.entries(state.args._private.growPopulation))
 						{
-							dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							dojo.query(`#ERAboard>.ERAcounter-populationDisc.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
 						}
 						this.board.board.appendChild(svg);
@@ -996,7 +997,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						svg.appendChild(this.board.drawHexagon(this.board.hexagons[state.args._private.homeStar], "#" + state.args._private.color + 'C0'));
 						for (let location of state.args._private.evacuate)
 						{
-							dojo.query(`#ERAboard>.ERAcounter-populationDisk.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
+							dojo.query(`#ERAboard>.ERAcounter-populationDisc.ERAcounter-${this.color}[location='${location}']`).addClass('ERAselectable').addClass('ERAselected');
 							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args._private.color + 'C0'));
 						}
 //
@@ -1017,6 +1018,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.query('#ERAfleets').addClass('ERAhide');
 			dojo.query('.ERAselected', 'ERAboard').removeClass('ERAselected');
 			dojo.query('.ERAselectable', 'ERAboard').removeClass('ERAselectable');
+			dojo.query(`#ERAboard>.ERAship`).style('opacity', '');
 //
 			dojo.query('#popin_trade').remove();
 		},
@@ -1281,7 +1283,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					case 'retreat':
 					case 'retreatE':
 //
-						if (!args.winner) this.addActionButton('ERAnoRetreat', _('No retreat'), () => this.action('retreat', {color: this.color, location: '""'}));
+						if (!args.winner) this.addActionButton('ERAnoRetreat', _('No retreat'), () => this.action('retreat', {color: args.active, location: '""'}));
 						break;
 //
 					case 'battleLoss':
@@ -1415,7 +1417,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						if ('teleport' in args._private)
 							this.addActionButton('ERAteleportButton', _('Teleport population') + ` (${args._private.teleport})`, () => {
 								this.setClientState('teleport', {possibleactions: ['teleport'
-									], descriptionmyturn: dojo.string.substitute(_('${you} can teleport ${population} population disk(s)'), {you: '${you}', population: args._private.teleport})});
+									], descriptionmyturn: dojo.string.substitute(_('${you} can teleport ${population} population disc(s)'), {you: '${you}', population: args._private.teleport})});
 							});
 //
 						this.addActionButton('ERApassButton', _('End turn'), () => {
@@ -1675,7 +1677,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		},
 		retreat: function (location)
 		{
-			if (this.gamedatas.gamestate.args.retreat.includes(location)) this.action('retreat', {color: this.color, location: JSON.stringify(location)});
+			if (this.gamedatas.gamestate.args.retreat.includes(location)) this.action('retreat', {color: this.gamedatas.gamestate.args.active, location: JSON.stringify(location)});
 		},
 		gainStar: function (location)
 		{
@@ -1690,7 +1692,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					const shipNode = $('ERAbuildShip');
 					if (shipNode)
 					{
-						if (dojo.query(`>.ERAship[color='FF3333']:not([fleet])`, 'ERAboard').length >= 16) return this.showMessage(_('No more ship counters'), 'error');
+						if (dojo.query(`>.ERAship[color='FF3333']:not([fleet])`, 'ERAboard').length >= 16) return this.showMessage(_('No more ship minis'), 'error');
 //
 						dojo.destroy(shipNode);
 //
@@ -1715,7 +1717,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			if (location in this.gamedatas.gamestate.args._private.growPopulation)
 			{
-				let nodes = dojo.query(`.ERAcounter-populationDisk[location='${location}'].ERAprovisional`);
+				let nodes = dojo.query(`.ERAcounter-populationDisc[location='${location}'].ERAprovisional`);
 				if (nodes.length)
 				{
 					nodes.remove();
@@ -1725,7 +1727,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				{
 					const population = +this.gamedatas.gamestate.args._private.growPopulation[location].population;
 					const limit = +this.gamedatas.gamestate.args._private.growPopulation[location].growthLimit;
-					if (population < limit) dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisk', location: location}), 'ERAprovisional');
+					if (population < limit) dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisional');
 				}
 			}
 		},
@@ -1733,14 +1735,14 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			if (location in this.gamedatas.gamestate.args._private.growPopulation)
 			{
-				let nodes = dojo.query(`.ERAcounter-populationDisk[location='${location}'].ERAprovisionalBonus`);
+				let nodes = dojo.query(`.ERAcounter-populationDisc[location='${location}'].ERAprovisionalBonus`);
 				if (nodes.length)
 				{
 					nodes.remove();
 					this.counters.arrange(location);
 				}
-				else if (dojo.query(`.ERAcounter-populationDisk.ERAprovisionalBonus`).length < this.gamedatas.gamestate.args._private.bonusPopulation)
-					dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisk', location: location}), 'ERAprovisionalBonus');
+				else if (dojo.query(`.ERAcounter-populationDisc.ERAprovisionalBonus`).length < this.gamedatas.gamestate.args._private.bonusPopulation)
+					dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisionalBonus');
 			}
 		},
 		battleLoss: function (totalVictory)

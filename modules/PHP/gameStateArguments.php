@@ -256,8 +256,10 @@ trait gameStateArguments
 						{
 							$star = Counters::getAtLocation($location, 'star');
 							if ($star) $this->possible['gainStar'][$location] = $star;
-							$populations = Counters::getAtLocation($location, 'populationDisk');
+							$populations = Counters::getAtLocation($location, 'populationDisc');
 							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][$location] = $populations;
+//							$homeStars = array_keys(Ships::getHomeStarLocation(), $location);
+//							if ($homeStars) $this->possible['gainStar'][$location] = $homeStars;
 						}
 					}
 					break;

@@ -66,7 +66,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.connect(node, 'click', this, 'click');
 					}
 					break;
-				case 'populationDisk':
+				case 'populationDisc':
 					dojo.connect(node, 'click', this, 'click');
 					break;
 			}
@@ -87,7 +87,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		arrange: function (location)
 		{
 			index = 0;
-			nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}'].ERAcounter-populationDisk`);
+			nodes = dojo.query(`#ERAboard .ERAcounter[location='${location}'].ERAcounter-populationDisc`);
 			for (const node of nodes)
 			{
 				dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translateY(-${index * node.clientHeight / 5}px)`);

@@ -245,7 +245,8 @@ div,img {
 	transition: filter 0.25s;
 }
 #ERAgalacticStory:hover {
-    filter:brightness(2.0);
+	/*    filter:brightness(2.0);*/
+    box-shadow: 0px 0px 10px 5px white;
 	transition: filter 0.25s;
 }
 /* </editor-fold> */
@@ -257,10 +258,10 @@ div,img {
 	height: 314px;
 	background-size: 100%;
 }
-.ERApopulationTrack .ERAcounter-populationDisk {
+.ERApopulationTrack .ERAcounter-populationDisc {
 	opacity: 100%;
 }
-.ERApopulationTrack:hover .ERAcounter-populationDisk {
+.ERApopulationTrack:hover .ERAcounter-populationDisc {
 	opacity: 50%;
 }
 .ERApanel-FF3333 .ERApopulationTrack {
@@ -507,7 +508,6 @@ div,img {
 
 .ERAcounter {
 	background: url('img/counters.png');
-	filter: brightness(50%);
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	z-index: 100;
 	pointer-events: none;
@@ -517,10 +517,11 @@ div,img {
 }
 .ERAcounter.ERAselectable {
 	pointer-events: all;
-	filter: brightness(100%);
+    box-shadow: 0px 0px 10px 5px slategrey;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAcounter.ERAselected {
+    box-shadow: 0px 0px 10px 5px white;
 	filter: brightness(150%);
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
@@ -582,7 +583,7 @@ div,img {
 {
 	width: 59px;
 	height: 59px;
-	clip-path: circle(50%);
+	border-radius: 50%;
 	z-index: -1;
 }
 .ERAcounter-wormhole.ERAcounter-blue {
@@ -600,7 +601,7 @@ div,img {
 {
 	width: 59px;
 	height: 59px;
-	clip-path: circle(50%);
+	border-radius: 50%;
 	background-position-x: -7660px;
 }
 .ERAcounter-star.ERAcounter-UNINHABITED {
@@ -618,7 +619,7 @@ div,img {
 {
 	width: 59px;
 	height: 59px;
-	clip-path: circle(50%);
+	border-radius: 50%;
 	background-position-x: -399px;
 }
 .ERAcounter-0 {
@@ -683,6 +684,7 @@ div,img {
 /* <editor-fold defaultstate="collapsed" desc="War/Peace"> */
 .ERAcounter-peace, .ERAcounter-war
 {
+	border-radius: 50%;
 	width: 89px;
 	height: 89px;
 }
@@ -740,7 +742,6 @@ div,img {
 	height: 250px;
 	z-index: 200;
 	clip-path: path('M 85.00,130.00 C 85.90,121.57 90.92,119.10 97.00,113.87 97.00,113.87 129.00,87.20 129.00,87.20 136.09,81.48 144.56,77.52 150.86,70.83 155.60,65.80 153.48,61.46 160.04,56.65 164.42,53.44 168.94,53.82 171.63,52.02 174.85,49.86 176.64,43.83 185.00,42.33 190.56,41.33 205.17,45.03 209.96,47.93 212.34,49.38 215.12,52.58 216.49,55.00 218.98,59.41 217.17,61.63 218.92,66.00 220.46,69.85 222.45,70.85 222.89,76.00 224.20,91.18 208.40,91.59 206.10,92.58 202.81,94.01 202.06,96.97 198.90,99.30 196.40,101.14 193.74,101.40 191.63,103.51 184.99,110.15 190.89,115.67 187.40,120.91 187.40,120.91 178.00,130.00 178.00,130.00 178.00,130.00 151.00,154.99 151.00,154.99 148.24,157.68 138.07,167.38 135.00,168.11 132.27,168.76 120.06,166.01 117.00,165.00 116.59,167.62 116.04,171.41 114.16,173.42 112.26,175.45 105.48,176.38 100.48,184.00 97.18,189.03 101.54,197.53 91.96,204.03 86.90,207.47 81.64,207.42 79.18,208.56 75.99,210.04 75.23,212.93 70.96,215.47 68.72,216.80 57.41,220.42 55.00,220.27 55.00,220.27 45.00,217.51 45.00,217.51 45.00,217.51 38.00,217.51 38.00,217.51 27.95,215.83 23.12,209.95 23.06,200.00 23.06,200.00 23.06,187.00 23.06,187.00 22.46,182.15 18.77,177.35 23.70,170.00 29.32,161.62 35.85,162.93 39.82,160.69 43.25,158.75 43.88,155.52 49.01,152.53 53.86,149.71 56.66,150.58 60.00,149.02 62.73,147.74 72.65,139.28 74.86,136.91 79.51,131.90 77.48,129.25 85.00,130.00 Z');
-	filter:brightness(75%);
 	pointer-events: none;
 }
 .ERAhideShips .ERAship {
@@ -756,15 +757,16 @@ div,img {
 }
 .ERAship.ERAselectable {
 	pointer-events: all;
-	filter:brightness(1.0);
+    box-shadow: 0px 0px 10px 5px slategrey;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAship.ERAselected {
-	filter:brightness(3.0);
+    box-shadow: 0px 0px 10px 5px white;
+	filter: brightness(150%);
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAship:hover {
-	filter:brightness(4.0);
+	filter: brightness(200%);
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 
@@ -790,13 +792,13 @@ div,img {
 /* <editor-fold defaultstate="collapsed" desc="homeStar"> */
 .ERAhomeStar {
 	background: url('img/3D.png');
+	clip-path: circle(50%);
 	width: 250px;
 	height: 250px;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
-	filter:brightness(75%);
 }
 .ERAhomeStar.ERAselected {
-	filter:brightness(4.0);
+    box-shadow: 0px 0px 10px 5px white;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAhomeStar-FF3333 {
@@ -823,13 +825,12 @@ div,img {
 	background: url('img/counters.png');
 	width: 65px;
 	height: 45px;
+	border-radius: 5px;
 	clip-path: none;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
-	opacity: 75%;
 }
-.ERAship[fleet]:hover {
-	filter:brightness(2.0);
-	opacity: 100%;
+.ERAship[fleet]:hover:not(.ERAselected) {
+    box-shadow: 0px 0px 10px 5px grey;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	z-index: 500 !important;
 }
@@ -963,12 +964,12 @@ div,img {
 /* <editor-fold defaultstate="collapsed" desc="Growth Actions"> */
 .ERAcounter-growth
 {
+	border-radius: 50%;
 	width: 89px;
 	height: 118px;
-	clip-path: ellipse(50% 50%);
 }
 .ERAcounter-growth.ERAselected {
-	filter:brightness(2.0);
+    box-shadow: 0px 0px 10px 5px white;
 	transform: scale(125%);
 	transition: filter .25s, transform .25s;
 }
@@ -1074,6 +1075,7 @@ div,img {
 /* <editor-fold defaultstate="collapsed" desc="Change Turn Order (2)"> */
 .ERAcounter-turnOrder
 {
+	border-radius: 10px;
 	width: 74px;
 	height: 74px;
 }
@@ -1091,6 +1093,7 @@ div,img {
 /* <editor-fold defaultstate="collapsed" desc="Technologies (5)"> */
 .ERAcounter-technology
 {
+	border-radius: 10px;
 	width: 74px;
 	height: 74px;
 }
@@ -1115,28 +1118,29 @@ div,img {
 	background-position-x: -8133px;
 }
 /* </editor-fold> */
-/* <editor-fold defaultstate="collapsed" desc="Population disks (6)"> */
-.ERAcounter-populationDisk {
+/* <editor-fold defaultstate="collapsed" desc="Population discs (6)"> */
+.ERAcounter-populationDisc {
 	background: url('img/3D.png');
+	clip-path: circle(50%);
 	width: 250px;
 	height: 250px;
 }
-.ERAcounter-populationDisk.ERAcounter-FF3333 {
+.ERAcounter-populationDisc.ERAcounter-FF3333 {
 	background-position-x: -1500px;
 }
-.ERAcounter-populationDisk.ERAcounter-00CC00 {
+.ERAcounter-populationDisc.ERAcounter-00CC00 {
 	background-position-x: -1750px;
 }
-.ERAcounter-populationDisk.ERAcounter-6666FF {
+.ERAcounter-populationDisc.ERAcounter-6666FF {
 	background-position-x: -2000px;
 }
-.ERAcounter-populationDisk.ERAcounter-FF9900 {
+.ERAcounter-populationDisc.ERAcounter-FF9900 {
 	background-position-x: -2250px;
 }
-.ERAcounter-populationDisk.ERAcounter-CD1FCD {
+.ERAcounter-populationDisc.ERAcounter-CD1FCD {
 	background-position-x: -2500px;
 }
-.ERAcounter-populationDisk.ERAcounter-FFFF00 {
+.ERAcounter-populationDisc.ERAcounter-FFFF00 {
 	background-position-x: -2750px;
 }
 /* </editor-fold> */

@@ -36,7 +36,7 @@ class Counters extends APP_GameClass
 	}
 	static function getPopulations(string $color, bool $blocking = false): array
 	{
-		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisk' GROUP BY location", true);
+		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisc' GROUP BY location", true);
 //
 		$homeStar = Ships::getHomeStarLocation($color);
 		if ($homeStar)
@@ -82,7 +82,7 @@ class Counters extends APP_GameClass
 		$homeStar = Ships::getAtLocation($location, null, 'homeStar');
 		if ($homeStar) $sizeOfPopulation += 6;
 //
-		$populations = Counters::getAtLocation($location, 'populationDisk');
+		$populations = Counters::getAtLocation($location, 'populationDisc');
 		if ($populations) $sizeOfPopulation += sizeof($populations);
 //
 		if ($sizeOfPopulation)

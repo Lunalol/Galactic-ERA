@@ -84,7 +84,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					{
 						let x = 20 + 30 * i;
 						let y = 75;
-						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisk', location: 'offbard'}), 'ERAoffboard');
+						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisc', location: 'offbard'}), 'ERAoffboard');
 						dojo.style(node, 'position', 'absolute');
 						dojo.style(node, 'left', x + 'px');
 						dojo.style(node, 'top', y + 'px');
@@ -138,11 +138,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				const nodePopulationTrack = $(`ERApopulationTrack-${faction.color}`);
 				if (nodePopulationTrack)
 				{
-//					dojo.query('.ERAcounter-populationDisk', nodePopulationTrack).remove();
+//					dojo.query('.ERAcounter-populationDisc', nodePopulationTrack).remove();
 					dojo.empty(nodePopulationTrack);
 					for (let population = 1 + +faction.population; population < 40; population++)
 					{
-						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisk', location: 'populationTrack'}), nodePopulationTrack);
+						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisc', location: 'populationTrack'}), nodePopulationTrack);
 						dojo.setAttr(node, 'population', population);
 						dojo.style(node, 'position', 'absolute');
 						if (population === 0) [x, y] = [543, 122];

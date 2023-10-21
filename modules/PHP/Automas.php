@@ -551,7 +551,7 @@ class Automas extends APP_GameClass
 // If there are none then they move their full range in a random direction
 //
 								$locations = [];
-								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisk')) $locations[] = "$sector:$hexagon";
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisc')) $locations[] = "$sector:$hexagon";
 //
 								$MPs = [];
 								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
@@ -599,7 +599,7 @@ class Automas extends APP_GameClass
 // If there are none, then they do not move
 //
 								$locations = [];
-								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisk')) $locations[] = "$sector:$hexagon";
+								foreach (Sectors::getAll() as $sector) foreach (array_keys($bgagame->SECTORS[Sectors::get($sector)]) as $hexagon) if (!Counters::getAtLocation("$sector:$hexagon", 'populationDisc')) $locations[] = "$sector:$hexagon";
 //
 								$MPs = [];
 								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];

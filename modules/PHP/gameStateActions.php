@@ -82,69 +82,6 @@ trait gameStateActions
 			$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 		}
 	}
-//	function acBuriedShips(string $color, string $Fleet, int $ships)
-//	{
-//		$player_id = Factions::getPlayer($color);
-////
-//		$this->checkAction('buriedShips');
-//		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-//		if (!array_key_exists('fleets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-//		if ($Fleet && !array_key_exists($Fleet, $this->possible['fleets'])) throw new BgaVisibleSystemException('Invalid Fleet: ' . $Fleet);
-//		if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ships'));
-////
-//		if ($ships)
-//		{
-//			['location' => $location, 'ships' => $buriedShips] = Factions::getStatus($color, 'buriedShips');
-////
-//			$buriedShips -= $ships;
-//			if ($buriedShips < 0) throw new BgaVisibleSystemException("Invalid ships: $ships > $buriedShips");
-////
-//			Factions::setStatus($color, 'buriedShips', ['location' => $location, 'ships' => $buriedShips]);
-////
-//			if ($Fleet)
-//			{
-//				$fleetID = Ships::getFleet($color, $Fleet);
-//				$fleet = Ships::get($fleetID);
-////
-//				if ($fleet['location'] === 'stock')
-//				{
-////* -------------------------------------------------------------------------------------------------------- */
-//					self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($fleetID)]);
-////* -------------------------------------------------------------------------------------------------------- */
-//					$fleet['location'] = $location;
-//					Ships::setLocation($fleetID, $fleet['location']);
-////* -------------------------------------------------------------------------------------------------------- */
-//					self::notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => $fleet]);
-////* -------------------------------------------------------------------------------------------------------- */
-//				}
-//				Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + $ships);
-////* -------------------------------------------------------------------------------------------------------- */
-//				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => $ships]);
-////* -------------------------------------------------------------------------------------------------------- */
-////* -------------------------------------------------------------------------------------------------------- */
-//				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
-//				self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
-//			}
-//			else
-//			{
-////* -------------------------------------------------------------------------------------------------------- */
-//				self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
-//					'player_name' => Factions::getName($color), 'SHIPS' => $ships,
-//					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
-//				]);
-////* -------------------------------------------------------------------------------------------------------- */
-//				for ($i = 0; $i < $ships; $i++)
-////* -------------------------------------------------------------------------------------------------------- */
-//					self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get(Ships::create($color, 'ship', $location))]);
-////* -------------------------------------------------------------------------------------------------------- */
-//			}
-////* -------------------------------------------------------------------------------------------------------- */
-//			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
-////* -------------------------------------------------------------------------------------------------------- */
-//		}
-////
-//		$this->gamestate->nextState('continue');
-//	}
 	function acShipsToFleet(string $color, string $Fleet, array $ships)
 	{
 		$player_id = Factions::getPlayer($color);
@@ -235,7 +172,7 @@ trait gameStateActions
 			if ($MP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn.'));
 //
 			if (intval(Ships::getStatus($fleetID, 'ships')) < $ships) throw new BgaVisibleSystemException('Not enough ships: ' . $ships);
-			if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ships'));
+			if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ship minis'));
 //
 // UNDO
 //
@@ -473,7 +410,8 @@ trait gameStateActions
 			if (!in_array($on, Factions::atWar($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
 		}
 //
-		if (Factions::getPlayer($on) <= 0)
+		if (Factions::getPlayer($on) === 0) throw new BgaUserException(self::_('Automa will not accept peace'));
+		if (Factions::getPlayer($on) < 0)
 		{
 			if (Factions::getStatus($on, 'peace')) throw new BgaUserException(self::_('You can make peace only once per round'));
 //
@@ -770,14 +708,14 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('homeStarEvacuation', '', ['homeStar' => $homeStar, 'location' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
-		foreach (array_map(['Counters', 'get'], Counters::getAtLocation($location, 'populationDisk')) as $populationDisk)
+		foreach (array_map(['Counters', 'get'], Counters::getAtLocation($location, 'populationDisc')) as $populationDisc)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisk]);
+			self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
 //* -------------------------------------------------------------------------------------------------------- */
-			if (Factions::getTechnology($populationDisk['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisk['color'], 'population' => Factions::gainPopulation($populationDisk['color'], -1)]]);
+			if (Factions::getTechnology($populationDisc['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			Counters::destroy($populationDisk['id']);
+			Counters::destroy($populationDisc['id']);
 		}
 		if (Factions::getStatus($color, 'evacuate') === 'voluntary')
 		{
@@ -791,7 +729,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get(Counters::create($color, 'populationDisk', $previousLocation))]);
+			self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get(Counters::create($color, 'populationDisc', $previousLocation))]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		Factions::setStatus($color, 'evacuate');
@@ -843,7 +781,7 @@ trait gameStateActions
 	{
 		$player_id = Factions::getPlayer($color);
 //
-		if (!$automa)
+		if (!$automa && $player_id > 0)
 		{
 			$this->checkAction('retreat');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
@@ -975,7 +913,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('updateFaction', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $color,
-								'LOG' => ['log' => clienttranslate('${ships} single ship(s) destroyed'), 'args' => ['ships' => $count]],
+								'LOG' => ['log' => clienttranslate('${ships} ship piece(s) destroyed'), 'args' => ['ships' => $count]],
 								'faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1077,7 +1015,7 @@ trait gameStateActions
 				}
 				else
 				{
-					$populations = Counters::getAtLocation($location, 'populationDisk');
+					$populations = Counters::getAtLocation($location, 'populationDisc');
 					$sizeOfPopulation += sizeof($populations);
 					if ($populations) $otherColor = Counters::get($populations[0])['color'];
 					else throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
@@ -1141,14 +1079,14 @@ trait gameStateActions
 					break;
 			}
 //
-			foreach (array_map(['Counters', 'get'], Counters::getAtLocation($location, 'populationDisk')) as $populationDisk)
+			foreach (array_map(['Counters', 'get'], Counters::getAtLocation($location, 'populationDisc')) as $populationDisc)
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisk]);
+				self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
 //* -------------------------------------------------------------------------------------------------------- */
-				if (Factions::getTechnology($populationDisk['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisk['color'], 'population' => Factions::gainPopulation($populationDisk['color'], -1)]]);
+				if (Factions::getTechnology($populationDisc['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				Counters::destroy($populationDisk['id']);
+				Counters::destroy($populationDisc['id']);
 			}
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
@@ -1163,7 +1101,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
+				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 //
@@ -1386,7 +1324,7 @@ trait gameStateActions
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
-				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
+				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1399,7 +1337,7 @@ trait gameStateActions
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
-				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisk', $location))]);
+				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1496,7 +1434,7 @@ trait gameStateActions
 						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$remainingShips -= $ships;
-				if ($remainingShips < 0) throw new BgaUserException(self::_('No more ships'));
+				if ($remainingShips < 0) throw new BgaUserException(self::_('No more ship minis'));
 				for ($i = 0; $i < $ships; $i++) self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get(Ships::create($color, 'ship', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => $remainingShips]]);
