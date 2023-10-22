@@ -829,6 +829,15 @@ div,img {
 	clip-path: none;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
+.ERAship[fleet]:after {
+	content: attr(ships);
+	position: absolute;
+	font-size: medium;
+	bottom: 0px;
+	background-color: #00000080;
+	border-radius:50%;
+}
+
 .ERAship[fleet]:hover:not(.ERAselected) {
     box-shadow: 0px 0px 10px 5px grey;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);

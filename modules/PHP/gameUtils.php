@@ -131,6 +131,7 @@ trait gameUtils
 				$location = Counters::get($id)['location'];
 				$sector = Sectors::get($location[0]);
 				$hexagon = substr($location, 2);
+				$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
 //
 				switch (Counters::getStatus($id, 'back'))
 				{
@@ -140,14 +141,14 @@ trait gameUtils
 							Counters::reveal($color, 'star', $id);
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						break;
@@ -157,13 +158,13 @@ trait gameUtils
 							Counters::reveal($color, 'star', $id);
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
 //* -------------------------------------------------------------------------------------------------------- */
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						break;
@@ -173,14 +174,14 @@ trait gameUtils
 							Counters::reveal($color, 'star', $id);
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
 //* -------------------------------------------------------------------------------------------------------- */10
 							self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon],
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						break;
@@ -190,14 +191,14 @@ trait gameUtils
 							Counters::reveal($color, 'relic', $id);
 //* -------------------------------------------------------------------------------------------------------- */10
 							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
-								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
+								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
 //* -------------------------------------------------------------------------------------------------------- */10
 							self::notifyAllPlayers('flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
-								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
+								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
@@ -210,7 +211,8 @@ trait gameUtils
 		{
 			$sector = Sectors::get($location[0]);
 			$hexagon = substr($location, 2);
-			if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+			$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+			if (array_key_exists($rotated, $this->SECTORS[$sector]))
 			{
 				$star = Counters::create('neutral', 'star', $location, ['back' => 'UNINHABITED']);
 				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get($star)]);

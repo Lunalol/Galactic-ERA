@@ -112,10 +112,11 @@ class GalacticEra extends Table
 			{
 				foreach (Counters::listRevealed($color, 'star') as $counter) $result['factions'][$color]['revealed']['stars'][$counter] = Counters::getStatus($counter, 'back');
 				foreach (Counters::listRevealed($color, 'relic') as $counter) $result['factions'][$color]['revealed']['relics'][$counter] = Counters::getStatus($counter, 'back');
-				foreach (Counters::listRevealed($color, 'fleet') as $fleet) $result['factions'][$color]['revealed']['fleets'][$fleet] = [
-						'fleet' => Ships::getStatus($fleet, 'fleet'),
-						'ships' => Ships::getStatus($fleet, 'ships')
-					];
+				foreach (Ships::getAll(null, 'fleet') as $fleet)
+				{
+					if ($fleet['color'] === $color) $result['factions'][$color]['revealed']['fleets'][$fleet['id']] = ['fleet' => Ships::getStatus($fleet['id'], 'fleet'), 'ships' => Ships::getStatus($fleet['id'], 'ships')];
+					else if (Ships::getStatus($fleet['id'], 'fleet') === 'D') $result['factions'][$color]['revealed']['fleets'][$fleet['id']] = ['fleet' => 'D', 'ships' => '?'];
+				}
 			}
 //
 			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][] = ($player_id === Factions::getPlayer($color)) ? $this->DOMINATIONCARDS[$domination['type']] : 'back';
@@ -123,10 +124,11 @@ class GalacticEra extends Table
 		}
 //
 		$result['sectors'] = Sectors::getAllDatas();
-		foreach ($result['sectors'] as $location => $sector)
+		foreach ($result['sectors'] as $position => $sector)
 		{
-			$result['sectors'][$location]['shape'] = Sectors::SHAPES[$sector['sector']];
-			$result['sectors'][$location]['description'] = $this->SECTORS[$sector['sector']];
+			$locations = [];
+			foreach (array_keys(Sectors::SHAPES[$sector['sector']]) as $location) $locations[] = Sectors::rotate($location, -$sector['orientation']);
+			$result['sectors'][$position]['shape'] = array_combine($locations, Sectors::SHAPES[$sector['sector']]);
 		}
 //
 		$result['ships'] = Ships::getAllDatas($player_id);

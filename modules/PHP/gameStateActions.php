@@ -255,10 +255,10 @@ trait gameStateActions
 // UNDO
 //
 			$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
-			$json = self::escapeStringForDB(json_encode(array_merge($fromFleet, ['Fleet' => Ships::getStatus($fromID, 'fleet'), 'ships' => Ships::getStatus($fromID, 'ships')])));
-			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$fromID,'$color','move','$json')");
-			$json = self::escapeStringForDB(json_encode(array_merge($toFleet, ['Fleet' => Ships::getStatus($toID, 'fleet'), 'ships' => Ships::getStatus($toID, 'ships')])));
-			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$toID,'$color','move','$json')");
+			$jsonFrom = self::escapeStringForDB(json_encode(array_merge($fromFleet, ['Fleet' => Ships::getStatus($fromID, 'fleet'), 'ships' => Ships::getStatus($fromID, 'ships')])));
+			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$fromID,'$color','move','$jsonFrom')");
+			$jsonTo = self::escapeStringForDB(json_encode(array_merge($toFleet, ['Fleet' => Ships::getStatus($toID, 'fleet'), 'ships' => Ships::getStatus($toID, 'ships')])));
+			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$toID,'$color','move','$jsonTo')");
 //
 			$location = $fromFleet['location'];
 			if ($toFleet['location'] === 'stock')
@@ -504,19 +504,17 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+//
+		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
 			if (Ships::isShip($color, $ships[0]))
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) move to ${PLANET} ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
-//				self::notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) to ${PLANET} ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships),
-//					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
+				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) move to ${PLANET} ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('A fleet moves to ${PLANET} ${GPS}'), ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
-//				self::notifyAllPlayers('msg', clienttranslate('${player_name} moves a fleet to ${PLANET} ${GPS}'), ['GPS' => $location,
-//					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon]]);
+				self::notifyAllPlayers('msg', clienttranslate('A fleet moves to ${PLANET} ${GPS}'), ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		else
@@ -524,12 +522,10 @@ trait gameStateActions
 			if (Ships::isShip($color, $ships[0]))
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) moves ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
-//				self::notifyAllPlayers('msg', clienttranslate('${player_name} moves ${N} ship(s) ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('A fleet is moving ${GPS}'), ['GPS' => $location]);
-//				self::notifyAllPlayers('msg', clienttranslate('${player_name} moves a fleet ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
@@ -582,11 +578,15 @@ trait gameStateActions
 				if (array_key_exists('Fleet', $status)) Ships::setStatus($ship, 'fleet', $status['Fleet']);
 				if (array_key_exists('ships', $status)) Ships::setStatus($ship, 'ships', $status['ships']);
 //
-				foreach (Counters::isRevealed($ship, 'fleet') as $otherColor)
+				if ($status['fleet'] === 'fleet')
 				{
+					foreach (Factions::list(false) as $otherColor)
+					{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => Ships::getStatus($ship, 'fleet'), 'ships' => Ships::getStatus($ship, 'ships')]]);
+						if ($otherColor === $color) self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => Ships::getStatus($ship, 'fleet'), 'ships' => Ships::getStatus($ship, 'ships')]]);
+						else if (Ships::getStatus($ship, 'fleet') === 'D') self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => 'D', 'ships' => '?']]);
 //* -------------------------------------------------------------------------------------------------------- */
+					}
 				}
 			}
 			foreach (self::getCollectionFromDB("SELECT id, status FROM `undo` WHERE color = '$color' AND undoID = $undoID AND type = 'create'", true) as $ship => $json)
@@ -600,11 +600,15 @@ trait gameStateActions
 				if (array_key_exists('Fleet', $status)) Ships::setStatus($ship, 'fleet', $status['Fleet']);
 				if (array_key_exists('ships', $status)) Ships::setStatus($ship, 'ships', $status['ships']);
 //
-				foreach (Counters::isRevealed($ship, 'fleet') as $otherColor)
+				if ($status['fleet'] === 'fleet')
 				{
+					foreach (Factions::list(false) as $otherColor)
+					{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => Ships::getStatus($ship, 'fleet'), 'ships' => Ships::getStatus($ship, 'ships')]]);
+						if ($otherColor === $color) self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => Ships::getStatus($ship, 'fleet'), 'ships' => Ships::getStatus($ship, 'ships')]]);
+						else if (Ships::getStatus($ship, 'fleet') === 'D') self::notifyPlayer(Factions::getPlayer($otherColor), 'revealShip', '', ['ship' => ['id' => $ship, 'fleet' => 'D', 'ships' => '?']]);
 //* -------------------------------------------------------------------------------------------------------- */
+					}
 				}
 			}
 			foreach (self::getCollectionFromDB("SELECT id, status FROM `undo` WHERE color = '$color' AND undoID = $undoID AND type = 'destroy'", true) as $ship => $json)
@@ -689,10 +693,12 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+//
+		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} evacuates near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'GPS' => $location]);
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} evacuates near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		else
@@ -719,6 +725,7 @@ trait gameStateActions
 		}
 		if (Factions::getStatus($color, 'evacuate') === 'voluntary')
 		{
+// PJL rotation TODO
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
 				'PLANET' => [
@@ -751,10 +758,12 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+//
+		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} starts a battle near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'GPS' => $location]);
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} starts a battle near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		else
@@ -800,13 +809,14 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
+		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
 //
 		$retreatE = $this->gamestate->state()['name'] === 'retreatE';
 		if ($retreatE)
 		{
-			if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+			if (array_key_exists($rotated, $this->SECTORS[$sector]))
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} evades to ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'GPS' => $location]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} evades to ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
@@ -820,9 +830,9 @@ trait gameStateActions
 		}
 		else
 		{
-			if (array_key_exists($hexagon, $this->SECTORS[$sector]))
+			if (array_key_exists($rotated, $this->SECTORS[$sector]))
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} retreats to ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$hexagon], 'GPS' => $location]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} retreats to ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1032,24 +1042,28 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				Counters::destroy($star);
 			}
+//
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), -Sectors::getOrientation($location[0]));
+//
 			switch ($type)
 			{
 				case COLONIZE:
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} colonizes ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
+						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 				case SUBJUGATE:
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} subjugates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
+						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 				case LIBERATE:
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} liberates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
+						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // PLEJARS STS: You get 2 DP every time you liberate a star (in addition to other DP gained for this)
@@ -1068,13 +1082,13 @@ trait gameStateActions
 				case CONQUERVS:
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} conquers ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
+						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 				case ALLY:
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} allies oneself with ${PLANET}'), ['GPS' => $location,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]);
+						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 			}
@@ -1092,7 +1106,7 @@ trait gameStateActions
 			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
-					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
 				],
 				'GPS' => $location, 'population' => $population]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1155,7 +1169,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
 								'player_name' => Factions::getName($color), 'SHIPS' => $newShips,
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
@@ -1177,7 +1191,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
 							'player_name' => Factions::getName($color), 'SHIPS' => $newShips,
-							'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)],
+							'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
@@ -1319,11 +1333,14 @@ trait gameStateActions
 		foreach ($locations as $location)
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+//
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), -Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
-					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
 				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
@@ -1336,7 +1353,7 @@ trait gameStateActions
 			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
-					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)]]
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
 				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
@@ -1358,7 +1375,8 @@ trait gameStateActions
 //
 		if ($era === 'First' && $galacticStory == MIGRATIONS && (sizeof($locations) + sizeof($locationsBonus) > 0) && $player_id > 0)
 		{
-			self::gainDP($color, 3);
+			$DP = 3;
+			self::gainDP($color, $DP);
 			self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => 3,
@@ -1405,6 +1423,9 @@ trait gameStateActions
 //
 		foreach (array_count_values($buildShips['ships']) as $location => $ships)
 		{
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), -Sectors::getOrientation($location[0]));
+//
 			if (in_array($location, Ships::FLEETS))
 			{
 				$Fleet = $location;
@@ -1431,7 +1452,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} builds ${ships} <B>additional ship(s)</B> at ${PLANET} ${GPS}'), [
 						'player_name' => Factions::getName($color), 'ships' => $ships,
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[Sectors::get($location[0])][substr($location, 2)], 'GPS' => $location]);
+						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$remainingShips -= $ships;
 				if ($remainingShips < 0) throw new BgaUserException(self::_('No more ship minis'));
@@ -1458,7 +1479,8 @@ trait gameStateActions
 //
 			if ($era === 'First' && $galacticStory == WAR && $player_id > 0)
 			{
-				self::gainDP($color, 2);
+				$DP = 2;
+				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s) '), ['DP' => 2,

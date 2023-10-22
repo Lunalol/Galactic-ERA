@@ -258,8 +258,7 @@ trait gameStateArguments
 							if ($star) $this->possible['gainStar'][$location] = $star;
 							$populations = Counters::getAtLocation($location, 'populationDisc');
 							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][$location] = $populations;
-//							$homeStars = array_keys(Ships::getHomeStarLocation(), $location);
-//							if ($homeStars) $this->possible['gainStar'][$location] = $homeStars;
+// PJL : TODO Homestar attack
 						}
 					}
 					break;
@@ -354,7 +353,7 @@ trait gameStateArguments
 							{
 								$hexagon = sprintf('%+2d%+2d%+2d', $current['q'], $current['r'], $current['s']);
 								$location = Factions::getHomeStar($color) . ':' . $hexagon;
-								if (!array_key_exists($hexagon, Sectors::SECTORS[$sector]) && !Ships::getAtLocation($location))
+								if (!array_key_exists($hexagon, $this->rotatedSECTORS[$sector]) && !Ships::getAtLocation($location))
 								{
 									$this->possible[$player_id]['evacuate'][] = $location;
 								}

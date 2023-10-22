@@ -1449,7 +1449,7 @@ class Sectors extends APP_GameClass
 // Random sector and random orientation
 //
 			$location = $setup[$index];
-			Sectors::create($location, $sector * 2 /* PJL: random_int(0, 1) */, 0 * random_int(0, 5));
+			Sectors::create($location, $sector * 2 /* PJL: random_int(0, 1) */, random_int(0, 5));
 //
 // Wormholes
 //
@@ -1487,21 +1487,33 @@ class Sectors extends APP_GameClass
 	{
 		return intval(self::getUniqueValueFromDB("SELECT sector FROM sectors WHERE position = $position"));
 	}
+	static function getOrientation(int $position): int
+	{
+		return intval(self::getUniqueValueFromDB("SELECT orientation FROM sectors WHERE position = $position"));
+	}
+	static function rotate(string $location, int $orientation): string
+	{
+		if ($orientation < 0) $orientation = 6 + $orientation;
+		[$q, $r, $s] = sscanf($location, '%2d%2d%2d');
+		for ($i = 0; $i < $orientation; $i++) [$q, $r, $s] = [-$s, -$q, -$r];
+		return sprintf('%+2d%+2d%+2d', $q, $r, $s);
+	}
 	static function stars(bool $neutron): array
 	{
 		$locations = [];
 		foreach (self::getAllDatas() as $position => $sector)
 		{
-			foreach (self::SECTORS[$sector['sector']] as $location => $terrain)
+			foreach (self::SECTORS()[$sector['sector']] as $location => $terrain)
 			{
+				$rotated = self::rotate($location, $sector['orientation']);
 				if ($neutron)
 				{
-					if ($terrain === self::NEUTRON) $locations[] = "$position:$location";
+					if ($terrain === self::NEUTRON) $locations[] = "$position:$rotated";
 				}
 				else
 				{
-					if ($terrain === self::HOME) $locations[] = "$position:$location";
-					if ($terrain === self::PLANET) $locations[] = "$position:$location";
+					if ($terrain === self::HOME) $locations[] = "$position:$rotated";
+					if ($terrain === self::PLANET) $locations[] = "$position:$rotated";
 				}
 			}
 		}
@@ -1515,9 +1527,10 @@ class Sectors extends APP_GameClass
 	}
 	static function terrainFromHex(int $position, array $hex): int
 	{
-		$sector = Sectors::SECTORS[Sectors::get($position)];
+		$sector = Sectors::get($position);
 		$hexagon = sprintf('%+2d%+2d%+2d', $hex['q'], $hex['r'], $hex['s']);
-		return array_key_exists($hexagon, $sector) ? $sector[$hexagon] : 0;
+		$rotated = self::rotate($hexagon, - self::getOrientation($position));
+		return array_key_exists($rotated, Sectors::SECTORS[$sector]) ? Sectors::SECTORS[$sector][$rotated] : 0;
 	}
 	static function neighbors(string $location, bool $wormholes = true)
 	{
@@ -1559,7 +1572,9 @@ class Sectors extends APP_GameClass
 			}
 		}
 //
-		for ($i = 0; $i < 6; $i++)
+		for ($i = 0;
+			$i < 6;
+			$i++)
 		{
 			$neighbor = hex_neighbor(Hex($q, $r, $s), $i);
 			if (hex_length($neighbor) > 4)

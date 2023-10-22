@@ -21,7 +21,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				const x0 = boardWidth / 2 + (1 + MARGIN / 100) * BOARDS[sector.position][0] * WIDTH;
 				const y0 = boardHeight / 2 + (1 + MARGIN / 100) * BOARDS[sector.position][1] * HEIGHT;
 //
-				const node = dojo.place(this.bgagame.format_block('ERAsector', {id: sector.position, sector: sector.sector, x: x0 - 3.50 * WIDTH, y: y0 - 4.50 * HEIGHT, angle: sector.orientation * 60}), 'ERAboard');
+				const node = dojo.place(this.bgagame.format_block('ERAsector', {id: sector.position, sector: sector.sector, x: x0 - 3.50 * WIDTH, y: y0 - 4.50 * HEIGHT, angle: -sector.orientation * 60}), 'ERAboard');
 //
 				for (let hexagon in sector.shape)
 				{

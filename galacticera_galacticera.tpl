@@ -26,7 +26,7 @@
 	var ERAsector = "<div class='ERAsector ERAsector-${id}' id='ERAsector-${id}' sector=${sector} style='left:${x}px;top:${y}px;transform:rotate(${angle}deg)'></div>";
 	var ERAcounter = "<div class='ERAcounter ERAcounter-${color} ERAcounter-${type}' id='ERAcounter-${id}' counter=${id} location='${location}'></div>";
 	var ERAhomeStar = "<div class='ERAhomeStar ERAhomeStar-${color}' id='ERAhomeStar-${id}' homeStar=${id} color='${color}' location='${location}'></div>";
-	var ERAship = "<div class='ERAship ERAship-${color}' id='ERAship-${id}' ship='${id}' color='${color}' location='${location}'></div>";
+	var ERAship = "<div class='ERAship ERAship-${color}' id='ERAship-${id}' ship='${id}' color='${color}' location='${location}' style='color:#${color}'></div>";
 	var ERAfleet = "<div class='ERAfleet' id='ERAfleet-${fleet}' fleet='${fleet}' ships='${ships}' location='${location}' style='display:flex;flex-direction:column;align-items:center;'></div>";
 	var ERAfleetH = "<div class='ERAfleet' id='ERAfleet-${fleet}' fleet='${fleet}' ships='${ships}'' style='display:flex;flex-direction:row;align-items:center;'></div>";
 	var ERApanel = "\

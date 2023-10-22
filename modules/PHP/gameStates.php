@@ -111,6 +111,8 @@ trait gameStates
 			$sector = Factions::getHomeStar($color);
 			if ($sector === 0) continue;
 //
+			$orientation = Sectors::getOrientation($sector);
+//
 			Ships::create($color, 'homeStar', $sector . ':+0+0+0');
 //
 			$stars = array_filter(Sectors::SECTORS[Sectors::get($sector)], fn($e) => $e == Sectors::PLANET);
@@ -127,13 +129,14 @@ trait gameStates
 //
 				foreach (array_keys($stars) as $hexagon)
 				{
-					$distance = hex_length(Hex(...sscanf($hexagon, '%2d%2d%2d')));
-					for ($i = 0; $i < $distance; $i++) Counters::create($color, 'populationDisc', "$sector:$hexagon");
+					$rotated = Sectors::rotate($hexagon, $orientation);
+					$distance = hex_length(Hex(...sscanf($rotated, '%2d%2d%2d')));
+					for ($i = 0; $i < $distance; $i++) Counters::create($color, 'populationDisc', "$sector:$rotated");
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, $distance)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-					Ships::create($color, 'ship', "$sector:$hexagon");
-					Ships::create($color, 'ship', "$sector:$hexagon");
+					Ships::create($color, 'ship', "$sector:$rotated");
+					Ships::create($color, 'ship', "$sector:$rotated");
 				}
 			}
 			else
@@ -150,7 +153,12 @@ trait gameStates
 // Players then flip all their counters face down, shuffle them and place one on each hex with a star symbol (so not the central hex) in their home star sector.
 //
 				shuffle($counters);
-				foreach (array_keys($stars) as $hexagon) Counters::create('neutral', 'star', "$sector:$hexagon", ['back' => array_pop($counters)]);
+				foreach (array_keys($stars) as $hexagon)
+				{
+					$rotated = Sectors::rotate($hexagon, $orientation);
+					Counters::create('neutral', 'star', "$sector:$rotated", ['back' => array_pop($counters)]);
+				}
+
 //
 				Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'A']));
 				Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', 'stock', ['fleet' => 'B']));
@@ -166,16 +174,26 @@ trait gameStates
 //
 		$stars = ['UNINHABITED', 'UNINHABITED', 'UNINHABITED', 'PRIMITIVE', 'PRIMITIVE', 'PRIMITIVE', 'ADVANCED', 'ADVANCED', 'ADVANCED'];
 //
+		$orientation = Sectors::getOrientation(0);
+//
 // Shuffle these and place one face down on every star hex of the center sector tile, including the central hex.
 //
 		shuffle($stars);
-		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'star', "0:$hexagon", ['back' => array_pop($stars)]);
+		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon)
+		{
+			$rotated = Sectors::rotate($hexagon, $orientation);
+			Counters::create('neutral', 'star', "0:$rotated", ['back' => array_pop($stars)]);
+		}
 //
 // Shuffle the ten relic counters face down and place one on each of the stars in the center sector (on top of the star counters). 		}
 //
 		$relics = range(0, 9);
 		shuffle($relics);
-		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon) Counters::create('neutral', 'relic', "0:$hexagon", ['back' => array_pop($relics)]);
+		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon)
+		{
+			$rotated = Sectors::rotate($hexagon, $orientation);
+			Counters::create('neutral', 'relic', "0:$rotated", ['back' => array_pop($relics)]);
+		}
 //
 		$this->gamestate->nextState('next');
 	}

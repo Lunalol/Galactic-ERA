@@ -82,7 +82,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			if (node)
 			{
 				dojo.setAttr(node, 'fleet', fleet.fleet);
-				dojo.setAttr(node, 'title', fleet.ships);
+				if (+fleet.ships > 0) dojo.setAttr(node, 'ships', fleet.ships);
 			}
 		},
 		homeStarEvacuation: function (homeStar, to)

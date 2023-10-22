@@ -226,11 +226,11 @@ class Factions extends APP_GameClass
 	static function declareWar(string $color, string $on): void
 	{
 		$atWar = array_unique(array_merge(self::atWar($color), [$on]));
-		self::dBQuery("UPDATE factions SET atWar = '" . json_encode($atWar) . "' WHERE color = '$color'");
+		self::dBQuery("UPDATE factions SET atWar = '" . json_encode(array_values($atWar)) . "' WHERE color = '$color'");
 	}
 	static function declarePeace(string $color, string $on = ''): void
 	{
 		$atWar = $on ? array_diff(self::atWar($color), [$on]) : [];
-		self::dBQuery("UPDATE factions SET atWar = '" . json_encode($atWar) . "' WHERE color = '$color'");
+		self::dBQuery("UPDATE factions SET atWar = '" . json_encode(array_values($atWar)) . "' WHERE color = '$color'");
 	}
 }

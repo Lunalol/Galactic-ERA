@@ -115,8 +115,8 @@ class Ships extends APP_GameClass
 	}
 	static function reveal(string $color, string $type, int $id)
 	{
-		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
-		return self::DbGetLastId();
+//		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
+//		return self::DbGetLastId();
 	}
 	static function movement(array $ship)
 	{
