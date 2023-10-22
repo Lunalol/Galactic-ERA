@@ -129,7 +129,7 @@ trait gameStates
 //
 				foreach (array_keys($stars) as $hexagon)
 				{
-					$rotated = Sectors::rotate($hexagon, $orientation);
+					$rotated = Sectors::rotate($hexagon, -$orientation);
 					$distance = hex_length(Hex(...sscanf($rotated, '%2d%2d%2d')));
 					for ($i = 0; $i < $distance; $i++) Counters::create($color, 'populationDisc', "$sector:$rotated");
 //* -------------------------------------------------------------------------------------------------------- */
@@ -155,7 +155,7 @@ trait gameStates
 				shuffle($counters);
 				foreach (array_keys($stars) as $hexagon)
 				{
-					$rotated = Sectors::rotate($hexagon, $orientation);
+					$rotated = Sectors::rotate($hexagon, -$orientation);
 					Counters::create('neutral', 'star', "$sector:$rotated", ['back' => array_pop($counters)]);
 				}
 
@@ -181,7 +181,7 @@ trait gameStates
 		shuffle($stars);
 		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon)
 		{
-			$rotated = Sectors::rotate($hexagon, $orientation);
+			$rotated = Sectors::rotate($hexagon, -$orientation);
 			Counters::create('neutral', 'star', "0:$rotated", ['back' => array_pop($stars)]);
 		}
 //
@@ -191,7 +191,7 @@ trait gameStates
 		shuffle($relics);
 		foreach (array_keys(array_filter(Sectors::SECTORS[Sectors::get(0)], fn($e) => $e == Sectors::HOME || $e == Sectors::PLANET)) as $hexagon)
 		{
-			$rotated = Sectors::rotate($hexagon, $orientation);
+			$rotated = Sectors::rotate($hexagon, -$orientation);
 			Counters::create('neutral', 'relic', "0:$rotated", ['back' => array_pop($relics)]);
 		}
 //

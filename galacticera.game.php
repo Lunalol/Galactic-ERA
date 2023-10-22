@@ -127,7 +127,7 @@ class GalacticEra extends Table
 		foreach ($result['sectors'] as $position => $sector)
 		{
 			$locations = [];
-			foreach (array_keys(Sectors::SHAPES[$sector['sector']]) as $location) $locations[] = Sectors::rotate($location, -$sector['orientation']);
+			foreach (array_keys(Sectors::SHAPES[$sector['sector']]) as $location) $locations[$location] = Sectors::rotate($location, -$sector['orientation']);
 			$result['sectors'][$position]['shape'] = array_combine($locations, Sectors::SHAPES[$sector['sector']]);
 		}
 //

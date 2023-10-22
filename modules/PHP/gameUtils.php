@@ -131,7 +131,7 @@ trait gameUtils
 				$location = Counters::get($id)['location'];
 				$sector = Sectors::get($location[0]);
 				$hexagon = substr($location, 2);
-				$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+				$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
 //
 				switch (Counters::getStatus($id, 'back'))
 				{
@@ -211,7 +211,7 @@ trait gameUtils
 		{
 			$sector = Sectors::get($location[0]);
 			$hexagon = substr($location, 2);
-			$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
 			if (array_key_exists($rotated, $this->SECTORS[$sector]))
 			{
 				$star = Counters::create('neutral', 'star', $location, ['back' => 'UNINHABITED']);

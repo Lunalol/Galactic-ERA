@@ -21,10 +21,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				const x0 = boardWidth / 2 + (1 + MARGIN / 100) * BOARDS[sector.position][0] * WIDTH;
 				const y0 = boardHeight / 2 + (1 + MARGIN / 100) * BOARDS[sector.position][1] * HEIGHT;
 //
-				const node = dojo.place(this.bgagame.format_block('ERAsector', {id: sector.position, sector: sector.sector, x: x0 - 3.50 * WIDTH, y: y0 - 4.50 * HEIGHT, angle: -sector.orientation * 60}), 'ERAboard');
+				const node = dojo.place(this.bgagame.format_block('ERAsector', {id: sector.position, sector: sector.sector, x: x0 - 3.50 * WIDTH, y: y0 - 4.50 * HEIGHT, angle: sector.orientation * 60}), 'ERAboard');
 //
 				for (let hexagon in sector.shape)
 				{
+					console.log(sector, hexagon, sector.shape[hexagon].shape.length);
 					const x = x0 + 0.5 * (sector.shape[hexagon].x * Math.cos(sector.orientation * Math.PI / 3.) - sector.shape[hexagon].y * Math.sin(sector.orientation * Math.PI / 3.));
 					const y = y0 + 0.5 * (sector.shape[hexagon].x * Math.sin(sector.orientation * Math.PI / 3.) + sector.shape[hexagon].y * Math.cos(sector.orientation * Math.PI / 3.));
 					this.hexagons[sector.position + ':' + hexagon] = {sector: sector.position, hexagon: hexagon, x: Math.round(x), y: Math.round(y), orientation: sector.orientation, shape: sector.shape[hexagon].shape};
@@ -339,6 +340,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		{
 			let shape = Array.from(hexagon.shape);
 			let angle = hexagon.orientation * Math.PI / 3.;
+			console.log(hexagon, hexagon.x, hexagon.y);
 //
 			let x0 = 0.5 * shape.shift();
 			let y0 = 0.5 * shape.shift();

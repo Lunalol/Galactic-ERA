@@ -26,6 +26,11 @@ class Counters extends APP_GameClass
 		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location'", true);
 		return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location' AND type = '$type'", true);
 	}
+	static function setStatus(int $id, string $status, $value = null): void
+	{
+		if (is_null($value)) self::dbQuery("UPDATE counters SET status = JSON_REMOVE(status,'$.$status') WHERE id = $id");
+		else self::dbQuery("UPDATE counters SET status = JSON_SET(status,'$.$status','$value') WHERE id = $id");
+	}
 	static function getStatus(int $id, string $status)
 	{
 		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM counters WHERE id = $id");

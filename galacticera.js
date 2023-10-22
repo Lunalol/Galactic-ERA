@@ -876,7 +876,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 								svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
 							}
 						}
-//
 						this.board.board.appendChild(svg);
 					}
 					break;

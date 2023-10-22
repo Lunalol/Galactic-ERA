@@ -1505,7 +1505,7 @@ class Sectors extends APP_GameClass
 		{
 			foreach (self::SECTORS()[$sector['sector']] as $location => $terrain)
 			{
-				$rotated = self::rotate($location, $sector['orientation']);
+				$rotated = self::rotate($location, -$sector['orientation']);
 				if ($neutron)
 				{
 					if ($terrain === self::NEUTRON) $locations[] = "$position:$rotated";
@@ -1529,7 +1529,7 @@ class Sectors extends APP_GameClass
 	{
 		$sector = Sectors::get($position);
 		$hexagon = sprintf('%+2d%+2d%+2d', $hex['q'], $hex['r'], $hex['s']);
-		$rotated = self::rotate($hexagon, - self::getOrientation($position));
+		$rotated = self::rotate($hexagon, +self::getOrientation($position));
 		return array_key_exists($rotated, Sectors::SECTORS[$sector]) ? Sectors::SECTORS[$sector][$rotated] : 0;
 	}
 	static function neighbors(string $location, bool $wormholes = true)

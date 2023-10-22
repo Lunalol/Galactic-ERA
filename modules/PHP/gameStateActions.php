@@ -504,7 +504,7 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
@@ -693,7 +693,7 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
@@ -758,7 +758,7 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
@@ -809,7 +809,7 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 //
 		$retreatE = $this->gamestate->state()['name'] === 'retreatE';
 		if ($retreatE)
@@ -1044,7 +1044,7 @@ trait gameStateActions
 			}
 //
 			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), -Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
 //
 			switch ($type)
 			{
@@ -1214,9 +1214,7 @@ trait gameStateActions
 //
 					case 9: // Super-Stargate
 //
-						self::notifyAllPlayers('msg', 'Relic not implemented', []);
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
+						Counters::setStatus($relic, 'owner', $color);
 						break;
 				}
 			}
@@ -1335,7 +1333,7 @@ trait gameStateActions
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
 			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), -Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
@@ -1423,9 +1421,6 @@ trait gameStateActions
 //
 		foreach (array_count_values($buildShips['ships']) as $location => $ships)
 		{
-			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), -Sectors::getOrientation($location[0]));
-//
 			if (in_array($location, Ships::FLEETS))
 			{
 				$Fleet = $location;
@@ -1443,6 +1438,9 @@ trait gameStateActions
 			}
 			else
 			{
+				$sector = Sectors::get($location[0]);
+				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+//
 				if ($automa)
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>additional ship(s)</B> ${GPS}'), [
