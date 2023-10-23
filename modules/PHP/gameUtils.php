@@ -33,7 +33,7 @@ trait gameUtils
 //
 // YOWIES SPECIAL STO & STS: You may not have Robotics higher than level 1
 //
-		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('You may not have Robotics higher than level 1'));
+		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('Yowies may not have Robotics higher than level 1'));
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
 			'player_name' => Factions::getName($color),
@@ -146,11 +146,13 @@ trait gameUtils
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
+						{
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} is <B>uninhabited</B>'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
+						}
 						break;
 					case 'PRIMITIVE':
 						if ($color)
@@ -162,11 +164,15 @@ trait gameUtils
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
-						else self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
+						else
+						{
+							self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
 //* -------------------------------------------------------------------------------------------------------- */
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
+						}
+
 						break;
 					case 'ADVANCED':
 						if ($color)
@@ -179,11 +185,13 @@ trait gameUtils
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
+						{
 //* -------------------------------------------------------------------------------------------------------- */10
 							self::notifyAllPlayers('flipCounter', clienttranslate('${GPS} ${PLANET} has an <B>advanced</B> civilization'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
+						}
 						break;
 					default:
 						if ($color)
@@ -196,11 +204,14 @@ trait gameUtils
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
+						{
+							foreach (Factions::list(false) as $otherColor) Counters::reveal($otherColor, 'relic', $id);
 //* -------------------------------------------------------------------------------------------------------- */10
 							self::notifyAllPlayers('flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
 								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
+						}
 				}
 				break;
 		}
@@ -217,6 +228,7 @@ trait gameUtils
 				$star = Counters::create('neutral', 'star', $location, ['back' => 'UNINHABITED']);
 				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get($star)]);
 				self::reveal('', 'counter', $star);
+				foreach (Factions::list(false) as $otherColor) Counters::reveal($otherColor, 'star', $id);
 			}
 		}
 	}

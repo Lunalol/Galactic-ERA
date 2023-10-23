@@ -124,7 +124,7 @@ class Ships extends APP_GameClass
 //
 // Stargate 1
 //
-		if ($propulsion === 3 || $propulsion === 4) $ownStars = Counters::getPopulations($ship['color'], true);
+		$ownStars = Counters::getPopulations($ship['color'], true);
 //
 // Stargate 2
 //
@@ -142,6 +142,14 @@ class Ships extends APP_GameClass
 //
 			foreach ($stars as $index => $location) if (Counters::isBlocked($ship['color'], $location)) unset($stars[$index]);
 		}
+//
+//	Super-Stargate
+//
+		$superStargate = NULL;
+		$relic = Counters::getRelic(9);
+		if ($relic && Counters::getStatus($relic, 'owner') === $ship['color']) $superStargate = Counters::get($relic)['location'];
+		$superStargateStars = Counters::getPopulations($ship['color'], $propulsion < 5);
+
 //
 		$possible = [$ship['location'] => ['MP' => intval($ship['MP']), 'from' => null]];
 //
@@ -161,6 +169,17 @@ class Ships extends APP_GameClass
 // Stargate 2
 //
 			if ($propulsion === 5) if (in_array($location, $stars)) foreach ($stars as $next_location) if ($next_location !== $location) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+//
+//	Super-Stargate
+//
+			if ($superStargate)
+			{
+				foreach (array_keys($superStargateStars) as $next_location)
+				{
+					if ($superStargate === $location && $next_location !== $location) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+					if ($superStargate === $next_location && $next_location === $location) $neighbors[$superStargate] = ['location' => $superStargate, 'terrain' => Sectors::PLANET];
+				}
+			}
 //
 			foreach ($neighbors as $type => ['location' => $next_location, 'terrain' => $terrain])
 			{

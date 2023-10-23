@@ -21,6 +21,10 @@ class Counters extends APP_GameClass
 	{
 		return self::getNonEmptyObjectFromDB("SELECT * FROM counters WHERE id = $id");
 	}
+	static function getRelic(int $relic): int
+	{
+		return self::getUniqueValueFromDB("SELECT id FROM counters WHERE status->'$.back' = $relic");
+	}
 	static function getAtLocation(string $location, string $type = null): array
 	{
 		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location'", true);
@@ -63,7 +67,7 @@ class Counters extends APP_GameClass
 	}
 	static function reveal(string $color, string $type, int $id)
 	{
-		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
+		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id) ON DUPLICATE KEY UPDATE id = id");
 		return self::DbGetLastId();
 	}
 	static function isRevealed(int $id, string $type = null): array
@@ -97,7 +101,7 @@ class Counters extends APP_GameClass
 //
 // ORION STO: Your population counts double for being conquered
 //
-			if (Factions::getStarPeople($otherColor) === 'Orion' && Factions::getAlignment($color) === 'STO')
+			if (Factions::getStarPeople($otherColor) === 'Orion' && Factions::getAlignment($otherColor) === 'STO')
 			{
 				$orion = true;
 				$sizeOfPopulation *= 2;

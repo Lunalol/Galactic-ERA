@@ -305,7 +305,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					if (otherFaction.color !== faction.color)
 					{
 						const otherName = $(`player_name_${otherFaction.player_id}`).children[0].outerHTML;
-						const nodePeace = dojo.place(`<div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace ERAselectable' color='${faction.color}' on='${otherFaction.color}'></div>`, nodeStatus);
+						const nodePeace = dojo.place(`<div id='ERApeace-${faction.color}-${otherFaction.color}' class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-peace' color='${faction.color}' on='${otherFaction.color}'></div>`, nodeStatus);
+						dojo.toggleClass(nodePeace, 'ERAselectable', this.color === faction.color);
 						if (this.player_id === +faction.player_id) dojo.connect(nodePeace, 'click', (event) => {
 								dojo.stopEvent(event);
 								if (this.isCurrentPlayerActive() && this.gamedatas.gamestate.possibleactions.includes('declareWar'))
@@ -316,8 +317,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 									});
 								}
 							});
-						this.addTooltip(`ERApeace-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} in <B>peace</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to declare War') : '');
-						const nodeWar = dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}'  class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war ERAselectable' color='${faction.color}' on='${otherFaction.color}'></div>`, nodeStatus);
+						this.addTooltip(`ERApeace-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} at <B>peace</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to declare War') : '');
+						const nodeWar = dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}'  class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war' color='${faction.color}' on='${otherFaction.color}'></div>`, nodeStatus);
+						dojo.toggleClass(nodeWar, 'ERAselectable', this.color === faction.color);
 						if (this.player_id === +faction.player_id) dojo.connect(nodeWar, 'click', (event) => {
 								dojo.stopEvent(event);
 								if (this.isCurrentPlayerActive() && this.gamedatas.gamestate.possibleactions.includes('declarePeace'))

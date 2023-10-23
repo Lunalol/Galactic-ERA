@@ -1123,10 +1123,11 @@ trait gameStateActions
 			$relics = Counters::getAtLocation($location, 'relic');
 			foreach ($relics as $relic)
 			{
+				self::reveal('', 'counter', $relic);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('<B>${RELIC}</B> is found ${GPS}'), [
-					'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')],
-					'GPS' => $location]);
+//				self::notifyAllPlayers('msg', clienttranslate('<B>${RELIC}</B> is found ${GPS}'), [
+//					'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')],
+//					'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 				switch (Counters::getStatus($relic, 'back'))
 				{
@@ -1347,6 +1348,9 @@ trait gameStateActions
 		foreach ($locationsBonus as $location)
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+//
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [

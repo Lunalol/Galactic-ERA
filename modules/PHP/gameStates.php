@@ -517,7 +517,7 @@ trait gameStates
 									{
 										Factions::setActivation($color, 'no');
 //* -------------------------------------------------------------------------------------------------------- */
-										self::notifyAllPlayers('msg', clienttranslate('${player_name} may not have Robotics higher than level 1'), ['player_name' => Factions::getName($color)]);
+										self::notifyAllPlayers('msg', clienttranslate('Yowies may not have Robotics higher than level 1'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 									}
 									else if ($current > 1)

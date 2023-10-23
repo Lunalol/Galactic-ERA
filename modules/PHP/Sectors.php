@@ -1572,9 +1572,7 @@ class Sectors extends APP_GameClass
 			}
 		}
 //
-		for ($i = 0;
-			$i < 6;
-			$i++)
+		for ($i = 0; $i < 6; $i++)
 		{
 			$neighbor = hex_neighbor(Hex($q, $r, $s), $i);
 			if (hex_length($neighbor) > 4)
@@ -1603,7 +1601,7 @@ class Sectors extends APP_GameClass
 		{
 			$location = $queue->dequeue();
 //
-			$neighbors = Sectors::neighbors($location);
+			$neighbors = Sectors::neighbors($location, false);
 			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
 			{
 				if (!array_key_exists($next_location, $distance))
