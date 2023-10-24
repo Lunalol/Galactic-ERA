@@ -325,6 +325,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buriedShips') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'emergencyReserve') return this.bgagame.buildShips(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
 			}
@@ -333,14 +334,13 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.removeClass(node, 'ERAfocus');
 			});
 //
-			if (['fleets', 'buriedShips', 'remoteViewing', 'movement'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
-			if (!['buriedShips', 'buildShips'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
+			if (['fleets', 'remoteViewing', 'movement'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
+			if (!['buriedShips', 'buildShips', 'emergencyReserve'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
 		},
 		drawHexagon: function (hexagon, color)
 		{
 			let shape = Array.from(hexagon.shape);
 			let angle = hexagon.orientation * Math.PI / 3.;
-			console.log(hexagon, hexagon.x, hexagon.y);
 //
 			let x0 = 0.5 * shape.shift();
 			let y0 = 0.5 * shape.shift();

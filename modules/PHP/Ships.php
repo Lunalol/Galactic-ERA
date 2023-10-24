@@ -20,12 +20,11 @@ class Ships extends APP_GameClass
 	}
 	static function getHomeStar(string $color = null)
 	{
-		if (is_null($color)) return self::getObjectListFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
+		if (is_null($color)) return self::getCollectionFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
 		return self::getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
 	}
-	static function getHomeStarLocation(string $color = null)
+	static function getHomeStarLocation(string $color): string
 	{
-		if (is_null($color)) return self::getCollectionFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
 		return self::getUniqueValueFromDB("SELECT location FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
 	}
 	static function isShip(string $color, int $id): bool

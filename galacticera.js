@@ -832,6 +832,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 				case 'buildShips':
 				case 'buriedShips':
+				case 'emergencyReserve':
+					if ('_private' in state.args)
 					{
 						dojo.query('.ERAprovisional').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
 //
@@ -857,6 +859,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					break;
 //
 				case 'gainStar':
+					if ('_private' in state.args)
 					{
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 						dojo.setStyle(svg, 'position', 'absolute');
@@ -870,13 +873,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 						dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable');
 						dojo.query(`.ERAcounter-peace`, `ERAstatus-${this.color}`).addClass('ERAselectable');
-						for (let location in state.args._private.gainStar)
+
+						for (let location of state.args._private.gainStar)
 						{
-							for (let star of state.args._private.gainStar[location])
-							{
-								dojo.addClass(`ERAcounter-${star}`, 'ERAselectable ERAselected');
-								svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
-							}
+							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
+							dojo.query(`.ERAcounter[location='${location}']`, 'ERAboard').addClass('ERAselectable ERAselected');
 						}
 						this.board.board.appendChild(svg);
 					}
@@ -1074,7 +1075,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							const fleet = dojo.getAttr(fleetNode, 'fleet');
 							let ships = +dojo.getAttr(fleetNode, 'ships');
 //
-							if (stateName === 'buriedShips' || stateName === 'buildShips')
+							if (stateName === 'buriedShips' || stateName === 'buildShips' || stateName === 'emergencyReserve')
 							{
 								const shipNode = $('ERAbuildShip');
 								if (shipNode)
@@ -1422,7 +1423,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							});
 //
 						this.addActionButton('ERApassButton', _('End turn'), () => {
-							if (args._private.counters.length)
+							if (dojo.query('#ERAchoice .ERAcounter-growth').length)
 							{
 								this.confirmationDialog(_('You have unused growth action(s)'), () =>
 								{
@@ -1468,6 +1469,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'buildShips':
 					case 'buriedShips':
+					case 'emergencyReserve':
 //
 						this.addActionButton('ERAcancelButton', _('Cancel'), () => this.restoreServerGameState());
 						this.location = (args._private.stars.length === 1) ? args._private.stars[0] : undefined;
@@ -1682,7 +1684,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		},
 		gainStar: function (location)
 		{
-			if (location in this.gamedatas.gamestate.args._private.gainStar) this.action('gainStar', {color: this.color, location: JSON.stringify(location)});
+			if (this.gamedatas.gamestate.args._private.gainStar.includes(location)) this.action('gainStar', {color: this.color, location: JSON.stringify(location)});
 		},
 		buildShips: function (location, fleet = 'ship')
 		{

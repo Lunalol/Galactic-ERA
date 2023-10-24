@@ -209,21 +209,50 @@ class GalacticEra extends Table
 		$tomodify = ['player' => ['player_id'], 'factions' => ['player_id'], 'global' => ['global_value'], 'stats' => ['stats_player_id']];
 		$players_id = [];
 		foreach (self::getObjectListFromDB("SELECT * from player") as $player) $players_id[] = $player['player_id'];
-		for ($i = 0; $i < sizeof($players_id); $i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
+		for ($i = 0;
+			$i < sizeof($players_id);
+			$i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
 		$this->notifyAllPlayers('loadGame', 'Refreshing interface', ['id' => -1, 'n' => 0]);
 	}
+	function triggerEvent(int $new_state, string $new_active_faction)
+	{
+		self::DbQuery("INSERT INTO stack (new_state, new_active_faction) VALUES ($new_state, '$new_active_faction')");
+	}
+	function triggerAndNextState(string $nextState)
+	{
+		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state <> 0 ORDER BY id LIMIT 1");
+		if ($event)
+		{
+			$old_state = $nextState ? $this->gamestate->state()['transitions'][$nextState] : 0;
+			$old_active_faction = Factions::getActive();
+			self::DbQuery("UPDATE stack SET old_state = $old_state, old_active_faction = '$old_active_faction' WHERE id = $event[id]");
 //
-	function STS()
-	{
-		foreach (Factions::list() as $color) Factions::STS($color);
+			return $this->gamestate->jumpToState(PUSH_EVENT);
+		}
+
+		if ($nextState) $this->gamestate->nextState($nextState);
 	}
-	function STO()
+	function stPushEvent()
 	{
-		foreach (Factions::list() as $color) Factions::STO($color);
+		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state <> 0 ORDER BY id LIMIT 1");
+		if ($event)
+		{
+			self::DbQuery("UPDATE stack SET new_state = 0 WHERE id = $event[id]");
+//
+			$this->gamestate->changeActivePlayer(Factions::getPlayer($event['new_active_faction']));
+			return $this->gamestate->jumpToState($event['new_state']);
+		}
+		if ($nextState) $this->gamestate->nextState($nextState);
 	}
-	function COMBAT()
+	function stPopEvent()
 	{
-		foreach (Ships::getAll(null, 'ship') as $ship) Ships::setLocation($ship['id'], '6:+0+0+0');
-		foreach (Ships::getAll(null, 'fleet') as $fleet) if ($fleet['location'] !== 'stock') Ships::setLocation($fleet['id'], '6:+0+0+0');
+		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		if ($event)
+		{
+			$this->DbQuery("DELETE FROM stack WHERE id = $event[id]");
+//
+			$this->gamestate->changeActivePlayer(Factions::getPlayer($event['old_active_faction']));
+			if ($event['old_state']) return $this->gamestate->jumpToState($event['old_state']);
+		}
 	}
 }

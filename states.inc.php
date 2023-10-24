@@ -1,6 +1,8 @@
 <?php
 $machinestates = [
+//
 // The initial state. Please do not modify.
+//
 	1 => [
 		'name' => 'gameSetup',
 		'description' => '',
@@ -82,7 +84,7 @@ $machinestates = [
 		'description' => clienttranslate('Players have to make some individual choices'),
 		'type' => 'game',
 		'action' => 'stIndividualChoices',
-		'transitions' => ['continue' => 85, 'individualChoice' => 90, 'advancedFleetTactics' => 91, 'next' => 95]
+		'transitions' => ['continue' => 85, 'individualChoice' => 90, 'next' => 91]
 	],
 	90 => [
 		'name' => 'individualChoice',
@@ -99,6 +101,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} get an advanced fleet tactics'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
+		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
 		'transitions' => ['continue' => 91, 'next' => 95]
 	],
@@ -256,7 +259,7 @@ $machinestates = [
 		'name' => 'growthActions',
 		'type' => 'game',
 		'action' => 'stGrowthActions',
-		'transitions' => ['continue' => 400, 'evacuate' => 430, 'nextPlayer' => 410, 'next' => 500]
+		'transitions' => ['continue' => 400, 'nextPlayer' => 410, 'next' => 500]
 	],
 	410 => [
 		'name' => 'resolveGrowthActions',
@@ -264,9 +267,8 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
-//		'action' => 'stResolveGrowthActions',
 		'possibleactions' => ['declareWar', 'declarePeace', 'homeStarEvacuation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'homeStarEvacuation' => 435, 'stealTechnology' => 440, 'continue' => 410, 'next' => 400]
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'homeStarEvacuation' => 430, 'continue' => 410, 'next' => 400]
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',
@@ -274,6 +276,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactics'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
+		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
 		'transitions' => ['continue' => 415, 'next' => 410]
 	],
@@ -289,31 +292,12 @@ $machinestates = [
 	],
 	430 => [
 		'name' => 'homeStarEvacuation',
-		'description' => clienttranslate('${actplayer} must evacuate its Home Star'),
-		'descriptionmyturn' => clienttranslate('${you} must evacuate your Home Star'),
-		'type' => 'activeplayer',
-		'args' => 'argHomeStarEvacuation',
-		'possibleactions' => ['homeStarEvacuation'],
-		'transitions' => ['continue' => 400]
-	],
-	435 => [
-		'name' => 'homeStarEvacuation',
 		'description' => clienttranslate('${actplayer} may evacuate its Home Star'),
 		'descriptionmyturn' => clienttranslate('${you} may evacuate your Home Star'),
 		'type' => 'activeplayer',
 		'args' => 'argHomeStarEvacuation',
 		'possibleactions' => ['homeStarEvacuation'],
 		'transitions' => ['continue' => 410]
-	],
-	440 => [
-		'name' => 'stealTechnology',
-		'description' => clienttranslate('${actplayer} can gain ${levels} level(s) in one technology field'),
-		'descriptionmyturn' => clienttranslate('${you} can gain ${levels} level(s) in one technology field'),
-		'type' => 'activeplayer',
-		'args' => 'argStealTechnology',
-		'action' => 'stStealTechnology',
-		'possibleactions' => ['stealTechnology'],
-		'transitions' => ['advancedFleetTactics' => 415, 'continue' => 410]
 	],
 	500 => [
 		'name' => 'tradingPhase',
@@ -334,7 +318,7 @@ $machinestates = [
 		'name' => 'tradingPhaseEnd',
 		'type' => 'game',
 		'action' => 'stTradingPhaseEnd',
-		'transitions' => ['advancedFleetTactics' => 545, 'next' => 550]
+		'transitions' => ['next' => 545]
 	],
 	545 => [
 		'name' => 'advancedFleetTactics',
@@ -342,6 +326,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactics'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
+		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
 		'transitions' => ['continue' => 545, 'next' => 550]
 	],
@@ -357,6 +342,63 @@ $machinestates = [
 		'action' => 'stEndOfRound',
 		'transitions' => ['gameEnd' => 99, 'nextRound' => 100]
 	],
+//
+// Trigger
+//
+	PUSH_EVENT => [
+		'name' => 'pushEvent',
+		'type' => 'game',
+		'action' => 'stPushEvent'
+	],
+	POP_EVENT => [
+		'name' => 'popEvent',
+		'type' => 'game',
+		'action' => 'stpopEvent'
+	],
+//
+// Triggered events
+//
+	HOMESTAREVACUATION => [
+		'name' => 'homeStarEvacuation',
+		'description' => clienttranslate('${actplayer} must evacuate its Home Star'),
+		'descriptionmyturn' => clienttranslate('${you} must evacuate your Home Star'),
+		'type' => 'activeplayer',
+		'args' => 'argHomeStarEvacuation',
+		'possibleactions' => ['homeStarEvacuation'],
+		'transitions' => ['continue' => POP_EVENT]
+	],
+	EMERGENCYRESERVE => [
+		'name' => 'emergencyReserve',
+		'description' => clienttranslate('${actplayer} must use your emergency reserve'),
+		'descriptionmyturn' => clienttranslate('${you} must use your emergency reserve'),
+		'type' => 'activeplayer',
+		'args' => 'argEmergencyReserve',
+		'action' => 'stEmergencyReserve',
+		'possibleactions' => ['buildShips', 'done'],
+		'transitions' => ['continue' => POP_EVENT]
+	],
+	DECLAREWAR => [
+		'name' => 'declareWar',
+		'description' => clienttranslate('${actplayer} can declare war to block an opponent'),
+		'descriptionmyturn' => clienttranslate('${you} can declare war to block an opponent'),
+		'type' => 'activeplayer',
+		'args' => 'argDeclareWar',
+		'possibleactions' => ['declareWar'],
+		'transitions' => ['continue' => POP_EVENT]
+	],
+	STEALTECHNOLOGY => [
+		'name' => 'stealTechnology',
+		'description' => clienttranslate('${actplayer} can gain ${levels} level(s) in one technology field'),
+		'descriptionmyturn' => clienttranslate('${you} can gain ${levels} level(s) in one technology field'),
+		'type' => 'activeplayer',
+		'args' => 'argStealTechnology',
+		'action' => 'stStealTechnology',
+		'possibleactions' => ['stealTechnology'],
+		'transitions' => ['continue' => POP_EVENT]
+	],
+//
+// game End (BGA)
+//
 	99 => [
 		'name' => 'gameEnd',
 		'description' => clienttranslate('End of game'),

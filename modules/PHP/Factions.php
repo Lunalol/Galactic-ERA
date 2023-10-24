@@ -47,11 +47,11 @@ class Factions extends APP_GameClass
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions ORDER by `order`");
+		return self::getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics,emergencyReserve FROM factions ORDER by `order`");
 	}
 	static function get(string $color): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics FROM factions WHERE color = '$color'");
+		return self::getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics,emergencyReserve FROM factions WHERE color = '$color'");
 	}
 	static function getNext()
 	{
@@ -73,6 +73,10 @@ class Factions extends APP_GameClass
 	static function getPlayer(string $color): int
 	{
 		return intval(self::getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'"));
+	}
+	static function getColor(int $player_id): string
+	{
+		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id = $player_id");
 	}
 	static function getAutoma(int $automa = AUTOMA)
 	{
@@ -156,6 +160,18 @@ class Factions extends APP_GameClass
 	{
 		self::dbQuery("UPDATE factions SET `$technology` = `$technology` + 1 WHERE color = '$color'");
 		return self::getTechnology($color, $technology);
+	}
+	static function getEmergencyReserve($color): bool
+	{
+		return boolval(self::getUniqueValueFromDB("SELECT emergencyReserve FROM factions WHERE color = '$color'", true));
+	}
+	static function useEmergencyReserve($color)
+	{
+		self::DbQuery("UPDATE factions SET emergencyReserve = false WHERE color = '$color'");
+	}
+	static function emergencyReserve(): array
+	{
+		return self::getCollectionFromDB("SELECT color, player_id FROM factions WHERE status->'$.emergencyReserve'", true);
 	}
 	static function advancedFleetTactics(): array
 	{

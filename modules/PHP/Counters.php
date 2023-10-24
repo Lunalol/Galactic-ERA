@@ -21,7 +21,7 @@ class Counters extends APP_GameClass
 	{
 		return self::getNonEmptyObjectFromDB("SELECT * FROM counters WHERE id = $id");
 	}
-	static function getRelic(int $relic): int
+	static function getRelic(int $relic)
 	{
 		return self::getUniqueValueFromDB("SELECT id FROM counters WHERE status->'$.back' = $relic");
 	}
@@ -144,10 +144,7 @@ class Counters extends APP_GameClass
 					switch (Factions::getAlignment($color))
 					{
 						case 'STO':
-							$SHIPS = INF;
-							$population = 0;
-							$type = 0;
-							break;
+							return [0, 0, 0];
 						case 'STS':
 							$SHIPS = 1;
 							$population = 2;

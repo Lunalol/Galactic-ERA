@@ -211,6 +211,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			}
 //
 			if ('ships' in faction) dojo.query(`.ERAships[faction=${faction.color}]`).forEach((node) => node.innerHTML = faction.ships);
+			if ('emergencyReserve' in faction) dojo.query(`.ERAemergencyReserve-${faction.color}`).toggleClass('ERAhide', faction.emergencyReserve !== '1');
 //
 // Panels order
 //

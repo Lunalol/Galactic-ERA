@@ -133,6 +133,16 @@ div,img {
     font-size: 10pt;
     font-weight: bold;
 }
+.ERA-info {
+	font-family: 'ERA';
+    display: block;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #8E6031;
+	color: white;
+    font-size: 10pt;
+    font-weight: bold;
+}
 .ERA-removeViewing {
     display: block;
     padding: 5px;

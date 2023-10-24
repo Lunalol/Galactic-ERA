@@ -255,10 +255,10 @@ trait gameStateArguments
 						foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location)
 						{
 							$star = Counters::getAtLocation($location, 'star');
-							if ($star) $this->possible['gainStar'][$location] = $star;
+							if ($star) $this->possible['gainStar'][] = $location;
 							$populations = Counters::getAtLocation($location, 'populationDisc');
-							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][$location] = $populations;
-// PJL : TODO Homestar attack
+							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][] = $location;
+							if (in_array($location, Ships::getHomeStar()) && $location !== Ships::getHomeStarLocation($color)) $this->possible['gainStar'][] = $location;
 						}
 					}
 					break;
@@ -366,6 +366,25 @@ trait gameStateArguments
 		}
 //
 		return ['_private' => $this->possible];
+	}
+	function argEmergencyReserve()
+	{
+		$player_id = self::getActivePlayerId();
+		$color = Factions::getColor($player_id);
+//
+		$this->possible = ['stars' => array_keys(Counters::getPopulations($color)), 'newShips' => 6];
+		foreach (Ships::getAll($color) as $ship)
+		{
+			$this->possible['ships'][] = $ship['id'];
+			if ($ship['fleet'] === 'fleet')
+			{
+				$fleet = Ships::getStatus($ship['id'], 'fleet');
+				$this->possible['fleets'][$fleet] = $ship;
+				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
+			}
+		}
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
 	function argBuriedShips()
 	{

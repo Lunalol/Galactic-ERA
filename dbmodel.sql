@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `factions`
     `color` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00') PRIMARY KEY,
     `player_id` INT,`activation` ENUM ('no','yes','done'),
 	`starPeople` ENUM ('none','Alliance','Anchara','Annunaki','Avians','Caninoids','Dracos','Felines','Galactic','Greys','ICC','Mantids','Mayans','Orion','Plejars','Progenitors','Rogue','Yowies','Farmers','Slavers'),
-	`alignment` ENUM ('STO','STS'),`DP` INT(2) DEFAULT 0,`population` INT(2) DEFAULT 0,
+	`alignment` ENUM ('STO','STS'),`DP` INT(2) DEFAULT 0,`population` INT(2) DEFAULT 0, `emergencyReserve` BOOLEAN DEFAULT true,
 	`Military` INT(1) DEFAULT 1,`Spirituality` INT(1) DEFAULT 1,`Propulsion` INT(1) DEFAULT 1,`Robotics` INT(1) DEFAULT 1,`Genetics` INT(1) DEFAULT 1,
 	`homeStar` INT(1),`order` INT(1),`atWar` JSON,`status` JSON,`advancedFleetTactics` JSON
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -57,4 +57,11 @@ CREATE TABLE IF NOT EXISTS `undo`
     `type` ENUM ('create', 'destroy', 'move', 'done'),
     `status` JSON,
     PRIMARY KEY(`undoID`,`id`,`color`,`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS stack
+(
+	id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	old_state INT(4),`old_active_faction` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00'),
+	new_state INT(4),`new_active_faction` ENUM ('neutral','FF3333','00CC00','6666FF','FF9900','CD1FCD','FFFF00')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;

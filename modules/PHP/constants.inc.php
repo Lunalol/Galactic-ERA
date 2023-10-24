@@ -2,6 +2,12 @@
 define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== false);
 define('FAST_START', 0);
 define('DEBUG', 1);
+define('PUSH_EVENT', 998);
+define('POP_EVENT', 999);
+define('HOMESTAREVACUATION', 1000);
+define('EMERGENCYRESERVE', 1050);
+define('DECLAREWAR', 1100);
+define('STEALTECHNOLOGY', 1200);
 //
 // Game options
 //

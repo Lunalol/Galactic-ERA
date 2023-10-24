@@ -662,9 +662,7 @@ trait gameStateActions
 //
 		for ($i = 0; $i < $levels; $i++) self::gainTechnology($color, $technology);
 //
-		$players = array_values(Factions::advancedFleetTactics());
-		if ($this->gamestate->setPlayersMultiactive($players, 'continue', true)) return;
-		$this->gamestate->nextState('advancedFleetTactics');
+		self::triggerAndNextState('continue');
 	}
 	function acHomeStarEvacuation(string $color, $location)
 	{
@@ -743,7 +741,8 @@ trait gameStateActions
 //
 		self::starsBecomingUninhabited($previousLocation);
 //
-		$this->gamestate->nextState('continue');
+		if (Factions::getEmergencyReserve($color)) self::triggerEvent(EMERGENCYRESERVE, $color);
+		self::triggerAndNextState('continue');
 	}
 	function acCombatChoice(string $color, string $location, bool $automa = false)
 	{
@@ -986,14 +985,9 @@ trait gameStateActions
 		Factions::setStatus($color, 'counters', array_values($counters));
 		foreach ($technologies as $technology) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research', $technology])));
 //
-		if (!$automa)
-		{
-			$players = array_values(Factions::advancedFleetTactics());
-			if ($this->gamestate->setPlayersMultiactive($players, 'continue', true)) return;
-			$this->gamestate->nextState('advancedFleetTactics');
-		}
+		if (!$automa) $this->gamestate->nextState('advancedFleetTactics');
 	}
-	function acGainStar(string $color, array $locations, bool $automa = false): void
+	function acGainStar(string $color, array $locations, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1011,7 +1005,11 @@ trait gameStateActions
 			if (!$ships) throw new BgaVisibleSystemException('No ships at location: ' . $location);
 //
 			[$type, $SHIPS, $population] = Counters::gainStar($color, $location);
-			if (!$type) throw new BgaUserException(self::_('You can\'t gain this star'));
+			if (!$type)
+			{
+				if ($SHIPS > 0) throw new BgaUserException(sprintf(self::_('You need at least %d ships to gain this star'), $SHIPS));
+				else throw new BgaUserException(self::_('You can\'t gain this star'));
+			}
 //
 			if ($type === LIBERATE || $type === CONQUERVS)
 			{
@@ -1022,6 +1020,7 @@ trait gameStateActions
 					$sizeOfPopulation += 6;
 					$otherColor = Ships::get($homeStar[0])['color'];
 					Factions::setStatus($otherColor, 'evacuate', 'involuntary');
+					self::triggerEvent(HOMESTAREVACUATION, $otherColor);
 				}
 				else
 				{
@@ -1032,6 +1031,14 @@ trait gameStateActions
 				}
 				if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
 				Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
+				self::triggerEvent(STEALTECHNOLOGY, $color);
+//
+				if (Factions::getEmergencyReserve($otherColor))
+				{
+					$starCount = [];
+					foreach (Factions::list() as $_color) $starCount[$_color] = sizeof(Counters::getPopulations($_color));
+					if ($starCount[$color] <= min($starCount) - 2) self::triggerEvent(EMERGENCYRESERVE, $otherColor);
+				}
 			}
 //
 			foreach (Counters::getAtLocation($location, 'star') as $star)
@@ -1229,7 +1236,7 @@ trait gameStateActions
 				if (intval($location[0]) !== Factions::getHomeStar($color) && in_array($type, [LIBERATE, CONQUERVS]))
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
+					if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player')]);
 //* -------------------------------------------------------------------------------------------------------- */
 					$DP = 2;
 					self::gainDP($color, $DP);
@@ -1245,7 +1252,7 @@ trait gameStateActions
 			if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'First' && $player_id > 0)
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player'), []);
+				if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player')]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$DP = 1;
 				self::gainDP($color, $DP);
@@ -1264,20 +1271,12 @@ trait gameStateActions
 //
 		if (!$automa)
 		{
-			if (Factions::getStatus($color, 'steal'))
-			{
-				$this->gamestate->nextState('stealTechnology');
-				return;
-			}
 			if ($newShips)
 			{
 				Factions::setStatus($color, 'buriedShips', ['location' => $location, 'ships' => $newShips]);
-				$this->gamestate->nextState('buriedShips');
-				return;
+				return self::triggerAndNextState('buriedShips');
 			}
-			$players = array_values(Factions::advancedFleetTactics());
-			if ($this->gamestate->setPlayersMultiactive($players, 'continue', true)) return;
-			$this->gamestate->nextState('advancedFleetTactics');
+			return self::triggerAndNextState('advancedFleetTactics');
 		}
 //
 		if ($newShips)
@@ -1399,7 +1398,6 @@ trait gameStateActions
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!array_key_exists('stars', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 			if ($this->gamestate->state()['name'] == !'buriedShips' && !in_array('buildShips', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'buildShips');
-//			foreach ($locations as $location) if (!in_array($location, $this->possible['buildShips'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 		}
 //
 		foreach ($buildShips['fleets'] as $Fleet => $location)
