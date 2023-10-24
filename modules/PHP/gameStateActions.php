@@ -448,18 +448,31 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
-	function acRemoteViewing(string $color, string $type, string $id)
+	function acRemoteViewing(string $color, bool $ancienPyramids, string $type, string $id)
 	{
 		$player_id = Factions::getPlayer($color);
 //
 		$this->checkAction('remoteViewing');
 		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 		if (!array_key_exists('view', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if (!$this->possible['view']) throw new BgaVisibleSystemException('No move view: ' . $this->possible['view']);
 //
-		self::reveal($color, $type, $id);
-		Factions::setStatus($color, 'view', $this->possible['view'] - 1);
+		if ($ancienPyramids)
+		{
+			$relicID = Counters::getRelic(0);
+			if ($relicID)
+			{
+				if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Ancien pyramid already used');
+				Counters::setStatus($relicID, 'available');
+			}
+			else throw new BgaVisibleSystemException('Invalid relic : Ancien pyramid');
+		}
+		else
+		{
+			if (!$this->possible['view']) throw new BgaVisibleSystemException('No more view');
+			Factions::setStatus($color, 'view', $this->possible['view'] - 1);
+		}
 //
+		self::reveal($color, $type, $id, $ancienPyramids);
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
 		$this->gamestate->nextState('continue');
@@ -1141,9 +1154,11 @@ trait gameStateActions
 //
 					case 0: // Ancient Pyramids
 //
-						self::notifyAllPlayers('msg', 'Relic not implemented', []);
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
+						Counters::setStatus($relic, 'owner', $color);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
 						break;
 //
 					case 1: // Ancient Technology: Genetics
@@ -1208,21 +1223,29 @@ trait gameStateActions
 //
 					case 7: // Planetary Death Ray
 //
-						self::notifyAllPlayers('msg', 'Relic not implemented', []);
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
+						Counters::setStatus($relic, 'owner', $color);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
 						break;
 //
 					case 8: // Defense Grid
 //
-						self::notifyAllPlayers('msg', 'Relic not implemented', []);
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
+						Counters::setStatus($relic, 'owner', $color);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
 						break;
 //
 					case 9: // Super-Stargate
 //
 						Counters::setStatus($relic, 'owner', $color);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
 						break;
 				}
 			}

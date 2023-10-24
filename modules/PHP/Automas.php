@@ -892,7 +892,7 @@ class Automas extends APP_GameClass
 								{
 									$sector = Sectors::get($location[0]);
 									$hexagon = substr($location, 2);
-									$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($possible[0]));
+									$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 									$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$rotated]]);
 								}
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
@@ -914,6 +914,7 @@ class Automas extends APP_GameClass
 							{
 								$sector = Sectors::get($location[0]);
 								$hexagon = substr($location, 2);
+								$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 								$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$rotated]]);
 							}
 							$bgagame->notifyAllPlayers('msg', '<HR>', []);
@@ -934,6 +935,7 @@ class Automas extends APP_GameClass
 							{
 								$sector = Sectors::get($location[0]);
 								$hexagon = substr($location, 2);
+								$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 								$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$rotated]]);
 							}
 							$bgagame->notifyAllPlayers('msg', '<HR>', []);

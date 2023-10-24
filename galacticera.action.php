@@ -65,17 +65,6 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
-//	public function buriedShips()
-//	{
-//		self::setAjaxMode();
-////
-//		$color = self::getArg("color", AT_alphanum, true);
-//		$fleet = self::getArg("fleet", AT_alphanum, true);
-//		$ships = self::getArg("ships", AT_int, true);
-//		$this->game->acBuriedShips($color, $fleet, $ships);
-////
-//		self::ajaxResponse("");
-//	}
 	public function shipsToFleet()
 	{
 		self::setAjaxMode();
@@ -154,9 +143,10 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
+		$ancientPyramids = self::getArg("ancientPyramids", AT_bool, true);
 		$type = self::getArg("type", AT_alphanum, true);
 		$id = self::getArg("id", AT_alphanum, true);
-		$this->game->acRemoteViewing($color, $type, $id);
+		$this->game->acRemoteViewing($color, $ancientPyramids, $type, $id);
 //
 		self::ajaxResponse("");
 	}

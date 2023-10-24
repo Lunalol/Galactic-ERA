@@ -150,7 +150,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may move any or all ships'),
 		'type' => 'activeplayer',
 		'args' => 'argMovement',
-		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'done'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'planetaryDeathRay', 'done'],
 		'transitions' => ['undo' => 210, 'continue' => 220, 'next' => 230]
 	],
 	230 => [

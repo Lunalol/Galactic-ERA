@@ -79,6 +79,9 @@ trait gameStateArguments
 			}
 		}
 //
+		$ancientPyramids = Counters::getRelic(0);
+		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
+//
 		return ['_private' => [$player_id => $this->possible],
 			'active' => $color, 'undo' => +self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'")];
 	}
@@ -142,6 +145,12 @@ trait gameStateArguments
 			$this->possible['fleets'][$fleet] = $ship;
 			$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 		}
+//
+		$ancientPyramids = Counters::getRelic(0);
+		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
+//
+		$PlanetaryDeathRay = Counters::getRelic(7);
+		if ($PlanetaryDeathRay && Counters::getStatus($PlanetaryDeathRay, 'owner') === $ship['color']) $this->possible['planetaryDeathRay'] = intval(Counters::getStatus($PlanetaryDeathRay, 'available'));
 //
 		return ['_private' => [$player_id => $this->possible],
 			'active' => $color, 'undo' => +self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'")];
@@ -264,6 +273,9 @@ trait gameStateArguments
 					break;
 				case 'growPopulation':
 					{
+						$relic = Counters::getRelic(0);
+						$this->possible['ancientPyramids'] = ($relic && Counters::getStatus($relic, 'owner') === $color) ? Counters::get($relic)['location'] : null;
+//
 						$this->possible['growPopulation'] = [];
 						foreach (Counters::getPopulations($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
 						$this->possible['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];

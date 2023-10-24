@@ -645,6 +645,12 @@ trait gameStates
 		Ships::setActivation();
 		Factions::setActivation();
 //
+		foreach ([0, 7] as $relic)
+		{
+			$relicID = Counters::getRelic($relic);
+			if ($relicID) Counters::setStatus($relicID, 'available', 1);
+		}
+//
 		$this->gamestate->nextState('next');
 	}
 	function stMovementCombatPhase()
@@ -1603,6 +1609,7 @@ trait gameStates
 		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${log} ${round}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
+//
 		foreach (Factions::list() as $color)
 		{
 			Factions::setStatus($color, 'counters');

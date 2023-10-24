@@ -25,7 +25,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 				for (let hexagon in sector.shape)
 				{
-					console.log(sector, hexagon, sector.shape[hexagon].shape.length);
 					const x = x0 + 0.5 * (sector.shape[hexagon].x * Math.cos(sector.orientation * Math.PI / 3.) - sector.shape[hexagon].y * Math.sin(sector.orientation * Math.PI / 3.));
 					const y = y0 + 0.5 * (sector.shape[hexagon].x * Math.sin(sector.orientation * Math.PI / 3.) + sector.shape[hexagon].y * Math.cos(sector.orientation * Math.PI / 3.));
 					this.hexagons[sector.position + ':' + hexagon] = {sector: sector.position, hexagon: hexagon, x: Math.round(x), y: Math.round(y), orientation: sector.orientation, shape: sector.shape[hexagon].shape};
@@ -39,7 +38,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				if (true)
 				{
-//					const angle = 60 * (faction.player_id < 0 ? 1 : faction.homeStar) - 210;
 					const angle = 60 * (faction.player_id < 0 ? {1: 2, 2: 6}[-faction.player_id] : faction.homeStar) - 210;
 //
 					const node = dojo.place(this.bgagame.format_block('ERApanel', {color: faction.color}), 'ERAboard');

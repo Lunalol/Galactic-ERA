@@ -89,7 +89,7 @@ trait gameUtils
 //
 		return $level;
 	}
-	function reveal(string $color, string $type, string $id)
+	function reveal(string $color, string $type, string $id, bool $ancienPyramids = false)
 	{
 		switch ($type)
 		{
@@ -112,7 +112,7 @@ trait gameUtils
 				if (!$ship) throw new BgaVisibleSystemException("Invalid ship: $id");
 				if ($ship['fleet'] !== 'fleet') throw new BgaVisibleSystemException('Not a fleet');
 //
-				if (Factions::getTechnology($color, 'spirituality') <= Factions::getTechnology($ship['color'], 'spirituality')) throw new BgaUserException(self::_('You must have a higher spirituality level than the owner of the fleet'));
+				if (!$ancienPyramids && Factions::getTechnology($color, 'spirituality') <= Factions::getTechnology($ship['color'], 'spirituality')) throw new BgaUserException(self::_('You must have a higher spirituality level than the owner of the fleet'));
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div class="ERA-removeViewing" style="background:#${color}"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
 					'color' => $ship['color'], 'GPS' => $ship['location'],
