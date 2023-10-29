@@ -327,6 +327,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'teleportPopulation') return this.bgagame.teleportPopulation(location);
+				if (this.bgagame.gamedatas.gamestate.name === 'planetaryDeathRay') return /*this.bgagame.planetaryDeathRay(location)*/;
 			}
 			dojo.query('.ERAfocus').forEach((node) => {
 				dojo.style(node, {'pointer-events': 'none', 'z-index': '1000', 'transform': ``});

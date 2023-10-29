@@ -117,7 +117,6 @@ trait gameStateArguments
 		$this->possible = [
 			'move' => [], 'scout' => [],
 			'view' => Factions::getStatus($color, 'view'),
-			'declareWar' => Factions::atPeace($color)
 		];
 //
 		foreach (Ships::getAll($color) as $ship)
@@ -150,7 +149,11 @@ trait gameStateArguments
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
 //
 		$PlanetaryDeathRay = Counters::getRelic(7);
-		if ($PlanetaryDeathRay && Counters::getStatus($PlanetaryDeathRay, 'owner') === $ship['color']) $this->possible['planetaryDeathRay'] = intval(Counters::getStatus($PlanetaryDeathRay, 'available'));
+		if ($PlanetaryDeathRay && Counters::getStatus($PlanetaryDeathRay, 'owner') === $ship['color'])
+		{
+			$this->possible['planetaryDeathRay'] = intval(Counters::getStatus($PlanetaryDeathRay, 'available'));
+			$this->possible['planetaryDeathRayTargets'] = Sectors::range(Counters::get($PlanetaryDeathRay)['location'], 4);
+		}
 //
 		return ['_private' => [$player_id => $this->possible],
 			'active' => $color, 'undo' => +self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'")];
@@ -232,6 +235,10 @@ trait gameStateArguments
 				$this->possible[$player_id]['oval'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
 				$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
 				$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
+// PJL
+				$this->possible[$player_id]['oval'] = 3;
+				$this->possible[$player_id]['square'] = 6;
+// PJL
 				$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
 //
 				$homeStar = Ships::getHomeStarLocation($color);

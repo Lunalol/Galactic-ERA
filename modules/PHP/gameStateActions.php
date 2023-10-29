@@ -461,10 +461,11 @@ trait gameStateActions
 			$relicID = Counters::getRelic(0);
 			if ($relicID)
 			{
-				if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Ancien pyramid already used');
+				if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Ancien Pyramid already used');
+				if (Counters::getStatus($relicID, 'owner') !== $color) throw new BgaVisibleSystemException('Invalid owner');
 				Counters::setStatus($relicID, 'available');
 			}
-			else throw new BgaVisibleSystemException('Invalid relic : Ancien pyramid');
+			else throw new BgaVisibleSystemException('Invalid relic : Ancien Pyramid');
 		}
 		else
 		{
@@ -473,6 +474,115 @@ trait gameStateActions
 		}
 //
 		self::reveal($color, $type, $id, $ancienPyramids);
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
+//
+		$this->gamestate->nextState('continue');
+	}
+	function acPlanetaryDeathRay(string $color, string $type, int $id)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('planetaryDeathRay');
+		$this->checkAction('scout');
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!array_key_exists('planetaryDeathRay', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (!array_key_exists('planetaryDeathRayTargets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+//
+		$relicID = Counters::getRelic(7);
+		if ($relicID)
+		{
+			if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Planetary Death Ray already used');
+			if (Counters::getStatus($relicID, 'owner') !== $color) throw new BgaVisibleSystemException('Invalid owner');
+			Counters::setStatus($relicID, 'available');
+		}
+		else throw new BgaVisibleSystemException('Invalid relic : Planetary Death Ray');
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('msg', clienttranslate('${player_name} uses <B>Planetary Death Ray</B>'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		switch ($type)
+		{
+//
+			case 'ship':
+//
+				$ship = Ships::get($id);
+				if (!$ship) throw new BgaVisibleSystemException('Invalid ship: ' . $id);
+//
+				$location = $ship['location'];
+				if (!in_array($location, $this->possible['planetaryDeathRayTargets'])) throw new BgaVisibleSystemException('Invalid target: ' . $location);
+				if (!in_array($ship['color'], Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war to use Planetary Death Ray'));
+//
+				switch ($ship['fleet'])
+				{
+					case 'ship':
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($id)]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Ships::destroy($id);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('updateFaction', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $ship['color'],
+							'LOG' => ['log' => clienttranslate('${ships} ship piece(s) destroyed'), 'args' => ['ships' => 1]],
+							'faction' => ['color' => $ship['color'], 'ships' => 16 - sizeof(Ships::getAll($ship['color'], 'ship'))]
+						]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+//
+					case 'fleet':
+//
+						$Fleet = Ships::getStatus($id, 'fleet');
+						Ships::setStatus($id, 'ships', intval(Ships::getStatus($id, 'ships')) - 1);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $ship['color'],
+							'LOG' => ['log' => clienttranslate('${ships} ship(s) destroyed in a fleet'), 'args' => ['ships' => 1]]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						if (intval(Ships::getStatus($id, 'ships')) === 0)
+						{
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyAllPlayers('removeShip', clienttranslate('A fleet is removed ${GPS}'), ['GPS' => $location, 'ship' => $ship]);
+//* -------------------------------------------------------------------------------------------------------- */
+							$ship['location'] = 'stock';
+							Ships::setLocation($id, $ship['location']);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyAllPlayers('placeShip', '', ['ship' => $ship]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						if (Factions::getPlayer($ship['color']) > 0) self::notifyPlayer(Factions::getPlayer($ship['color']), 'revealShip', '', ['ship' => ['id' => $id, 'fleet' => $Fleet, 'ships' => Ships::getStatus($id, 'ships')]]);
+						break;
+				}
+				break;
+//
+			case 'disc':
+//
+				$populationDisc = Counters::get($id);
+				if (!$populationDisc) throw new BgaVisibleSystemException('Invalid counter: ' . $id);
+				if ($populationDisc['type'] !== 'populationDisc') throw new BgaVisibleSystemException('Invalid counter type: ' . $populationDisc['type']);
+//
+				$location = $populationDisc['location'];
+				if (!in_array($location, $this->possible['planetaryDeathRayTargets'])) throw new BgaVisibleSystemException('Invalid target: ' . $location);
+				if (!in_array($populationDisc['color'], Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war to use Planetary Death Ray'));
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
+//* -------------------------------------------------------------------------------------------------------- */
+				if (Factions::getTechnology($populationDisc['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+				Counters::destroy($id);
+//* -------------------------------------------------------------------------------------------------------- */
+				$sector = Sectors::get($location[0]);
+				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} loses one <B>population(s)</B>'), ['GPS' => $location,
+					'PLANET' => [
+						'log' => '<span style = "color:#' . $populationDisc['color'] . ';font-weight:bold;">${PLANET}</span>',
+						'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+				]]);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::starsBecomingUninhabited($location);
+//
+				break;
+//
+			default:
+//
+				throw new BgaVisibleSystemException('Invalid planetaryDeathRay: ' . $type);
+		}
+//
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
 		$this->gamestate->nextState('continue');
@@ -919,7 +1029,7 @@ trait gameStateActions
 								self::notifyAllPlayers('placeShip', '', ['ship' => $fleet]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
-							if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
+							if (Factions::getPlayer($color) > 0) self::notifyPlayer(Factions::getPlayer($color), 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
 							break;
 //
 						case 'ships':
@@ -1010,7 +1120,6 @@ trait gameStateActions
 		$player_id = Factions::getPlayer($color);
 //
 		$this->checkAction('researchPlus');
-//
 		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 		$technologies = Factions::getStatus($color, 'researchPlus');
@@ -1029,6 +1138,7 @@ trait gameStateActions
 					if (!array_key_exists($otherColor, $this->possible[$technology])) throw new BgaVisibleSystemException("Invalid color : $otherColor");
 					if (!in_array($growthAction, $this->possible[$technology][$otherColor])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
 					if ($growthAction === 'buildShips' && Factions::getPlayer($otherColor) <= 0) throw new BgaUserException(self::_('You can\'t cancel a spawn ships growth action'));
+					if (Factions::getTechnology($otherColor, 'Spirituality') >= 5) throw new BgaUserException(self::_('Spirituality level 5 or 6 are imune to this'));
 //
 					$counters = Factions::getStatus($otherColor, 'counters');
 					unset($counters[array_search($growthAction, $counters)]);
@@ -1047,6 +1157,12 @@ trait gameStateActions
 				case 'Robotics':
 //
 					if (!in_array($growthAction, $this->possible['counters'])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
+//
+					$DP = -2;
+					self::gainDP($color, $DP);
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
 					self::gainTechnology($color, $growthAction);
 //
 					break;
@@ -1100,7 +1216,7 @@ trait gameStateActions
 			}
 			if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
 			Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
-			if (Factions::getPlayer($otherColor) > 0) self::triggerEvent(STEALTECHNOLOGY, $color);
+			if (Factions::getPlayer($color) > 0) self::triggerEvent(STEALTECHNOLOGY, $color);
 //
 			if (Factions::getEmergencyReserve($otherColor))
 			{

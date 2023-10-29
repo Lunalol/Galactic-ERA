@@ -792,16 +792,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					break;
 //
 				case 'selectCounters':
-//					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
-//					dojo.query(`#ERAboard>.ERAcounter-populationDisc.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
-//					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
-//					dojo.query(`#ERAboard>.ERAcounter-star`).addClass('ERAselectable ERAselected');
 					break;
 //
 				case 'resolveGrowthActions':
-//					dojo.query(`#ERAboard>.ERAhomeStar[color='${this.color}']`).addClass('ERAselectable ERAselected');
-//					dojo.query(`#ERAboard>.ERAcounter-populationDisc.ERAcounter-${this.color}`).addClass('ERAselectable ERAselected');
-//					dojo.query(`#ERAboard>.ERAship[color=${this.color}]`).addClass('ERAselectable ERAselected');
 					dojo.query('.ERAprovisional,.ERAprovisionalBonus').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
 					dojo.query('.ERAdisabled').removeClass('ERAdisabled');
 					break;
@@ -1062,6 +1055,33 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						this.board.board.appendChild(svg);
 					}
 					break;
+//
+				case 'planetaryDeathRay':
+//
+					if ('_private' in state.args)
+					{
+						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+						dojo.setStyle(svg, 'position', 'absolute');
+						dojo.setStyle(svg, 'left', '0px');
+						dojo.setStyle(svg, 'top', '0px');
+						dojo.setStyle(svg, 'z-index', '1');
+						dojo.setStyle(svg, 'pointer-events', 'all');
+						svg.setAttribute("width", 10000);
+						svg.setAttribute("height", 10000);
+						svg.id = 'ERAstars';
+//
+						for (let location of state.args._private.planetaryDeathRayTargets)
+						{
+							dojo.query('.ERAcounter-war:not(.ERAhide)', `ERAstatus-${this.color}`).forEach((node) => {
+								const otherColor = dojo.getAttr(node, 'on');
+								dojo.query(`.ERAship[color='${otherColor}'][location='${location}']`, 'ERAboard').addClass('ERAselectable ERAselected');
+								dojo.query(`.ERAcounter-populationDisc.ERAcounter-${otherColor}[location='${location}']`, 'ERAboard').addClass('ERAselectable ERAselected');
+							});
+							svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
+						}
+						this.board.board.appendChild(svg);
+					}
+
 			}
 		},
 		onLeavingState: function (stateName)
@@ -1918,6 +1938,14 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						dojo.toggleClass('ERAteleportButton', 'disabled', dojo.query(`.ERAcounter-populationDisc`, 'ERAteleportPopulation').length === 0);
 					}
 				}
+			}
+		},
+		planetaryDeathRay: function (location, target)
+		{
+			if (this.gamedatas.gamestate.args._private.planetaryDeathRayTargets.includes(location))
+			{
+				if (dojo.hasClass(target, 'ERAcounter-populationDisc')) this.action('planetaryDeathRay', {color: this.color, type: 'disc', id: dojo.getAttr(target, 'counter')});
+				if (dojo.hasClass(target, 'ERAship')) this.action('planetaryDeathRay', {color: this.color, type: 'ship', id: dojo.getAttr(target, 'ship')});
 			}
 		},
 		battleLoss: function (totalVictory)

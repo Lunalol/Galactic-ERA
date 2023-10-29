@@ -150,6 +150,17 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function planetaryDeathRay()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$type = self::getArg("type", AT_alphanum, true);
+		$id = self::getArg("id", AT_int, true);
+		$this->game->acPlanetaryDeathRay($color, $type, $id);
+//
+		self::ajaxResponse("");
+	}
 	public function scout()
 	{
 		self::setAjaxMode();

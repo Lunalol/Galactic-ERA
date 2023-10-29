@@ -45,7 +45,7 @@ trait gameUtils
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
-// Spiritualty : At levels 5 and 6 you automatically switch to STO (no growth action needed for that) and may not switch back to STS again.*
+// Spirituality : At levels 5 and 6 you automatically switch to STO (no growth action needed for that) and may not switch back to STS again.*
 // This happens only when the level is reached (so not during the “Switch Alignment” step).
 //
 		if ($technology === 'Spirituality' && $level >= 5 && Factions::getAlignment($color) === 'STS')

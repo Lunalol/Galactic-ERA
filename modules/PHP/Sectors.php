@@ -1503,7 +1503,7 @@ class Sectors extends APP_GameClass
 		$locations = [];
 		foreach (self::getAllDatas() as $position => $sector)
 		{
-			foreach (self::SECTORS()[$sector['sector']] as $location => $terrain)
+			foreach (self::SECTORS[$sector['sector']] as $location => $terrain)
 			{
 				$rotated = self::rotate($location, -$sector['orientation']);
 				if ($neutron)
@@ -1614,5 +1614,28 @@ class Sectors extends APP_GameClass
 			}
 		}
 		return INF;
+	}
+	static function range(string $location, int $range)
+	{
+		$distances = [$location => 0];
+//
+		$queue = new SplQueue();
+		$queue->enqueue($location);
+		while (!$queue->isEmpty())
+		{
+			$location = $queue->dequeue();
+			$distance = $distances[$location] + 1;
+//
+			$neighbors = Sectors::neighbors($location, false);
+			foreach ($neighbors as ['location' => $next_location])
+			{
+				if (!array_key_exists($next_location, $distances) || $distance < $distances[$next_location])
+				{
+					$distances[$next_location] = $distance;
+					if ($distance < $range) $queue->enqueue($next_location);
+				}
+			}
+		}
+		return array_keys($distances);
 	}
 }
