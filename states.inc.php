@@ -267,7 +267,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
-		'possibleactions' => ['declareWar', 'declarePeace', 'homeStarEvacuation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
 		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'homeStarEvacuation' => 430, 'continue' => 410, 'next' => 400]
 	],
 	415 => [
@@ -395,6 +395,25 @@ $machinestates = [
 		'action' => 'stStealTechnology',
 		'possibleactions' => ['stealTechnology'],
 		'transitions' => ['continue' => POP_EVENT]
+	],
+	RESEARCHPLUS => [
+		'name' => 'researchPlus',
+		'description' => clienttranslate('${actplayer} can use a Research+ effect for ${technology}'),
+		'descriptionmyturn' => clienttranslate('${you} can use a Research+ effect for ${technology}'),
+		'type' => 'activeplayer',
+		'args' => 'argResearchPlus',
+		'action' => 'stResearchPlus',
+		'possibleactions' => ['declareWar', 'declarePeace', 'researchPlus'],
+		'transitions' => ['continue' => RESEARCHPLUS, 'end' => POP_EVENT]
+	],
+	BLOCKGAINSTAR => [
+		'name' => 'blockGainStar',
+		'description' => clienttranslate('Players may block a gain star growth action'),
+		'descriptionmyturn' => clienttranslate('${you} may block a gain star growth action'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argblock',
+		'possibleactions' => ['block'],
+		'transitions' => ['X' => 0]
 	],
 //
 // game End (BGA)

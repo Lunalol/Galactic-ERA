@@ -26,7 +26,6 @@ SOLO:
     • Ancient Pyramids
     • Planetary Death Ray
     • Defense Grid
-    • Super-Stargate
 
 /***************/
 /* IMPLEMENTED */
@@ -63,10 +62,10 @@ SOLO:
 11.2 Technologies:
     • Military:     (1-6)
     • Spirituality: (1-6)
-    • Propulsion:   (1-6) except teleport
+    • Propulsion:   (1-6)
     • Robotics:     (1-6)
     • Genetics:     (1-6)
 11.4 Galactic Stories
     • Journeys
 11.6 Sector Starting Bonus
-11.7 Ancient Relics except Ancient Pyramids, Planetary Death Ray, Defense Grid & Super-Stargate
+11.7 Ancient Relics except Ancient Pyramids, Planetary Death Ray, Defense Grid

@@ -228,14 +228,11 @@ trait gameStateArguments
 			if ($player_id > 0)
 			{
 				$this->possible[$player_id]['color'] = $color;
-				$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'counters');
+				$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'stock');
 				$this->possible[$player_id]['oval'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
 				$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
 				$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
 				$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
-//
-//				$this->possible[$player_id]['square'] = 6; //PJL
-//				$this->possible[$player_id]['additionalSquareCost'] = 0; //PJL
 //
 				$homeStar = Ships::getHomeStarLocation($color);
 //
@@ -310,11 +307,14 @@ trait gameStateArguments
 			foreach (Factions::getStatus($otherColor, 'used') as $counter) $counters[$otherColor]['used'][] = $counter;
 		}
 //
-		$teleport = Factions::TELEPORT[Factions::getTechnology($color, 'Propulsion')];
-		if ($teleport)
+		if (!in_array('teleportPopulation', $counters[$color]['used']))
 		{
-			$this->possible['teleport'] = $teleport;
-			$this->possible['populations'] = Counters::getPopulations($color, true);
+			$teleport = Factions::TELEPORT[Factions::getTechnology($color, 'Propulsion')];
+			if ($teleport)
+			{
+				$this->possible['teleportPopulation'] = $teleport;
+				$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
+			}
 		}
 //
 		$homeStar = Ships::getHomeStarLocation($color);
@@ -448,5 +448,50 @@ trait gameStateArguments
 			}
 		}
 		return ['_private' => $private, 'automa' => Factions::getAutoma()];
+	}
+	function argResearchPlus()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		$this->possible = [];
+//
+		$technologies = Factions::getStatus($color, 'researchPlus');
+		$technology = array_pop($technologies);
+//
+		switch ($technology)
+		{
+//
+			case 'Military':
+//
+				foreach (Factions::atWar($color) as $otherColor) $this->possible['Military'][$otherColor] = array_diff(Factions::getStatus($otherColor, 'counters'), array_keys($this->TECHNOLOGIES));
+				break;
+//
+			case 'Spirituality':
+//
+				$this->possible['color'] = $color;
+				$this->possible['counters'] = array_intersect($this->OVAL, Factions::getStatus($color, 'stock'));
+				$this->possible['Spirituality'] = true;
+				break;
+//
+			case 'Robotics':
+//
+				$this->possible['color'] = $color;
+				$this->possible['counters'] = array_diff(array_keys(Factions::TECHNOLOGIES), ['Robotics']);
+				$this->possible['Robotics'] = true;
+				break;
+//
+		}
+//
+		$counters = [];
+		foreach (Factions::list() as $otherColor)
+		{
+			$counters[$otherColor] = ['available' => [], 'used' => []];
+			foreach (Factions::getStatus($otherColor, 'counters') as $counter) $counters[$otherColor]['available'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'used') as $counter) $counters[$otherColor]['used'][] = $counter;
+		}
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters,
+			'technology' => $technology, 'i18n' => ['technology']];
 	}
 }

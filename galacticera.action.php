@@ -259,13 +259,25 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function researchPlus()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$technology = self::getArg("technology", AT_alphanum, true);
+		$otherColor = self::getArg("otherColor", AT_alphanum, false);
+		$growthAction = self::getArg("growthAction", AT_alphanum, false);
+		$this->game->acResearchPlus($color, $technology, $otherColor, $growthAction);
+//
+		self::ajaxResponse("");
+	}
 	public function gainStar()
 	{
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
 		$location = self::getArg("location", AT_json, true);
-		$this->game->acGainStar($color, [$location]);
+		$this->game->acGainStar($color, $location);
 //
 		self::ajaxResponse("");
 	}
@@ -277,6 +289,17 @@ class action_galacticera extends APP_GameAction
 		$locations = self::getArg("locations", AT_json, true);
 		$locationsBonus = self::getArg("locationsBonus", AT_json, true);
 		$this->game->acGrowPopulation($color, $locations, $locationsBonus);
+//
+		self::ajaxResponse("");
+	}
+	public function teleportPopulation()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$from = self::getArg("from", AT_json, true);
+		$to = self::getArg("to", AT_json, true);
+		$this->game->acTeleportPopulation($color, $from, $to);
 //
 		self::ajaxResponse("");
 	}

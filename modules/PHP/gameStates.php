@@ -266,7 +266,7 @@ trait gameStates
 // PJL
 		if (FAST_START)
 		{
-			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', ['Avians']);
+			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', ['Plejars']);
 			$this->gamestate->nextState('next');
 		}
 		else $this->gamestate->setAllPlayersMultiactive('next');
@@ -293,7 +293,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		if (FAST_START)
 		{
-			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'alignment', false);
+			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'alignment', true);
 			$this->gamestate->nextState('next');
 		}
 		else $this->gamestate->setAllPlayersMultiactive('next');
@@ -630,6 +630,8 @@ trait gameStates
 	}
 	function stStartOfGame()
 	{
+		if (FAST_START >= 2) self::TECH();
+//
 		$this->activeNextPlayer();
 //
 		if (self::getPlayersNumber() > 1) $this->gamestate->nextState('next');
@@ -644,6 +646,21 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		Ships::setActivation();
 		Factions::setActivation();
+//
+		foreach (Factions::list(false) as $color)
+		{
+			if (Factions::getTechnology($color, 'Spirituality') === 6)
+			{
+				$toReveal = [];
+				foreach (Sectors::getAll() as $sector) foreach (array_keys($this->SECTORS[Sectors::get($sector)]) as $hexagon)
+					{
+						$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($sector));
+						$location = "$sector:$rotated";
+						array_push($toReveal, ...Counters::getAtLocation($location, 'star'), ...Counters::getAtLocation($location, 'relic'));
+					}
+				foreach (array_diff($toReveal, Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
+			}
+		}
 //
 		foreach ([0, 7] as $relic)
 		{
@@ -1031,6 +1048,7 @@ trait gameStates
 		foreach (Factions::list(false) as $color)
 		{
 			$counters = Factions::getStatus($color, 'counters');
+			Factions::setStatus($color, 'stock', array_diff(Factions::getStatus($color, 'stock'), $counters));
 //
 			$oval = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
 			$square = 1;
@@ -1073,10 +1091,51 @@ trait gameStates
 			$this->gamestate->nextState('continue');
 		}
 	}
+	function stResearchPlus()
+	{
+		$player_id = self::getActivePlayerId();
+		$color = Factions::getColor($player_id);
+//
+		$technologies = Factions::getStatus($color, 'researchPlus');
+		if ($technologies)
+		{
+			$technology = array_pop($technologies);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			switch ($technology)
+			{
+				case 'Military':
+					return;
+				case 'Spirituality':
+					return;
+				case 'Propulsion':
+					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar', 'gainStar']));
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} gets 2 free Gain Star actions'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+					break;
+				case 'Robotics':
+					return;
+				case 'Genetics':
+					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['growPopulation']));
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} gets a free Grow Population action with 2 additional bonus population'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+					break;
+			}
+//
+			if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
+			else Factions::setStatus($color, 'researchPlus');
+		}
+//
+		self::triggerAndNextState('end');
+	}
 	function stEmergencyReserve()
 	{
 		$player_id = self::getActivePlayerId();
 		$color = Factions::getColor($player_id);
+//
 		Factions::useEmergencyReserve($color);
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('useEmergencyReserve', clienttranslate('${player_name} uses emergency reserve'), ['player_name' => Factions::getName($color)]);
@@ -1227,7 +1286,8 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color)
 		{
-			Factions::setStatus($color, 'counters', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
+			Factions::setStatus($color, 'stock', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
+			Factions::setStatus($color, 'counters', []);
 			Factions::setStatus($color, 'used', []);
 		}
 //
@@ -1612,6 +1672,7 @@ trait gameStates
 //
 		foreach (Factions::list() as $color)
 		{
+			Factions::setStatus($color, 'stock');
 			Factions::setStatus($color, 'counters');
 			Factions::setStatus($color, 'used');
 			Factions::setStatus($color, 'bonus');

@@ -736,12 +736,13 @@ trait gameStateActions
 		}
 		if (Factions::getStatus($color, 'evacuate') === 'voluntary')
 		{
-// PJL rotation TODO
+			$sector = Sectors::get($previousLocation[0]);
+			$rotated = Sectors::rotate(substr($previousLocation, 2), +Sectors::getOrientation($previousLocation[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
-					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[Sectors::get($previousLocation[0])][substr($previousLocation, 2)]]
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
 				],
 				'GPS' => $previousLocation, 'population' => 1]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -856,6 +857,8 @@ trait gameStateActions
 			self::notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $location, 'old' => $combatLocation]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
+//
+		foreach (array_diff(array_merge(Counters::getAtLocation($location, 'star'), Counters::getAtLocation($location, 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
 //
 		$this->gamestate->nextState('continue');
 	}
@@ -996,11 +999,66 @@ trait gameStateActions
 		unset($counters[array_search('research', $counters)]);
 		foreach ($technologies as $technology) unset($counters[array_search($technology, $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
-		foreach ($technologies as $technology) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research', $technology])));
 //
-		if (!$automa) $this->gamestate->nextState('advancedFleetTactics');
+		if (!in_array('research', Factions::getStatus($color, 'used'))) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research'])));
+		foreach ($technologies as $technology) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), [$technology])));
+//
+		if (!$automa) self::triggerAndNextState('advancedFleetTactics');
 	}
-	function acGainStar(string $color, array $locations, bool $automa = false)
+	function acResearchPlus($color, $technology, $otherColor, $growthAction)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('researchPlus');
+//
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		$technologies = Factions::getStatus($color, 'researchPlus');
+		array_pop($technologies);
+		if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
+		else Factions::setStatus($color, 'researchPlus');
+//
+		if ($technology)
+		{
+			if (!array_key_exists($technology, $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+//
+			switch ($technology)
+			{
+				case 'Military':
+//
+					if (!array_key_exists($otherColor, $this->possible[$technology])) throw new BgaVisibleSystemException("Invalid color : $otherColor");
+					if (!in_array($growthAction, $this->possible[$technology][$otherColor])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
+					if ($growthAction === 'buildShips' && Factions::getPlayer($otherColor) <= 0) throw new BgaUserException(self::_('You can\'t cancel a spawn ships growth action'));
+//
+					$counters = Factions::getStatus($otherColor, 'counters');
+					unset($counters[array_search($growthAction, $counters)]);
+					Factions::setStatus($otherColor, 'counters', array_values($counters));
+					Factions::setStatus($otherColor, 'used', array_values(array_merge(Factions::getStatus($otherColor, 'used'), [$growthAction])));
+//
+					break;
+//
+				case 'Spirituality':
+//
+					if (!in_array($growthAction, $this->possible['counters'])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
+					Factions::setStatus($color, 'counters', array_values(array_merge(Factions::getStatus($color, 'counters'), [$growthAction])));
+//
+					break;
+//
+				case 'Robotics':
+//
+					if (!in_array($growthAction, $this->possible['counters'])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
+					self::gainTechnology($color, $growthAction);
+//
+					break;
+//
+				default:
+					throw new BgaVisibleSystemException("Invalid technology : $technology");
+			}
+		}
+//
+		self::triggerAndNextState('end');
+	}
+	function acGainStar(string $color, string $location, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1012,283 +1070,279 @@ trait gameStateActions
 			if (!in_array('gainStar', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'gainStar');
 		}
 //
-		foreach ($locations as $location)
+		$ships = Ships::getAtLocation($location, $color);
+		if (!$ships) throw new BgaVisibleSystemException('No ships at location: ' . $location);
+//
+		[$type, $SHIPS, $population] = Counters::gainStar($color, $location);
+		if (!$type)
 		{
-			$ships = Ships::getAtLocation($location, $color);
-			if (!$ships) throw new BgaVisibleSystemException('No ships at location: ' . $location);
+			if ($SHIPS > 0) throw new BgaUserException(sprintf(self::_('You need at least %d ships to gain this star'), $SHIPS));
+			else throw new BgaUserException(self::_('You can\'t gain this star'));
+		}
 //
-			[$type, $SHIPS, $population] = Counters::gainStar($color, $location);
-			if (!$type)
+		if ($type === LIBERATE || $type === CONQUERVS)
+		{
+			$sizeOfPopulation = 0;
+			$homeStar = Ships::getAtLocation($location, null, 'homeStar');
+			if ($homeStar)
 			{
-				if ($SHIPS > 0) throw new BgaUserException(sprintf(self::_('You need at least %d ships to gain this star'), $SHIPS));
-				else throw new BgaUserException(self::_('You can\'t gain this star'));
+				$sizeOfPopulation += 6;
+				$otherColor = Ships::get($homeStar[0])['color'];
+				Factions::setStatus($otherColor, 'evacuate', 'involuntary');
+				self::triggerEvent(HOMESTAREVACUATION, $otherColor);
 			}
-//
-			if ($type === LIBERATE || $type === CONQUERVS)
+			else
 			{
-				$sizeOfPopulation = 0;
-				$homeStar = Ships::getAtLocation($location, null, 'homeStar');
-				if ($homeStar)
-				{
-					$sizeOfPopulation += 6;
-					$otherColor = Ships::get($homeStar[0])['color'];
-					Factions::setStatus($otherColor, 'evacuate', 'involuntary');
-					self::triggerEvent(HOMESTAREVACUATION, $otherColor);
-				}
-				else
-				{
-					$populations = Counters::getAtLocation($location, 'populationDisc');
-					$sizeOfPopulation += sizeof($populations);
-					if ($populations) $otherColor = Counters::get($populations[0])['color'];
-					else throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
-				}
-				if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
-				Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
-				self::triggerEvent(STEALTECHNOLOGY, $color);
-//
-				if (Factions::getEmergencyReserve($otherColor))
-				{
-					$starCount = [];
-					foreach (Factions::list() as $_color) $starCount[$_color] = sizeof(Counters::getPopulations($_color));
-					if ($starCount[$color] <= min($starCount) - 2) self::triggerEvent(EMERGENCYRESERVE, $otherColor);
-				}
+				$populations = Counters::getAtLocation($location, 'populationDisc');
+				$sizeOfPopulation += sizeof($populations);
+				if ($populations) $otherColor = Counters::get($populations[0])['color'];
+				else throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
 			}
+			if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
+			Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
+			if (Factions::getPlayer($otherColor) > 0) self::triggerEvent(STEALTECHNOLOGY, $color);
 //
-			foreach (Counters::getAtLocation($location, 'star') as $star)
+			if (Factions::getEmergencyReserve($otherColor))
 			{
-				self::reveal('', 'counter', $star);
-//* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($star)]);
-//* -------------------------------------------------------------------------------------------------------- */
-				Counters::destroy($star);
+				$starCount = [];
+				foreach (Factions::list() as $_color) $starCount[$_color] = sizeof(Counters::getPopulations($_color));
+				if ($starCount[$color] <= min($starCount) - 2) self::triggerEvent(EMERGENCYRESERVE, $otherColor);
 			}
+		}
 //
-			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+		foreach (Counters::getAtLocation($location, 'star') as $star)
+		{
+			self::reveal('', 'counter', $star);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($star)]);
+//* -------------------------------------------------------------------------------------------------------- */
+			Counters::destroy($star);
+		}
 //
-			switch ($type)
-			{
-				case COLONIZE:
+		$sector = Sectors::get($location[0]);
+		$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+//
+		switch ($type)
+		{
+			case COLONIZE:
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} colonizes ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} colonizes ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
-					break;
-				case SUBJUGATE:
+				break;
+			case SUBJUGATE:
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} subjugates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} subjugates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
-					break;
-				case LIBERATE:
+				break;
+			case LIBERATE:
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} liberates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} liberates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // PLEJARS STS: You get 2 DP every time you liberate a star (in addition to other DP gained for this)
 //
-					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($color) === 'STO')
-					{
-						$DP = 2;
-						self::gainDP($color, $DP);
-						self::incStat($DP, 'DP_SP', $player_id);
+				if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($color) === 'STO')
+				{
+					$DP = 2;
+					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_SP', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-					}
-					break;
-				case CONQUER:
-				case CONQUERVS:
+				}
+				break;
+			case CONQUER:
+			case CONQUERVS:
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} conquers ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} conquers ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
-					break;
-				case ALLY:
+				break;
+			case ALLY:
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} allies oneself with ${PLANET}'), ['GPS' => $location,
-						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} allies oneself with ${PLANET}'), ['GPS' => $location,
+					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
-					break;
-			}
+				break;
+		}
 //
-			foreach (array_map(['Counters', 'get'], Counters::getAtLocation($location, 'populationDisc')) as $populationDisc)
-			{
+		foreach (array_map(['Counters', 'get'], Counters::getAtLocation($location, 'populationDisc')) as $populationDisc)
+		{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
+			self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
 //* -------------------------------------------------------------------------------------------------------- */
-				if (Factions::getTechnology($populationDisc['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
+			if (Factions::getTechnology($populationDisc['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				Counters::destroy($populationDisc['id']);
-			}
+			Counters::destroy($populationDisc['id']);
+		}
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
-				'PLANET' => [
-					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
-					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
-				],
-				'GPS' => $location, 'population' => $population]);
+		self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
+			'PLANET' => [
+				'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+				'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+			],
+			'GPS' => $location, 'population' => $population]);
 //* -------------------------------------------------------------------------------------------------------- */
-			for ($i = 0; $i < $population; $i++)
-			{
+		for ($i = 0; $i < $population; $i++)
+		{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
+			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
+			self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
-			}
+		}
 //
-			$newShips = 0;
-			$relics = Counters::getAtLocation($location, 'relic');
-			foreach ($relics as $relic)
-			{
-				self::reveal('', 'counter', $relic);
+		$newShips = 0;
+		$relics = Counters::getAtLocation($location, 'relic');
+		foreach ($relics as $relic)
+		{
+			self::reveal('', 'counter', $relic);
 //* -------------------------------------------------------------------------------------------------------- */
 //				self::notifyAllPlayers('msg', clienttranslate('<B>${RELIC}</B> is found ${GPS}'), [
 //					'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')],
 //					'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
-				switch (Counters::getStatus($relic, 'back'))
-				{
+			switch (Counters::getStatus($relic, 'back'))
+			{
 //
-					case 0: // Ancient Pyramids
+				case 0: // Ancient Pyramids
 //
-						Counters::setStatus($relic, 'owner', $color);
+					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
-							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
-						break;
+					break;
 //
-					case 1: // Ancient Technology: Genetics
+				case 1: // Ancient Technology: Genetics
 //
-						self::gainTechnology($color, 'Genetics');
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
-						break;
+					self::gainTechnology($color, 'Genetics');
+					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
 //
-					case 2: // Ancient Technology: Military
+				case 2: // Ancient Technology: Military
 //
-						self::gainTechnology($color, 'Military');
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
-						break;
+					self::gainTechnology($color, 'Military');
+					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
 //
-					case 3: // Ancient Technology: Propulsion
+				case 3: // Ancient Technology: Propulsion
 //
-						self::gainTechnology($color, 'Propulsion');
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
-						break;
+					self::gainTechnology($color, 'Propulsion');
+					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
 //
-					case 4: // Ancient Technology: Robotics
+				case 4: // Ancient Technology: Robotics
 //
 // YOWIES SPECIAL STO & STS: When you get the Ancient Technology: Robotics relic you get 2 ships at that star instead of a level (use the same restrictions as for the Buried Ships relic
 //
-						if (Factions::getStarPeople($color) === 'Yowies')
-						{
-							$newShips = 2;
-//* -------------------------------------------------------------------------------------------------------- */
-							self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
-								'player_name' => Factions::getName($color), 'SHIPS' => $newShips,
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
-							]);
-//* -------------------------------------------------------------------------------------------------------- */
-						}
-						else self::gainTechnology($color, 'Robotics');
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
-						break;
-//
-					case 5: // Ancient Technology: Spirituality
-//
-						self::gainTechnology($color, 'Spirituality');
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
-						break;
-//
-					case 6: // Buried Ships
-//
-						$newShips = 3;
+					if (Factions::getStarPeople($color) === 'Yowies')
+					{
+						$newShips = 2;
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
 							'player_name' => Factions::getName($color), 'SHIPS' => $newShips,
 							'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 						]);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
-						Counters::destroy($relic);
-						break;
+					}
+					else self::gainTechnology($color, 'Robotics');
+					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
 //
-					case 7: // Planetary Death Ray
+				case 5: // Ancient Technology: Spirituality
 //
-						Counters::setStatus($relic, 'owner', $color);
-//* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
-							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
-//* -------------------------------------------------------------------------------------------------------- */
-						break;
+					self::gainTechnology($color, 'Spirituality');
+					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
 //
-					case 8: // Defense Grid
+				case 6: // Buried Ships
 //
-						Counters::setStatus($relic, 'owner', $color);
+					$newShips = 3;
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
-							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>${SHIPS} additional ships</B> at ${PLANET}'), [
+						'player_name' => Factions::getName($color), 'SHIPS' => $newShips,
+						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
+					]);
 //* -------------------------------------------------------------------------------------------------------- */
-						break;
+					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
+					Counters::destroy($relic);
+					break;
 //
-					case 9: // Super-Stargate
+				case 7: // Planetary Death Ray
 //
-						Counters::setStatus($relic, 'owner', $color);
+					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
-							'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
-						break;
-				}
+					break;
+//
+				case 8: // Defense Grid
+//
+					Counters::setStatus($relic, 'owner', $color);
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+					break;
+//
+				case 9: // Super-Stargate
+//
+					Counters::setStatus($relic, 'owner', $color);
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+					break;
 			}
+		}
 //
 // Scoring
 //
 // JOURNEYS Second : All players score 2 DP for every star outside of their home star sector that they take from another player
 //
-			if (self::getGameStateValue('galacticStory') == JOURNEYS && self::ERA() === 'Second' && $player_id > 0)
-			{
-				if (intval($location[0]) !== Factions::getHomeStar($color) && in_array($type, [LIBERATE, CONQUERVS]))
-				{
-//* -------------------------------------------------------------------------------------------------------- */
-					if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player')]);
-//* -------------------------------------------------------------------------------------------------------- */
-					$DP = 2;
-					self::gainDP($color, $DP);
-					self::incStat($DP, 'DP_GS', $player_id);
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
-			}
-//
-// RIVALRY First: All players score 1 DP for every Gain Star action they do in this era.
-//
-			if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'First' && $player_id > 0)
+		if (self::getGameStateValue('galacticStory') == JOURNEYS && self::ERA() === 'Second' && $player_id > 0)
+		{
+			if (intval($location[0]) !== Factions::getHomeStar($color) && in_array($type, [LIBERATE, CONQUERVS]))
 			{
 //* -------------------------------------------------------------------------------------------------------- */
 				if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player')]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$DP = 1;
+				$DP = 2;
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
+		}
 //
+// RIVALRY First: All players score 1 DP for every Gain Star action they do in this era.
+//
+		if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'First' && $player_id > 0)
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player')]);
+//* -------------------------------------------------------------------------------------------------------- */
+			$DP = 1;
+			self::gainDP($color, $DP);
+			self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
 		}
 //
 		$counters = Factions::getStatus($color, 'counters');
-		unset($counters[array_search('gainStar', $counters)]);
+		if (array_search('gainStar', $counters) !== false) unset($counters[array_search('gainStar', $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
 //
@@ -1410,6 +1464,57 @@ trait gameStateActions
 		}
 //
 		if (!$automa) $this->gamestate->nextState('continue');
+	}
+	function acTeleportPopulation(string $color, array $from, array $to): void
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('teleportPopulation');
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!array_key_exists('teleportPopulation', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (sizeof($from) > $this->possible['teleportPopulation']) throw new BgaVisibleSystemException('Invalid from: ' . json_encode($from));
+		if (sizeof($to) > $this->possible['teleportPopulation']) throw new BgaVisibleSystemException('Invalid to: ' . json_encode($to));
+		if (sizeof($from) !== sizeof($to)) throw new BgaVisibleSystemException('Sizeof(from) <> Sizeof(to');
+//
+		foreach ($from as $location)
+		{
+			if (!in_array($location, $this->possible['populations'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+			$counters = Counters::getAtLocation($location, 'populationDisc');
+			if (!$counters) throw new BgaVisibleSystemException('No more population discs at ' . $location);
+			$counter = Counters::get(array_pop($counters));
+			if ($counter['color'] !== $color) throw new BgaVisibleSystemException('Invalid color : ' . $counter['color']);
+			Counters::destroy($counter['id']);
+//
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('removeCounter', clienttranslate('${GPS} ${PLANET} teleports a <B>population</B>'), [
+				'PLANET' => [
+					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+				], 'GPS' => $location, 'counter' => $counter]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+		foreach ($to as $location)
+		{
+			if (!in_array($location, $this->possible['populations'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+//
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
+				'PLANET' => [
+					'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+				], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
+		}
+//
+		foreach (array_unique($from) as $location) self::starsBecomingUninhabited($location);
+//
+		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['teleportPopulation'])));
+//
+		$this->gamestate->nextState('continue');
 	}
 	function acBuildShips(string $color, array $buildShips, bool $automa = false): void
 	{

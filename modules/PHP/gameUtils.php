@@ -24,8 +24,11 @@ trait gameUtils
 //
 // When automas research a technology they already have at level 6, this has no effect instead
 //
-			if (Factions::getPlayer($color) <= 0) return 0;
-			self::notifyAllPlayers('msg', 'Reseach+ Effect not implemented', []);
+			if (Factions::getPlayer($color) > 0)
+			{
+				Factions::setStatus($color, 'researchPlus', array_merge(Factions::getStatus($color, 'researchPlus') ?? [], [$technology]));
+				self::triggerEvent(RESEARCHPLUS, $color);
+			}
 			return 0;
 		}
 //
@@ -218,6 +221,7 @@ trait gameUtils
 	}
 	function starsBecomingUninhabited($location)
 	{
+		if (array_search($location, Ships::getHomeStar()) !== false) return;
 		if (!Counters::getAtLocation($location, 'populationDisc'))
 		{
 			$sector = Sectors::get($location[0]);
@@ -228,7 +232,7 @@ trait gameUtils
 				$star = Counters::create('neutral', 'star', $location, ['back' => 'UNINHABITED']);
 				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get($star)]);
 				self::reveal('', 'counter', $star);
-				foreach (Factions::list(false) as $otherColor) Counters::reveal($otherColor, 'star', $id);
+				foreach (Factions::list(false) as $otherColor) Counters::reveal($otherColor, 'star', $star);
 			}
 		}
 	}

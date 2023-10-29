@@ -108,7 +108,10 @@ $this->RELICS = [
 	clienttranslate('Defense Grid'),
 	clienttranslate('Super-Stargate')
 ];
-
+//
+// Growth actions (6)
+//
+$this->OVAL = ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'];
 //
 // <editor-fold defaultstate="collapsed" desc="Description of sectors">
 //

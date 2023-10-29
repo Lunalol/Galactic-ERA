@@ -1144,6 +1144,11 @@ div,img {
 	width: 250px;
 	height: 250px;
 }
+.ERAcounter-populationDisc.ERAsmall {
+	margin: 0px -200px -200px 0px;
+	transform: scale(20%);
+	transform-origin: left top;
+}
 .ERAcounter-populationDisc.ERAcounter-FF3333 {
 	background-position-x: -1500px;
 }
@@ -1154,7 +1159,7 @@ div,img {
 	background-position-x: -2000px;
 }
 .ERAcounter-populationDisc.ERAcounter-FF9900 {
-	background-position-x: -2250px;
+	background-position-x: -2	250px;
 }
 .ERAcounter-populationDisc.ERAcounter-CD1FCD {
 	background-position-x: -2500px;

@@ -214,6 +214,14 @@ class GalacticEra extends Table
 			$i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
 		$this->notifyAllPlayers('loadGame', 'Refreshing interface', ['id' => -1, 'n' => 0]);
 	}
+	function block(array $blockers, string $action, array $params)
+	{
+		$json = self::escapeStringForDB(json_encode($params));
+		self::DbQuery("INSERT INTO blocking (action, params) VALUES ('$action', '$json')");
+		foreach ($blockers as $blocker) self::dbSetPlayerMultiactive(Factions::getPlayer($blocker), 1);
+		$this->gamestate->jumpToState(BLOCKGAINSTAR);
+		$this->gamestate->updateMultiactiveOrNextState('next');
+	}
 	function triggerEvent(int $new_state, string $new_active_faction)
 	{
 		self::DbQuery("INSERT INTO stack (new_state, new_active_faction) VALUES ($new_state, '$new_active_faction')");
@@ -229,7 +237,6 @@ class GalacticEra extends Table
 //
 			return $this->gamestate->jumpToState(PUSH_EVENT);
 		}
-
 		if ($nextState) $this->gamestate->nextState($nextState);
 	}
 	function stPushEvent()
@@ -242,7 +249,6 @@ class GalacticEra extends Table
 			$this->gamestate->changeActivePlayer(Factions::getPlayer($event['new_active_faction']));
 			return $this->gamestate->jumpToState($event['new_state']);
 		}
-		if ($nextState) $this->gamestate->nextState($nextState);
 	}
 	function stPopEvent()
 	{
@@ -254,5 +260,9 @@ class GalacticEra extends Table
 			$this->gamestate->changeActivePlayer(Factions::getPlayer($event['old_active_faction']));
 			if ($event['old_state']) return $this->gamestate->jumpToState($event['old_state']);
 		}
+	}
+	function TECH()
+	{
+		foreach (Factions::list(false) as $color) foreach (array_keys($this->TECHNOLOGIES) as $technology) self::dbQuery("UPDATE factions SET `$technology` = 6 WHERE color = '$color'");
 	}
 }

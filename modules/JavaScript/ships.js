@@ -222,41 +222,14 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				{
 					dojo.stopEvent(event);
 //
-					if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation')
-					{
-						dojo.stopEvent(event);
-						return this.bgagame.homeStarEvacuation(location);
-					}
-					if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing')
-					{
-						dojo.stopEvent(event);
-						return this.bgagame.remoteViewing('fleet', ship);
-					}
-					if (this.bgagame.gamedatas.gamestate.name === 'combatChoice')
-					{
-						dojo.stopEvent(event);
-						return this.bgagame.combatChoice(location);
-					}
-					if (this.bgagame.gamedatas.gamestate.name === 'gainStar')
-					{
-						dojo.stopEvent(event);
-						return this.bgagame.gainStar(location);
-					}
-					if (this.bgagame.gamedatas.gamestate.name === 'buildShips')
-					{
-						dojo.stopEvent(event);
-						return this.bgagame.buildShips(location);
-					}
-					if (this.bgagame.gamedatas.gamestate.name === 'growPopulation')
-					{
-						dojo.stopEvent(event);
-						return this.bgagame.growPopulation(location);
-					}
-					if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation')
-					{
-						dojo.stopEvent(event);
-						return this.bgagame.bonusPopulation(location);
-					}
+					if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation') return this.bgagame.homeStarEvacuation(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing') return this.bgagame.remoteViewing('fleet', ship);
+					if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'teleportPopulation') return this.bgagame.teleportPopulation(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'fleets')
 					{
 						dojo.query(`#ERAboard .ERAship[color='${color}']:not([location='${location}'])`).removeClass('ERAselected');

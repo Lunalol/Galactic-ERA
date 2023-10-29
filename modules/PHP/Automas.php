@@ -873,7 +873,7 @@ class Automas extends APP_GameClass
 								{
 									$sector = Sectors::get($location[0]);
 									$hexagon = substr($location, 2);
-									$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($possible[0]));
+									$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 									$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$rotated]]);
 								}
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
@@ -949,7 +949,7 @@ class Automas extends APP_GameClass
 				if ($locations)
 				{
 					foreach ($locations as $location) if (in_array($location, $stars)) foreach (Factions::atPeace($color) as $otherColor) $bgagame->acDeclareWar($color, $otherColor, true);
-					$bgagame->acGainStar($color, $locations, true);
+					foreach ($locations as $location) $bgagame->acGainStar($color, $location, true);
 				}
 				else $bgagame->acSpecial($color, 1);
 //
@@ -1050,7 +1050,8 @@ class Automas extends APP_GameClass
 				Factions::setStatus($color, 'buildShips');
 				continue;
 			}
-			throw new BgaVisibleSystemException('Automas Growth Action not implemented');
+//
+			Factions::setStatus($color, 'counters', array_diff($counters, array_keys(Factions::TECHNOLOGIES)));
 		}
 	}
 	function trading(string $color, string $alignment): int

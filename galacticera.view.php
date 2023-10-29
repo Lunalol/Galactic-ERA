@@ -10,6 +10,6 @@ class view_galacticera_galacticera extends game_view
 	}
 	function build_page($viewArgs)
 	{
-
+		
 	}
 }
