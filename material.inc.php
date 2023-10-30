@@ -97,16 +97,16 @@ $this->TECHNOLOGIES = [
 // Relics (10)
 //
 $this->RELICS = [
-	clienttranslate('Ancient Pyramids'),
-	clienttranslate('Ancient Technology: Genetics'),
-	clienttranslate('Ancient Technology: Military'),
-	clienttranslate('Ancient Technology: Propulsion'),
-	clienttranslate('Ancient Technology: Robotics'),
-	clienttranslate('Ancient Technology: Spirituality'),
-	clienttranslate('Buried Ships'),
-	clienttranslate('Planetary Death Ray'),
-	clienttranslate('Defense Grid'),
-	clienttranslate('Super-Stargate')
+	ANCIENTPYRAMIDS => clienttranslate('Ancient Pyramids'),
+	ANCIENTTECHNOLOGYGENETICS => clienttranslate('Ancient Technology: Genetics'),
+	ANCIENTTECHNOLOGYMILITARY => clienttranslate('Ancient Technology: Military'),
+	ANCIENTTECHNOLOGYPROPULSION => clienttranslate('Ancient Technology: Propulsion'),
+	ANCIENTTECHNOLOGYROBOTICS => clienttranslate('Ancient Technology: Robotics'),
+	ANCIENTTECHNOLOGYSPIRITUALITY => clienttranslate('Ancient Technology: Spirituality'),
+	BURIEDSHIPS => clienttranslate('Buried Ships'),
+	PLANETARYDEATHRAY => clienttranslate('Planetary Death Ray'),
+	DEFENSEGRID => clienttranslate('Defense Grid'),
+	SUPERSTARGATE => clienttranslate('Super-Stargate')
 ];
 //
 // Growth actions (6)

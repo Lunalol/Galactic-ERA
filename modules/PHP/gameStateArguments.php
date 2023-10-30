@@ -79,7 +79,7 @@ trait gameStateArguments
 			}
 		}
 //
-		$ancientPyramids = Counters::getRelic(0);
+		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
 //
 		return ['_private' => [$player_id => $this->possible],
@@ -145,14 +145,14 @@ trait gameStateArguments
 			$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 		}
 //
-		$ancientPyramids = Counters::getRelic(0);
+		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
 //
-		$PlanetaryDeathRay = Counters::getRelic(7);
+		$PlanetaryDeathRay = Counters::getRelic(PLANETARYDEATHRAY);
 		if ($PlanetaryDeathRay && Counters::getStatus($PlanetaryDeathRay, 'owner') === $ship['color'])
 		{
 			$this->possible['planetaryDeathRay'] = intval(Counters::getStatus($PlanetaryDeathRay, 'available'));
-			$this->possible['planetaryDeathRayTargets'] = Sectors::range(Counters::get($PlanetaryDeathRay)['location'], 4);
+			$this->possible['planetaryDeathRayTargets'] = Sectors::range(Counters::get($PlanetaryDeathRay)['location'], 3);
 		}
 //
 		return ['_private' => [$player_id => $this->possible],
@@ -236,8 +236,8 @@ trait gameStateArguments
 				$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
 				$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
 // PJL
-				$this->possible[$player_id]['oval'] = 3;
-				$this->possible[$player_id]['square'] = 6;
+//				$this->possible[$player_id]['oval'] = 3;
+//				$this->possible[$player_id]['square'] = 6;
 // PJL
 				$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
 //
@@ -277,8 +277,8 @@ trait gameStateArguments
 					break;
 				case 'growPopulation':
 					{
-						$relic = Counters::getRelic(0);
-						$this->possible['ancientPyramids'] = ($relic && Counters::getStatus($relic, 'owner') === $color) ? Counters::get($relic)['location'] : null;
+						$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
+						$this->possible['ancientPyramids'] = ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $color) ? Counters::get($ancientPyramids)['location'] : null;
 //
 						$this->possible['growPopulation'] = [];
 						foreach (Counters::getPopulations($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
@@ -339,7 +339,7 @@ trait gameStateArguments
 		['from' => $from, 'levels' => $levels] = Factions::getStatus($color, 'steal');
 //
 		$this->possible = ['counters' => [], 'color' => $color];
-		foreach (array_keys($this->TECHNOLOGIES) as $technology) if (Factions::getTechnology($color, $technology) < Factions::getTechnology($from, $technology)) $this->possible['counters'][] = $technology;
+		foreach (array_keys($this->TECHNOLOGIES) as $technology) if (Factions::getTechnology($from, $technology) < Factions::getTechnology($color, $technology)) $this->possible['counters'][] = $technology;
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'levels' => $levels];
 	}
@@ -357,10 +357,10 @@ trait gameStateArguments
 //
 				$populations = Counters::getPopulations($color, true);
 				unset($populations[Ships::getHomeStarLocation($color)]);
-				$this->possible[$player_id]['evacuate'] = array_keys($populations, max($populations));
 //
-				if (!$this->possible[$player_id]['evacuate'])
+				if (!$populations)
 				{
+					$this->possible[$player_id]['evacuate'] = [];
 					$sector = Sectors::get(Factions::getHomeStar($color));
 					$current = Hex(0, 0, 0);
 					for ($radius = 1; $radius <= 4; $radius++)
@@ -372,7 +372,8 @@ trait gameStateArguments
 							{
 								$hexagon = sprintf('%+2d%+2d%+2d', $current['q'], $current['r'], $current['s']);
 								$location = Factions::getHomeStar($color) . ':' . $hexagon;
-								if (!array_key_exists($hexagon, $this->rotatedSECTORS[$sector]) && !Ships::getAtLocation($location))
+								$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation(Factions::getHomeStar($color)));
+								if (!array_key_exists($rotated, Sectors::SECTORS[$sector]) && !Ships::getAtLocation($location))
 								{
 									$this->possible[$player_id]['evacuate'][] = $location;
 								}
@@ -381,6 +382,8 @@ trait gameStateArguments
 						}
 					}
 				}
+				else $this->possible[$player_id]['evacuate'] = array_keys($populations, max($populations));
+//
 			}
 		}
 //
@@ -391,7 +394,7 @@ trait gameStateArguments
 		$player_id = self::getActivePlayerId();
 		$color = Factions::getColor($player_id);
 //
-		$this->possible = ['stars' => array_keys(Counters::getPopulations($color)), 'newShips' => 6];
+		$this->possible = ['stars' => array_keys(Counters::getPopulations($color, false)), 'newShips' => 6];
 		foreach (Ships::getAll($color) as $ship)
 		{
 			$this->possible['ships'][] = $ship['id'];

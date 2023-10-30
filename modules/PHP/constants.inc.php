@@ -1,6 +1,6 @@
 <?php
 define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== false);
-define('FAST_START', 0);
+define('FAST_START', 1);
 define('DEBUG', 1);
 //
 define('PUSH_EVENT', 998);
@@ -88,3 +88,16 @@ define('LIBERATE', 3);
 define('CONQUERVS', 4);
 define('ALLY', 5);
 define('CONQUER', 6);
+//
+// Ancient Relics (10
+//
+define('ANCIENTPYRAMIDS', 0);
+define('ANCIENTTECHNOLOGYGENETICS', 1);
+define('ANCIENTTECHNOLOGYMILITARY', 2);
+define('ANCIENTTECHNOLOGYPROPULSION', 3);
+define('ANCIENTTECHNOLOGYROBOTICS', 4);
+define('ANCIENTTECHNOLOGYSPIRITUALITY', 5);
+define('BURIEDSHIPS', 6);
+define('PLANETARYDEATHRAY', 7);
+define('DEFENSEGRID', 8);
+define('SUPERSTARGATE', 9);

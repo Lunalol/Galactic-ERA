@@ -261,7 +261,7 @@ trait gameStates
 //
 		shuffle($starPeoples);
 // PJL
-		if (true || sizeof($starPeoples) < 2 * self::getPlayersNumber()) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
+		if (sizeof($starPeoples) < 2 * self::getPlayersNumber()) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
 		else foreach (Factions::list(false) as $color) if (Factions::getPlayer($color) >= 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 // PJL
 		if (FAST_START)
@@ -329,6 +329,7 @@ trait gameStates
 //
 		foreach (Factions::list() as $color)
 		{
+			$player_id = Factions::getPlayer($color);
 			$starPeople = Factions::getStarPeople($color);
 			$sector = Factions::getHomeStar($color);
 //
@@ -338,10 +339,15 @@ trait gameStates
 // ANCHARA SPECIAL STO: Start with 2 additional DP
 					if ($alignment === 'STO')
 					{
-						self::dbSetScore(Factions::getPlayer($color), self::gainDP($color, 2));
+						if ($player_id > 0)
+						{
+							$DP = 2;
+							self::gainDP($color, $DP);
+							self::incStat($DP, 'DP_SP', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 DP</B>'), ['player_name' => Factions::getName($color)]);
+							self::notifyAllPlayers('msg', clienttranslate('${player_name} gains <B>2 DP</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+						}
 					}
 // ANCHARA SPECIAL STS: Start with 2 additional ships
 					if ($alignment === 'STS')
@@ -1064,6 +1070,7 @@ trait gameStates
 			if ($DP)
 			{
 				self::gainDP($color, $DP);
+				self::incStat($DP, 'DP_LOST', Factions::getPlayer($color));
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1312,15 +1319,15 @@ trait gameStates
 			if ($player_id < 0) Automas::actions($this, $color);
 			Factions::setActivation($color, 'done');
 //
-			foreach (Factions::list(false) as $color)
-			{
-				if (Factions::getStatus($color, 'evacuate'))
-				{
-					$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
-					return $this->gamestate->nextState('evacuate');
-				}
-			}
-			return $this->gamestate->nextState('continue');
+//			foreach (Factions::list(false) as $color)
+//			{
+//				if (Factions::getStatus($color, 'evacuate'))
+//				{
+//					$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
+//					return $this->gamestate->nextState('evacuate');
+//				}
+//			}
+			return self::triggerAndNextState('continue');
 		}
 //
 		$this->gamestate->changeActivePlayer($player_id);

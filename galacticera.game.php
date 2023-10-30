@@ -74,12 +74,18 @@ class GalacticEra extends Table
 	}
 	protected function initStatistics()
 	{
+		if (self::getPlayersNumber() === 1) self::initStat('table', 'difficulty', 0);
+//
 		self::initStat('player', 'DP', 0);
 		self::initStat('player', 'DP_GS', 0);
 		self::initStat('player', 'DP_GG', 0);
+		self::initStat('player', 'DP_POP', 0);
+		self::initStat('player', 'DP_MAJ', 0);
+		self::initStat('player', 'DP_SP', 0);
 		self::initStat('player', 'DP_AFT', 0);
 		self::initStat('player', 'DP_DC_A', 0);
 		self::initStat('player', 'DP_DC_B', 0);
+		self::initStat('player', 'DP_LOST', 0);
 //
 // Legacy
 //
@@ -189,15 +195,6 @@ class GalacticEra extends Table
 	}
 	function upgradeTableDb($from_version)
 	{
-		if ($from_version <= '2309012311')
-		{
-			self::DbQuery("DELETE FROM `undo`");
-			self::DbQuery("ALTER TABLE `undo` MODIFY `type` ENUM ('create', 'destroy', 'move', 'done')");
-		}
-		if ($from_version <= '2309031545')
-		{
-			self::DbQuery("ALTER TABLE `factions` CHANGE `advancedFleetTactic` `advancedFleetTactics` JSON");
-		}
 		if ($from_version <= '2308311759' && in_array($this->table_id, []))
 		{
 
@@ -214,14 +211,6 @@ class GalacticEra extends Table
 			$i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
 		$this->notifyAllPlayers('loadGame', 'Refreshing interface', ['id' => -1, 'n' => 0]);
 	}
-	function block(array $blockers, string $action, array $params)
-	{
-		$json = self::escapeStringForDB(json_encode($params));
-		self::DbQuery("INSERT INTO blocking (action, params) VALUES ('$action', '$json')");
-		foreach ($blockers as $blocker) self::dbSetPlayerMultiactive(Factions::getPlayer($blocker), 1);
-		$this->gamestate->jumpToState(BLOCKGAINSTAR);
-		$this->gamestate->updateMultiactiveOrNextState('next');
-	}
 	function triggerEvent(int $new_state, string $new_active_faction)
 	{
 		self::DbQuery("INSERT INTO stack (new_state, new_active_faction) VALUES ($new_state, '$new_active_faction')");
@@ -232,7 +221,7 @@ class GalacticEra extends Table
 		if ($event)
 		{
 			$old_state = $nextState ? $this->gamestate->state()['transitions'][$nextState] : 0;
-			$old_active_faction = Factions::getActive();
+			$old_active_faction = Factions::getActive() ?? 0;
 			self::DbQuery("UPDATE stack SET old_state = $old_state, old_active_faction = '$old_active_faction' WHERE id = $event[id]");
 //
 			return $this->gamestate->jumpToState(PUSH_EVENT);
@@ -257,7 +246,7 @@ class GalacticEra extends Table
 		{
 			$this->DbQuery("DELETE FROM stack WHERE id = $event[id]");
 //
-			$this->gamestate->changeActivePlayer(Factions::getPlayer($event['old_active_faction']));
+			if ($event['old_active_faction']) $this->gamestate->changeActivePlayer(Factions::getPlayer($event['old_active_faction']));
 			if ($event['old_state']) return $this->gamestate->jumpToState($event['old_state']);
 		}
 	}

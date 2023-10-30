@@ -144,9 +144,8 @@ class Ships extends APP_GameClass
 //
 //	Super-Stargate
 //
-		$superStargate = NULL;
-		$relic = Counters::getRelic(9);
-		if ($relic && Counters::getStatus($relic, 'owner') === $ship['color']) $superStargate = Counters::get($relic)['location'];
+		$superStargate = Counters::getRelic(SUPERSTARGATE);
+		if ($superStargate && Counters::getStatus($superStargate, 'owner') === $ship['color']) $superStargate = Counters::get($superStargate)['location'];
 		$superStargateStars = Counters::getPopulations($ship['color'], $propulsion < 5);
 
 //

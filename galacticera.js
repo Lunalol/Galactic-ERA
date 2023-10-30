@@ -25,7 +25,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			console.log("Starting game setup");
 			console.debug(gamedatas);
 //
-//			dojo.destroy('debug_output');
+			dojo.destroy('debug_output');
 //
 // Translations
 //

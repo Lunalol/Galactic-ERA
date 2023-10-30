@@ -268,7 +268,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
 		'possibleactions' => ['declareWar', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'homeStarEvacuation' => 430, 'continue' => 410, 'next' => 400]
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'next' => 400]
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',
@@ -288,15 +288,6 @@ $machinestates = [
 		'action' => 'stBuriedShips',
 		'args' => 'argBuriedShips',
 		'possibleactions' => ['buildShips', 'done'],
-		'transitions' => ['continue' => 410]
-	],
-	430 => [
-		'name' => 'homeStarEvacuation',
-		'description' => clienttranslate('${actplayer} may evacuate its Home Star'),
-		'descriptionmyturn' => clienttranslate('${you} may evacuate your Home Star'),
-		'type' => 'activeplayer',
-		'args' => 'argHomeStarEvacuation',
-		'possibleactions' => ['homeStarEvacuation'],
 		'transitions' => ['continue' => 410]
 	],
 	500 => [
@@ -360,8 +351,8 @@ $machinestates = [
 //
 	HOMESTAREVACUATION => [
 		'name' => 'homeStarEvacuation',
-		'description' => clienttranslate('${actplayer} must evacuate its Home Star'),
-		'descriptionmyturn' => clienttranslate('${you} must evacuate your Home Star'),
+		'description' => clienttranslate('${actplayer} evacuates their Home Star'),
+		'descriptionmyturn' => clienttranslate('${you} evacuate your Home Star'),
 		'type' => 'activeplayer',
 		'args' => 'argHomeStarEvacuation',
 		'possibleactions' => ['homeStarEvacuation'],
@@ -369,7 +360,7 @@ $machinestates = [
 	],
 	EMERGENCYRESERVE => [
 		'name' => 'emergencyReserve',
-		'description' => clienttranslate('${actplayer} must use your emergency reserve'),
+		'description' => clienttranslate('${actplayer} must use their emergency reserve'),
 		'descriptionmyturn' => clienttranslate('${you} must use your emergency reserve'),
 		'type' => 'activeplayer',
 		'args' => 'argEmergencyReserve',

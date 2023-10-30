@@ -322,14 +322,14 @@ class Automas extends APP_GameClass
 					{
 						if ($location !== 'stock')
 						{
+							$fleets = Ships::getAtLocation($location, $color, 'fleet');
+							shuffle($fleets);
+							$fleetID = array_pop($fleets);
+//
 							$ships = Ships::getAtLocation($location, $color, 'ship');
 							if ($ships)
 							{
-								$fleets = Ships::getAtLocation($location, $color, 'fleet');
-								shuffle($fleets);
-								$fleetID = array_pop($fleets);
-//
-								Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + sizeof($ships));
+								Ships::setStatus($fleetID, 'ships', Ships::getStatus($fleetID, 'ships') + sizeof($ships));
 //* -------------------------------------------------------------------------------------------------------- */
 								$bgagame->notifyAllPlayers('msg', clienttranslate('${N} ship(s) join fleet ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -342,6 +342,19 @@ class Automas extends APP_GameClass
 								}
 //* -------------------------------------------------------------------------------------------------------- */
 								$bgagame->notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
+//* -------------------------------------------------------------------------------------------------------- */
+							}
+							foreach ($fleets as $otherFleetID)
+							{
+								$otherFleet = Ships::get($otherFleetID);
+								Ships::setStatus($fleetID, 'ships', Ships::getStatus($fleetID, 'ships') + Ships::getStatus($otherFleetID, 'ships'));
+//* -------------------------------------------------------------------------------------------------------- */
+								$bgagame->notifyAllPlayers('removeShip', clienttranslate('A fleet is removed ${GPS}'), ['GPS' => $location, 'ship' => $otherFleet]);
+//* -------------------------------------------------------------------------------------------------------- */
+								$otherFleet['location'] = 'stock';
+								Ships::setLocation($otherFleetID, $otherFleet['location']);
+//* -------------------------------------------------------------------------------------------------------- */
+								$bgagame->notifyAllPlayers('placeShip', '', ['ship' => $otherFleet]);
 //* -------------------------------------------------------------------------------------------------------- */
 							}
 						}
@@ -709,13 +722,21 @@ class Automas extends APP_GameClass
 		if (Factions::getPlayer($winner) === SLAVERS)
 		{
 //
-			foreach (Ships::getAtLocation($location, $attacker, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, Ships::getStatus($shipID, 'fleet')];
-			for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $attacker, 'ship')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, 'ships'];
+			foreach (Ships::getAtLocation($location, $attacker, 'fleet') as $shipID) for ($i = 0;
+					$i < intval(Ships::getStatus($shipID, 'ships'));
+					$i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, Ships::getStatus($shipID, 'fleet')];
+			for ($i = 0;
+				$i < sizeof(Ships::getAtLocation($location, $attacker, 'ship'));
+				$i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, 'ships'];
 //
 			foreach ($defenders as $defender)
 			{
-				foreach (Ships::getAtLocation($location, $defender, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, Ships::getStatus($shipID, 'fleet')];
-				for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $defender, 'ship')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, 'ships'];
+				foreach (Ships::getAtLocation($location, $defender, 'fleet') as $shipID) for ($i = 0;
+						$i < intval(Ships::getStatus($shipID, 'ships'));
+						$i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, Ships::getStatus($shipID, 'fleet')];
+				for ($i = 0;
+					$i < sizeof(Ships::getAtLocation($location, $defender, 'ship'));
+					$i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, 'ships'];
 			}
 //
 			shuffle($toDestroy['winner']);
@@ -974,7 +995,9 @@ class Automas extends APP_GameClass
 //* -------------------------------------------------------------------------------------------------------- */
 						$bgagame->notifyAllPlayers('msg', clienttranslate('<B>${TECHNOLOGY} is stealed at ${player_name}</B>'), ['player_name' => Factions::getName($otherColor), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $bgagame->TECHNOLOGIES[$technology]]);
 //* -------------------------------------------------------------------------------------------------------- */
-						for ($i = 0; $i < $levels; $i++) $bgagame->gainTechnology($color, $technology);
+						for ($i = 0;
+							$i < $levels;
+							$i++) $bgagame->gainTechnology($color, $technology);
 					}
 				}
 				continue;
@@ -1036,13 +1059,17 @@ class Automas extends APP_GameClass
 							$Fleet = Ships::getStatus($fleet['id'], 'fleet');
 							if ($fleet['location'] === 'stock') $toBuild['fleets'][$Fleet] = $location;
 //
-							for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $Fleet;
+							for ($i = 0;
+								$i < $ships;
+								$i++) $toBuild['ships'][] = $Fleet;
 						}
 					}
 					else
 					{
 						$shipsUsed += $ships;
-						for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $location;
+						for ($i = 0;
+							$i < $ships;
+							$i++) $toBuild['ships'][] = $location;
 					}
 				}
 

@@ -123,6 +123,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				{
 					dojo.stopEvent(event);
 					if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation') return this.bgagame.homeStarEvacuation(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'emergencyReserve') return this.bgagame.buildShips(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing') return this.bgagame.remoteViewing('counter', counter);
 					if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);

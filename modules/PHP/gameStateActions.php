@@ -10,6 +10,8 @@ trait gameStateActions
 	{
 		$this->checkAction('levelOfDifficulty');
 //
+		self::setStat($levelOfDifficulty, 'difficulty');
+//
 		self::setGameStateValue('difficulty', $levelOfDifficulty);
 		$slavers = Factions::getAutoma(SLAVERS);
 		if ($slavers) self::acSpecial($slavers, Automas::DIFFICULTY[$levelOfDifficulty]);
@@ -380,14 +382,14 @@ trait gameStateActions
 			$this->checkAction('declareWar');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!in_array($on, Factions::atPeace($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
-		}
 //
 // PLEJARS STS: May declare war on STS players during your movement
 //
-		if (Factions::getAlignment($color) === 'STO')
-		{
-			if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) ;
-			else throw new BgaUserException(self::_('You can\'t declare war now'));
+			if (Factions::getAlignment($color) === 'STO')
+			{
+				if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) ;
+				else throw new BgaUserException(self::_('You can\'t declare war now'));
+			}
 		}
 //
 		Factions::declareWar($color, $on);
@@ -458,7 +460,7 @@ trait gameStateActions
 //
 		if ($ancienPyramids)
 		{
-			$relicID = Counters::getRelic(0);
+			$relicID = Counters::getRelic(ANCIENTPYRAMIDS);
 			if ($relicID)
 			{
 				if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Ancien Pyramid already used');
@@ -488,12 +490,12 @@ trait gameStateActions
 		if (!array_key_exists('planetaryDeathRay', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!array_key_exists('planetaryDeathRayTargets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 //
-		$relicID = Counters::getRelic(7);
-		if ($relicID)
+		$PlanetaryDeathRay = Counters::getRelic(PLANETARYDEATHRAY);
+		if ($PlanetaryDeathRay)
 		{
-			if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Planetary Death Ray already used');
-			if (Counters::getStatus($relicID, 'owner') !== $color) throw new BgaVisibleSystemException('Invalid owner');
-			Counters::setStatus($relicID, 'available');
+			if (!Counters::getStatus($PlanetaryDeathRay, 'available')) throw new BgaVisibleSystemException('Planetary Death Ray already used');
+			if (Counters::getStatus($PlanetaryDeathRay, 'owner') !== $color) throw new BgaVisibleSystemException('Invalid owner');
+			Counters::setStatus($PlanetaryDeathRay, 'available');
 		}
 		else throw new BgaVisibleSystemException('Invalid relic : Planetary Death Ray');
 //* -------------------------------------------------------------------------------------------------------- */
@@ -805,7 +807,8 @@ trait gameStateActions
 			if (Factions::getStatus($color, 'evacuate')) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 			Factions::setStatus($color, 'evacuate', 'voluntary');
-			return $this->gamestate->nextState('homeStarEvacuation');
+			self::triggerEvent(HOMESTAREVACUATION, $color);
+			return self::triggerAndNextState('continue');
 		}
 //
 		if (!array_key_exists($player_id, $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
@@ -1160,6 +1163,7 @@ trait gameStateActions
 //
 					$DP = -2;
 					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_LOST', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1324,7 +1328,7 @@ trait gameStateActions
 			switch (Counters::getStatus($relic, 'back'))
 			{
 //
-				case 0: // Ancient Pyramids
+				case ANCIENTPYRAMIDS: // Ancient Pyramids
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1333,28 +1337,28 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 //
-				case 1: // Ancient Technology: Genetics
+				case ANCIENTTECHNOLOGYGENETICS: // Ancient Technology: Genetics
 //
 					self::gainTechnology($color, 'Genetics');
 					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
 					Counters::destroy($relic);
 					break;
 //
-				case 2: // Ancient Technology: Military
+				case ANCIENTTECHNOLOGYMILITARY: // Ancient Technology: Military
 //
 					self::gainTechnology($color, 'Military');
 					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
 					Counters::destroy($relic);
 					break;
 //
-				case 3: // Ancient Technology: Propulsion
+				case ANCIENTTECHNOLOGYPROPULSION: // Ancient Technology: Propulsion
 //
 					self::gainTechnology($color, 'Propulsion');
 					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
 					Counters::destroy($relic);
 					break;
 //
-				case 4: // Ancient Technology: Robotics
+				case ANCIENTTECHNOLOGYROBOTICS: // Ancient Technology: Robotics
 //
 // YOWIES SPECIAL STO & STS: When you get the Ancient Technology: Robotics relic you get 2 ships at that star instead of a level (use the same restrictions as for the Buried Ships relic
 //
@@ -1373,14 +1377,14 @@ trait gameStateActions
 					Counters::destroy($relic);
 					break;
 //
-				case 5: // Ancient Technology: Spirituality
+				case ANCIENTTECHNOLOGYSPIRITUALITY: // Ancient Technology: Spirituality
 //
 					self::gainTechnology($color, 'Spirituality');
 					self::notifyAllPlayers('removeCounter', '', ['counter' => Counters::get($relic)]);
 					Counters::destroy($relic);
 					break;
 //
-				case 6: // Buried Ships
+				case BURIEDSHIPS: // Buried Ships
 //
 					$newShips = 3;
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1393,7 +1397,7 @@ trait gameStateActions
 					Counters::destroy($relic);
 					break;
 //
-				case 7: // Planetary Death Ray
+				case PLANETARYDEATHRAY: // Planetary Death Ray
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1402,7 +1406,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 //
-				case 8: // Defense Grid
+				case DEFENSEGRID: // Defense Grid
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1411,7 +1415,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 //
-				case 9: // Super-Stargate
+				case SUPERSTARGATE: // Super-Stargate
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1492,9 +1496,11 @@ trait gameStateActions
 //
 // #offboard population : 5+ - You immediately lose 5 DP for each new offboard population
 //
-				self::gainDP(Factions::getNotAutomas(), -5);
+				$DP = -5;
+				self::gainDP(Factions::getNotAutomas(), $DP);
+				self::incStat($DP, 'DP_LOST', Factions::getNotAutomas());
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => 5,
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP,
 					'player_name' => Factions::getName(Factions::getNotAutomas()),
 					'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1693,11 +1699,23 @@ trait gameStateActions
 						'player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 				else
+				{
+					if ($location === Ships::getHomeStarLocation($color))
+					{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} builds ${ships} <B>additional ship(s)</B> at ${PLANET} ${GPS}'), [
-						'player_name' => Factions::getName($color), 'ships' => $ships,
-						'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
+						self::notifyAllPlayers('msg', clienttranslate('${player_name} builds ${ships} <B>additional ship(s)</B> at Home Star ${GPS}'), [
+							'player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
+					}
+					else
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${player_name} builds ${ships} <B>additional ship(s)</B> at ${PLANET} ${GPS}'), [
+							'player_name' => Factions::getName($color), 'ships' => $ships,
+							'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+				}
 				$remainingShips -= $ships;
 				if ($remainingShips < 0) throw new BgaUserException(self::_('No more ship minis'));
 				for ($i = 0; $i < $ships; $i++) self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get(Ships::create($color, 'ship', $location))]);

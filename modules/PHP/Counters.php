@@ -84,8 +84,6 @@ class Counters extends APP_GameClass
 	{
 		if (self::isBlocked($color, $location)) return [0, 0, 0];
 //
-		$orion = false;
-//
 		$sizeOfPopulation = 0;
 //
 		$homeStar = Ships::getAtLocation($location, null, 'homeStar');
@@ -94,6 +92,7 @@ class Counters extends APP_GameClass
 		$populations = Counters::getAtLocation($location, 'populationDisc');
 		if ($populations) $sizeOfPopulation += sizeof($populations);
 //
+		$orion = false;
 		if ($sizeOfPopulation)
 		{
 			$otherColor = $homeStar ? Ships::get($homeStar[0])['color'] : Counters::get($populations[0])['color'];
@@ -193,11 +192,19 @@ class Counters extends APP_GameClass
 			{
 				case 'STO': // Liberate
 					$SHIPS = 1 + $sizeOfPopulation;
+//
+					$defenseGrid = Counters::getRelic(DEFENSEGRID);
+					if ($defenseGrid && Counters::get($defenseGrid)['location'] === $location) $SHIPS += 8;
+//
 					$population = $sizeOfPopulation;
 					$type = LIBERATE;
 					break;
 				case 'STS': // Conquer
 					$SHIPS = 1 + $sizeOfPopulation;
+//
+					$defenseGrid = Counters::getRelic(DEFENSEGRID);
+					if ($defenseGrid && Counters::get($defenseGrid)['location'] === $location) $SHIPS += 8;
+//
 //
 // ORION STS: You conquer stars with only 1 ship (this also applies to a star with the “Defense Grid”)
 //
