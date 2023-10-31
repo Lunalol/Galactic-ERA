@@ -513,6 +513,9 @@ trait gameStateActions
 				if (!in_array($location, $this->possible['planetaryDeathRayTargets'])) throw new BgaVisibleSystemException('Invalid target: ' . $location);
 				if (!in_array($ship['color'], Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war to use Planetary Death Ray'));
 //
+				$defenseGrid = Counters::getRelic(DEFENSEGRID);
+				if ($defenseGrid && Counters::get($defenseGrid)['location'] === $location && Counters::getStatus($defenseGrid, 'owner')) throw new BgaUserException(self::_('Ships are protected by Defense Grid'));
+//
 				switch ($ship['fleet'])
 				{
 					case 'ship':
@@ -561,6 +564,9 @@ trait gameStateActions
 				$location = $populationDisc['location'];
 				if (!in_array($location, $this->possible['planetaryDeathRayTargets'])) throw new BgaVisibleSystemException('Invalid target: ' . $location);
 				if (!in_array($populationDisc['color'], Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war to use Planetary Death Ray'));
+//
+				$defenseGrid = Counters::getRelic(DEFENSEGRID);
+				if ($defenseGrid && Counters::get($defenseGrid)['location'] === $location && Counters::getStatus($defenseGrid, 'owner')) throw new BgaUserException(self::_('Populations are protected by Defense Grid'));
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1157,20 +1163,6 @@ trait gameStateActions
 //
 					break;
 //
-				case 'Robotics':
-//
-					if (!in_array($growthAction, $this->possible['counters'])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
-//
-					$DP = -2;
-					self::gainDP($color, $DP);
-					self::incStat($DP, 'DP_LOST', $player_id);
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
-//* -------------------------------------------------------------------------------------------------------- */
-					self::gainTechnology($color, $growthAction);
-//
-					break;
-//
 				default:
 					throw new BgaVisibleSystemException("Invalid technology : $technology");
 			}
@@ -1270,7 +1262,7 @@ trait gameStateActions
 					self::gainDP($color, $DP);
 					self::incStat($DP, 'DP_SP', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				break;
@@ -1441,7 +1433,7 @@ trait gameStateActions
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 		}
@@ -1457,7 +1449,7 @@ trait gameStateActions
 			self::gainDP($color, $DP);
 			self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP(s)'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+			self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
@@ -1500,7 +1492,7 @@ trait gameStateActions
 				self::gainDP(Factions::getNotAutomas(), $DP);
 				self::incStat($DP, 'DP_LOST', Factions::getNotAutomas());
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP(s)'), ['DP' => -$DP,
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP,
 					'player_name' => Factions::getName(Factions::getNotAutomas()),
 					'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1579,7 +1571,7 @@ trait gameStateActions
 			self::gainDP($color, $DP);
 			self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s)'), ['DP' => 3,
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP'), ['DP' => 3,
 				'player_name' => Factions::getName($color),
 				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1745,7 +1737,7 @@ trait gameStateActions
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP(s) '), ['DP' => 2,
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP '), ['DP' => 2,
 					'player_name' => Factions::getName($color),
 					'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */

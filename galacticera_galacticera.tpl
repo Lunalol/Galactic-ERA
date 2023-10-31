@@ -5,7 +5,10 @@
 		<div id='ERAfleets' class='ERAfleets ERAhide'></div>
 		<div id='ERAboard'></div>
 	</div>
-	<div id='ERA-DP'></div>
+	<div id='ERAstatusArea' style='display:flex;justify-content:center;margin-top:10px;'>
+		<div id='ERA-DominationDeck' style='position:relative;width:100px;margin:10px;'></div>
+		<div id='ERA-DP'></div>
+	</div>
 </div>
 <div id='ERAcontrols'>
 	<span id='ERAzoomMinus' style="padding: 0px 10px;">🔍</span>
@@ -31,11 +34,7 @@
 	var ERAfleetH = "<div class='ERAfleet' id='ERAfleet-${fleet}' fleet='${fleet}' ships='${ships}'' style='display:flex;flex-direction:row;align-items:center;'></div>";
 	var ERApanel = "\
 <div id='ERApanel-${color}' class='ERApanel ERApanel-${color}'>\n\
-	<div style='display:flex;flex-direction:row;justify-content:bottom;'>\n\
-		<div style='display:flex;flex-direction:column;justify-content:center;'>\n\
-			<div class='ERAdominationCards' id='ERAdominationCards-${color}'></div>\n\
-			<div class='ERAplayerAid' id='ERAplayerAid-${color}' playerAid='0'></div>\n\
-		</div>\n\
+	<div style='display:flex;flex-direction:row;'>\n\
 		<div style='display:flex;flex-direction:column;justify-content:center;'>\n\
 			<div style='display:flex;flex-direction:row;justify-content:center;'>\n\
 				<div class='ERAemergencyReserve ERAemergencyReserve-${color}' id='ERAemergencyReserve-${color}'></div>\n\
@@ -49,8 +48,10 @@
 			<div id='ERAboardStatus-${color}' class='ERAstatus'></div>\n\
 			<div id='ERAboardOrder-${color}' class='ERAstatus'></div>\n\
 			<div class='ERAstarPeople'><img draggable='false'/></div>\n\
+		<div class='ERAdominationCards' id='ERAdominationCards-${color}'></div>\n\
 		</div>\n\
 	</div>\n\
+		<div class='ERAplayerAid' id='ERAplayerAid-${color}' playerAid='0'></div>\n\
 </div>";
 	var ERAfaction = "<div class='ERAfaction' id='ERAfaction-${color}'></div></div>";
 	var ERAtechnologies = "<div class='ERAtechnologies' id='ERAtechnologies-${color}'></div></div>";

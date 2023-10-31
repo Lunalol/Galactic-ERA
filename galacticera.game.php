@@ -8,6 +8,7 @@ require_once('modules/PHP/Factions.php');
 require_once('modules/PHP/Sectors.php');
 require_once('modules/PHP/Counters.php');
 require_once('modules/PHP/Ships.php');
+require_once('modules/PHP/DominationCards.php');
 require_once('modules/PHP/Automas.php');
 require_once('modules/PHP/gameStates.php');
 require_once('modules/PHP/gameStateArguments.php');
@@ -35,8 +36,7 @@ class GalacticEra extends Table
 //
 // Initialize domination deck
 //
-		$this->domination = self::getNew("module.common.deck");
-		$this->domination->init("domination");
+		$this->domination = DominationCards::init();
 	}
 	protected function getGameName()
 	{
@@ -111,9 +111,15 @@ class GalacticEra extends Table
 		$result['galacticStory'] = $this->STORIES[self::getGameStateValue('galacticStory')];
 		$result['galacticGoal'] = $this->GOALS[self::getGameStateValue('galacticGoal')];
 		$result['round'] = intval(self::getGameStateValue('round'));
+		$result['dominationDeck'] = $this->domination->countCardsInLocation('deck');
 //
 		foreach (Factions::list() as $color)
 		{
+			if (Factions::getPlayer($color) > 0)
+			{
+				foreach ($this->DOMINATIONCARDS as $domination => $dominationCard) $result['factions'][$color]['scoring'][$domination] = DominationCards::B($color, $domination);
+			}
+//
 			if ($player_id === Factions::getPlayer($color))
 			{
 				foreach (Counters::listRevealed($color, 'star') as $counter) $result['factions'][$color]['revealed']['stars'][$counter] = Counters::getStatus($counter, 'back');
@@ -125,7 +131,7 @@ class GalacticEra extends Table
 				}
 			}
 //
-			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][] = ($player_id === Factions::getPlayer($color)) ? $this->DOMINATIONCARDS[$domination['type']] : 'back';
+			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][] = ($player_id === Factions::getPlayer($color)) ? $domination['type'] : 'back';
 			$result['factions'][$color]['ships'] = 16 - sizeof(Ships::getAll($color, 'ship'));
 		}
 //
@@ -253,5 +259,16 @@ class GalacticEra extends Table
 	function TECH()
 	{
 		foreach (Factions::list(false) as $color) foreach (array_keys($this->TECHNOLOGIES) as $technology) self::dbQuery("UPDATE factions SET `$technology` = 6 WHERE color = '$color'");
+	}
+	function X()
+	{
+		foreach (['FF3333'] as $color)
+		{
+			foreach ($this->DOMINATIONCARDS as $domination => $dominationCard)
+			{
+				$scoring = DominationCards::B($color, $domination);
+				foreach ($scoring as $DP) $this->notifyAllPlayers('msg', '${DOMINATION} B : ${DP} DP', ['DOMINATION' => $dominationCard, 'DP' => $DP]);
+			}
+		}
 	}
 }

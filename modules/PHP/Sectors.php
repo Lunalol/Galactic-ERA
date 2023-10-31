@@ -1498,7 +1498,7 @@ class Sectors extends APP_GameClass
 		for ($i = 0; $i < $orientation; $i++) [$q, $r, $s] = [-$s, -$q, -$r];
 		return sprintf('%+2d%+2d%+2d', $q, $r, $s);
 	}
-	static function stars(bool $neutron): array
+	static function stars(bool $neutron = false): array
 	{
 		$locations = [];
 		foreach (self::getAllDatas() as $position => $sector)

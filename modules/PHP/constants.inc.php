@@ -1,6 +1,6 @@
 <?php
 define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== false);
-define('FAST_START', 0);
+define('FAST_START', 1);
 define('DEBUG', 1);
 //
 define('PUSH_EVENT', 998);

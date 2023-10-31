@@ -484,13 +484,6 @@ trait gameStateArguments
 				$this->possible['Spirituality'] = true;
 				break;
 //
-			case 'Robotics':
-//
-				$this->possible['color'] = $color;
-				$this->possible['counters'] = array_diff(array_keys(Factions::TECHNOLOGIES), ['Robotics']);
-				$this->possible['Robotics'] = true;
-				break;
-//
 		}
 //
 		$counters = [];

@@ -99,12 +99,10 @@ trait gameUtils
 //
 			case 'dominationCard':
 //
-				[$otherColor, $index] = explode('_', $id);
-				$dominationCards = $this->domination->getPlayerHand($otherColor);
-				$dominationCard = $dominationCards[array_keys($dominationCards)[$index]];
+				$dominationCard = $this->domination->getCardOnTop('deck');
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div style="background:#${color};">${DOMINATION}</div>', [
-					'color' => $otherColor, 'i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$dominationCard['type']]
+				self::notifyPlayer(Factions::getPlayer($color), 'msg', clienttranslate('Top of deck: <B>${DOMINATION}</B>'), [
+					'i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$dominationCard['type']]
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
@@ -222,6 +220,7 @@ trait gameUtils
 	function starsBecomingUninhabited($location)
 	{
 		if (array_search($location, Ships::getHomeStar()) !== false) return;
+//
 		if (!Counters::getAtLocation($location, 'populationDisc'))
 		{
 			$sector = Sectors::get($location[0]);
@@ -233,6 +232,8 @@ trait gameUtils
 				self::notifyAllPlayers('placeCounter', '', ['counter' => Counters::get($star)]);
 				self::reveal('', 'counter', $star);
 				foreach (Factions::list(false) as $otherColor) Counters::reveal($otherColor, 'star', $star);
+//
+				foreach (Counters::getAtLocation($location, 'relic') as $relic) Counters::setStatus($relic, 'owner', 'uninhabited');
 			}
 		}
 	}

@@ -5,6 +5,17 @@
     ascent-override: 100%;
 }
 
+::-webkit-scrollbar {
+    background: #ffffff00;
+}
+::-webkit-scrollbar-thumb {
+	background: #80808080;
+	border-radius: 10px;
+}
+::-webkit-scrollbar-corner {
+    background: #ffffff00;
+}
+
 html,body {
     background-image: url("img/orion.jpg") !important;
 }
@@ -184,8 +195,8 @@ div,img {
 }
 .ERAdominationCard img{
 	width: 100%;
-	border-radius: 15px;
-	border: 5px solid transparent;
+	/*border-radius: 15px;*/
+	border: 1px solid transparent;
 	box-sizing: border-box;
 }
 /* </editor-fold> */
@@ -232,6 +243,8 @@ div,img {
     transform-origin: top left;
 }
 .ERApanel {
+	display: flex;
+	flex-direction: column;
 	z-index: 500;
 }
 /* </editor-fold> */
@@ -240,13 +253,14 @@ div,img {
 {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+	/*	align-items: center;*/
 }
 #ERA-DP {
 	position: relative;
 	width: 804px;
 	height: 561px;
 	background-image: url('img/DP.jpg');
+	border-radius: 10px;
 }
 #ERAgalacticStory {
 	position:absolute;
@@ -329,13 +343,12 @@ div,img {
 /* <editor-fold defaultstate="collapsed" desc="Player aids"> */
 .ERAplayerAid
 {
-	flex: 0 0 auto;
-	align-self: flex-end;
+	align-self: center;
 	margin: 20px;
 	background: url('img/playerAids/0.jpg');
 	background-size: contain;
-	width: 400px;
-	height: 400px;
+	width: 50%;
+	aspect-ratio: 1/1;
 	border-radius: 10px;
 	transition: transform CALC(var(--DELAY) * 0.5ms);
 }

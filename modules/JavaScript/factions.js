@@ -68,9 +68,25 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.connect(node, 'click', (event) => {
 						dojo.stopEvent(event);
 						if (dojo.getAttr(event.currentTarget, 'domination') !== 'back') this.bgagame.focus(event.currentTarget);
-						else if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing') this.bgagame.remoteViewing('dominationCard', event.currentTarget);
 					});
 					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
+//
+					if (domination !== 'back') this.bgagame.addTooltipHtml(node.id, this.bgagame.DOMINATIONS[domination].reduce((html, e) => html + `<div>${e}</div><HR>`, '<HR>'), DELAY);
+				}
+//
+				dojo.empty(`ERAplayerDominationCards-${faction.color}`);
+				for (let index in faction.domination)
+				{
+					const domination = faction.domination[index];
+					const node = dojo.place(this.bgagame.format_block('ERAdominationCard', {index: 'player-' + index, domination: domination, owner: faction.color}), `ERAplayerDominationCards-${faction.color}`);
+					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
+					dojo.connect(node, 'click', (event) => {
+						dojo.stopEvent(event);
+						if (dojo.getAttr(event.currentTarget, 'domination') !== 'back') this.bgagame.focus(event.currentTarget);
+					});
+					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
+//
+					if (domination !== 'back') this.bgagame.addTooltipHtml(node.id, this.bgagame.DOMINATIONS[domination].reduce((html, e) => html + `<div>${e}</div><HR>`, '<HR>'), DELAY);
 				}
 			}
 //
@@ -138,7 +154,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				const nodePopulationTrack = $(`ERApopulationTrack-${faction.color}`);
 				if (nodePopulationTrack)
 				{
-//					dojo.query('.ERAcounter-populationDisc', nodePopulationTrack).remove();
 					dojo.empty(nodePopulationTrack);
 					for (let population = 1 + +faction.population; population < 40; population++)
 					{
