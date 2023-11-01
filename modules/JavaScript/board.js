@@ -38,18 +38,17 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				if (true)
 				{
-					const angle = 60 * (faction.player_id < 0 ? {1: 2, 2: 6}[-faction.player_id] : faction.homeStar) - 210;
+					const angle = 60 * (faction.player_id < 0 ? {1: 2, 2: 6}[ -faction.player_id] : faction.homeStar) - 210;
 //
 					const node = dojo.place(this.bgagame.format_block('ERApanel', {color: faction.color}), 'ERAboard');
 					if (faction.player_id <= 0 && +faction.player_id !== -2) dojo.style(`ERApopulationTrack-${faction.color}`, 'display', 'none');
 					if (faction.player_id <= 0) dojo.style(`ERAplayerAid-${faction.color}`, 'display', 'none');
-					dojo.style(node, 'transform-origin', 'center');
+					dojo.style(node, 'transform-origin', 'top center');
 					dojo.style(node, 'transform', `rotate(${angle}deg)`);
+					console.log(node.offsetWidth);
 //
-					const x = this.hexagons['0:+0+0+0'].x + 2100 * Math.cos((angle + 90) * Math.PI / 180.) - 600 - 0 * node.offsetWidth / 2;
-					const y = this.hexagons['0:+0+0+0'].y + 2100 * Math.sin((angle + 90) * Math.PI / 180.) - 800 - 0 * node.offsetHeight / 2;
-//					const x = this.hexagons['0:+0+0+0'].x + (faction.player_id < 0 ? 6.1 + 1.25 * faction.player_id : 2.25) * (this.hexagons[(faction.player_id < 0 ? 1 : faction.homeStar) + ':+0+0+0'].x - this.hexagons['0:+0+0+0'].x) - node.offsetWidth / 2;
-//					const y = this.hexagons['0:+0+0+0'].y + (faction.player_id < 0 ? 6.1 + 1.25 * faction.player_id : 2.25) * (this.hexagons[(faction.player_id < 0 ? 1 : faction.homeStar) + ':+0+0+0'].y - this.hexagons['0:+0+0+0'].y) - node.offsetHeight / 2;
+					const x = this.hexagons['0:+0+0+0'].x - (faction.player_id > 0 ? 1100 : 1000) * Math.sin(angle * Math.PI / 180.) - 1250 / 2;
+					const y = this.hexagons['0:+0+0+0'].y + (faction.player_id > 0 ? 1100 : 1000) * Math.cos(angle * Math.PI / 180.);
 //
 					dojo.style(node, 'position', 'absolute');
 					dojo.style(node, 'left', x + 'px');

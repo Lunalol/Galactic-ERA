@@ -157,7 +157,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
 		'args' => 'argFleets',
-		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done'],
+		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done'],
 		'transitions' => ['continue' => 210, 'next' => 220]
 	],
 	220 => [
@@ -166,14 +166,14 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may move any or all ships'),
 		'type' => 'activeplayer',
 		'args' => 'argMovement',
-		'possibleactions' => ['declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'planetaryDeathRay', 'done'],
+		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'planetaryDeathRay', 'done'],
 		'transitions' => ['undo' => 210, 'continue' => 220, 'next' => 230]
 	],
 	230 => [
 		'name' => 'combatChoice',
 		'type' => 'game',
 		'action' => 'stCombatChoice',
-		'transitions' => ['combatChoice' => 235, 'engage' => 240, 'nextPlayer' => 200]
+		'transitions' => ['domination', 'combatChoice' => 235, 'engage' => 240, 'nextPlayer' => 200]
 	],
 	235 => [
 		'name' => 'combatChoice',
@@ -181,7 +181,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} must choose a battle to resolve'),
 		'type' => 'activeplayer',
 		'args' => 'argCombatChoice',
-		'possibleactions' => ['combatChoice'],
+		'possibleactions' => ['domination', 'combatChoice'],
 		'transitions' => ['engage' => 240]
 	],
 	240 => [
@@ -196,7 +196,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may choose a retreat location'),
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
-		'possibleactions' => ['retreat', 'combat'],
+		'possibleactions' => ['domination', 'retreat', 'combat'],
 		'transitions' => ['continue' => 240]
 	],
 	246 => [
@@ -205,7 +205,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may choose a retreat location for your (E)vade fleet only'),
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
-		'possibleactions' => ['retreat', 'combat'],
+		'possibleactions' => ['domination', 'retreat', 'combat'],
 		'transitions' => ['continue' => 240]
 	],
 	250 => [
@@ -220,7 +220,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} must choose ships to destroy'),
 		'type' => 'activeplayer',
 		'args' => 'argBattleLoss',
-		'possibleactions' => ['battleLoss'],
+		'possibleactions' => ['domination', 'battleLoss'],
 		'transitions' => ['continue' => 260]
 	],
 	260 => [
@@ -235,7 +235,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} must choose a retreat location'),
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
-		'possibleactions' => ['retreat', 'combat'],
+		'possibleactions' => ['domination', 'retreat', 'combat'],
 		'transitions' => ['continue' => 260]
 	],
 	300 => [
@@ -250,7 +250,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} have to select growth actions'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argSelectCounters',
-		'possibleactions' => ['selectCounters'],
+		'possibleactions' => ['domination', 'selectCounters'],
 		'transitions' => ['next' => 310]
 	],
 	310 => [
@@ -283,7 +283,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
-		'possibleactions' => ['declareWar', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
 		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'next' => 400]
 	],
 	415 => [
@@ -294,7 +294,7 @@ $machinestates = [
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
-		'transitions' => ['continue' => 415, 'next' => 410]
+		'transitions' => ['domination', 'continue' => 415, 'next' => 410]
 	],
 	420 => [
 		'name' => 'buriedShips',
@@ -304,7 +304,7 @@ $machinestates = [
 		'action' => 'stBuriedShips',
 		'args' => 'argBuriedShips',
 		'possibleactions' => ['buildShips', 'done'],
-		'transitions' => ['continue' => 410]
+		'transitions' => ['domination', 'continue' => 410]
 	],
 	500 => [
 		'name' => 'tradingPhase',
@@ -319,7 +319,7 @@ $machinestates = [
 		'type' => 'multipleactiveplayer',
 		'args' => 'argTradingPhase',
 		'possibleactions' => ['trade', 'pass'],
-		'transitions' => ['continue' => 510, 'next' => 540]
+		'transitions' => ['domination', 'continue' => 510, 'next' => 540]
 	],
 	540 => [
 		'name' => 'tradingPhaseEnd',
@@ -335,7 +335,7 @@ $machinestates = [
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
-		'transitions' => ['continue' => 545, 'next' => 550]
+		'transitions' => ['domination', 'continue' => 545, 'next' => 550]
 	],
 	550 => [
 		'name' => 'scoringPhase',

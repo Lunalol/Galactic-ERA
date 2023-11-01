@@ -183,11 +183,14 @@ div,img {
 	justify-content: space-around;
 }
 .ERAdominationCard {
-	max-width: 186px;
+	max-width: 200px;
 	transition: transform CALC(var(--DELAY) * 0.5ms);
 }
+.ERAstatus .ERAdominationCard {
+	max-width: 100px;
+}
 .ERAdominationCard.ERAselected {
-    border-radius: 6%;
+    border-radius: 5%;
     box-shadow: 0px 0px 10px 10px red;
 }
 .ERAdominationCard.ERAfocus {
@@ -196,7 +199,7 @@ div,img {
 }
 .ERAdominationCard img{
 	width: 100%;
-	border-radius: 10px;
+    border-radius: 5%;
 	border: 1px solid transparent;
 	box-sizing: border-box;
 }

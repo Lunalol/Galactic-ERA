@@ -142,7 +142,7 @@ class DominationCards extends APP_GameClass
 				break;
 			case GENERALSCIENTIFIC:
 // 2 DP × your lowest technology level
-				$min = 1;
+				$min = 6;
 				foreach (array_keys(Factions::TECHNOLOGIES) as $technology) $min = min($min, Factions::getTechnology($color, $technology));
 				$scoring[] = 2 * $min;
 				break;

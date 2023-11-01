@@ -40,13 +40,15 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			html = `<div style='display:flex;flex-direction:row;'>`;
 //
-			html += `<div style='display:flex;flex-direction:column;'>`;
+			html += node.outerHTML;
 //
-			html += `<div style='display:flex;flex-direction:row;align-items:center;'>`;
+			html += `<div style='display:flex;flex-direction:column;justify-content:space-between;padding:25px;'>`;
+//
+			html += `<div style='display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;'>`;
 			html += `<div id='ERAdominationButtonA' class='bgabutton bgabutton_red' style='font-size:large;'>${_('A-Section')}</div>`;
 			html += `</div>`;
 //
-			html += `<div style='display:flex;flex-direction:row;align-items:center;'>`;
+			html += `<div style='display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;'>`;
 			html += `<div id='ERAdominationButtonB' class='bgabutton bgabutton_red' style='font-size:large;'>${_('B-Section')}</div>`;
 //
 			html += `<div style='margin:20px;font-size:large;color:#${faction.color};'>`;
@@ -60,8 +62,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			html += `</div>`;
 //
 			html += `</div>`;
-//
-			html += node.outerHTML;
 //
 			html += `</div>`;
 //
@@ -125,9 +125,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					if (domination !== 'back')
 						dojo.connect(node, 'click', (event) => {
 							dojo.stopEvent(event);
-							this.dominationDialog(faction, index, domination);
+							if (this.bgagame.gamedatas.gamestate.possibleactions.includes('domination')) this.dominationDialog(faction, index, domination);
+							else this.bgagame.focus(event.currentTarget);
 						});
 					else this.bgagame.ERAdominationCards.addTarget(node);
+					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
 				}
 //
 				dojo.empty(`ERAplayerDominationCards-${faction.color}`);
@@ -139,9 +141,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					if (domination !== 'back')
 						dojo.connect(node, 'click', (event) => {
 							dojo.stopEvent(event);
-							this.dominationDialog(faction, index, domination);
+							if (this.bgagame.gamedatas.gamestate.possibleactions.includes('domination')) this.dominationDialog(faction, index, domination);
+							else this.bgagame.focus(event.currentTarget);
 						});
 					else this.bgagame.ERAdominationCards.addTarget(node);
+					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
 				}
 			}
 //
@@ -282,6 +286,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			if ('ships' in faction) dojo.query(`.ERAships[faction=${faction.color}]`).forEach((node) => node.innerHTML = faction.ships);
 			if ('emergencyReserve' in faction) dojo.query(`.ERAemergencyReserve-${faction.color}`).toggleClass('ERAhide', faction.emergencyReserve !== '1');
+			if (faction.player_id <= 0) dojo.query(`.ERAemergencyReserve-${faction.color}`).addClass('ERAhide');
 //
 // Panels order
 //
