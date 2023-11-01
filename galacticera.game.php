@@ -111,7 +111,6 @@ class GalacticEra extends Table
 		$result['galacticStory'] = $this->STORIES[self::getGameStateValue('galacticStory')];
 		$result['galacticGoal'] = $this->GOALS[self::getGameStateValue('galacticGoal')];
 		$result['round'] = intval(self::getGameStateValue('round'));
-		$result['dominationDeck'] = $this->domination->countCardsInLocation('deck');
 //
 		foreach (Factions::list() as $color)
 		{
@@ -131,7 +130,7 @@ class GalacticEra extends Table
 				}
 			}
 //
-			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][] = ($player_id === Factions::getPlayer($color)) ? $domination['type'] : 'back';
+			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][$domination['id']] = ($player_id === Factions::getPlayer($color)) ? $domination['type'] : 'back';
 			$result['factions'][$color]['ships'] = 16 - sizeof(Ships::getAll($color, 'ship'));
 		}
 //

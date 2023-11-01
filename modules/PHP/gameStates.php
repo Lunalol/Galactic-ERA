@@ -218,8 +218,8 @@ trait gameStates
 //
 // Deal one domination card face down to each player
 //
-		foreach (Factions::list(false) as $color) $this->domination->pickCard('deck', $color)['type'];
-		foreach (Factions::list(false) as $color) $this->domination->pickCard('deck', $color)['type'];
+		foreach (Factions::list(false) as $color) $this->domination->pickCard('deck', $color);
+//		foreach (Factions::list(false) as $color) $this->domination->pickCard('deck', $color);
 //
 // Each player places 3 ship pieces of their color at their home star.
 //
@@ -637,9 +637,7 @@ trait gameStates
 	}
 	function stStartOfGame()
 	{
-		if (FAST_START >= 2) self::TECH();
-//
-		$this->activeNextPlayer();
+		Factions::setActivation();
 //
 		if (self::getPlayersNumber() > 1) $this->gamestate->nextState('next');
 		else $this->gamestate->nextState('levelOfDifficulty');
@@ -674,6 +672,29 @@ trait gameStates
 			$relicID = Counters::getRelic($relic);
 			if ($relicID) Counters::setStatus($relicID, 'available', 1);
 		}
+//
+		if ($round === 3 || $round === 7) return $this->gamestate->nextState('dominationCardExchange');
+		$this->gamestate->nextState('next');
+	}
+	function stDominationCardExchange()
+	{
+		while ($color = Factions::getNext())
+		{
+			$player_id = Factions::getPlayer($color);
+			if ($player_id > 0)
+			{
+				Factions::setActivation($color, 'yes');
+//
+				if ($this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color) < 2)
+				{
+					$this->gamestate->changeActivePlayer($player_id);
+					return $this->gamestate->nextState('dominationCardExchange');
+				}
+			}
+			Factions::setActivation($color, 'done');
+		}
+//
+		Factions::setActivation();
 //
 		$this->gamestate->nextState('next');
 	}

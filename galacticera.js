@@ -474,14 +474,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 // Domination deck
 //
-			let delta = 0;
-			for (let i = 0; i < gamedatas.dominationDeck; i++)
-			{
-				const node = dojo.place(this.format_block('ERAdominationCard', {index: 'dominationdeck-' + index, domination: '', owner: ''}), `ERA-DominationDeck`);
-				dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/back.jpg`);
-				dojo.style(node, {position: 'absolute', top: delta + 'px', left: delta + 'px'});
-				delta += 0.5;
-			}
+			const node = dojo.place(this.format_block('ERAdominationCard', {id: 'dominationDeck', index: '', domination: '', owner: ''}), `ERA-DominationDeck`);
+			dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/back.jpg`);
 			dojo.connect($('ERA-DominationDeck'), 'click', (event) => {
 				dojo.stopEvent(event);
 				if (this.gamedatas.gamestate.name === 'remoteViewing') this.remoteViewing('dominationCard', event.currentTarget);
@@ -1371,6 +1365,19 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						);
 						break;
 //
+					case 'dominationCardExchange':
+//
+						for (let card of Object.values(args.hand))
+						{
+							this.addActionButton('ERAexchnageButton-' + card.id, this.DOMINATIONS[card.type][0], () => {
+								this.action('dominationCardExchange', {color: this.color, id: card.id}, () => {
+								});
+							}
+							);
+							this.addActionButton('ERAcancelButton', _('Renounce'), () => this.action('dominationCardExchange', {color: this.color, id: 0}), null, false, 'red');
+						}
+						break;
+//
 					case 'advancedFleetTactics':
 //
 						dojo.empty('ERAfleets');
@@ -1785,6 +1792,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.subscribe('update_score', (notif) => this.scoreCtrl[notif.args.player_id].setValue(notif.args.score));
 			dojo.subscribe('updateRound', (notif) => this.updateRound(notif.args.round));
 			dojo.subscribe('updateFaction', (notif) => this.factions.update(notif.args.faction));
+			dojo.subscribe('discardDomination', (notif) => this.discardDomination(notif.args.id));
+			dojo.subscribe('drawDomination', (notif) => this.drawDomination(notif.args.color, notif.args.id, notif.args.domination));
 //
 			dojo.subscribe('placeCounter', (notif) => this.counters.place(notif.args.counter));
 			dojo.subscribe('flipCounter', (notif) => this.counters.flip(notif.args.counter));
@@ -1797,14 +1806,16 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.subscribe('homeStarEvacuation', (notif) => this.ships.homeStarEvacuation(notif.args.homeStar, notif.args.location));
 //
 			this.notifqueue.setIgnoreNotificationCheck('revealShip', (notif) => (this.player_id === +notif.args.player_id));
+			this.notifqueue.setIgnoreNotificationCheck('updateFaction', (notif) => (this.player_id === +notif.args.player_id));
 //
 			this.setSynchronous();
-		}
-		,
+		},
 		setSynchronous()
 		{
 			this.notifqueue.setSynchronous('updateRound', DELAY);
 			this.notifqueue.setSynchronous('updateFaction', DELAY / 2);
+			this.notifqueue.setSynchronous('discardDomination', DELAY * 2);
+			this.notifqueue.setSynchronous('drawDomination', DELAY * 2);
 //
 			this.notifqueue.setSynchronous('placeCounter', DELAY / 2);
 			this.notifqueue.setSynchronous('flipCounter', DELAY);
@@ -1816,8 +1827,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			this.notifqueue.setSynchronous('removeShip', DELAY / 4);
 			this.notifqueue.setSynchronous('homeStarEvacuation', DELAY);
 //
-		}
-		,
+		},
 		focus: function (node)
 		{
 			if (dojo.hasClass(node, 'ERAfocus'))
@@ -1848,6 +1858,15 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				dojo.style('ERApawn', 'left', (84.7 * round) + 'px');
 				dojo.setAttr('ERApawn', 'title', dojo.string.substitute(_('Round ${round} of 8'), {round: round}));
 			}
+		},
+		discardDomination: function (id)
+		{
+			dojo.query(`.ERAdominationCard[index='${id}']`).forEach((node) =>
+			{
+				dojo.style(node, 'transition', 'none');
+				this.slideToObjectAndDestroy(node, 'logoicon', DELAY * 2);
+			}
+			);
 		},
 		remoteViewing: function (type, node)
 		{
@@ -2117,6 +2136,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		action: function (action, args =
 		{}, success = () => {}, fail = undefined)
 		{
+			if ((action === 'domination')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
 			if ((action === 'trade' && this.checkPossibleActions(action)) || this.checkAction(action))
 			{
 				args.lock = true;

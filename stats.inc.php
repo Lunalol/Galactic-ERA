@@ -16,13 +16,13 @@ $stats_type = [
 //
 		"DP_GS" => ["id" => 101, "name" => totranslate("DP: Galactic Story"), "type" => "int"],
 		"DP_GG" => ["id" => 102, "name" => totranslate("DP: Galactic Goal"), "type" => "int"],
-		"DP_POP" => ["id" => 106, "name" => totranslate("DP: Population Bonus"), "type" => "int"],
+		"DP_POP" => ["id" => 106, "name" => totranslate("DP: Population"), "type" => "int"],
 		"DP_MAJ" => ["id" => 107, "name" => totranslate("DP: Sector Majority"), "type" => "int"],
 		"DP_SP" => ["id" => 108, "name" => totranslate("DP: Star People"), "type" => "int"],
 		"DP_AFT" => ["id" => 103, "name" => totranslate("DP: Advanced Fleet Tactics"), "type" => "int"],
 		"DP_DC_A" => ["id" => 104, "name" => totranslate("DP: Domination card (A)"), "type" => "int"],
 		"DP_DC_B" => ["id" => 105, "name" => totranslate("DP: Domination card (B)"), "type" => "int"],
-		"DP_LOST" => ["id" => 110, "name" => totranslate("DP: losts"), "type" => "int"],
+		"DP_LOST" => ["id" => 110, "name" => totranslate("DP: losses"), "type" => "int"],
 //
 		"easy" => ["id" => 201, "name" => totranslate('Best Solo score (easy)'), "type" => "int"],
 		"standard" => ["id" => 202, "name" => totranslate('Best Solo score (standard)'), "type" => "int"],

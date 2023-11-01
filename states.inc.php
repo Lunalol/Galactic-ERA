@@ -127,7 +127,23 @@ $machinestates = [
 		'name' => 'startOfRound',
 		'type' => 'game',
 		'action' => 'stStartOfRound',
-		'transitions' => ['next' => 200]
+		'transitions' => ['dominationCardExchange' => 110, 'next' => 200]
+	],
+	110 => [
+		'name' => 'dominationCardExchange',
+		'description' => clienttranslate('Players may exchange a domination card'),
+		'type' => 'game',
+		'action' => 'stDominationCardExchange',
+		'transitions' => ['dominationCardExchange' => 120, 'next' => 200]
+	],
+	120 => [
+		'name' => 'dominationCardExchange',
+		'description' => clienttranslate('${actplayer} may exchange a domination card'),
+		'descriptionmyturn' => clienttranslate('${you} may exchange a domination card'),
+		'type' => 'activeplayer',
+		'args' => 'argDominationCardExchange',
+		'possibleactions' => ['dominationCardExchange'],
+		'transitions' => ['nextPlayer' => 110]
 	],
 	200 => [
 		'name' => 'movementCombatPhase',

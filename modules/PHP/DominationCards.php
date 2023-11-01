@@ -87,7 +87,7 @@ class DominationCards extends APP_GameClass
 				break;
 			case CENTRAL:
 // 1 DP per population of one of your stars in the center sector
-				$locations = array_filter(Counters::getPopulations($color), fn($location) => ($location[0] === '0'), ARRAY_FILTER_USE_KEY);
+				$locations = array_filter(array_map('intval', Counters::getPopulations($color)), fn($location) => ($location[0] === '0'), ARRAY_FILTER_USE_KEY);
 				$scoring[] = $locations ? max($locations) : 0;
 				break;
 			case DEFENSIVE:

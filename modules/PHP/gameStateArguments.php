@@ -57,6 +57,13 @@ trait gameStateArguments
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
+	function argDominationCardExchange()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		return ['active' => $color, 'hand' => $this->domination->getPlayerHand($color)];
+	}
 	function argFleets()
 	{
 		$color = Factions::getActive();
@@ -394,7 +401,7 @@ trait gameStateArguments
 		$player_id = self::getActivePlayerId();
 		$color = Factions::getColor($player_id);
 //
-		$this->possible = ['stars' => array_keys(Counters::getPopulations($color, false)), 'newShips' => 6];
+		$this->possible = ['stars' => [Ships::getHomeStarLocation($color)], 'newShips' => 6];
 		foreach (Ships::getAll($color) as $ship)
 		{
 			$this->possible['ships'][] = $ship['id'];

@@ -10,6 +10,12 @@ trait gameUtils
 	{
 		return [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
 	}
+	function updateScoring()
+	{
+		$scoring = [];
+		foreach (Factions::list(false) as $color) foreach ($this->DOMINATIONCARDS as $domination => $dominationCard) $scoring[$color][$domination] = DominationCards::B($color, $domination);
+		self::notifyAllPlayers('updateScoring', '', ['scoring' => $scoring]);
+	}
 	function gainDP(string $color, int $delta): int
 	{
 		$player_id = Factions::getPlayer($color);

@@ -336,4 +336,25 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function dominationCardExchange()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$id = self::getArg("id", AT_int, true);
+		$this->game->acDominationCardExchange($color, $id);
+//
+		self::ajaxResponse("");
+	}
+	public function domination()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$id = self::getArg("id", AT_int, true);
+		$section = self::getArg("section", AT_alphanum, true);
+		$this->game->acDomination($color, $id, $section);
+//
+		self::ajaxResponse("");
+	}
 }

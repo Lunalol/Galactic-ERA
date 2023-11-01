@@ -27,6 +27,63 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			new dijit.Tooltip({connectId: galacticStoryNode, showDelay: 500, hideDelay: 0, label: html, position: ['above']});
 //
 		},
+		dominationDialog: function (faction, id)
+		{
+			const node = $(`ERAdominationCard-${faction.color}-${id}`);
+			if (!node) return;
+//
+			const domination = node.getAttribute('domination')
+//
+			this.dialog = new ebg.popindialog();
+			this.dialog.create('ERAdominationDialog');
+			this.dialog.setTitle(this.bgagame.DOMINATIONS[domination][0]);
+//
+			html = `<div style='display:flex;flex-direction:row;'>`;
+//
+			html += `<div style='display:flex;flex-direction:column;'>`;
+//
+			html += `<div style='display:flex;flex-direction:row;align-items:center;'>`;
+			html += `<div id='ERAdominationButtonA' class='bgabutton bgabutton_red' style='font-size:large;'>${_('A-Section')}</div>`;
+			html += `</div>`;
+//
+			html += `<div style='display:flex;flex-direction:row;align-items:center;'>`;
+			html += `<div id='ERAdominationButtonB' class='bgabutton bgabutton_red' style='font-size:large;'>${_('B-Section')}</div>`;
+//
+			html += `<div style='margin:20px;font-size:large;color:#${faction.color};'>`;
+			for (let index = 1; index < this.bgagame.DOMINATIONS[domination].length; index++) html += `<div>${this.bgagame.gamedatas.factions[faction.color].scoring[domination][index - 1]} DP</div>`;
+			html += `</div>`;
+//
+			html += `<div style='margin:10px;font-size:small;'>`;
+			for (let index = 1; index < this.bgagame.DOMINATIONS[domination].length; index++) html += `<div>${this.bgagame.DOMINATIONS[domination][index]}</div>`;
+			html += `</div>`;
+//
+			html += `</div>`;
+//
+			html += `</div>`;
+//
+			html += node.outerHTML;
+//
+			html += `</div>`;
+//
+			this.dialog.setContent(html);
+			this.dialog.show();
+//
+			dojo.connect($('ERAdominationButtonA'), 'click', () => {
+				this.bgagame.confirmationDialog(dojo.string.substitute(_('Play A-Section'), {}), () =>
+				{
+					this.bgagame.action('domination', {color: faction.color, id: id, section: 'A'});
+					this.dialog.destroy();
+				});
+			});
+			dojo.connect($('ERAdominationButtonB'), 'click', () => {
+				this.bgagame.confirmationDialog(dojo.string.substitute(_('Play B-Section and score <B>${DP} DP<B>'), {DP: Math.max(...this.bgagame.gamedatas.factions[faction.color].scoring[domination])}), () =>
+				{
+					this.bgagame.action('domination', {color: faction.color, id: id, section: 'B'});
+					this.dialog.destroy();
+				});
+			});
+
+		},
 		update: function (faction)
 		{
 			console.log('updateFaction', faction);
@@ -63,30 +120,28 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				for (let index in faction.domination)
 				{
 					const domination = faction.domination[index];
-					const node = dojo.place(this.bgagame.format_block('ERAdominationCard', {index: index, domination: domination, owner: faction.color}), `ERAdominationCards-${faction.color}`);
+					const node = dojo.place(this.bgagame.format_block('ERAdominationCard', {id: 'player-' + index, index: index, domination: domination, owner: faction.color}), `ERAdominationCards-${faction.color}`);
 					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
-					dojo.connect(node, 'click', (event) => {
-						dojo.stopEvent(event);
-						if (dojo.getAttr(event.currentTarget, 'domination') !== 'back') this.bgagame.focus(event.currentTarget);
-					});
-					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
-//
-					if (domination !== 'back') this.bgagame.addTooltipHtml(node.id, this.bgagame.DOMINATIONS[domination].reduce((html, e) => html + `<div>${e}</div><HR>`, '<HR>'), DELAY);
+					if (domination !== 'back')
+						dojo.connect(node, 'click', (event) => {
+							dojo.stopEvent(event);
+							this.dominationDialog(faction, index, domination);
+						});
+					else this.bgagame.ERAdominationCards.addTarget(node);
 				}
 //
 				dojo.empty(`ERAplayerDominationCards-${faction.color}`);
 				for (let index in faction.domination)
 				{
 					const domination = faction.domination[index];
-					const node = dojo.place(this.bgagame.format_block('ERAdominationCard', {index: 'player-' + index, domination: domination, owner: faction.color}), `ERAplayerDominationCards-${faction.color}`);
+					const node = dojo.place(this.bgagame.format_block('ERAdominationCard', {id: index, index: index, domination: domination, owner: faction.color}), `ERAplayerDominationCards-${faction.color}`);
 					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
-					dojo.connect(node, 'click', (event) => {
-						dojo.stopEvent(event);
-						if (dojo.getAttr(event.currentTarget, 'domination') !== 'back') this.bgagame.focus(event.currentTarget);
-					});
-					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
-//
-					if (domination !== 'back') this.bgagame.addTooltipHtml(node.id, this.bgagame.DOMINATIONS[domination].reduce((html, e) => html + `<div>${e}</div><HR>`, '<HR>'), DELAY);
+					if (domination !== 'back')
+						dojo.connect(node, 'click', (event) => {
+							dojo.stopEvent(event);
+							this.dominationDialog(faction, index, domination);
+						});
+					else this.bgagame.ERAdominationCards.addTarget(node);
 				}
 			}
 //
