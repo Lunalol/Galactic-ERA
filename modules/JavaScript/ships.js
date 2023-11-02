@@ -14,7 +14,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		place: function (ship)
 		{
-			console.info('placeShip', ship);
+//			console.info('placeShip', ship);
 //
 			switch (ship.fleet)
 			{

@@ -346,7 +346,7 @@ trait gameStateArguments
 		['from' => $from, 'levels' => $levels] = Factions::getStatus($color, 'steal');
 //
 		$this->possible = ['counters' => [], 'color' => $color];
-		foreach (array_keys($this->TECHNOLOGIES) as $technology) if (Factions::getTechnology($from, $technology) < Factions::getTechnology($color, $technology)) $this->possible['counters'][] = $technology;
+		foreach (array_keys($this->TECHNOLOGIES) as $technology) if (Factions::getTechnology($from, $technology) > Factions::getTechnology($color, $technology)) $this->possible['counters'][] = $technology;
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'levels' => $levels];
 	}

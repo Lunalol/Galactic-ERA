@@ -86,7 +86,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		update: function (faction)
 		{
-			console.log('updateFaction', faction);
+//			console.log('updateFaction', faction);
 //
 			if ('starPeople' in faction)
 			{

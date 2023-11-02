@@ -1866,11 +1866,8 @@ trait gameStateActions
 //
 		$dominationCard = $this->domination->getCard($id);
 		if (!$dominationCard) throw new BgaVisibleSystemException('Invalid card : ' . $id);
-//
 		$domination = $dominationCard['type'];
-//* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('${player_name} plays <B>${DOMINATION}</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$domination],]);
-//* -------------------------------------------------------------------------------------------------------- */
+//
 		switch ($section)
 		{
 //
@@ -1879,7 +1876,12 @@ trait gameStateActions
 				$section = 'A';
 				if ($this->domination->countCardInLocation($section, $player_id)) throw new BgaVisibleSystemException('A-Section already played');
 				$this->domination->moveCard($id, $section, $color);
-//
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('playDomination', clienttranslate('${player_name} plays <B>${DOMINATION}</B>'), [
+					'player_name' => Factions::getName($color), 'i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$domination],
+					'card' => $dominationCard, 'section' => $section
+				]);
+//* -------------------------------------------------------------------------------------------------------- */
 				throw new BgaVisibleSystemException('A-Section NOT implemented');
 //
 				self::gainDP($color, $DP);
@@ -1894,7 +1896,12 @@ trait gameStateActions
 				if ($this->domination->countCardInLocation($section, $color)) $section = 'A';
 				if ($this->domination->countCardInLocation($section, $color)) throw new BgaVisibleSystemException('All sections already played');
 				$this->domination->moveCard($id, $section, $color);
-//
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('playDomination', clienttranslate('${player_name} plays <B>${DOMINATION}</B>'), [
+					'player_name' => Factions::getName($color), 'i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$domination],
+					'card' => $dominationCard, 'section' => $section
+				]);
+//* -------------------------------------------------------------------------------------------------------- */
 				$DP = max(DominationCards::B($color, $domination));
 				if (!$DP) throw new BgaUserException(self::_('Useless scoring'));
 				self::gainDP($color, $DP);

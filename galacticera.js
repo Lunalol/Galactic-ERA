@@ -481,6 +481,12 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				if (this.gamedatas.gamestate.name === 'remoteViewing') this.remoteViewing('dominationCard', event.currentTarget);
 			});
 			this.ERAdominationCards.addTarget($('ERA-DominationDeck'));
+//
+// Played Domination Cards
+//
+			for (let card of Object.values(gamedatas.A)) this.playDomination(card, 'A');
+			for (let card of Object.values(gamedatas.B)) this.playDomination(card, 'B');
+//
 // Reveal hidden things
 //
 			if (this.player_id in this.players)
@@ -1374,7 +1380,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 								});
 							}
 							);
-							this.addActionButton('ERAcancelButton', _('Renounce'), () => this.action('dominationCardExchange', {color: this.color, id: 0}), null, false, 'red');
+							this.addActionButton('ERAcancelButton', _('No Exchange'), () => this.action('dominationCardExchange', {color: this.color, id: 0}), null, false, 'red');
 						}
 						break;
 //
@@ -1668,7 +1674,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					case 'researchPlus':
 //
-						this.addActionButton('ERAcancelButton', _('Renounce'), () => this.action('researchPlus', {color: this.color, technology: ''}), null, false, 'red');
+						this.addActionButton('ERAcancelButton', _('No Research+'), () => this.action('researchPlus', {color: this.color, technology: ''}), null, false, 'red');
 //
 						break;
 //
@@ -1792,8 +1798,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 			dojo.subscribe('update_score', (notif) => this.scoreCtrl[notif.args.player_id].setValue(notif.args.score));
 			dojo.subscribe('updateRound', (notif) => this.updateRound(notif.args.round));
 			dojo.subscribe('updateFaction', (notif) => this.factions.update(notif.args.faction));
-			dojo.subscribe('discardDomination', (notif) => this.discardDomination(notif.args.id));
-			dojo.subscribe('drawDomination', (notif) => this.drawDomination(notif.args.color, notif.args.id, notif.args.domination));
+//			dojo.subscribe('discardDomination', (notif) => this.discardDomination(notif.args.id));
+//			dojo.subscribe('drawDomination', (notif) => this.drawDomination(notif.args.color, notif.args.id, notif.args.domination));
+			dojo.subscribe('playDomination', (notif) => this.playDomination(notif.args.card, notif.args.section));
 //
 			dojo.subscribe('placeCounter', (notif) => this.counters.place(notif.args.counter));
 			dojo.subscribe('flipCounter', (notif) => this.counters.flip(notif.args.counter));
@@ -1814,8 +1821,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			this.notifqueue.setSynchronous('updateRound', DELAY);
 			this.notifqueue.setSynchronous('updateFaction', DELAY / 2);
-			this.notifqueue.setSynchronous('discardDomination', DELAY * 2);
-			this.notifqueue.setSynchronous('drawDomination', DELAY * 2);
+//			this.notifqueue.setSynchronous('discardDomination', DELAY * 2);
+//			this.notifqueue.setSynchronous('drawDomination', DELAY * 2);
+			this.notifqueue.setSynchronous('playDomination', DELAY);
 //
 			this.notifqueue.setSynchronous('placeCounter', DELAY / 2);
 			this.notifqueue.setSynchronous('flipCounter', DELAY);
@@ -1859,14 +1867,16 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				dojo.setAttr('ERApawn', 'title', dojo.string.substitute(_('Round ${round} of 8'), {round: round}));
 			}
 		},
-		discardDomination: function (id)
+		playDomination: function (card, section)
 		{
-			dojo.query(`.ERAdominationCard[index='${id}']`).forEach((node) =>
-			{
-				dojo.style(node, 'transition', 'none');
-				this.slideToObjectAndDestroy(node, 'logoicon', DELAY * 2);
-			}
-			);
+			const node = dojo.place(this.format_block('ERAdominationCard', {id: section, index: card.id, domination: card.type, owner: card.location_arg}), `ERAtechTrack-${card.location_arg}`);
+			dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${card.type}.jpg`);
+			dojo.addClass(node, `ERAdominationCard-${section}`);
+			dojo.connect(node, 'click', (event) => {
+				dojo.stopEvent(event);
+				this.focus(event.currentTarget);
+			});
+			dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
 		},
 		remoteViewing: function (type, node)
 		{

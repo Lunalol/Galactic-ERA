@@ -45,7 +45,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					if (faction.player_id <= 0) dojo.style(`ERAplayerAid-${faction.color}`, 'display', 'none');
 					dojo.style(node, 'transform-origin', 'top center');
 					dojo.style(node, 'transform', `rotate(${angle}deg)`);
-					console.log(node.offsetWidth);
 //
 					const x = this.hexagons['0:+0+0+0'].x - (faction.player_id > 0 ? 1100 : 1000) * Math.sin(angle * Math.PI / 180.) - 1250 / 2;
 					const y = this.hexagons['0:+0+0+0'].y + (faction.player_id > 0 ? 1100 : 1000) * Math.cos(angle * Math.PI / 180.);

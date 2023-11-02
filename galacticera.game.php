@@ -71,6 +71,8 @@ class GalacticEra extends Table
 		}
 //
 		$this->initStatistics();
+//
+		$this->activeNextPlayer();
 	}
 	protected function initStatistics()
 	{
@@ -111,6 +113,8 @@ class GalacticEra extends Table
 		$result['galacticStory'] = $this->STORIES[self::getGameStateValue('galacticStory')];
 		$result['galacticGoal'] = $this->GOALS[self::getGameStateValue('galacticGoal')];
 		$result['round'] = intval(self::getGameStateValue('round'));
+		$result['A'] = $this->domination->getCardsInLocation('A');
+		$result['B'] = $this->domination->getCardsInLocation('B');
 //
 		foreach (Factions::list() as $color)
 		{
