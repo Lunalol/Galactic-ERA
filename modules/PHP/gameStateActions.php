@@ -148,6 +148,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acFleetToShips(string $color, string $Fleet, int $ships)
@@ -216,6 +217,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acFleetToFleet(string $color, string $from, string $to, int $ships)
@@ -303,6 +305,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acSwapFleets(string $color, array $fleets)
@@ -337,6 +340,7 @@ trait gameStateActions
 			self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $second, 'fleet' => $fleets[0], 'ships' => Ships::getStatus($second, 'ships')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acDone(string $color): void
@@ -371,6 +375,7 @@ trait gameStateActions
 			self::DbQuery("INSERT INTO `undo` VALUES ($undoID,0,'$color','done','[]')");
 		}
 //
+		self::updateScoring();
 		$this->gamestate->nextState('next');
 	}
 	function acDeclareWar(string $color, string $on, $automa = false)
@@ -593,6 +598,7 @@ trait gameStateActions
 //
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acScout(string $color, array $ships)
@@ -684,6 +690,7 @@ trait gameStateActions
 			Ships::setLocation($ship, $location);
 		}
 //
+		self::updateScoring();
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acUndo($color)
@@ -764,6 +771,7 @@ trait gameStateActions
 		self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
 
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acPass(string $color): void
@@ -793,6 +801,7 @@ trait gameStateActions
 //
 		for ($i = 0; $i < $levels; $i++) self::gainTechnology($color, $technology);
 //
+		self::updateScoring();
 		self::triggerAndNextState('continue');
 	}
 	function acHomeStarEvacuation(string $color, $location)
@@ -875,6 +884,8 @@ trait gameStateActions
 		self::starsBecomingUninhabited($previousLocation);
 //
 		if (Factions::getEmergencyReserve($color)) self::triggerEvent(EMERGENCYRESERVE, $color);
+//
+		self::updateScoring();
 		self::triggerAndNextState('continue');
 	}
 	function acCombatChoice(string $color, string $location, bool $automa = false)
@@ -979,6 +990,7 @@ trait gameStateActions
 //
 		foreach (array_diff(array_merge(Counters::getAtLocation($location, 'star'), Counters::getAtLocation($location, 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acBattleLoss(string $color, array $ships, bool $automa = false)
@@ -1067,6 +1079,7 @@ trait gameStateActions
 			}
 		}
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acSelectCounters(string $color, array $counters): void
@@ -1122,6 +1135,7 @@ trait gameStateActions
 		if (!in_array('research', Factions::getStatus($color, 'used'))) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research'])));
 		foreach ($technologies as $technology) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), [$technology])));
 //
+		self::updateScoring();
 		if (!$automa) self::triggerAndNextState('advancedFleetTactics');
 	}
 	function acResearchPlus($color, $technology, $otherColor, $growthAction)
@@ -1168,6 +1182,7 @@ trait gameStateActions
 			}
 		}
 //
+		self::updateScoring();
 		self::triggerAndNextState('end');
 	}
 	function acGainStar(string $color, string $location, bool $automa = false)
@@ -1458,6 +1473,7 @@ trait gameStateActions
 		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
 //
+		self::updateScoring();
 		if (!$automa)
 		{
 			if ($newShips)
@@ -1577,6 +1593,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
+		self::updateScoring();
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acTeleportPopulation(string $color, array $from, array $to): void
@@ -1628,6 +1645,7 @@ trait gameStateActions
 //
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['teleportPopulation'])));
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acBuildShips(string $color, array $buildShips, bool $automa = false): void
@@ -1744,6 +1762,7 @@ trait gameStateActions
 			}
 		}
 //
+		self::updateScoring();
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acTrade(string $from, string $to, string $technology, $toTeach = null)
@@ -1856,6 +1875,7 @@ trait gameStateActions
 		}
 		Factions::setStatus($from, 'trade', $fromStatus);
 //
+		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
 	function acDomination(string $color, int $id, string $section)
@@ -1933,6 +1953,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('updateFaction', '', ['player_id' => $player_id, 'faction' => $faction]);
 //* -------------------------------------------------------------------------------------------------------- */
+		self::updateScoring();
 	}
 	function acDominationCardExchange(string $color, int $id)
 	{
@@ -1964,6 +1985,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		Factions::setActivation($color, 'done');
 //
+		self::updateScoring();
 		$this->gamestate->nextState('nextPlayer');
 	}
 }

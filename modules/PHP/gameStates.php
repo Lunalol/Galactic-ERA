@@ -299,6 +299,7 @@ trait gameStates
 		}
 		else $this->gamestate->setAllPlayersMultiactive('next');
 //
+		self::updateScoring();
 		$this->gamestate->nextState('next');
 	}
 	function stBonus()
@@ -579,6 +580,8 @@ trait gameStates
 	}
 	function stIndividualChoices()
 	{
+		self::updateScoring();
+//
 		$color = Factions::getNext();
 		if ($color)
 		{
@@ -633,6 +636,7 @@ trait gameStates
 			self::gainTechnology($automa, $technology);
 		}
 //
+		self::updateScoring();
 		$this->gamestate->nextState('next');
 	}
 	function stStartOfGame()
@@ -685,10 +689,28 @@ trait gameStates
 			{
 				Factions::setActivation($color, 'yes');
 //
-				if ($this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color) < 2)
+				$cards = $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color);
+				if ($cards < 2)
 				{
-					$this->gamestate->changeActivePlayer($player_id);
-					return $this->gamestate->nextState('dominationCardExchange');
+					if ($cards === 1)
+					{
+						$this->gamestate->changeActivePlayer($player_id);
+						return $this->gamestate->nextState('dominationCardExchange');
+					}
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} draw a new card'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+					$this->domination->pickCard('deck', $color);
+//
+					$faction = ['color' => $color, 'domination' => []];
+					foreach ($this->domination->getPlayerHand($color) as $domination) $faction['domination'][$domination['id']] = $domination['type'];
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyPlayer($player_id, 'updateFaction', '', ['faction' => $faction]);
+//* -------------------------------------------------------------------------------------------------------- */
+					foreach ($this->domination->getPlayerHand($color) as $domination) $faction['domination'][$domination['id']] = 'back';
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('updateFaction', '', ['player_id' => $player_id, 'faction' => $faction]);
+//* -------------------------------------------------------------------------------------------------------- */
 				}
 			}
 			Factions::setActivation($color, 'done');

@@ -253,7 +253,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				showDelay: 500, hideDelay: 0,
 				getContent: (node) =>
 				{
-					let html = `<div style='display:grid;gap: 15px 10px;grid-template-columns:auto [title] repeat(6, auto [A]) repeat(6, auto [B]) auto [description];align-items:center;'>`;
+					let html = `<div style='display:grid;gap: 5px 5px;grid-template-columns:auto [title] repeat(6, auto [A]) repeat(6, auto [B]) auto [description];align-items:center;'>`;
 //
 					html += `<div style='grid-line:header;grid-column:title;'><B>${'Domination card'}</B></div>`;
 					html += `<div style='grid-line:header;grid-column:A 1 / A 6;justify-self:center'><B>A</B></div>`;
@@ -261,24 +261,29 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 					for (let domination in this.DOMINATIONS)
 					{
-						html += `<div style='grid-line:${domination};grid-column:title;'><B>${this.DOMINATIONS[domination][0]}</B></div>`;
+						const played = dojo.query(`.ERAtechTrack>.ERAdominationCard[domination='${domination}']`).length;
 //
-						for (let faction of Object.values(gamedatas.factions))
-						{
-							if (faction.player_id > 0) html += `<div style='grid-line:${domination};grid-column:A ${faction.order};color:#${faction.color};'>❌</div>`;
-						}
+						html += `<div style='grid-line:${domination};grid-column:title;color:${played ? 'grey' : 'white'}'><B>${this.DOMINATIONS[domination][0]}</B></div>`;
 //
-						for (let faction of Object.values(gamedatas.factions))
+						if (!played)
 						{
-							if (faction.player_id > 0)
+							for (let faction of Object.values(gamedatas.factions))
 							{
-								html += `<div style='grid-line:${domination};grid-column:B ${faction.order};color:#${faction.color};'>`;
-								for (let index = 1; index < this.DOMINATIONS[domination].length; index++)
+								if (faction.player_id > 0) html += `<div style='grid-line:${domination};grid-column:A ${faction.order};color:#${faction.color};'>❌</div>`;
+							}
+//
+							for (let faction of Object.values(gamedatas.factions))
+							{
+								if (faction.player_id > 0)
 								{
-									const score = faction.scoring[domination][index - 1];
-									html += `<div style='font-size:${score + 10}pt;'>${score}</div>`;
+									html += `<div style='grid-line:${domination};grid-column:B ${faction.order};color:#${faction.color};'>`;
+									for (let index = 1; index < this.DOMINATIONS[domination].length; index++)
+									{
+										const score = faction.scoring[domination][index - 1];
+										html += `<div style='font-size:${score * 2 + 10}pt;text-align:center;height:20pt;line-height:20pt;vertical-align:middle;'>${score}</div>`;
+									}
+									html += `</div>`;
 								}
-								html += `</div>`;
 							}
 						}
 //
@@ -1795,6 +1800,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 		{
 			console.log('notifications subscriptions setup');
 //
+			dojo.subscribe('updateScoring', (notif) => {
+				for (let color in notif.args.scoring) this.gamedatas.factions[color].scoring = notif.args.scoring[color];
+			});
 			dojo.subscribe('update_score', (notif) => this.scoreCtrl[notif.args.player_id].setValue(notif.args.score));
 			dojo.subscribe('updateRound', (notif) => this.updateRound(notif.args.round));
 			dojo.subscribe('updateFaction', (notif) => this.factions.update(notif.args.faction));
