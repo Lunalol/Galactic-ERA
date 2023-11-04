@@ -10,7 +10,7 @@ define('EMERGENCYRESERVE', 1050);
 define('DECLAREWAR', 1100);
 define('STEALTECHNOLOGY', 1200);
 define('RESEARCHPLUS', 1500);
-define('BLOCKGAINSTAR', 2000);
+define('DOMINATION', 2000);
 //
 // Game options
 //

@@ -413,14 +413,15 @@ $machinestates = [
 		'possibleactions' => ['declareWar', 'declarePeace', 'researchPlus'],
 		'transitions' => ['continue' => RESEARCHPLUS, 'end' => POP_EVENT]
 	],
-	BLOCKGAINSTAR => [
-		'name' => 'blockGainStar',
-		'description' => clienttranslate('Players may block a gain star growth action'),
-		'descriptionmyturn' => clienttranslate('${you} may block a gain star growth action'),
+	DOMINATION => [
+		'name' => 'domination',
+		'description' => clienttranslate('Players have the opportunity to play a domination card'),
+		'descriptionmyturn' => clienttranslate('${you} have the opportunity to play a domination card'),
 		'type' => 'multipleactiveplayer',
-		'args' => 'argblock',
-		'possibleactions' => ['block'],
-		'transitions' => ['X' => 0]
+		'args' => 'argDomination',
+		'action' => 'stDomination',
+		'possibleactions' => ['domination', 'null'],
+		'transitions' => ['end' => POP_EVENT]
 	],
 //
 // game End (BGA)

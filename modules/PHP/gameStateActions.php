@@ -6,6 +6,15 @@
  */
 trait gameStateActions
 {
+	function acNull(string $color): void
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('null');
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		$this->gamestate->setPlayerNonMultiactive($player_id, 'end');
+	}
 	function acLevelOfDifficulty(int $levelOfDifficulty): void
 	{
 		$this->checkAction('levelOfDifficulty');
@@ -468,11 +477,11 @@ trait gameStateActions
 			$relicID = Counters::getRelic(ANCIENTPYRAMIDS);
 			if ($relicID)
 			{
-				if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Ancien Pyramid already used');
+				if (!Counters::getStatus($relicID, 'available')) throw new BgaVisibleSystemException('Ancient Pyramid already used');
 				if (Counters::getStatus($relicID, 'owner') !== $color) throw new BgaVisibleSystemException('Invalid owner');
 				Counters::setStatus($relicID, 'available');
 			}
-			else throw new BgaVisibleSystemException('Invalid relic : Ancien Pyramid');
+			else throw new BgaVisibleSystemException('Invalid relic : Ancient Pyramid');
 		}
 		else
 		{
@@ -578,6 +587,24 @@ trait gameStateActions
 				if (Factions::getTechnology($populationDisc['color'], 'Spirituality') < 6) self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				Counters::destroy($id);
+//
+// MIGRATIONS Second : All players score 1 DP for every population of another player they remove from a star
+//
+				if (self::getGameStateValue('galacticStory') == MIGRATIONS && self::ERA() === 'Second' && $player_id > 0)
+				{
+					if (intval($location[0]) !== Factions::getHomeStar($color) && in_array($type, [LIBERATE, CONQUERVS]))
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 1 DP for every population of another player they remove from a star')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						$DP = 1;
+						self::gainDP($color, $DP);
+						self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+				}
 //* -------------------------------------------------------------------------------------------------------- */
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
@@ -940,22 +967,24 @@ trait gameStateActions
 			if ($location && !in_array($location, $this->possible)) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 		}
 //
+		$attacker = Factions::getActive();
+		$winner = Factions::getStatus($attacker, 'winner');
+//
 		if (!$location)
 		{
-			if (Factions::getStatus(Factions::getActive(), 'winner')) throw new BgaVisibleSystemException('Retreat is mandatory');
+			if ($winner) throw new BgaVisibleSystemException('Retreat is mandatory');
 //
 			Factions::setStatus($color, 'retreat', 'no');
 			return $this->gamestate->nextState('continue');
 		}
 //
-		$combatLocation = Factions::getStatus(Factions::getActive(), 'combat');
+		$combatLocation = Factions::getStatus($attacker, 'combat');
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
 		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
 //
-		$retreatE = $this->gamestate->state()['name'] === 'retreatE';
-		if ($retreatE)
+		if ($this->gamestate->state()['name'] === 'retreatE')
 		{
 			if (array_key_exists($rotated, $this->SECTORS[$sector]))
 //* -------------------------------------------------------------------------------------------------------- */
@@ -989,6 +1018,24 @@ trait gameStateActions
 		}
 //
 		foreach (array_diff(array_merge(Counters::getAtLocation($location, 'star'), Counters::getAtLocation($location, 'relic')), Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
+//
+// RIVALRY Second : Every time players “retreat before combat” they lose 2 DP
+//
+		if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'Second' && $player_id > 0)
+		{
+			if (!$winner)
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Every time players “retreat before combat” they lose 2 DP')]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$DP = -2;
+				self::gainDP($color, $DP);
+				self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} loses ${DP} DP'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+		}
 //
 		self::updateScoring();
 		$this->gamestate->nextState('continue');
@@ -1074,6 +1121,49 @@ trait gameStateActions
 							]);
 //* -------------------------------------------------------------------------------------------------------- */
 							break;
+					}
+				}
+			}
+		}
+//
+// WAR Second : All players score 1 DP for every ship of opponents they destroy (also as losers of a battle)
+// Multiple players on a side in a battle each score for all opposing ships destroyed
+//
+		if (self::getGameStateValue('galacticStory') == WAR && self::ERA() === 'Second')
+		{
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 1 DP for every ship of opponents they destroy (also as losers of a battle)')]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$color = $attacker;
+				$player_id = Factions::getPlayer($color);
+				if ($player_id > 0)
+				{
+					$DP = 0;
+					foreach ($defenders as $defender) $DP += sum($toDestroy[$defender]);
+					if ($DP)
+					{
+						self::gainDP($color, $DP);
+						self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+				}
+				foreach ($defenders as $color)
+				{
+					$player_id = Factions::getPlayer($color);
+					if ($player_id > 0)
+					{
+						$DP = sum($toDestroy[$attacker]);
+						if ($DP)
+						{
+							self::gainDP($color, $DP);
+							self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
 					}
 				}
 			}
@@ -1210,6 +1300,7 @@ trait gameStateActions
 		if ($type === LIBERATE || $type === CONQUERVS)
 		{
 			$sizeOfPopulation = 0;
+//
 			$homeStar = Ships::getAtLocation($location, null, 'homeStar');
 			if ($homeStar)
 			{
@@ -1218,13 +1309,14 @@ trait gameStateActions
 				Factions::setStatus($otherColor, 'evacuate', 'involuntary');
 				self::triggerEvent(HOMESTAREVACUATION, $otherColor);
 			}
-			else
+			$populations = Counters::getAtLocation($location, 'populationDisc');
+			if ($populations)
 			{
-				$populations = Counters::getAtLocation($location, 'populationDisc');
 				$sizeOfPopulation += sizeof($populations);
-				if ($populations) $otherColor = Counters::get($populations[0])['color'];
-				else throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
+				$otherColor = Counters::get($populations[0])['color'];
 			}
+			if (!$sizeOfPopulation) throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
+//
 			if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
 			Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
 			if (Factions::getPlayer($color) > 0) self::triggerEvent(STEALTECHNOLOGY, $color);
@@ -1448,12 +1540,30 @@ trait gameStateActions
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 		}
 //
-// RIVALRY First: All players score 1 DP for every Gain Star action they do in this era.
+// MIGRATIONS Second : All players score 1 DP for every population of another player they remove from a star
+//
+		if (self::getGameStateValue('galacticStory') == MIGRATIONS && self::ERA() === 'Second' && $player_id > 0)
+		{
+			if (in_array($type, [LIBERATE, CONQUERVS]))
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 1 DP for every population of another player they remove from a star')]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$DP = 1 * $sizeOfPopulation;
+				self::gainDP($color, $DP);
+				self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+		}
+//
+// RIVALRY First: All players score 1 DP for every Gain Star action they do in this era
 //
 		if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'First' && $player_id > 0)
 		{
@@ -1464,8 +1574,26 @@ trait gameStateActions
 			self::gainDP($color, $DP);
 			self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+			self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+// WAR Second : All players score 1 DP for every star they take from another player
+//
+		if (self::getGameStateValue('galacticStory') == WAR && self::ERA() === 'Second' && $player_id > 0)
+		{
+			if (in_array($type, [LIBERATE, CONQUERVS]))
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 1 DP for every star they take from another player')]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$DP = 1;
+				self::gainDP($color, $DP);
+				self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
 		}
 //
 		$counters = Factions::getStatus($color, 'counters');
@@ -1486,7 +1614,7 @@ trait gameStateActions
 //
 		if ($newShips)
 		{
-			self::notifyAllPlayers('msg', 'Buried ships with AUTOMAS not implemented', []);
+			self::notifyAllPlayers('msg', '// PJL : Buried ships with AUTOMAS not implemented', []);
 		}
 	}
 	function acSpecial($color, $N)
@@ -1578,16 +1706,19 @@ trait gameStateActions
 		$galacticStory = self::getGameStateValue('galacticStory');
 		$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
 //
-// MIGRATIONS First: All players score 3 DP for every Grow Population action they do in this era.
-// Only Grow Population actions that generated at least one additional population are counted.
+// MIGRATIONS First: All players score 3 DP for every Grow Population action they do in this era
+// Only Grow Population actions that generated at least one additional population are counted
 //
 		if ($era === 'First' && $galacticStory == MIGRATIONS && (sizeof($locations) + sizeof($locationsBonus) > 0) && $player_id > 0)
 		{
+//* -------------------------------------------------------------------------------------------------------- */
+			if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 3 DP for every Grow Population action they do in this era')]);
+//* -------------------------------------------------------------------------------------------------------- */
 			$DP = 3;
 			self::gainDP($color, $DP);
 			self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP'), ['DP' => 3,
+			self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => 3,
 				'player_name' => Factions::getName($color),
 				'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */

@@ -1613,7 +1613,7 @@ class Sectors extends APP_GameClass
 				}
 			}
 		}
-		return INF;
+		return 999;
 	}
 	static function range(string $location, int $range)
 	{

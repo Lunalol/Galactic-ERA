@@ -5,9 +5,9 @@
 $this->STORIES = [
 	NONE => clienttranslate('None'),
 	JOURNEYS => clienttranslate('Journeys'),
-//	MIGRATIONS => clienttranslate('Migrations'),
-//	RIVALRY => clienttranslate('Rivalry'),
-//	WAR => clienttranslate('War')
+	MIGRATIONS => clienttranslate('Migrations'),
+	RIVALRY => clienttranslate('Rivalry'),
+	WAR => clienttranslate('War')
 ];
 //
 // Galacic goals (8)

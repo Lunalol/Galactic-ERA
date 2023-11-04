@@ -50,12 +50,17 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				Migrations: {
 					1: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+						_('All players score 3 DP for every Grow Population action they do in this era. Only Grow Population actions that generated at least one additional population are counted')
 					],
 					2: [
 						_('Every player with the STS alignment at the end of a round scores 1 DP'),
+						_('Every player “at war” with at least one other player at the end of the round scores 1 DP'),
+						_('All players score 1 DP for every population of another player they remove from a star'),
+						_('All players score 1 DP for every battle they win. Battles where all opposing ships retreated before combat are not counted')
 					],
 					3: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+						_('Every player who is the only player to research a certain technology field in a round in this era scores 4 DP (per such field). Technology levels gained by any other means (such as taking a star from another player) do not count for this, neither for scoring nor for preventing scoring')
 					]
 				},
 				Rivalry: {
@@ -75,9 +80,13 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					],
 					2: [
 						_('Every player with the STS alignment at the end of a round scores 1 DP'),
+						_('Every player “at war” with at least one other player at the end of the round scores 2 DP'),
+						_('All players score 1 DP for every star they take from another player'),
+						_('All players score 1 DP for every ship of opponents they destroy (also as losers of a battle). Multiple players on a side in a battle each score for all opposing ships destroyed')
 					],
 					3: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+						_('At the end of the round, each player who researched Military in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level. The same applies for Robotics. A Research action that did not result in an increased technology level does not count, neither for scoring nor for preventing scoring. (*)')
 					]
 				}
 			};
@@ -1054,7 +1063,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 									dojo.toggleClass(node, 'ERAselected', to in state.args._private.trade && from in state.args._private.trade[to] && state.args._private.trade[to][from].technology === technology);
 //
 									if (to === state.args.automa) dojo.connect(node, 'click', () => {
-											dojo.query('.ERAcounter.ERAcounter-technology', 'ERAchoice').removeClass('ERAselected');
+											dojo.query('.ERAcounter.ERAcounter-technology', `ERAtradeFrom-${this.color}-${to}`).removeClass('ERAselected');
 											dojo.addClass(node, 'ERAselected');
 										});
 								}
@@ -1070,7 +1079,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 //
 									dojo.connect(node, 'click', () => {
 										if (to === state.args.automa) {
-											const nodes = dojo.query('.ERAcounter.ERAcounter-technology.ERAselected');
+											const nodes = dojo.query('.ERAcounter.ERAcounter-technology.ERAselected', `ERAtradeFrom-${this.color}-${to}`);
 											if (nodes.length !== 1) this.showMessage(_('You must choose what to teach first'), 'error');
 											else this.action('trade', {from: from, to: to, technology: technology, toTeach: nodes[0].getAttribute('counter')});
 										}
@@ -1227,7 +1236,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							dojo.connect(node, 'click', () => {
 								if (stateName === 'remoteViewing') return this.restoreServerGameState();
 								args.ancientPyramids = true;
-								if (args._private.ancientPyramids) this.setClientState('remoteViewing', {descriptionmyturn: _('${you} may secretly look at one “hidden thing” using Ancien Pyramids')});
+								if (args._private.ancientPyramids) this.setClientState('remoteViewing', {descriptionmyturn: _('${you} may secretly look at one “hidden thing” using Ancient Pyramids')});
 							});
 						}
 					}
@@ -1376,6 +1385,11 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						);
 						break;
 //
+					case 'domination':
+//
+						this.addActionButton('ERAPassButton', _('Pass'), () => this.action('null', {color: this.color}));
+						break;
+//
 					case 'dominationCardExchange':
 //
 						for (let card of Object.values(args.hand))
@@ -1519,7 +1533,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						if (args.totalVictory) dojo.place(`<span style='font-size:small;'><BR>${_('No ships are destroyed from the winning side')}</span>`, 'generalactions');
 						else dojo.place(`<span style='font-size:small;'><BR><span id='ERAtoDestroy'></span></span>`, 'generalactions');
 //
-						dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
+						const node = dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
+						dojo.style(node, 'pointer-events', 'all');
 //
 						for (let side of ['winner', 'losers'])
 						{
@@ -1530,35 +1545,55 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							{
 								for (let [fleet, ships] of Object.entries(args[side][color]))
 								{
-									const fleetNode = dojo.place(this.format_block('ERAfleetH', {fleet: fleet, ships: ships}), sideNode);
-//
-									if (fleet !== 'ships')
+									if (ships > 0)
 									{
-										const node = dojo.place(this.format_block('ERAship', {id: fleet, color: color, ship: ships, location: ''}), fleetNode);
-										dojo.setAttr(node, 'fleet', fleet);
-										dojo.style(node, 'position', 'relative');
-										dojo.addClass(node, 'ERAselectable');
-										dojo.connect(node, 'click', (event) => {
-											dojo.stopEvent(event);
-											dojo.toggleClass(event.currentTarget, 'ERAselected');
-											dojo.query(`#ERA${side}>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(event.currentTarget, 'ERAselected'));
+										const fleetNode = dojo.place(this.format_block('ERAfleetH', {fleet: fleet, ships: ships}), sideNode);
+//
+										if (fleet !== 'ships')
+										{
+											const node = dojo.place(this.format_block('ERAship', {id: color + '-' + fleet, color: color, ship: ships, location: ''}), `ERAfleet-${fleet}`);
+											dojo.setAttr(node, 'fleet', fleet);
+											dojo.style(node, 'position', 'relative');
+											dojo.addClass(node, 'ERAselectable');
+											dojo.connect(node, 'click', (event) => {
+												dojo.stopEvent(event);
+												dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).toggleClass('ERAselected', dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length === 0);
+												$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
+												this.battleLoss(args.totalVictory);
+											});
+											dojo.addClass(node, 'ERAselectable');
+										}
+//
+										for (let index = 0; index < ships; index++)
+										{
+											const shipNode = dojo.place(`<div style='width:50px;height:50px;transform:scale(20%);transform-origin:left top;margin-right:-25px'></div>`, `ERAfleet-${fleet}`);
+											const node = dojo.place(this.format_block('ERAship', {id: color + '-' + fleet + '-' + index, color: color, location: fleet}), shipNode);
+											dojo.connect(node, 'click', (event) => {
+												dojo.stopEvent(event);
+												let count = 0;
+												dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).forEach((node) => dojo.toggleClass(node, 'ERAselected', (count++) <= index));
+												$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
+												this.battleLoss(args.totalVictory);
+											});
+											dojo.addClass(node, 'ERAselectable');
+										}
+//
+										dojo.connect($(`ERAfleetSelector-${fleet}`), 'oninput', (event) => {
+											let count = 0;
+											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).forEach((node) => dojo.toggleClass(node, 'ERAselected', (count++) < event.target.value));
 											this.battleLoss(args.totalVictory);
 										});
-										dojo.addClass(node, 'ERAselectable');
-									}
-//
-									for (let index = 0; index < ships; index++)
-									{
-										const shipNode = dojo.place(`<div style='width:50px;height:50px;transform:scale(20%);transform-origin:left top;margin-right:-25px'></div>`, fleetNode);
-										const node = dojo.place(this.format_block('ERAship', {id: 'ship', color: color, location: fleet}), shipNode);
-										dojo.connect(node, 'click', (event) => {
-											dojo.stopEvent(event);
-											if (event.detail === 1) dojo.toggleClass(event.currentTarget, 'ERAselected');
-											if (event.detail === 2)
-												dojo.query(`#ERA${side}>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(event.currentTarget, 'ERAselected'));
+
+										dojo.connect($(`ERAfleetSelector-${fleet}-0`), 'click', () => {
+											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).removeClass('ERAselected');
+											$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
 											this.battleLoss(args.totalVictory);
 										});
-										dojo.addClass(node, 'ERAselectable');
+										dojo.connect($(`ERAfleetSelector-${fleet}-MAX`), 'click', () => {
+											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).addClass('ERAselected');
+											$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
+											this.battleLoss(args.totalVictory);
+										});
 									}
 								}
 							}

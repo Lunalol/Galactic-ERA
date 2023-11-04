@@ -57,10 +57,21 @@ trait gameStateArguments
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
+	function argDomination()
+	{
+		$counters = [];
+		foreach (Factions::list() as $otherColor)
+		{
+			$counters[$otherColor] = ['available' => [], 'used' => []];
+			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
+		}
+//
+		return ['counters' => $counters];
+	}
 	function argDominationCardExchange()
 	{
 		$color = Factions::getActive();
-		$player_id = Factions::getPlayer($color);
 //
 		return ['active' => $color, 'hand' => $this->domination->getPlayerHand($color)];
 	}
@@ -317,8 +328,8 @@ trait gameStateArguments
 		foreach (Factions::list() as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
-			foreach (Factions::getStatus($otherColor, 'counters') as $counter) $counters[$otherColor]['available'][] = $counter;
-			foreach (Factions::getStatus($otherColor, 'used') as $counter) $counters[$otherColor]['used'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
 		}
 //
 		if (!in_array('teleportPopulation', $counters[$color]['used']))
@@ -497,8 +508,8 @@ trait gameStateArguments
 		foreach (Factions::list() as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
-			foreach (Factions::getStatus($otherColor, 'counters') as $counter) $counters[$otherColor]['available'][] = $counter;
-			foreach (Factions::getStatus($otherColor, 'used') as $counter) $counters[$otherColor]['used'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
 		}
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters,

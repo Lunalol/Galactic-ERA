@@ -15,6 +15,15 @@ class action_galacticera extends APP_GameAction
 			self::trace("Complete reinitialization of board game");
 		}
 	}
+	public function null()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$this->game->acNull($color,);
+//
+		self::ajaxResponse("");
+	}
 	public function levelOfDifficulty()
 	{
 		self::setAjaxMode();

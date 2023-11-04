@@ -67,6 +67,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			this.dialog.setContent(html);
 			this.dialog.show();
+			dojo.style('popin_ERAdominationDialog_underlay', 'visibility', 'hidden');
 //
 			dojo.connect($('ERAdominationButtonA'), 'click', () => {
 				this.bgagame.confirmationDialog(dojo.string.substitute(_('Play A-Section'), {}), () =>
