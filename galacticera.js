@@ -270,10 +270,30 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			};
 //
 			this.RELICS = {
-				0: [_('Ancient Pyramids'),
-					_('The player who owns this star gets 1 additional remote view per round<BR>This may be used on a hidden thing as normal or to view any fleet (regardless of Spirituality levels)'),
-					_('Also, whenever this player does Grow Population place 1 bonus population here')
-				]
+				0: [_('Ancient Pyramids'), [
+						_('The player who owns this star gets 1 additional remote view per round<BR>This may be used on a hidden thing as normal or to view any fleet (regardless of Spirituality levels)'),
+						_('Also, whenever this player does Grow Population place 1 bonus population here')]],
+				1: [_('Ancient Technology: Genetics'), [_('The player who first gains this star immediately gets 1 level in Genetics')]],
+				2: [_('Ancient Technology: Military'), [_('The player who first gains this star immediately gets 1 level in Military')]],
+				3: [_('Ancient Technology: Propulsion'), [_('The player who first gains this star immediately gets 1 level in Propulsion')]],
+				4: [_('Ancient Technology: Robotics'), [_('The player who first gains this star immediately gets 1 level in Robotics')]],
+				5: [_('Ancient Technology: Spirituality'), [_('The player who first gains this star immediately gets 1 level in Spirituality')]],
+				6: [_('Buried Ships'), [
+						_('The player who first gains this star immediately gets 3 ships that are placed there'),
+						_('Use the same rules for placing these ships as when doing the Build Ships action'),
+						_('This effect cannot be blocked though')]],
+				7: [_('Planetary Death Ray'), [
+						_('During the movement of the move/combat phase the player owning this star may destroy 1 ship or population disc (but not a home star miniature) of a player they are “at war” with, within a distance of 3 hexes to this star'),
+						_('If a star loses its last population, it becomes “uninhabited”'),
+						_('If a fleet loses its last ship, it is dissolved'),
+						_('The removed ship or population may count for scoring, depending upon the galactic story')]],
+				8: [_('Defense Grid'), [
+						_('Any player conquering or liberating this star needs 8 ships more than usual to do that'),
+						_('This only applies when the star is owned by a player'),
+						_('Once this star has been taken by a player for the first time, all ships and population discs here are immune to the “Planetary Death Ray”, regardless of ownership')]],
+				9: [_('Super-Stargate'), [
+						_('The player who owns this star may use stargate movement from any star of theirs to this one or vice versa (regardless of their level in Propulsion)'),
+						_('If the player has Propulsion 5 this movement cannot be blocked (in either direction)')]]
 			};
 //
 			this.ERAtechnologyTooltips = new dijit.Tooltip({

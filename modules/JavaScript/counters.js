@@ -60,6 +60,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 								dojo.style(node, 'animation', `unflip ${DELAY / 2}ms`);
 								dojo.addClass(node, `ERAcounter-${dojo.getAttr(node, 'back')}`);
 //								dojo.removeAttr(node, 'back');
+								this.bgagame.addTooltip(node.id, _('Ancient Relic: ') + this.bgagame.RELICS[dojo.getAttr(node, 'back')][0], this.bgagame.RELICS[dojo.getAttr(node, 'back')][1].reduce((html, e) => html + `<div>${e}</div>`, ''));
 							}
 							else dojo.style(node, 'animation', '');
 						});
