@@ -13,7 +13,8 @@ trait gameUtils
 	function updateScoring()
 	{
 		$scoring = [];
-		foreach (Factions::list(false) as $color) foreach ($this->DOMINATIONCARDS as $domination => $dominationCard) $scoring[$color][$domination] = DominationCards::B($color, $domination);
+		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination);
+		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['B'] = DominationCards::B($color, $domination);
 		self::notifyAllPlayers('updateScoring', '', ['scoring' => $scoring]);
 	}
 	function gainDP(string $color, int $delta): int

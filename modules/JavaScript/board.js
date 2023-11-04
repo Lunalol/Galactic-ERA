@@ -46,8 +46,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					dojo.style(node, 'transform-origin', 'top center');
 					dojo.style(node, 'transform', `rotate(${angle}deg)`);
 //
-					const x = this.hexagons['0:+0+0+0'].x - (faction.player_id > 0 ? 1100 : 1000) * Math.sin(angle * Math.PI / 180.) - 1250 / 2;
-					const y = this.hexagons['0:+0+0+0'].y + (faction.player_id > 0 ? 1100 : 1000) * Math.cos(angle * Math.PI / 180.);
+					const x = this.hexagons['0:+0+0+0'].x - (faction.player_id > 0 ? 1200 : 1000) * Math.sin(angle * Math.PI / 180.) - 1250 / 2;
+					const y = this.hexagons['0:+0+0+0'].y + (faction.player_id > 0 ? 1200 : 1000) * Math.cos(angle * Math.PI / 180.);
 //
 					dojo.style(node, 'position', 'absolute');
 					dojo.style(node, 'left', x + 'px');
@@ -149,7 +149,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.removeClass(this.board, 'ERAhideShips ERAhideCounters');
 			});
 			window.onblur = () => {
-				dojo.removeClass(this.board, 'ERAhideShips ERAhideCounters');
+//				dojo.removeClass(this.board, 'ERAhideShips ERAhideCounters');
 			};
 		},
 		home: function (player_id)

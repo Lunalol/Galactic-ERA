@@ -5,9 +5,12 @@
 SOLO:
 
 2 PLAYERS:
- • Trading phase ends when automa still here
+ • Automas EVADE fleet
+ • Automas Buried ships
 
 3-6 PLAYERS:
+
+ • Make peace dialog
 
 /*******************/
 /* NOT IMPLEMENTED */
@@ -15,17 +18,16 @@ SOLO:
 
 6.2.5 Gain Star
     • End of Population Track
-6.2.8 Research
-    • Research+ Effect
+7.2.3 Blocking Movement
+    • Newly declare war
 7.3 When to Declare War
 7.4 Domination Cards
+7.4.1 Scoring
+	• A-Section
 9. Variants
-11.3 Domination Cards
 11.5 Galactic Goals
 11.7 Ancient Relics
-    • Ancient Pyramids
-    • Planetary Death Ray
-    • Defense Grid
+    • Ancient Pyramids bonus population
 
 /***************/
 /* IMPLEMENTED */
@@ -44,12 +46,18 @@ SOLO:
 6.2.4 Resolve Other Growth Actions
 6.2.6 Grow Population
 6.2.7 Build Ships
+6.2.8 Research
 6.2.9 “Free” Growth Actions
 6.3 Trading Technology Phase
 6.4 Scoring Phase
 7. Additional Details
 7.1 Propulsion Special Effects
 7.2 Blocking
+7.2.1 Blocking Action Execution
+7.2.2 Blocking Additional Actions
+7.4.2 Drawing/Exchanging Cards
+7.5 Stars Becoming Uninhabited
+7.6 Emergency Reserve
 8. Game End
 8.1 Game End Scoring
 8.2 Winner
@@ -66,6 +74,5 @@ SOLO:
     • Robotics:     (1-6)
     • Genetics:     (1-6)
 11.4 Galactic Stories
-    • Journeys
 11.6 Sector Starting Bonus
-11.7 Ancient Relics except Ancient Pyramids, Planetary Death Ray, Defense Grid
+11.7 Ancient Relics

@@ -120,7 +120,8 @@ class GalacticEra extends Table
 		{
 			if (Factions::getPlayer($color) > 0)
 			{
-				foreach ($this->DOMINATIONCARDS as $domination => $dominationCard) $result['factions'][$color]['scoring'][$domination] = DominationCards::B($color, $domination);
+				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination);
+				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['B'] = DominationCards::B($color, $domination);
 			}
 //
 			if ($player_id === Factions::getPlayer($color))
@@ -263,16 +264,5 @@ class GalacticEra extends Table
 	function TECH()
 	{
 		foreach (Factions::list(false) as $color) foreach (array_keys($this->TECHNOLOGIES) as $technology) self::dbQuery("UPDATE factions SET `$technology` = 6 WHERE color = '$color'");
-	}
-	function X()
-	{
-		foreach (['FF3333'] as $color)
-		{
-			foreach ($this->DOMINATIONCARDS as $domination => $dominationCard)
-			{
-				$scoring = DominationCards::B($color, $domination);
-				foreach ($scoring as $DP) $this->notifyAllPlayers('msg', '${DOMINATION} B : ${DP} DP', ['DOMINATION' => $dominationCard, 'DP' => $DP]);
-			}
-		}
 	}
 }

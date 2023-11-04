@@ -1,4 +1,4 @@
-define(["dojo", "dojo/_base/declare"], function (dojo, declare)
+define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 {
 	return declare("Factions", null,
 	{
@@ -15,7 +15,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const galacticStoryNode = dojo.place(`<img id='ERAgalacticStory' src='${g_gamethemeurl}img/galacticStories/${this.bgagame.gamedatas.galacticStory}.png' draggable='false'>`, 'ERA-DP');
 			const galacticStory = bgagame.GALATIC_STORIES[this.bgagame.gamedatas.galacticStory];
 //
-			let html = '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
+			let html = `<H1 style='font-family:ERA;'>${_('Galactic') + ' ' + _(this.bgagame.gamedatas.galacticStory)}</H1>`;
+			html += '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
 			for (let [ERA, string] of Object.entries({1: _('First Era'), 2: _('Second Era'), 3: _('Third Era')}))
 			{
 				html += '<div style="padding:12px;text-align:center;outline:1px solid grey;">' + (string) + '</div>';
@@ -32,11 +33,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const node = $(`ERAdominationCard-${faction.color}-${id}`);
 			if (!node) return;
 //
-			const domination = node.getAttribute('domination')
+			const domination = node.getAttribute('domination');
 //
 			this.dialog = new ebg.popindialog();
 			this.dialog.create('ERAdominationDialog');
-			this.dialog.setTitle(this.bgagame.DOMINATIONS[domination][0]);
+			this.dialog.setTitle(`<H1 style='font-family:ERA;'>${this.bgagame.DOMINATIONS[domination].title}</H1>`);
 //
 			html = `<div style='display:flex;flex-direction:row;'>`;
 //
@@ -46,17 +47,24 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			html += `<div style='display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;'>`;
 			html += `<div id='ERAdominationButtonA' class='bgabutton bgabutton_red' style='font-size:large;'>${_('A-Section')}</div>`;
+			html += `<div style='margin:20px;font-family:ERA;font-size:large;color:#${faction.color};'>`;
+			html += `<div style='font-family:ERA;font-size:${this.bgagame.DOMINATIONS[domination].DP * 2 + 10}pt'>${this.bgagame.DOMINATIONS[domination].DP}  DP</div>`;
+			html += `</div>`;
+			html += `</div>`;
+//
+			html += `<div style='margin:10px;font-size:normal;'>`;
+			for (let text of this.bgagame.DOMINATIONS[domination].A) html += `<div>${text}</div>`;
 			html += `</div>`;
 //
 			html += `<div style='display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;'>`;
 			html += `<div id='ERAdominationButtonB' class='bgabutton bgabutton_red' style='font-size:large;'>${_('B-Section')}</div>`;
 //
-			html += `<div style='margin:20px;font-size:large;color:#${faction.color};'>`;
-			for (let index = 1; index < this.bgagame.DOMINATIONS[domination].length; index++) html += `<div>${this.bgagame.gamedatas.factions[faction.color].scoring[domination][index - 1]} DP</div>`;
+			html += `<div style='margin:20px;font-family:ERA;font-size:large;color:#${faction.color};'>`;
+			for (let score of this.bgagame.gamedatas.factions[faction.color].scoring[domination].B) html += `<div style='font-family:ERA;font-size:${score * 2 + 10}pt'>${score} DP</div>`;
 			html += `</div>`;
 //
 			html += `<div style='margin:10px;font-size:small;'>`;
-			for (let index = 1; index < this.bgagame.DOMINATIONS[domination].length; index++) html += `<div>${this.bgagame.DOMINATIONS[domination][index]}</div>`;
+			for (let text of this.bgagame.DOMINATIONS[domination].B) html += `<div>${text}</div>`;
 			html += `</div>`;
 //
 			html += `</div>`;
@@ -77,13 +85,12 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				});
 			});
 			dojo.connect($('ERAdominationButtonB'), 'click', () => {
-				this.bgagame.confirmationDialog(dojo.string.substitute(_('Play B-Section and score <B>${DP} DP<B>'), {DP: Math.max(...this.bgagame.gamedatas.factions[faction.color].scoring[domination])}), () =>
+				this.bgagame.confirmationDialog(dojo.string.substitute(_('Play B-Section and score <B>${DP} DP<B>'), {DP: Math.max(...this.bgagame.gamedatas.factions[faction.color].scoring[domination].B)}), () =>
 				{
 					this.bgagame.action('domination', {color: faction.color, id: id, section: 'B'});
 					this.dialog.destroy();
 				});
 			});
-
 		},
 		update: function (faction)
 		{

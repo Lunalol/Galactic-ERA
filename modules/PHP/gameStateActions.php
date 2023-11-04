@@ -1207,6 +1207,10 @@ trait gameStateActions
 			foreach ($technologies as $technology) if (!array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
 		}
 //
+		$counters = Factions::getStatus($color, 'counters');
+		unset($counters[array_search('research', $counters)]);
+		if (!in_array('research', Factions::getStatus($color, 'used'))) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research'])));
+//
 		foreach ($technologies as $technology)
 		{
 			$level = self::gainTechnology($color, $technology);
@@ -1215,15 +1219,11 @@ trait gameStateActions
 //
 			if (Factions::getStarPeople($color) === 'Greys' && $level === 2) self::gainTechnology($color, $technology);
 //
+			unset($counters[array_search($technology, $counters)]);
+			if ($level) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), [$technology])));
 		}
 //
-		$counters = Factions::getStatus($color, 'counters');
-		unset($counters[array_search('research', $counters)]);
-		foreach ($technologies as $technology) unset($counters[array_search($technology, $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
-//
-		if (!in_array('research', Factions::getStatus($color, 'used'))) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research'])));
-		foreach ($technologies as $technology) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), [$technology])));
 //
 		self::updateScoring();
 		if (!$automa) self::triggerAndNextState('advancedFleetTactics');

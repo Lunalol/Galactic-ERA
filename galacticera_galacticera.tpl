@@ -47,6 +47,7 @@
 				<div class='ERApopulationTrack' id='ERApopulationTrack-${color}'></div>\n\
 			</div>\n\
 			<div class='ERAtechTrack' id='ERAtechTrack-${color}'></div>\n\
+		<div class='ERAplayerAid' id='ERAplayerAid-${color}' playerAid='0'></div>\n\
 		</div>\n\
 		<div style='display:flex;flex-direction:column;justify-content:end;width:400px'>\n\
 			<div id='ERAboardShips-${color}' class='ERAstatus'></div>\n\
@@ -57,7 +58,6 @@
 		<div class='ERAdominationCards' id='ERAdominationCards-${color}'></div>\n\
 		</div>\n\
 	</div>\n\
-		<div class='ERAplayerAid' id='ERAplayerAid-${color}' playerAid='0'></div>\n\
 </div>";
 	var ERAfaction = "<div class='ERAfaction' id='ERAfaction-${color}'></div></div>";
 	var ERAtechnologies = "<div class='ERAtechnologies' id='ERAtechnologies-${color}'></div></div>";

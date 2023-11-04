@@ -13,30 +13,37 @@ class DominationCards extends APP_GameClass
 //
 		return $deck;
 	}
-	static function A(string $color, int $domination): boolean
+	static function A(string $color, int $domination): bool
 	{
 		switch ($domination)
 		{
 			case ACQUISITION:
-// Conquer/liberate 2 playerowned stars on the same turn
+// Conquer/liberate 2 player owned stars on the same turn
 // Play this card when this happens
 				return false;
 			case ALIGNMENT:
 // Can only be played at the end of the scoring phase
 // Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then
-				return false;
+				return true;
 			case CENTRAL:
 // Own 4 stars in the center sector
-				return false;
+				$numberOfStars = 0;
+				foreach (array_keys(Counters::getPopulations($color, false)) as $location) if ($location[0] === '0') $numberOfStars++;
+				return $numberOfStars >= 4;
 			case DEFENSIVE:
 // Own all the stars (except neutron stars) in your home star sector (i.e., the sector with your home star)
 				return false;
 			case DENSITY:
 // Have 3 stars with 5 or more population each
-				return false;
+				$numberOfStars = 0;
+				foreach (Counters::getPopulations($color, false) as $population) if ($population >= 5) $numberOfStars++;
+				return $numberOfStars >= 3;
 			case DIPLOMATIC:
 // Have Spirituality level 4 or higher, own the center star of the center sector and be at peace with every player
-				return false;
+				return
+					Factions::getTechnology($color, 'Spirituality') >= 4 &&
+					array_key_exists('0:+0+0+0', Counters::getPopulations($color, false)) &&
+					!Factions::atWar($color);
 			case ECONOMIC:
 // Build 10 ships in a single Build Ships growth action
 // Any ships built as the direct result of star people special effects (e.g. STS Rogue AI) do not count for fulfilling this
@@ -44,13 +51,17 @@ class DominationCards extends APP_GameClass
 				return false;
 			case ETHERIC:
 // Have a ship each in 4 nebula hexes at the start of your movement
-				return false;
+				$numberOfShips = 0;
+				foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::NEBULA) $numberOfShips++;
+				return $numberOfShips >= 4;
 			case EXPLORATORY:
 // Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors
 				return false;
 			case GENERALSCIENTIFIC:
 // Have a total of 16 technology levels
-				return false;
+				$levels = 0;
+				foreach (array_keys(Factions::TECHNOLOGIES) as $technology) $levels += Factions::getTechnology($color, $technology);
+				return $levels >= 16;
 			case MILITARY:
 // Have ships totaling 120 in CV (not counting bonuses of any kind)
 // Reveal enough ships to prove this
@@ -58,7 +69,7 @@ class DominationCards extends APP_GameClass
 				return false;
 			case SPATIAL:
 // Own 10 stars
-				return false;
+				return sizeof(Counters::getPopulations($color, false)) >= 10;
 			case SPECIALSCIENTIFIC:
 // Have level 6 in 1 technology field and level 5 or higher in another field
 				return false;
@@ -66,7 +77,7 @@ class DominationCards extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid Domination Card: ' . $domination);
 		}
 	}
-	static function B(string $color, int $domination)
+	static function B(string $color, int $domination): array
 	{
 		$scoring = [];
 		switch ($domination)

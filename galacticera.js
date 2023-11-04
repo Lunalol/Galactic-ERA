@@ -2,15 +2,15 @@
  *
  * @author Lunalol
  */
-define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
+define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter",
 	g_gamethemeurl + "modules/JavaScript/constants.js",
 	g_gamethemeurl + "modules/JavaScript/board.js",
 	g_gamethemeurl + "modules/JavaScript/factions.js",
 	g_gamethemeurl + "modules/JavaScript/counters.js",
 	g_gamethemeurl + "modules/JavaScript/ships.js"
-], function (dojo, declare)
+], function (dojo, declare, dijit, gamegui)
 {
-	return declare("bgagame.galacticera", ebg.core.gamegui,
+	return declare("bgagame.galacticera", gamegui,
 	{
 		constructor: function ()
 		{
@@ -34,98 +34,129 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				Journeys: {
 					1: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
-						_('All players score 1 DP for every player they are “in contact” with at the end of the round (including the puppet in a 2-player game)')
+						_('All players score 1 DP for every player they are “in contact” with at the end of the round')
 					],
 					2: [
 						_('Every player with the STS alignment at the end of a round scores 1 DP'),
 						_('Every player “at war” with at least one other player at the end of the round scores 1 DP'),
 						_('All players score 2 DP for every star outside of their home star sector that they take from another player'),
-						_('All players score 2 DP for every battle they win outside of their home star sector. Battles where all opposing ships retreated before combat are not counted')
+						_('All players score 2 DP for every battle they win outside of their home star sector<BR>Battles where all opposing ships retreated before combat are not counted')
 					],
 					3: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
-						_('At the end of the round, each player who researched Spirituality in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level. The same applies for Propulsion. A Research action that did not result in an increased technology level does not count, neither for scoring nor for preventing scoring. (*)')
+						_('At the end of the round, each player who researched Spirituality in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level'),
+						_('At the end of the round, each player who researched Propulsion in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Propulsion level')
 					]
 				},
 				Migrations: {
 					1: [
-						_('Every player with the STO alignment at the end of a round scores 1 DP'),
-						_('All players score 3 DP for every Grow Population action they do in this era. Only Grow Population actions that generated at least one additional population are counted')
+						_('Every player with the STS alignment at the end of a round scores 1 DP'),
+						_('All players score 3 DP for every Grow Population action they do in this era<BR>Only Grow Population actions that generated at least one additional population are counted')
 					],
 					2: [
 						_('Every player with the STS alignment at the end of a round scores 1 DP'),
 						_('Every player “at war” with at least one other player at the end of the round scores 1 DP'),
 						_('All players score 1 DP for every population of another player they remove from a star'),
-						_('All players score 1 DP for every battle they win. Battles where all opposing ships retreated before combat are not counted')
+						_('All players score 1 DP for every battle they win<BR>Battles where all opposing ships retreated before combat are not counted')
 					],
 					3: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
-						_('Every player who is the only player to research a certain technology field in a round in this era scores 4 DP (per such field). Technology levels gained by any other means (such as taking a star from another player) do not count for this, neither for scoring nor for preventing scoring')
+						_('Every player who is the only player to research a certain technology field in a round in this era scores 4 DP (per such field)')
 					]
 				},
 				Rivalry: {
 					1: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+						_('All players score 1 DP for every Gain Star action they do in this era')
 					],
 					2: [
 						_('Every player with the STS alignment at the end of a round scores 1 DP'),
+						_('Every player “at war” with at least one other player at the end of the round scores 1 DP'),
+						_('All players score 1 DP for every star of another player they are blocking at the end of the round'),
+						_('Every time players “retreat before combat” they lose 2 DP')
 					],
 					3: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+						_('For every technology field, the player who has the highest level in that field at the end of the round scores 3 DP')
 					]
 				},
 				War: {
 					1: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
+						_('All players score 2 DP for every Build Ships action they do in this era')
 					],
 					2: [
 						_('Every player with the STS alignment at the end of a round scores 1 DP'),
 						_('Every player “at war” with at least one other player at the end of the round scores 2 DP'),
 						_('All players score 1 DP for every star they take from another player'),
-						_('All players score 1 DP for every ship of opponents they destroy (also as losers of a battle). Multiple players on a side in a battle each score for all opposing ships destroyed')
+						_('All players score 1 DP for every ship of opponents they destroy')
 					],
 					3: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
-						_('At the end of the round, each player who researched Military in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level. The same applies for Robotics. A Research action that did not result in an increased technology level does not count, neither for scoring nor for preventing scoring. (*)')
+						_('At the end of the round, each player who researched Military in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level'),
+						_('At the end of the round, each player who researched Robotics in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Robotics level')
 					]
 				}
 			};
 //
-			this.DOMINATIONS = [
-				[_('Aquisition'),
-					_('1 DP per neutral star where only you have a ship'),
-					_('1 DP per Military level')],
-				[_('Alignment'),
-					_('4 DP if you did not get any DP for your alignment in the scoring phase of this round'),
-					_('1 DP per Spirituality level')],
-				[_('Central'),
-					_('1 DP per population of one of your stars in the center sector')],
-				[_('Defensive'),
-					_('4 DP if no other player owns a star in your home sector + 1 DP per 2 Military level')],
-				[_('Density'),
-					_('1 DP per star you own with 4+ population')],
-				[_('Diplomatic'),
-					_('2 DP per other player’s home star where you have a ship (including puppet)'),
-					_('1 DP per Spirituality level')],
-				[_('Economic'),
-					_('1 DP per Asteroid system where you have a ship'),
-					_('1 DP per Robotics level')],
-				[_('Etheric'),
-					_('STO: 1 DP per Spirituality level / STS: 1 DP per Military level')],
-				[_('Exploratory'),
-					_('1 DP per sector with a ship of yours'),
-					_('1 DP per Propulsion level')],
-				[_('General Scientific'),
-					_('2 DP × your lowest technology level')],
-				[_('Military'),
-					_('2 DP per sector where you are the only player with a fleet'),
-					_('1 DP per Military level')],
-				[_('Spatial'),
-					_('2 DP per 3 stars you own'),
-					_('1 DP per Propulsion level')],
-				[_('Special Scientific'),
-					_('1 DP × your highest technology level')]
-			];
+			this.GALACTIC_GOALS = {
+			}
+			;
+//
+			this.DOMINATIONS = {
+				0: {title: _('Aquisition'), DP: 10,
+					A: [_('Conquer/liberate 2 player owned stars on the same turn'),
+						_('Play this card when this happens')],
+					B: [_('1 DP per neutral star where only you have a ship'),
+						_('1 DP per Military level')]},
+				1: {title: _('Alignment'), DP: 9,
+					A: [_('Can only be played at the end of the scoring phase'),
+						_('Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then')],
+					B: [_('4 DP if you did not get any DP for your alignment in the scoring phase of this round'),
+						_('1 DP per Spirituality level')]},
+				2: {title: _('Central'), DP: 12,
+					A: [_('Own 4 stars in the center sector')],
+					B: [_('1 DP per population of one of your stars in the center sector')]},
+				3: {title: _('Defensive'), DP: 9,
+					A: [_('Own all the stars (except neutron stars) in your home star sector')],
+					B: [_('4 DP if no other player owns a star in your home sector + 1 DP per 2 Military level')]},
+				4: {title: _('Density'), DP: 7,
+					A: [_('Have 3 stars with 5 or more population each')],
+					B: [_('1 DP per star you own with 4+ population')]},
+				5: {title: _('Diplomatic'), DP: 14,
+					A: [_('Have Spirituality level 4 or higher, own the center star of the center sector and be at peace with every player')],
+					B: [_('2 DP per other player’s home star where you have a ship (including puppet)'),
+						_('1 DP per Spirituality level')]},
+				6: {title: _('Economic'), DP: 7,
+					A: [_('Build 10 ships in a single Build Ships growth action'),
+						_('Any ships built as the direct result of star people special effects (e.g. STS Rogue AI) do not count for fulfilling this'),
+						_('Play this card when this happens')],
+					B: [_('1 DP per Asteroid system where you have a ship'),
+						_('1 DP per Robotics level')]},
+				7: {title: _('Etheric'), DP: 8,
+					A: [_('Have a ship each in 4 nebula hexes at the start of your movement')],
+					B: [_('STO: 1 DP per Spirituality level / STS: 1 DP per Military level')]},
+				8: {title: _('Exploratory'), DP: 13,
+					A: [_('Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors')],
+					B: [_('1 DP per sector with a ship of yours'),
+						_('1 DP per Propulsion level')]},
+				9: {title: _('General Scientific'), DP: 9,
+					A: [_('Have a total of 16 technology levels')],
+					B: [_('2 DP × your lowest technology level')]},
+				10: {title: _('Military'), DP: 10,
+					A: [_('Have ships totaling 120 in CV (not counting bonuses of any kind)'),
+						_('Reveal enough ships to prove this'),
+						_('If you play this card during a battle, all your ships in that battle still count toward the total (even if they would be destroyed)')],
+					B: [_('2 DP per sector where you are the only player with a fleet'),
+						_('1 DP per Military level')]},
+				11: {title: _('Spatial'), DP: 11,
+					A: [_('Own 10 stars')],
+					B: [_('2 DP per 3 stars you own'),
+						_('1 DP per Propulsion level')]},
+				12: {title: _('Special Scientific'), DP: 11,
+					A: [_('Have level 6 in 1 technology field and level 5 or higher in another field')],
+					B: [_('1 DP × your highest technology level')]}
+			};
 //
 			this.TECHNOLOGIES = {
 				Military: {
@@ -142,7 +173,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						_('You may cancel a growth action counter (solo variant: growth action sentence other than “spawn ships”) of your choice of a player you are “at war” with, which has not been played yet'),
 						_('Flip the counter face down to mark this'),
 						_('Any DP losses incurred for this action are not reverted in this case'),
-						_('This counts as “blocking”, so STS players may declare war in order to do this on a player and players with Spirituality level 5 or 6 are immune to this')]
+						_('This counts as “blocking”, so STS players may declare war in order to do this on a player and players with Spirituality level 5 or 6 are immune to this')
+					]
 				},
 				Spirituality: {
 					1: [''],
@@ -158,7 +190,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						_('Hostile ships cannot block you'),
 						_('Any population you lose is put to the side (“ascends”) instead of returning to the population track')],
 					'6+': [_('You may select and execute an additional growth action counter (at no cost)'),
-						_('TODO')]
+						_('TODO: You may also exchange a domination card')]
 				},
 				Propulsion: {
 					1: [_('Ship range is 3')],
@@ -202,7 +234,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 						_('Only lose 1 DP per additional growth action counter selected')],
 					'6+': [
 						_('You get a free Grow Population action'),
-						_('TODO')]
+						_('TODO: with 2 additional bonus population')]
 				}
 			};
 //
@@ -226,13 +258,21 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					_('Take one star of your choice where you have the required number of ships as shown by the table on your star people tile.')],
 				'growPopulation': [
 					_('Grow Population'),
-					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics.')],
+					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics.')
+				],
 				'research': [
 					_('Research'),
 					_('You must also select a square technology counter before revealing.<BR>Go up 1 level in the selected technology.')],
 				'switchAlignment': [
 					_('Switch Alignment'),
 					_('Happens immediately when the action is revealed.<BR>Flip your star people tile over to the other side.<BR>You are automatically at peace with everyone then.')
+				]
+			};
+//
+			this.RELICS = {
+				0: [_('Ancient Pyramids'),
+					_('The player who owns this star gets 1 additional remote view per round<BR>This may be used on a hidden thing as normal or to view any fleet (regardless of Spirituality levels)'),
+					_('Also, whenever this player does Grow Population place 1 bonus population here')
 				]
 			};
 //
@@ -243,7 +283,7 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					const technology = dojo.getAttr(node, 'technology');
 					const technologyLevel = dojo.getAttr(node, 'level');
 //
-					let html = `<H2>${_(technology)}</H2>`;
+					let html = `<H1 style='font-family:ERA;'>${_(technology)}</H1>`;
 					html += '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Level') + '</div>';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Effect') + '</div>';
@@ -263,8 +303,9 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 				getContent: (node) =>
 				{
 					let html = `<div style='display:grid;gap: 5px 5px;grid-template-columns:auto [title] repeat(6, auto [A]) repeat(6, auto [B]) auto [description];align-items:center;'>`;
+					html += `<div style='display:grid;gap: 5px 5px;grid-template-columns:auto [title] repeat(6, auto [A]) repeat(6, auto [B]) auto [description];align-items:center;'>`;
 //
-					html += `<div style='grid-line:header;grid-column:title;'><B>${'Domination card'}</B></div>`;
+					html += `<div style='grid-line:header;grid-column:title;'><B>${_('Domination cards')}</B></div>`;
 					html += `<div style='grid-line:header;grid-column:A 1 / A 6;justify-self:center'><B>A</B></div>`;
 					html += `<div style='grid-line:header;grid-column:B 1 / B 6;justify-self:center'><B>B</B></div>`;
 //
@@ -272,13 +313,14 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 					{
 						const played = dojo.query(`.ERAtechTrack>.ERAdominationCard[domination='${domination}']`).length;
 //
-						html += `<div style='grid-line:${domination};grid-column:title;color:${played ? 'grey' : 'white'}'><B>${this.DOMINATIONS[domination][0]}</B></div>`;
+						html += `<div style='grid-line:${domination};grid-column:title;color:${played ? 'grey' : 'white'}'><B>${this.DOMINATIONS[domination].title}</B></div>`;
 //
 						if (!played)
 						{
 							for (let faction of Object.values(gamedatas.factions))
 							{
-								if (faction.player_id > 0) html += `<div style='grid-line:${domination};grid-column:A ${faction.order};color:#${faction.color};'>❌</div>`;
+								if (faction.player_id > 0)
+									html += `<div style='grid-line:${domination};grid-column:A ${faction.order};color:#${faction.color};'>${this.gamedatas.factions[faction.color].scoring[domination].A ? '✔' : '❌'}</div>`;
 							}
 //
 							for (let faction of Object.values(gamedatas.factions))
@@ -286,18 +328,15 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 								if (faction.player_id > 0)
 								{
 									html += `<div style='grid-line:${domination};grid-column:B ${faction.order};color:#${faction.color};'>`;
-									for (let index = 1; index < this.DOMINATIONS[domination].length; index++)
-									{
-										const score = faction.scoring[domination][index - 1];
-										html += `<div style='font-size:${score * 2 + 10}pt;text-align:center;height:20pt;line-height:20pt;vertical-align:middle;'>${score}</div>`;
-									}
+									for (let score of this.gamedatas.factions[faction.color].scoring[domination].B)
+										html += `<div style='font-family:ERA;font-size:${score * 2 + 10}pt;text-align:center;height:20pt;line-height:20pt;vertical-align:middle;'>${score}</div>`;
 									html += `</div>`;
 								}
 							}
 						}
 //
 						html += `<div style='grid-line:${domination};grid-column:description;font-size:x-small;'>`;
-						for (let index = 1; index < this.DOMINATIONS[domination].length; index++) html += `<div>${this.DOMINATIONS[domination][index]}</div>`;
+						for (let text of this.DOMINATIONS[domination].B) html += `<div>${text}</div>`;
 						html += `</div>`;
 //
 					}
@@ -717,7 +756,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 										switch (counter)
 										{
 											case 'research':
-												const technologies = dojo.query('.ERAcounter-technology', 'ERAchoice').reduce((counters, node) => [...counters, node.getAttribute('counter')], []);
+												const technologies = dojo.query('.ERAcounter-technology', 'ERAchoice').reduce((counters, node) => [...counters,
+														node.getAttribute('counter')], []);
 												this.action('research', {color: this.color, technologies: JSON.stringify(technologies)});
 												break;
 											case 'growPopulation':
@@ -1126,12 +1166,12 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							if (html)
 							{
 								this.myDlg = new ebg.popindialog();
-								this.myDlg.create('trade');
+								this.myDlg.create('ERAtrade');
 								this.myDlg.setTitle(_('You must accept or refuse trading'));
 								this.myDlg.setContent(html);
 								this.myDlg.hideCloseIcon();
 								this.myDlg.show();
-								dojo.style('popin_trade_underlay', 'visibility', 'hidden');
+								dojo.style('popin_ERAtrade_underlay', 'visibility', 'hidden');
 							}
 						}
 					}
@@ -1583,7 +1623,6 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).forEach((node) => dojo.toggleClass(node, 'ERAselected', (count++) < event.target.value));
 											this.battleLoss(args.totalVictory);
 										});
-
 										dojo.connect($(`ERAfleetSelector-${fleet}-0`), 'click', () => {
 											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).removeClass('ERAselected');
 											$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
@@ -1755,7 +1794,8 @@ define(["dojo", "dojo/_base/declare", "ebg/core/gamegui", "ebg/counter",
 							}
 							else
 							{
-								const from = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAteleportPopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
+								const from = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAteleportPopulation').reduce((L, node) => [...L, node.getAttribute('location')
+									], []);
 								const to = dojo.query('.ERAprovisional', 'ERAboard').reduce((L, node) => [...L, node.getAttribute('location')], []);
 								this.action('teleportPopulation', {color: this.color, from: JSON.stringify(from), to: JSON.stringify(to)});
 								dojo.query('.ERAcounter-populationDisc.ERAprovisional', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));

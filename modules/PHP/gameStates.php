@@ -1542,14 +1542,11 @@ trait gameStates
 						if (Factions::getAlignment($color) === 'STO')
 						{
 							$DP = 1;
-							if ($DP)
-							{
-								self::gainDP($color, $DP);
-								self::incStat($DP, 'DP_GS', Factions::getPlayer($color));
+							self::gainDP($color, $DP);
+							self::incStat($DP, 'DP_GS', Factions::getPlayer($color));
 //* -------------------------------------------------------------------------------------------------------- */
-								self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+							self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-							}
 						}
 					}
 					switch ($galacticStory)
@@ -1592,14 +1589,11 @@ trait gameStates
 						if (Factions::getAlignment($color) === 'STS')
 						{
 							$DP = 1;
-							if ($DP)
-							{
-								self::gainDP($color, $DP);
-								self::incStat($DP, 'DP_GS', Factions::getPlayer($color));
+							self::gainDP($color, $DP);
+							self::incStat($DP, 'DP_GS', Factions::getPlayer($color));
 //* -------------------------------------------------------------------------------------------------------- */
-								self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+							self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-							}
 						}
 					}
 					switch ($galacticStory)
@@ -1717,14 +1711,11 @@ trait gameStates
 						if (Factions::getAlignment($color) === 'STO')
 						{
 							$DP = 1;
-							if ($DP)
-							{
-								self::gainDP($color, $DP);
-								self::incStat($DP, 'DP_GS', Factions::getPlayer($color));
+							self::gainDP($color, $DP);
+							self::incStat($DP, 'DP_GS', Factions::getPlayer($color));
 //* -------------------------------------------------------------------------------------------------------- */
-								self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+							self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-							}
 						}
 					}
 					switch ($galacticStory)
