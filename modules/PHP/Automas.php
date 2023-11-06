@@ -360,6 +360,39 @@ class Automas extends APP_GameClass
 						}
 					}
 //
+					$PlanetaryDeathRay = Counters::getRelic(PLANETARYDEATHRAY);
+					if ($PlanetaryDeathRay && Counters::getStatus($PlanetaryDeathRay, 'owner') === $color && Counters::getStatus($PlanetaryDeathRay, 'available'))
+					{
+						$atWar = Factions::atWar($color);
+						$defenseGrid = Counters::getRelic(DEFENSEGRID);
+						$bgagame->possible['planetaryDeathRayTargets'] = Sectors::range(Counters::get($PlanetaryDeathRay)['location'], 5);
+//
+						$targets = [];
+						foreach ($bgagame->possible['planetaryDeathRayTargets'] as $location)
+						{
+							if ($defenseGrid && Counters::get($defenseGrid)['location'] === $location && Counters::getStatus($defenseGrid, 'owner')) continue;
+							foreach (Counters::getAtLocation($location, 'populationDisc') as $disc) if (in_array(Counters::get($disc)['color'], $atWar)) $targets[] = $disc;
+						}
+						if ($targets)
+						{
+							shuffle($targets);
+							$bgagame->acPlanetaryDeathRay($color, 'disc', array_pop($targets), true);
+						}
+						else
+						{
+							$targets = [];
+							foreach ($bgagame->possible['planetaryDeathRayTargets'] as $location)
+							{
+								foreach (Ships::getAtLocation($location) as $ship) if (in_array(Ships::get($ship)['color'], $atWar)) $targets[] = $ship;
+							}
+							if ($targets)
+							{
+								shuffle($targets);
+								$bgagame->acPlanetaryDeathRay($color, 'ship', array_pop($targets), true);
+							}
+						}
+					}
+//
 					$shipList = [];
 					foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if ($location !== 'stock') $shipList[$location] = Ships::getAtLocation($location, $color);
 					foreach ($shipList as $location => $ships)
@@ -995,9 +1028,7 @@ class Automas extends APP_GameClass
 //* -------------------------------------------------------------------------------------------------------- */
 						$bgagame->notifyAllPlayers('msg', clienttranslate('<B>${TECHNOLOGY} is stealed at ${player_name}</B>'), ['player_name' => Factions::getName($otherColor), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $bgagame->TECHNOLOGIES[$technology]]);
 //* -------------------------------------------------------------------------------------------------------- */
-						for ($i = 0;
-							$i < $levels;
-							$i++) $bgagame->gainTechnology($color, $technology);
+						for ($i = 0; $i < $levels; $i++) $bgagame->gainTechnology($color, $technology);
 					}
 				}
 				continue;
@@ -1043,43 +1074,43 @@ class Automas extends APP_GameClass
 			$buildShips = array_search('buildShips', $counters);
 			if ($buildShips !== false)
 			{
-				$shipsUsed = sizeof(Ships::getAll($color, 'ship'));
-				$toBuild = ['fleets' => [], 'ships' => []];
-				foreach (Factions::getStatus($color, 'buildShips') as $location => $ships)
-				{
-					if ($shipsUsed + $ships > 16)
-					{
-						$fleets = Ships::getAtLocation($location, $color, 'fleet');
-						if (!$fleets) $fleets = Ships::getAtLocation('stock', $color, 'fleet');
-						if ($fleets)
-						{
-							shuffle($fleets);
-							$fleet = Ships::get(array_pop($fleets));
-//
-							$Fleet = Ships::getStatus($fleet['id'], 'fleet');
-							if ($fleet['location'] === 'stock') $toBuild['fleets'][$Fleet] = $location;
-//
-							for ($i = 0;
-								$i < $ships;
-								$i++) $toBuild['ships'][] = $Fleet;
-						}
-					}
-					else
-					{
-						$shipsUsed += $ships;
-						for ($i = 0;
-							$i < $ships;
-							$i++) $toBuild['ships'][] = $location;
-					}
-				}
-
-				$bgagame->acBuildShips($color, $toBuild, true);
+				$bgagame->acBuildShips($color, self::BuildShips($color, Factions::getStatus($color, 'buildShips')), true);
 				Factions::setStatus($color, 'buildShips');
 				continue;
 			}
 //
 			Factions::setStatus($color, 'counters', array_diff($counters, array_keys(Factions::TECHNOLOGIES)));
 		}
+	}
+	function buildShips(string $color, array $locations): array
+	{
+		$shipsUsed = sizeof(Ships::getAll($color, 'ship'));
+//
+		$toBuild = ['fleets' => [], 'ships' => []];
+		foreach ($locations as $location => $ships)
+		{
+			if ($shipsUsed + $ships > 16)
+			{
+				$fleets = Ships::getAtLocation($location, $color, 'fleet');
+				if (!$fleets) $fleets = Ships::getAtLocation('stock', $color, 'fleet');
+				if ($fleets)
+				{
+					shuffle($fleets);
+					$fleet = Ships::get(array_pop($fleets));
+//
+					$Fleet = Ships::getStatus($fleet['id'], 'fleet');
+					if ($fleet['location'] === 'stock') $toBuild['fleets'][$Fleet] = $location;
+//
+					for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $Fleet;
+				}
+			}
+			else
+			{
+				$shipsUsed += $ships;
+				for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $location;
+			}
+		}
+		return $toBuild;
 	}
 	function trading(string $color, string $alignment): int
 	{

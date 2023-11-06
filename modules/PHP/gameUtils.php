@@ -122,7 +122,7 @@ trait gameUtils
 //
 				if (!$ancienPyramids && Factions::getTechnology($color, 'spirituality') <= Factions::getTechnology($ship['color'], 'spirituality')) throw new BgaUserException(self::_('You must have a higher spirituality level than the owner of the fleet'));
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div class="ERA-removeViewing" style="background:#${color}"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
+				self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div class="ERA-removeViewing" style="background:#${color};color:black;"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
 					'color' => $ship['color'], 'GPS' => $ship['location'],
 					'LOG' => [
 						'log' => clienttranslate('<B>${fleet}</B> fleet with ${ships} ship(s)'),

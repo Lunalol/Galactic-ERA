@@ -494,15 +494,17 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('continue');
 	}
-	function acPlanetaryDeathRay(string $color, string $type, int $id)
+	function acPlanetaryDeathRay(string $color, string $type, int $id, bool $automa)
 	{
 		$player_id = Factions::getPlayer($color);
 //
-		$this->checkAction('planetaryDeathRay');
-		$this->checkAction('scout');
-		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-		if (!array_key_exists('planetaryDeathRay', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if (!array_key_exists('planetaryDeathRayTargets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		if (!$automa)
+		{
+			$this->checkAction('planetaryDeathRay');
+			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+			if (!array_key_exists('planetaryDeathRay', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+			if (!array_key_exists('planetaryDeathRayTargets', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+		}
 //
 		$PlanetaryDeathRay = Counters::getRelic(PLANETARYDEATHRAY);
 		if ($PlanetaryDeathRay)
@@ -626,7 +628,7 @@ trait gameStateActions
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
 		self::updateScoring();
-		$this->gamestate->nextState('continue');
+		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acScout(string $color, array $ships)
 	{
@@ -1140,7 +1142,7 @@ trait gameStateActions
 				if ($player_id > 0)
 				{
 					$DP = 0;
-					foreach ($defenders as $defender) $DP += sum($toDestroy[$defender]);
+					foreach ($defenders as $defender) $DP += array_sum($toDestroy[$defender]);
 					if ($DP)
 					{
 						self::gainDP($color, $DP);
@@ -1155,7 +1157,7 @@ trait gameStateActions
 					$player_id = Factions::getPlayer($color);
 					if ($player_id > 0)
 					{
-						$DP = sum($toDestroy[$attacker]);
+						$DP = array_sum($toDestroy[$attacker]);
 						if ($DP)
 						{
 							self::gainDP($color, $DP);
@@ -1612,10 +1614,7 @@ trait gameStateActions
 			return self::triggerAndNextState('advancedFleetTactics');
 		}
 //
-		if ($newShips)
-		{
-			self::notifyAllPlayers('msg', '// PJL : Buried ships with AUTOMAS not implemented', []);
-		}
+		if ($newShips) self::acBuildShips($color, Automas::BuildShips($color, [$location => 3]), true, true);
 	}
 	function acSpecial($color, $N)
 	{
@@ -1779,7 +1778,7 @@ trait gameStateActions
 		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
-	function acBuildShips(string $color, array $buildShips, bool $automa = false): void
+	function acBuildShips(string $color, array $buildShips, bool $automa = false, bool $buriedShips = false): void
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1835,10 +1834,12 @@ trait gameStateActions
 				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
 //
 				if ($automa)
+				{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>additional ship(s)</B> ${GPS}'), [
-						'player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
+					if (!$buriedShips) self::notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>additional ship(s)</B> ${GPS}'), [
+							'player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
+				}
 				else
 				{
 					if ($location === Ships::getHomeStarLocation($color))
@@ -1866,7 +1867,7 @@ trait gameStateActions
 			}
 		}
 //
-		if ($this->gamestate->state()['name'] !== 'buriedShips')
+		if ($this->gamestate->state()['name'] !== 'buriedShips' && !$buriedShips)
 		{
 			$counters = Factions::getStatus($color, 'counters');
 			unset($counters[array_search('buildShips', $counters)]);
@@ -1878,15 +1879,16 @@ trait gameStateActions
 			$galacticStory = self::getGameStateValue('galacticStory');
 			$era = [1 => 'First', 2 => 'First', 3 => 'Second', 4 => 'Second', 5 => 'Second', 6 => 'Second', 7 => 'Third', 8 => 'Third'][self::getGameStateValue('round')];
 //
-// WAR First: All players score 2 DP for every Build Ships action they do in this era.
+// WAR First: All players score 2 DP for every Build Ships action they do in this era
 //
 			if ($era === 'First' && $galacticStory == WAR && $player_id > 0)
 			{
+				if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every Build Ships action they do in this era'), []);
 				$DP = 2;
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP '), ['DP' => 2,
+				self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} gains ${DP} DP '), ['DP' => 2,
 					'player_name' => Factions::getName($color),
 					'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */

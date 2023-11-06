@@ -200,7 +200,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			dojo.setStyle(svg, 'position', 'absolute');
 			dojo.setStyle(svg, 'left', '0px');
 			dojo.setStyle(svg, 'top', '0px');
-			dojo.setStyle(svg, 'z-index', '150');
+			dojo.setStyle(svg, 'z-index', '250');
 			dojo.setStyle(svg, 'pointer-events', 'all');
 			svg.setAttribute("width", 10000);
 			svg.setAttribute("height", 10000);

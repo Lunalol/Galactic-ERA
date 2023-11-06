@@ -1454,7 +1454,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						for (let card of Object.values(args.hand))
 						{
-							this.addActionButton('ERAexchnageButton-' + card.id, this.DOMINATIONS[card.type][0], () => {
+							this.addActionButton('ERAexchnageButton-' + card.id, this.DOMINATIONS[card.type].title, () => {
 								this.action('dominationCardExchange', {color: this.color, id: card.id}, () => {
 								});
 							}
@@ -1607,52 +1607,57 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								{
 									if (ships > 0)
 									{
-										const fleetNode = dojo.place(this.format_block('ERAfleetH', {fleet: fleet, ships: ships}), sideNode);
+										const fleetNode = dojo.place(this.format_block('ERAfleetH', {color: color, fleet: fleet, ships: ships}), sideNode);
 //
 										if (fleet !== 'ships')
 										{
-											const node = dojo.place(this.format_block('ERAship', {id: color + '-' + fleet, color: color, ship: ships, location: ''}), `ERAfleet-${fleet}`);
+											const node = dojo.place(this.format_block('ERAship', {id: color + '-' + fleet, color: color, ship: ships, location: ''}), `ERAfleet-${color}-${fleet}`);
 											dojo.setAttr(node, 'fleet', fleet);
 											dojo.style(node, 'position', 'relative');
 											dojo.addClass(node, 'ERAselectable');
-											dojo.connect(node, 'click', (event) => {
-												dojo.stopEvent(event);
-												dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).toggleClass('ERAselected', dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length === 0);
-												$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
-												this.battleLoss(args.totalVictory);
-											});
+											if (side === 'winner' && args.totalVictory) dojo.addClass(node, 'ERAdisabled');
+											else dojo.connect(node, 'click', (event) => {
+													dojo.stopEvent(event);
+													dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).toggleClass('ERAselected', dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length === 0);
+													$(`ERAfleetSelector-${color}-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
+													this.battleLoss(args.totalVictory);
+												});
 											dojo.addClass(node, 'ERAselectable');
 										}
 //
 										for (let index = 0; index < ships; index++)
 										{
-											const shipNode = dojo.place(`<div style='width:50px;height:50px;transform:scale(20%);transform-origin:left top;margin-right:-25px'></div>`, `ERAfleet-${fleet}`);
+											const shipNode = dojo.place(`<div style='width:50px;height:50px;transform:scale(20%);transform-origin:left top;margin-right:-25px'></div>`, `ERAfleet-${color}-${fleet}`);
 											const node = dojo.place(this.format_block('ERAship', {id: color + '-' + fleet + '-' + index, color: color, location: fleet}), shipNode);
-											dojo.connect(node, 'click', (event) => {
-												dojo.stopEvent(event);
-												let count = 0;
-												dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).forEach((node) => dojo.toggleClass(node, 'ERAselected', (count++) <= index));
-												$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
-												this.battleLoss(args.totalVictory);
-											});
+											if (side === 'winner' && args.totalVictory) dojo.addClass(node, 'ERAdisabled');
+											else dojo.connect(node, 'click', (event) => {
+													dojo.stopEvent(event);
+													let count = 0;
+													dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).forEach((node) => dojo.toggleClass(node, 'ERAselected', (count++) <= index));
+													$(`ERAfleetSelector-${color}-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
+													this.battleLoss(args.totalVictory);
+												});
 											dojo.addClass(node, 'ERAselectable');
 										}
 //
-										dojo.connect($(`ERAfleetSelector-${fleet}`), 'oninput', (event) => {
-											let count = 0;
-											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).forEach((node) => dojo.toggleClass(node, 'ERAselected', (count++) < event.target.value));
-											this.battleLoss(args.totalVictory);
-										});
-										dojo.connect($(`ERAfleetSelector-${fleet}-0`), 'click', () => {
-											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).removeClass('ERAselected');
-											$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
-											this.battleLoss(args.totalVictory);
-										});
-										dojo.connect($(`ERAfleetSelector-${fleet}-MAX`), 'click', () => {
-											dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).addClass('ERAselected');
-											$(`ERAfleetSelector-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
-											this.battleLoss(args.totalVictory);
-										});
+										if (side === 'winner' && args.totalVictory) dojo.addClass($(`ERAfleetSelector-${color}-${fleet}`), 'ERAdisabled');
+										else dojo.connect($(`ERAfleetSelector-${color}-${fleet}`), 'oninput', (event) => {
+												let count = 0;
+												dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).forEach((node) => dojo.toggleClass(node, 'ERAselected', (count++) < event.target.value));
+												this.battleLoss(args.totalVictory);
+											});
+										if (side === 'winner' && args.totalVictory) dojo.addClass($(`ERAfleetSelector-${color}-${fleet}-0`), 'ERAdisabled');
+										else dojo.connect($(`ERAfleetSelector-${color}-${fleet}-0`), 'click', () => {
+												dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).removeClass('ERAselected');
+												$(`ERAfleetSelector-${color}-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
+												this.battleLoss(args.totalVictory);
+											});
+										if (side === 'winner' && args.totalVictory) dojo.addClass($(`ERAfleetSelector-${color}-${fleet}-MAX`), 'ERAdisabled');
+										else dojo.connect($(`ERAfleetSelector-${color}-${fleet}-MAX`), 'click', () => {
+												dojo.query(`.ERAship:not([fleet]).ERAselectable`, fleetNode).addClass('ERAselected');
+												$(`ERAfleetSelector-${color}-${fleet}`).value = dojo.query(`.ERAship:not([fleet]).ERAselected`, fleetNode).length;
+												this.battleLoss(args.totalVictory);
+											});
 									}
 								}
 							}
