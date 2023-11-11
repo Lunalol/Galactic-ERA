@@ -170,12 +170,15 @@ class Ships extends APP_GameClass
 //
 //	Super-Stargate
 //
-			if ($superStargate)
+			if ($superStargate && ($propulsion >= 5 || !Counters::isBlocked($ship['color'], $superStargate)))
 			{
 				foreach (array_keys($superStargateStars) as $next_location)
 				{
-					if ($superStargate === $location && $next_location !== $location) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
-					if ($superStargate !== $location && $next_location === $location) $neighbors[$superStargate] = ['location' => $superStargate, 'terrain' => Sectors::PLANET];
+					if ($propulsion >= 5 || !Counters::isBlocked($ship['color'], $next_location))
+					{
+						if ($superStargate === $location && $next_location !== $location) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+						if ($superStargate !== $location && $next_location === $location) $neighbors[$superStargate] = ['location' => $superStargate, 'terrain' => Sectors::PLANET];
+					}
 				}
 			}
 //
