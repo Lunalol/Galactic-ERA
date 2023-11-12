@@ -3,7 +3,7 @@
 <div id='ERApanels'>
 	<div id='ERAplayArea'>
 		<div id='ERAfleets' class='ERAfleets ERAhide'></div>
-		<div id='ERAboard'></div>
+		<div id='ERAboard' class='ERAextended'></div>
 	</div>
 	<div id='ERAstatusArea' style='display:flex;justify-content:center;margin-top:10px;'>
 		<div id='ERA-DominationDeck' style='position:relative;width:100px;margin:10px;'></div>

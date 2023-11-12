@@ -1754,7 +1754,7 @@ trait gameStates
 // MIGRATIONS Third : Every player who is the only player to research a certain technology field in a round in this era scores 4 DP (per such field)
 // Technology levels gained by any other means (such as taking a star from another player) do not count for this, neither for scoring nor for preventing scoring
 //
-							if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('Every player who is the only player to research a certain technology field in a round in this era scores 4 DP (per such field)'));
+							if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('Every player who is the only player to research a certain technology field in a round in this era scores 4 DP (per such field)'), []);
 							foreach (array_keys(Factions::TECHNOLOGIES) as $technology)
 							{
 								$research = [];
@@ -1780,7 +1780,7 @@ trait gameStates
 //
 // RIVALRY Third : For every technology field, the player who has the highest level in that field at the end of the round scores 3 DP (even if tied with other players)
 //
-							if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('For every technology field, the player who has the highest level in that field at the end of the round scores 3 DP (even if tied with other players)'));
+							if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('For every technology field, the player who has the highest level in that field at the end of the round scores 3 DP (even if tied with other players)'), []);
 							foreach (array_keys(Factions::TECHNOLOGIES) as $technology)
 							{
 								$research = [];

@@ -25,7 +25,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'position', 'absolute');
 						dojo.style(node, 'left', this.board.hexagons[ship.location].x - node.clientWidth / 2 + 'px');
 						dojo.style(node, 'top', this.board.hexagons[ship.location].y - node.clientHeight / 2 + 'px');
-						dojo.style(node, 'transform', `scale(40%) rotate(calc(-1 * var(--ROTATE)))`);
+						dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE)))`);
 //
 						dojo.connect(node, 'click', this, 'click');
 					}
@@ -191,16 +191,16 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				svg.appendChild(SVGshape);
 //
 				dojo.connect(SVGshape, 'click', (event) => {
+					dojo.stopEvent(event);
 					let ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
 					let location = dojo.getAttr(event.target, 'location');
-					this.bgagame.action('move', {color: color, location: JSON.stringify(location), ships: JSON.stringify(ships)});
-					dojo.stopEvent(event);
+					if (location !== possible[0]) this.bgagame.action('move', {color: color, location: JSON.stringify(location), ships: JSON.stringify(ships)});
 				});
 			}
 			dojo.setStyle(svg, 'position', 'absolute');
 			dojo.setStyle(svg, 'left', '0px');
 			dojo.setStyle(svg, 'top', '0px');
-			dojo.setStyle(svg, 'z-index', '250');
+			dojo.setStyle(svg, 'z-index', '150');
 			dojo.setStyle(svg, 'pointer-events', 'all');
 			svg.setAttribute("width", 10000);
 			svg.setAttribute("height", 10000);

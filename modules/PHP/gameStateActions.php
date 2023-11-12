@@ -494,7 +494,7 @@ trait gameStateActions
 //
 		$this->gamestate->nextState('continue');
 	}
-	function acPlanetaryDeathRay(string $color, string $type, int $id, bool $automa)
+	function acPlanetaryDeathRay(string $color, string $type, int $id, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1633,7 +1633,7 @@ trait gameStateActions
 //
 				$DP = -5;
 				self::gainDP(Factions::getNotAutomas(), $DP);
-				self::incStat($DP, 'DP_LOST', Factions::getNotAutomas());
+				self::incStat($DP, 'DP_LOST', Factions::getPlayer(Factions::getNotAutomas()));
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP,
 					'player_name' => Factions::getName(Factions::getNotAutomas()),
