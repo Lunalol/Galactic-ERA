@@ -98,7 +98,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			homeStar = $('ERAboard').querySelector(`.ERAhomeStar[location='${location}']`);
 			if (homeStar)
 			{
-				dojo.style(homeStar, 'transform', `scale(39%) rotate(calc(-1 * var(--ROTATE))) translate(-2px, -${50 + index * 32}px)`);
+				dojo.style(homeStar, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translate(-2px, -${50 + index * 32}px)`);
 				dojo.style(homeStar, 'z-index', index + 100);
 			}
 //

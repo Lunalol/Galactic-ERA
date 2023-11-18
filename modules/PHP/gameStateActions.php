@@ -464,7 +464,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
-	function acRemoteViewing(string $color, bool $ancienPyramids, string $type, string $id)
+	function acRemoteViewing(string $color, bool $ancientPyramids, string $type, string $id)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -472,7 +472,7 @@ trait gameStateActions
 		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 		if (!array_key_exists('view', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 //
-		if ($ancienPyramids)
+		if ($ancientPyramids)
 		{
 			$relicID = Counters::getRelic(ANCIENTPYRAMIDS);
 			if ($relicID)
@@ -489,7 +489,7 @@ trait gameStateActions
 			Factions::setStatus($color, 'view', $this->possible['view'] - 1);
 		}
 //
-		self::reveal($color, $type, $id, $ancienPyramids);
+		self::reveal($color, $type, $id, $ancientPyramids);
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
 		$this->gamestate->nextState('continue');
@@ -1653,13 +1653,19 @@ trait gameStateActions
 	{
 		$player_id = Factions::getPlayer($color);
 //
+		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
+		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $color) $ancientPyramids = intval(Counters::getStatus($ancientPyramids, 'available'));
+//
 		if (!$automa)
 		{
 			$this->checkAction('growPopulation');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 			if (!in_array('growPopulation', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'growPopulation');
-			if (sizeof($locationsBonus) > $this->possible['bonusPopulation']) throw new BgaVisibleSystemException('Invalid bonus population: ' . sizeof($locationsBonus));
+//
+			$bonusPopulation = 0;
+			foreach ($locationsBonus as $location) if (!array_key_exists('ancientPyramids', $this->possible) || $this->possible['ancientPyramids'] !== $location) $bonusPopulation++;
+			if ($bonusPopulation > $this->possible['bonusPopulation']) throw new BgaVisibleSystemException('Invalid bonus population: ' . sizeof($locationsBonus));
 		}
 //
 		foreach ($locations as $location)
@@ -1681,6 +1687,7 @@ trait gameStateActions
 		foreach ($locationsBonus as $location)
 		{
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+			unset($this->possible['growPopulation'][$location]);
 //
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));

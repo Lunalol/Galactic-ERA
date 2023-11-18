@@ -1598,7 +1598,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						for (let side of ['winner', 'losers'])
 						{
-							const sideNode = dojo.place(`<div id='ERA${side}' style='flex:1 1 50%;display:flex;flex-direction:column;background:#000000C0;margin:25px;border-radius:25px'></div>`, 'ERAchoice');
+							const sideNode = dojo.place(`<div id='ERA${side}' style='flex:1 1 50%;display:flex;flex-direction:column;background:#000000C0;margin:10px;padding:10px;border-radius:25px'></div>`, 'ERAchoice');
 							dojo.place(`<div style='margin:5% 0% 5% 5%;color:white;'><span style='font-weight:bold;'>${{winner: _('Winner side'), losers: _('Loser side')}[side]}&nbsp:&nbsp</span><span id='ERA${side}Lose'></span>&nbsp${_('ship(s) destroyed')}</div>`, sideNode);
 //
 							for (let color in args[side])
@@ -1792,11 +1792,11 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					case 'bonusPopulation':
 //
-						if (args._private.ancientPyramis)
+						if (args._private.ancientPyramids)
 						{
-							const node = dojo.place(`<div class='ERAcounter ERAcounter-relic ERAcounter-0 action-button' style='display:inline-block;vertical-align:middle;'></div>`, 'generalactions');
-							dojo.connect(node, 'click', () => {
-							});
+							const node = dojo.place(`<div id='ERAancientPyramids' class='ERAcounter ERAcounter-relic ERAcounter-0 action-button' style='display:inline-block;vertical-align:middle;'></div>`, 'generalactions');
+							this.addTooltip(node, _('Ancient Pyramids'), _('Place a bonus population here'));
+							dojo.connect(node, 'click', () => this.bonusPopulation(args._private.ancientPyramids));
 						}
 //
 						this.addActionButton('ERAbonusPopulationButton', _('Confirm'), () => {
@@ -2122,6 +2122,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		bonusPopulation: function (location)
 		{
+			const ancientPyramids = this.gamedatas.gamestate.args._private.ancientPyramids;
+//
 			if (location in this.gamedatas.gamestate.args._private.growPopulation)
 			{
 				let nodes = dojo.query(`.ERAcounter-populationDisc[location='${location}'].ERAprovisionalBonus`);
@@ -2130,9 +2132,13 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					nodes.remove();
 					this.counters.arrange(location);
 				}
-				else if (dojo.query(`.ERAcounter-populationDisc.ERAprovisionalBonus`).length < this.gamedatas.gamestate.args._private.bonusPopulation)
-					dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisionalBonus');
+				else
+				{
+					if (location == ancientPyramids || dojo.query(`.ERAcounter-populationDisc.ERAprovisionalBonus:not([location='${ancientPyramids}'])`).length < this.gamedatas.gamestate.args._private.bonusPopulation)
+						dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisionalBonus');
+				}
 			}
+			if (ancientPyramids) dojo.toggleClass('ERAancientPyramids', 'ERAdisabled', dojo.query(`.ERAcounter-populationDisc.ERAprovisionalBonus[location='${ancientPyramids}']`).length > 0);
 		},
 		teleportPopulation: function (location)
 		{
