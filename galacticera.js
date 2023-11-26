@@ -100,8 +100,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			};
 //
 			this.GALACTIC_GOALS = {
-			}
-			;
+			};
 //
 			this.DOMINATIONS = {
 				0: {title: _('Aquisition'), DP: 10,
@@ -233,8 +232,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					6: [_('You get 6 bonus population when doing Grow Population'),
 						_('Only lose 1 DP per additional growth action counter selected')],
 					'6+': [
-						_('You get a free Grow Population action'),
-						_('TODO: with 2 additional bonus population')]
+						_('You get a free Grow Population action with 2 additional bonus population')]
 				}
 			};
 //
@@ -257,6 +255,10 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					_('Gain Star'),
 					_('Take one star of your choice where you have the required number of ships as shown by the table on your star people tile.')],
 				'growPopulation': [
+					_('Grow Population'),
+					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics.')
+				],
+				'growPopulation+': [
 					_('Grow Population'),
 					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics.')
 				],
@@ -295,6 +297,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						_('The player who owns this star may use stargate movement from any star of theirs to this one or vice versa (regardless of their level in Propulsion)'),
 						_('If the player has Propulsion 5 this movement cannot be blocked (in either direction)')]]
 			};
+//
+			this.RANKINGS = {0: _('lunar'), 1: _('planetary'), 2: _('stellar'), 3: _('galactic'), 4: _('cosmic')}
 //
 			this.ERAtechnologyTooltips = new dijit.Tooltip({
 				showDelay: 500, hideDelay: 0,
@@ -775,13 +779,21 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									{
 										switch (counter)
 										{
+											case 'switchAlignment':
+												this.action('switchAlignment', {color: this.color});
+												break;
 											case 'research':
 												const technologies = dojo.query('.ERAcounter-technology', 'ERAchoice').reduce((counters, node) => [...counters,
 														node.getAttribute('counter')], []);
 												this.action('research', {color: this.color, technologies: JSON.stringify(technologies)});
 												break;
 											case 'growPopulation':
-												this.setClientState(counter, {counter: node.id, possibleactions: ['growPopulation'
+												this.setClientState('growPopulation', {counter: node.id, possibleactions: ['growPopulation'
+													], descriptionmyturn: _('${you} may add one population disc to every star that is below its “growth limit”')});
+												break;
+											case 'growPopulation+':
+												state.args._private.bonusPopulation += 2;
+												this.setClientState('growPopulation', {counter: node.id, possibleactions: ['growPopulation'
 													], descriptionmyturn: _('${you} may add one population disc to every star that is below its “growth limit”')});
 												break;
 											case 'gainStar':
@@ -1255,6 +1267,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		onLeavingState: function (stateName)
 		{
 			console.log('Leaving state: ' + stateName);
+//
+			if (this.factions.dialog) this.factions.dialog.destroy();
 //
 			dojo.destroy('ERAchoice');
 			dojo.destroy('ERApath');
@@ -1802,8 +1816,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						this.addActionButton('ERAbonusPopulationButton', _('Confirm'), () => {
 							const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
 							const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
-							this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus)});
-							dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
+							const counter = $('ERAchoice').querySelector('.ERAcounter.ERAselected');
+							if (counter)
+							{
+								this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), bonus: counter.getAttribute('counter') === 'growPopulation+'});
+								dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
+							}
 						}, null, false, 'red');
 						break;
 //
@@ -1920,6 +1938,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			dojo.subscribe('removeShip', (notif) => this.ships.remove(notif.args.ship));
 			dojo.subscribe('homeStarEvacuation', (notif) => this.ships.homeStarEvacuation(notif.args.homeStar, notif.args.location));
 //
+			this.notifqueue.setIgnoreNotificationCheck('msg', (notif) => (this.player_id === +notif.args.player_id));
 			this.notifqueue.setIgnoreNotificationCheck('revealShip', (notif) => (this.player_id === +notif.args.player_id));
 			this.notifqueue.setIgnoreNotificationCheck('updateFaction', (notif) => (this.player_id === +notif.args.player_id));
 //
@@ -2114,9 +2133,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				}
 				else
 				{
-					const population = +this.gamedatas.gamestate.args._private.growPopulation[location].population;
-					const limit = +this.gamedatas.gamestate.args._private.growPopulation[location].growthLimit;
-					if (population < limit) dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisional');
+					for (let i = 0; i < (this.gamedatas.factions[this.color].starPeople === 'Mantids' ? 2 : 1); i++)
+					{
+						const population = +this.gamedatas.gamestate.args._private.growPopulation[location].population;
+						const limit = +this.gamedatas.gamestate.args._private.growPopulation[location].growthLimit;
+						if (population < limit) dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisional');
+					}
 				}
 			}
 		},
@@ -2228,13 +2250,18 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			if (log && args && !args.processed)
 			{
 				args.processed = true;
+//
 				if ('GPS' in args) {
 					if (!this.isCurrentPlayerActive()) this.board.centerMap(args.GPS);
 					args.GPS = `<span onclick="gameui.onCenter(event)" location='${args.GPS}'>📌</span>`;
 				}
+//
 				if ('DICE' in args) args.DICE = `<span class='ERAdice' style='background-position-x:-${30 * (args.DICE - 1)}px'></span>`;
 				if ('DICE1' in args) args.DICE1 = `<span class='ERAdice' style='background-position-x:-${30 * (args.DICE1 - 1)}px'></span>`;
 				if ('DICE2' in args) args.DICE2 = `<span class='ERAdice' style='background-position-x:-${30 * (args.DICE2 - 1)}px'></span>`;
+//
+				if ('RANKING' in args)
+					args.RANKING = `<div style='text-align:center;'><img src='${g_gamethemeurl}/img/ranking/${args.RANKING}.png' style='height:50px;vertical-align:middle;filter:invert(1)'></img><span> ${this.RANKINGS[args.RANKING]} </span><img src='${g_gamethemeurl}/img/ranking/${args.RANKING}.png' style='height:50px;vertical-align:middle;filter:invert(1)'></img></div>`;
 			}
 			return this.inherited(arguments);
 		},

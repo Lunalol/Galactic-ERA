@@ -107,7 +107,7 @@ class DominationCards extends APP_GameClass
 				$sector = Factions::getHomeStar($color);
 				foreach (Sectors::stars() as $location)
 				{
-					if ($location[0] === $sector)
+					if ($location[0] == $sector)
 					{
 						$counters = Counters::getAtLocation($location, 'populationDisc');
 						if ($counters && Counters::get(array_pop($counters))['color'] !== $color) $defensive = 0;

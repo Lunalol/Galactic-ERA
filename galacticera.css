@@ -550,6 +550,7 @@ div,img {
 }
 
 .ERAcounter {
+	position: relative;
 	background: url('img/counters.png');
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	z-index: 100;
@@ -812,7 +813,7 @@ div,img {
 }
 .ERAextended .ERAship-FF3333 {
 	background-position-x: -4500px;
-	clip-path: path("M 95.00,74.52 C 104.60,73.00 110.79,74.58 120.00,75.87 120.00,75.87 162.00,82.87 162.00,82.87 175.43,84.78 175.10,80.52 185.00,81.09 192.23,81.51 199.63,84.10 204.90,89.18 208.19,92.36 209.68,96.20 213.04,97.98 216.22,99.66 219.29,98.32 223.00,100.17 225.90,101.62 229.64,105.64 232.00,108.00 238.59,114.59 246.52,122.08 246.96,132.00 247.30,139.85 243.63,148.70 236.96,153.18 230.55,157.50 206.60,161.57 198.00,163.20 167.11,169.02 135.27,170.95 104.00,173.09 104.00,173.09 59.00,176.04 59.00,176.04 59.00,176.04 47.00,177.00 47.00,177.00 47.00,177.00 29.00,177.85 29.00,177.85 29.00,177.85 14.00,177.85 14.00,177.85 12.50,177.98 10.45,177.98 9.02,177.85 -0.47,174.86 5.97,163.20 9.02,158.00 19.11,140.75 32.89,122.10 47.00,108.00 57.71,97.30 80.46,78.43 95.00,74.52 Z");
+	clip-path: path("M 116.00,62.42 C 132.78,60.38 144.44,67.46 154.00,67.20 165.00,66.90 165.97,76.60 171.07,83.79 173.70,87.49 176.82,87.28 179.59,89.69 182.36,92.11 182.67,95.47 187.01,96.75 192.88,98.48 193.96,92.24 199.04,88.51 204.46,84.52 211.65,86.29 217.00,89.48 225.44,94.51 226.99,100.07 231.10,103.73 234.34,106.61 236.89,106.65 240.98,110.21 248.17,116.47 250.93,126.02 244.61,133.98 236.75,143.89 226.40,142.22 222.00,143.89 217.43,145.62 205.05,158.15 192.02,155.77 185.72,154.63 186.40,149.46 181.90,147.21 178.85,145.38 174.24,146.75 171.00,147.21 168.13,147.97 163.54,148.71 161.09,150.14 157.42,152.27 156.89,155.05 151.00,158.18 141.63,163.16 138.07,162.89 128.00,163.00 115.49,163.15 87.98,171.19 75.00,174.71 75.00,174.71 32.00,183.25 32.00,183.25 26.44,184.22 14.85,187.06 10.00,186.97 2.11,186.82 2.42,181.44 5.97,176.01 9.31,170.91 12.87,170.21 16.47,165.91 16.47,165.91 31.37,144.02 31.37,144.02 36.79,137.02 38.62,138.28 41.44,134.79 43.70,132.01 43.48,128.99 47.21,125.33 51.00,121.61 54.64,121.46 58.52,115.00 62.44,108.45 59.74,104.89 60.04,98.00 60.77,81.39 79.84,70.67 94.00,66.44 102.57,63.87 107.52,63.63 116.00,62.42 Z");
 }
 .ERAship-00CC00 {
 	background-position-x: -3250px;
@@ -847,19 +848,19 @@ div,img {
 }
 .ERAextended .ERAship-FFFF00 {
 	background-position-x: -5750px;
-	clip-path: path("M 116.00,62.42 C 132.78,60.38 144.44,67.46 154.00,67.20 165.00,66.90 165.97,76.60 171.07,83.79 173.70,87.49 176.82,87.28 179.59,89.69 182.36,92.11 182.67,95.47 187.01,96.75 192.88,98.48 193.96,92.24 199.04,88.51 204.46,84.52 211.65,86.29 217.00,89.48 225.44,94.51 226.99,100.07 231.10,103.73 234.34,106.61 236.89,106.65 240.98,110.21 248.17,116.47 250.93,126.02 244.61,133.98 236.75,143.89 226.40,142.22 222.00,143.89 217.43,145.62 205.05,158.15 192.02,155.77 185.72,154.63 186.40,149.46 181.90,147.21 178.85,145.38 174.24,146.75 171.00,147.21 168.13,147.97 163.54,148.71 161.09,150.14 157.42,152.27 156.89,155.05 151.00,158.18 141.63,163.16 138.07,162.89 128.00,163.00 115.49,163.15 87.98,171.19 75.00,174.71 75.00,174.71 32.00,183.25 32.00,183.25 26.44,184.22 14.85,187.06 10.00,186.97 2.11,186.82 2.42,181.44 5.97,176.01 9.31,170.91 12.87,170.21 16.47,165.91 16.47,165.91 31.37,144.02 31.37,144.02 36.79,137.02 38.62,138.28 41.44,134.79 43.70,132.01 43.48,128.99 47.21,125.33 51.00,121.61 54.64,121.46 58.52,115.00 62.44,108.45 59.74,104.89 60.04,98.00 60.77,81.39 79.84,70.67 94.00,66.44 102.57,63.87 107.52,63.63 116.00,62.42 Z");
+	clip-path: path("M 95.00,74.52 C 104.60,73.00 110.79,74.58 120.00,75.87 120.00,75.87 162.00,82.87 162.00,82.87 175.43,84.78 175.10,80.52 185.00,81.09 192.23,81.51 199.63,84.10 204.90,89.18 208.19,92.36 209.68,96.20 213.04,97.98 216.22,99.66 219.29,98.32 223.00,100.17 225.90,101.62 229.64,105.64 232.00,108.00 238.59,114.59 246.52,122.08 246.96,132.00 247.30,139.85 243.63,148.70 236.96,153.18 230.55,157.50 206.60,161.57 198.00,163.20 167.11,169.02 135.27,170.95 104.00,173.09 104.00,173.09 59.00,176.04 59.00,176.04 59.00,176.04 47.00,177.00 47.00,177.00 47.00,177.00 29.00,177.85 29.00,177.85 29.00,177.85 14.00,177.85 14.00,177.85 12.50,177.98 10.45,177.98 9.02,177.85 -0.47,174.86 5.97,163.20 9.02,158.00 19.11,140.75 32.89,122.10 47.00,108.00 57.71,97.30 80.46,78.43 95.00,74.52 Z");
 }
 /* </editor-fold> */
 /* <editor-fold defaultstate="collapsed" desc="homeStar"> */
 .ERAhomeStar {
 	background: url('img/3D.png');
-	clip-path: circle(50%);
+	clip-path: circle(60%);
 	width: 250px;
 	height: 250px;
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAhomeStar.ERAselected {
-	box-shadow: 0px 0px 10px 5px white;
+	/*	box-shadow: 0px 0px 10px 5px white;*/
 	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAhomeStar-FF3333 {
@@ -1051,6 +1052,17 @@ div,img {
 	transform-origin: left top;
 	vertical-align: middle;
 }
+.ERAcounter-growth[counter='growPopulation+']:after
+{
+	position:absolute;
+	content: '+2';
+	color: black;
+	bottom: 0px;
+	padding: 5px;
+    box-sizing: border-box;
+	width: 100%;
+	text-align: center;
+}
 .ERAcounter-growth[counter='switchAlignment'].ERAcounter-FF3333 {
 	background-position-x: -4753px;
 }
@@ -1105,22 +1117,22 @@ div,img {
 .ERAcounter-growth[counter='gainStar'].ERAcounter-FFFF00 {
 	background-position-x: -5910px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF3333 {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF3333,.ERAcounter-growth[counter='growPopulation+'].ERAcounter-FF3333 {
 	background-position-x: -6355px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-00CC00 {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-00CC00,.ERAcounter-growth[counter='growPopulation+'].ERAcounter-00CC00 {
 	background-position-x: -6088px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-6666FF {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-6666FF,.ERAcounter-growth[counter='growPopulation+'].ERAcounter-6666FF {
 	background-position-x: -5999px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF9900 {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-FF9900,.ERAcounter-growth[counter='growPopulation+'].ERAcounter-FF9900 {
 	background-position-x: -6266px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-CD1FCD {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-CD1FCD,.ERAcounter-growth[counter='growPopulation+'].ERAcounter-CD1FCD {
 	background-position-x: -6177px;
 }
-.ERAcounter-growth[counter='growPopulation'].ERAcounter-FFFF00 {
+.ERAcounter-growth[counter='growPopulation'].ERAcounter-FFFF00,.ERAcounter-growth[counter='growPopulation+'].ERAcounter-FFFF00 {
 	background-position-x: -6444px;
 }
 .ERAcounter-growth[counter='research'].ERAcounter-FF3333 {

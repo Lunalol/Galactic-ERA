@@ -25,7 +25,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'position', 'absolute');
 						dojo.style(node, 'left', this.board.hexagons[ship.location].x - node.clientWidth / 2 + 'px');
 						dojo.style(node, 'top', this.board.hexagons[ship.location].y - node.clientHeight / 2 + 'px');
-						dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE)))`);
+						dojo.style(node, 'transform', `scale(30%) rotate(calc(-1 * var(--ROTATE))) translateX(3px)`);
 //
 						dojo.connect(node, 'click', this, 'click');
 					}

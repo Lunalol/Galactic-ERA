@@ -1056,7 +1056,7 @@ class Automas extends APP_GameClass
 					$counters[] = 'buildShips';
 					Factions::setStatus($color, 'buildShips', Factions::getStatus($color, 'growPopulation'));
 				}
-				else $bgagame->acGrowPopulation($color, $locations, $locationsBonus, true);
+				else $bgagame->acGrowPopulation($color, $locations, $locationsBonus, false, true);
 //
 				Factions::setStatus($color, 'growPopulation');
 //
@@ -1151,7 +1151,7 @@ class Automas extends APP_GameClass
 //
 			$distance += 1;
 			$neighbors = Sectors::neighbors($location, false);
-			if (!is_null($direction)) $neighbors = [$direction => $neighbors[$direction]];
+			if (!is_null($direction) && array_key_exists($direction, $neighbors)) $neighbors = [$direction => $neighbors[$direction]];
 			else shuffle($neighbors);
 			foreach ($neighbors as ['location' => $next_location, 'terrain' => $terrain])
 			{

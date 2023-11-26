@@ -286,7 +286,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 //* -------------------------------------------------------------------------------------------------------- */
-			if ($fromFleet['location'] !== $toFleet['location']) throw new BgaVisibleSystemException('Invalid location: ' . $fromFleet['location'] . ' <> ' . $toFleet['location']);
+			if ($fromFleet['location'] !== $toFleet['location']) throw new BgaUserException(self::_('You can only swap fleets, not ship minis'));
 //
 			Ships::setStatus($fromID, 'ships', intval(Ships::getStatus($fromID, 'ships')) - $ships);
 			Ships::setMP($fromID, min($fromFleetMP, $toFleetMP));
@@ -489,7 +489,7 @@ trait gameStateActions
 			Factions::setStatus($color, 'view', $this->possible['view'] - 1);
 		}
 //
-		self::reveal($color, $type, $id, $ancientPyramids);
+		self::reveal($color, $type, $id, $ancientPyramids, true);
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$color'");
 //
 		$this->gamestate->nextState('continue');
@@ -833,12 +833,15 @@ trait gameStateActions
 		self::updateScoring();
 		self::triggerAndNextState('continue');
 	}
-	function acHomeStarEvacuation(string $color, $location)
+	function acHomeStarEvacuation(string $color, string $location, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
-		$this->checkAction('homeStarEvacuation');
-		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!$automa)
+		{
+			$this->checkAction('homeStarEvacuation');
+			if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		}
 //
 		if (!$location)
 		{
@@ -857,7 +860,7 @@ trait gameStateActions
 //
 		if (!array_key_exists($player_id, $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!array_key_exists('evacuate', $this->possible[$player_id])) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-		if (!in_array($location, $this->possible[$player_id]['evacuate'])) throw new BgaVisibleSystemException('Invalid $ocation: ' . $location);
+		if (!in_array($location, $this->possible[$player_id]['evacuate'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
@@ -912,10 +915,10 @@ trait gameStateActions
 //
 		self::starsBecomingUninhabited($previousLocation);
 //
-		if (Factions::getEmergencyReserve($color)) self::triggerEvent(EMERGENCYRESERVE, $color);
+		if ($player_id > 0 && Factions::getEmergencyReserve($color)) self::triggerEvent(EMERGENCYRESERVE, $color);
 //
 		self::updateScoring();
-		self::triggerAndNextState('continue');
+		if (!$automa) self::triggerAndNextState('continue');
 	}
 	function acCombatChoice(string $color, string $location, bool $automa = false)
 	{
@@ -1082,7 +1085,7 @@ trait gameStateActions
 							if ($fleet['location'] !== $location) throw new BgaVisibleSystemException("Invalid location: $fleet[location]");
 //
 							Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) - $count);
-							if (intval(Ships::getStatus($fleetID, 'ships')) < 0) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $color");
+							if (intval(Ships::getStatus($fleetID, 'ships')) < 0) throw new BgaVisibleSystemException("No more ship mini to destroy in $Fleet for $color");
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $color,
 								'LOG' => ['log' => clienttranslate('${ships} ship(s) destroyed in ${FLEET} fleet'), 'args' => ['ships' => $count, 'FLEET' => $Fleet]],
@@ -1105,11 +1108,11 @@ trait gameStateActions
 						case 'ships':
 //
 							$ships = Ships::getAtLocation($location, $color, 'ship');
-							if (!$ships) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $color");
+							if (!$ships) throw new BgaVisibleSystemException("No more ship minis to destroy in $Fleet for $color");
 							for ($i = 0; $i < $count; $i++)
 							{
 								$shipID = array_pop($ships);
-								if (!$shipID) throw new BgaVisibleSystemException("No more ships to destroy in $Fleet for $color");
+								if (!$shipID) throw new BgaVisibleSystemException("No more ship minis to destroy in $Fleet for $color");
 //* -------------------------------------------------------------------------------------------------------- */
 								self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($shipID)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1194,6 +1197,52 @@ trait gameStateActions
 		Factions::setStatus($color, 'counters', array_values($counters));
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
+	}
+	function acSwitchAlignment(string $color)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('switchAlignment');
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
+//
+		Factions::switchAlignment($color);
+//
+		foreach (Factions::atWar($color) as $otherColor)
+		{
+			Factions::declarePeace($otherColor, $color);
+			Factions::declarePeace($color, $otherColor);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+// ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter,
+// then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost.
+// To do Research, you must have already chosen a technology for your square counter choice
+//
+		if (Factions::getTechnology($color, 'Spirituality') < 5)
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
+				'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
+				'faction' => Factions::get($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+		else
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//
+		$counters = Factions::getStatus($color, 'counters');
+		unset($counters[array_search('switchAlignment', $counters)]);
+		Factions::setStatus($color, 'counters', array_values($counters));
+		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['switchAlignment'])));
+//
+		self::updateScoring();
+		$this->gamestate->nextState('continue');
 	}
 	function acResearch(string $color, array $technologies, bool $automa = false)
 	{
@@ -1309,7 +1358,13 @@ trait gameStateActions
 				$sizeOfPopulation += 6;
 				$otherColor = Ships::get($homeStar[0])['color'];
 				Factions::setStatus($otherColor, 'evacuate', 'involuntary');
-				self::triggerEvent(HOMESTAREVACUATION, $otherColor);
+				if (Factions::getPlayer($otherColor) === 0)
+				{
+					self::argHomeStarEvacuation();
+					shuffle($this->possible[0]['evacuate']);
+					self::acHomeStarEvacuation($otherColor, $this->possible[0]['evacuate'][0], true);
+				}
+				else self::triggerEvent(HOMESTAREVACUATION, $otherColor);
 			}
 			$populations = Counters::getAtLocation($location, 'populationDisc');
 			if ($populations)
@@ -1649,23 +1704,25 @@ trait gameStateActions
 			Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
 		}
 	}
-	function acGrowPopulation(string $color, array $locations, array $locationsBonus, bool $automa = false): void
+	function acGrowPopulation(string $color, array $locations, array $locationsBonus, bool $bonus = false, bool $automa = false): void
 	{
 		$player_id = Factions::getPlayer($color);
 //
 		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $color) $ancientPyramids = intval(Counters::getStatus($ancientPyramids, 'available'));
 //
+		$counter = $bonus ? 'growPopulation+' : 'growPopulation';
+//
 		if (!$automa)
 		{
 			$this->checkAction('growPopulation');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-			if (!in_array('growPopulation', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'growPopulation');
+			if (!in_array($counter, $this->possible['counters'])) throw new BgaVisibleSystemException("Invalid action: $counter");
 //
 			$bonusPopulation = 0;
 			foreach ($locationsBonus as $location) if (!array_key_exists('ancientPyramids', $this->possible) || $this->possible['ancientPyramids'] !== $location) $bonusPopulation++;
-			if ($bonusPopulation > $this->possible['bonusPopulation']) throw new BgaVisibleSystemException('Invalid bonus population: ' . sizeof($locationsBonus));
+			if ($bonusPopulation > $this->possible['bonusPopulation'] + ($bonus ? 2 : 0)) throw new BgaVisibleSystemException('Invalid bonus population: ' . sizeof($locationsBonus));
 		}
 //
 		foreach ($locations as $location)
@@ -1703,7 +1760,7 @@ trait gameStateActions
 		}
 //
 		$counters = Factions::getStatus($color, 'counters');
-		unset($counters[array_search('growPopulation', $counters)]);
+		unset($counters[array_search($counter, $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['growPopulation'])));
 //
@@ -1890,7 +1947,9 @@ trait gameStateActions
 //
 			if ($era === 'First' && $galacticStory == WAR && $player_id > 0)
 			{
-				if (DEBUG) self::notifyAllPlayers('msg', clienttranslate('All players score 2 DP for every Build Ships action they do in this era'), []);
+//* -------------------------------------------------------------------------------------------------------- */
+				if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 2 DP for every Build Ships action they do in this era')]);
+//* -------------------------------------------------------------------------------------------------------- */
 				$DP = 2;
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_GS', $player_id);
@@ -1916,7 +1975,11 @@ trait gameStateActions
 		if (!$to)
 		{
 			Factions::setActivation($from, 'done');
-			if ($this->gamestate->setPlayerNonMultiactive($player_id, 'next')) return;
+//
+			$players = [];
+			foreach (Factions::list(false) as $color) if (Factions::getActivation($color) !== 'done') $players[] = Factions::getPlayer($color);
+//
+			if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;
 			return $this->gamestate->nextState('continue');
 		}
 //

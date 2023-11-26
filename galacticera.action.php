@@ -269,6 +269,15 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function switchAlignment()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$this->game->acSwitchAlignment($color);
+//
+		self::ajaxResponse("");
+	}
 	public function research()
 	{
 		self::setAjaxMode();
@@ -308,7 +317,8 @@ class action_galacticera extends APP_GameAction
 		$color = self::getArg("color", AT_alphanum, true);
 		$locations = self::getArg("locations", AT_json, true);
 		$locationsBonus = self::getArg("locationsBonus", AT_json, true);
-		$this->game->acGrowPopulation($color, $locations, $locationsBonus);
+		$bonus = self::getArg("bonus", AT_json, false);
+		$this->game->acGrowPopulation($color, $locations, $locationsBonus, $bonus);
 //
 		self::ajaxResponse("");
 	}

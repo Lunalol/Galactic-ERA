@@ -126,6 +126,7 @@ trait gameStates
 				shuffle($fleets);
 //
 				Ships::reveal($color, 'fleet', Ships::create($color, 'fleet', "$sector:+0+0+0", ['fleet' => array_pop($fleets), 'ships' => $ships]));
+				foreach ($fleets as $fleet) Ships::create($color, 'fleet', 'stock', ['fleet' => $fleet]);
 //
 				foreach (array_keys($stars) as $hexagon)
 				{
@@ -656,21 +657,6 @@ trait gameStates
 		Ships::setActivation();
 		Factions::setActivation();
 //
-		foreach (Factions::list(false) as $color)
-		{
-			if (Factions::getTechnology($color, 'Spirituality') === 6)
-			{
-				$toReveal = [];
-				foreach (Sectors::getAll() as $sector) foreach (array_keys($this->SECTORS[Sectors::get($sector)]) as $hexagon)
-					{
-						$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($sector));
-						$location = "$sector:$rotated";
-						array_push($toReveal, ...Counters::getAtLocation($location, 'star'), ...Counters::getAtLocation($location, 'relic'));
-					}
-				foreach (array_diff($toReveal, Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
-			}
-		}
-//
 		foreach ([0, 7] as $relic)
 		{
 			$relicID = Counters::getRelic($relic);
@@ -738,6 +724,17 @@ trait gameStates
 		Factions::setActivation($color, 'yes');
 		Factions::setStatus($color, 'view', Factions::TECHNOLOGIES['Spirituality'][Factions::getTechnology($color, 'Spirituality')]);
 //
+		if (Factions::getTechnology($color, 'Spirituality') === 6)
+		{
+			$toReveal = [];
+			foreach (Sectors::getAll() as $sector) foreach (array_keys($this->SECTORS[Sectors::get($sector)]) as $hexagon)
+				{
+					$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation($sector));
+					$location = "$sector:$rotated";
+					array_push($toReveal, ...Counters::getAtLocation($location, 'star'), ...Counters::getAtLocation($location, 'relic'));
+				}
+			foreach (array_diff($toReveal, Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
+		}
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${log}</span>', [
 			'log' => ['log' => clienttranslate('${player_name} Move/Combat Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
@@ -839,7 +836,7 @@ trait gameStates
 				$Evade = Ships::get(Ships::getFleet($defender, 'E'))['location'] === $location;
 				if ($Evade)
 				{
-					if ($player_id === 0) throw new BgaVisibleSystemException('// PJL : Automas EVADE not implemented');;
+					if ($player_id === 0) $player_id = Factions::getPlayer(Factions::getNotAutomas($attacker));
 //
 					Factions::setStatus($attacker, 'retreat', $defender);
 //
@@ -1130,7 +1127,15 @@ trait gameStates
 		foreach (Factions::list(false) as $color)
 		{
 			$counters = Factions::getStatus($color, 'counters');
-			Factions::setStatus($color, 'stock', array_diff(Factions::getStatus($color, 'stock'), $counters));
+//
+			$stock = Factions::getStatus($color, 'stock');
+			foreach ($counters as $counter)
+			{
+				$index = array_search($counter, $stock);
+				if ($index === false) throw new BgaVisibleSystemException('Invalid counter: ' . $counter);
+				unset($stock[$index]);
+			}
+			Factions::setStatus($color, 'stock', array_values($stock));
 //
 			$oval = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
 			$square = 1;
@@ -1213,7 +1218,7 @@ trait gameStates
 					}
 					break;
 				case 'Genetics':
-					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['growPopulation']));
+					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['growPopulation+']));
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} gets a free Grow Population action with 2 additional bonus population'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1499,6 +1504,23 @@ trait gameStates
 					}
 				}
 			}
+		}
+//
+		if (self::getPlayersNumber() === 2 && sizeof($players) > 1)
+		{
+			foreach (Factions::list(false) as $color)
+			{
+				$player_id = Factions::getPlayer($color);
+				if (in_array($player_id, $players))
+				{
+					if (Factions::getAlignment($color) === 'STO')
+					{
+						$players = [$player_id];
+						break;
+					}
+				}
+			}
+			$players = array_slice($players, 0, 1);
 		}
 //
 		if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;

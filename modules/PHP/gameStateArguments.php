@@ -367,7 +367,7 @@ trait gameStateArguments
 		foreach (Factions::list() as $color)
 		{
 			$player_id = Factions::getPlayer($color);
-			if ($player_id > 0 && Factions::getStatus($color, 'evacuate'))
+			if ($player_id >= 0 && Factions::getStatus($color, 'evacuate'))
 			{
 				$this->possible[$player_id]['color'] = $color;
 				$this->possible[$player_id]['homeStar'] = Ships::getHomeStarLocation($color);
@@ -401,7 +401,6 @@ trait gameStateArguments
 					}
 				}
 				else $this->possible[$player_id]['evacuate'] = array_keys($populations, max($populations));
-//
 			}
 		}
 //
@@ -498,7 +497,8 @@ trait gameStateArguments
 			case 'Spirituality':
 //
 				$this->possible['color'] = $color;
-				$this->possible['counters'] = array_intersect($this->OVAL, Factions::getStatus($color, 'stock'));
+				$this->possible['counters'] = [];
+				foreach (Factions::getStatus($color, 'stock') as $counter) if (in_array($counter, $this->OVAL)) $this->possible['counters'][] = $counter;
 				$this->possible['Spirituality'] = true;
 				break;
 //

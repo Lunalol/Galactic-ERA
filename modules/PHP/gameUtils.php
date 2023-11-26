@@ -99,7 +99,7 @@ trait gameUtils
 //
 		return $level;
 	}
-	function reveal(string $color, string $type, string $id, bool $ancientPyramids = false)
+	function reveal(string $color, string $type, string $id, bool $ancientPyramids = false, bool $verbose = false)
 	{
 		switch ($type)
 		{
@@ -108,9 +108,9 @@ trait gameUtils
 //
 				$dominationCard = $this->domination->getCardOnTop('deck');
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyPlayer(Factions::getPlayer($color), 'msg', clienttranslate('Top of deck: <B>${DOMINATION}</B>'), [
-					'i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$dominationCard['type']]
-				]);
+				self::notifyPlayer(Factions::getPlayer($color), 'msg', clienttranslate('Top of deck: <B>${DOMINATION}</B>'), ['i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$dominationCard['type']]]);
+//* -------------------------------------------------------------------------------------------------------- */
+				if ($verbose) self::notifyAllPlayers('msg', clienttranslate('${player_name} is remote viewing domination deck'), ['player_id' => Factions::getPlayer($color), 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
 //
@@ -121,15 +121,46 @@ trait gameUtils
 				if ($ship['fleet'] !== 'fleet') throw new BgaVisibleSystemException('Not a fleet');
 //
 				if (!$ancientPyramids && Factions::getTechnology($color, 'spirituality') <= Factions::getTechnology($ship['color'], 'spirituality')) throw new BgaUserException(self::_('You must have a higher spirituality level than the owner of the fleet'));
+//
+				foreach (Factions::list(false) as $otherColor)
+				{
+					if ($otherColor === $color)
+					{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div class="ERA-removeViewing" style="background:#${color};color:black;"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
-					'color' => $ship['color'], 'GPS' => $ship['location'],
-					'LOG' => [
-						'log' => clienttranslate('<B>${fleet}</B> fleet with ${ships} ship(s)'),
-						'args' => ['fleet' => Ships::getStatus($id, 'fleet'), 'ships' => Ships::getStatus($id, 'ships')]
-					]
-				]);
+						self::notifyPlayer(Factions::getPlayer($color), 'msg', '<div class="ERA-removeViewing" style="background:#${color};color:black;"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
+							'color' => $ship['color'], 'GPS' => $ship['location'],
+							'LOG' => [
+								'log' => clienttranslate('<B>${fleet}</B> fleet with ${ships} ship(s)'),
+								'args' => ['fleet' => Ships::getStatus($id, 'fleet'), 'ships' => Ships::getStatus($id, 'ships')]
+							]
+						]);
 //* -------------------------------------------------------------------------------------------------------- */
+					}
+					else if ($otherColor === $ship['color'])
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyPlayer(Factions::getPlayer($otherColor), 'msg', '<div class="ERA-removeViewing" style="background:#${color};color:black;"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
+							'color' => $ship['color'], 'GPS' => $ship['location'],
+							'LOG' => [
+								'log' => clienttranslate('<B>${fleet}</B> fleet is spied on by ${player_name}'),
+								'args' => ['fleet' => Ships::getStatus($id, 'fleet'), 'player_name' => Factions::getName($color)]
+							]
+						]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+					else
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyPlayer(Factions::getPlayer($otherColor), 'msg', '<div class="ERA-removeViewing" style="background:#${color};color:black;"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
+							'color' => $ship['color'], 'GPS' => $ship['location'],
+							'LOG' => [
+								'log' => clienttranslate('${owner} is spying a fleet fleet from ${player_name}'),
+								'args' => ['owner' => Factions::getName($ship['color']), 'player_name' => Factions::getName($color)]
+							]
+						]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
+				}
 				break;
 //
 			case 'counter':
@@ -152,6 +183,11 @@ trait gameUtils
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
+							if ($verbose) self::notifyAllPlayers('msg', clienttranslate('${player_name} is remote viewing ${PLANET} ${GPS}'), ['player_id' => Factions::getPlayer($color),
+									'player_name' => Factions::getName($color),
+									'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
+									'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
 						{
@@ -170,6 +206,11 @@ trait gameUtils
 							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${GPS} ${PLANET} has a <B>primitive</B> civilization'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+							if ($verbose) self::notifyAllPlayers('msg', clienttranslate('${player_name} is remote viewing ${PLANET} ${GPS}'), ['player_id' => Factions::getPlayer($color),
+									'player_name' => Factions::getName($color),
+									'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
+									'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
@@ -191,6 +232,11 @@ trait gameUtils
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
+							if ($verbose) self::notifyAllPlayers('msg', clienttranslate('${player_name} is remote viewing ${PLANET} ${GPS}'), ['player_id' => Factions::getPlayer($color),
+									'player_name' => Factions::getName($color),
+									'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
+									'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
 						}
 						else
 						{
@@ -209,6 +255,11 @@ trait gameUtils
 							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('<B>${RELIC}</B> is revealed at ${PLANET} ${GPS}'), [
 								'i18n' => ['PLANET', 'RELIC'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'RELIC' => $this->RELICS[Counters::getStatus($id, 'back')],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
+//* -------------------------------------------------------------------------------------------------------- */
+							if ($verbose) self::notifyAllPlayers('msg', clienttranslate('${player_name} is remote viewing a relic at ${PLANET} ${GPS}'), ['player_id' => Factions::getPlayer($color),
+									'player_name' => Factions::getName($color),
+									'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
+									'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 						else

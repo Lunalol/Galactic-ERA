@@ -283,7 +283,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
-		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'switchAlignment', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
 		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'next' => 400]
 	],
 	415 => [

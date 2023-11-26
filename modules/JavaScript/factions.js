@@ -77,20 +77,24 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 			this.dialog.show();
 			dojo.style('popin_ERAdominationDialog_underlay', 'visibility', 'hidden');
 //
-			dojo.connect($('ERAdominationButtonA'), 'click', () => {
-				this.bgagame.confirmationDialog(dojo.string.substitute(_('Play A-Section'), {}), () =>
-				{
-					this.bgagame.action('domination', {color: faction.color, id: id, section: 'A'});
-					this.dialog.destroy();
+			if (this.bgagame.gamedatas.gamestate.possibleactions.includes('domination'))
+				dojo.connect($('ERAdominationButtonA'), 'click', () => {
+					this.bgagame.confirmationDialog(dojo.string.substitute(_('Play A-Section'), {}), () =>
+					{
+						this.bgagame.action('domination', {color: faction.color, id: id, section: 'A'});
+						this.dialog.destroy();
+					});
 				});
-			});
-			dojo.connect($('ERAdominationButtonB'), 'click', () => {
-				this.bgagame.confirmationDialog(dojo.string.substitute(_('Play B-Section and score <B>${DP} DP<B>'), {DP: Math.max(...this.bgagame.gamedatas.factions[faction.color].scoring[domination].B)}), () =>
-				{
-					this.bgagame.action('domination', {color: faction.color, id: id, section: 'B'});
-					this.dialog.destroy();
+			else dojo.addClass('ERAdominationButtonA', 'disabled');
+			if (this.bgagame.gamedatas.gamestate.possibleactions.includes('domination'))
+				dojo.connect($('ERAdominationButtonB'), 'click', () => {
+					this.bgagame.confirmationDialog(dojo.string.substitute(_('Play B-Section and score <B>${DP} DP<B>'), {DP: Math.max(...this.bgagame.gamedatas.factions[faction.color].scoring[domination].B)}), () =>
+					{
+						this.bgagame.action('domination', {color: faction.color, id: id, section: 'B'});
+						this.dialog.destroy();
+					});
 				});
-			});
+			else dojo.addClass('ERAdominationButtonB', 'disabled');
 		},
 		update: function (faction)
 		{
@@ -133,7 +137,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					if (domination !== 'back')
 						dojo.connect(node, 'click', (event) => {
 							dojo.stopEvent(event);
-							if (this.bgagame.gamedatas.gamestate.possibleactions.includes('domination')) this.dominationDialog(faction, index, domination);
+							if (true || this.bgagame.gamedatas.gamestate.possibleactions.includes('domination')) this.dominationDialog(faction, index, domination);
 							else this.bgagame.focus(event.currentTarget);
 						});
 					else this.bgagame.ERAdominationCards.addTarget(node);
@@ -149,7 +153,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					if (domination !== 'back')
 						dojo.connect(node, 'click', (event) => {
 							dojo.stopEvent(event);
-							if (this.bgagame.gamedatas.gamestate.possibleactions.includes('domination')) this.dominationDialog(faction, index, domination);
+							if (true || this.bgagame.gamedatas.gamestate.possibleactions.includes('domination')) this.dominationDialog(faction, index, domination);
 							else this.bgagame.focus(event.currentTarget);
 						});
 					else this.bgagame.ERAdominationCards.addTarget(node);
@@ -179,7 +183,6 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 				{
 					if (player_id in this.bgagame.scoreCtrl) this.bgagame.scoreCtrl[player_id].setValue(faction.DP);
 //
-//					dojo.query(`.ERAcounter-cylinder.ERAcounter-${faction.color}`, 'ERA-DP').remove();
 					let node = $(`ERAcounter-${faction.color}-DP`);
 					if (!node) node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-DP', color: faction.color, type: 'cylinder', location: faction.DP}), 'ERA-DP');
 					dojo.style(node, 'position', 'absolute');
