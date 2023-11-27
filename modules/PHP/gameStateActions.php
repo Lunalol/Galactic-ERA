@@ -1206,23 +1206,22 @@ trait gameStateActions
 		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 		if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 //
-		Factions::switchAlignment($color);
-//
-		foreach (Factions::atWar($color) as $otherColor)
-		{
-			Factions::declarePeace($otherColor, $color);
-			Factions::declarePeace($color, $otherColor);
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
-//* -------------------------------------------------------------------------------------------------------- */
-		}
-//
 // ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter,
 // then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost.
 // To do Research, you must have already chosen a technology for your square counter choice
 //
 		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
+			Factions::switchAlignment($color);
+//
+			foreach (Factions::atWar($color) as $otherColor)
+			{
+				Factions::declarePeace($otherColor, $color);
+				Factions::declarePeace($color, $otherColor);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
 				'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
@@ -2085,6 +2084,7 @@ trait gameStateActions
 	{
 		$player_id = Factions::getPlayer($color);
 //
+		$this->gamestate->checkPossibleAction('domination');
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
 		$dominationCard = $this->domination->getCard($id);
@@ -2139,13 +2139,13 @@ trait gameStateActions
 		}
 //
 		$cards = $this->domination->countCardInLocation('hand', $color) + $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color);
-		if ($cards < 2)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${player_name} draw a new card'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->domination->pickCard('deck', $color);
 		}
+		$cards++;
 //
 		$faction = ['color' => $color, 'domination' => []];
 		foreach ($this->domination->getPlayerHand($color) as $domination) $faction['domination'][$domination['id']] = $domination['type'];
@@ -2157,6 +2157,8 @@ trait gameStateActions
 		self::notifyAllPlayers('updateFaction', '', ['player_id' => $player_id, 'faction' => $faction]);
 //* -------------------------------------------------------------------------------------------------------- */
 		self::updateScoring();
+//
+		if ($this->gamestate->state()['name'] === 'domination' && $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color) === 2) $this->gamestate->setPlayerNonMultiactive($player_id, 'end');
 	}
 	function acDominationCardExchange(string $color, int $id)
 	{
@@ -2186,6 +2188,8 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('updateFaction', '', ['player_id' => $player_id, 'faction' => $faction]);
 //* -------------------------------------------------------------------------------------------------------- */
+		if ($this->gamestate->state()['name'] === 'researchPlus') return $this->gamestate->nextState('continue');
+//
 		Factions::setActivation($color, 'done');
 //
 		self::updateScoring();

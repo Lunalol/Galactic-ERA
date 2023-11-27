@@ -35,6 +35,9 @@ trait gameUtils
 			{
 				Factions::setStatus($color, 'researchPlus', array_merge(Factions::getStatus($color, 'researchPlus') ?? [], [$technology]));
 				self::triggerEvent(RESEARCHPLUS, $color);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
+//* -------------------------------------------------------------------------------------------------------- */
 			}
 			return 0;
 		}

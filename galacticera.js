@@ -189,7 +189,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						_('Hostile ships cannot block you'),
 						_('Any population you lose is put to the side (“ascends”) instead of returning to the population track')],
 					'6+': [_('You may select and execute an additional growth action counter (at no cost)'),
-						_('TODO: You may also exchange a domination card')]
+						_('You may also exchange a domination card')]
 				},
 				Propulsion: {
 					1: [_('Ship range is 3')],
@@ -1461,12 +1461,15 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					case 'domination':
 //
-						this.addActionButton('ERAPassButton', _('Pass'), () => this.action('null', {color: this.color}));
+						this.addActionButton('ERAPassButton', _('Pass'), () => {
+							this.action('null', {color: this.color});
+							if (this.factions.dialog) this.factions.dialog.destroy();
+						});
 						break;
 //
 					case 'dominationCardExchange':
 //
-						for (let card of Object.values(args.hand))
+						for (let card of Object.values(args._private.hand))
 						{
 							this.addActionButton('ERAexchnageButton-' + card.id, this.DOMINATIONS[card.type].title, () => {
 								this.action('dominationCardExchange', {color: this.color, id: card.id}, () => {
@@ -1793,6 +1796,19 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					case 'researchPlus':
 //
 						this.addActionButton('ERAcancelButton', _('No Research+'), () => this.action('researchPlus', {color: this.color, technology: ''}), null, false, 'red');
+//
+						if (args._private.dominationCardExchange)
+						{
+							dojo.place(`<BR><span>${_('Exchange a domination card (do it first):')} </span>`, 'generalactions');
+							for (let card of Object.values(args._private.hand))
+							{
+								this.addActionButton('ERAexchnageButton-' + card.id, this.DOMINATIONS[card.type].title, () => {
+									this.action('dominationCardExchange', {color: this.color, id: card.id}, () => {
+									});
+								}
+								);
+							}
+						}
 //
 						break;
 //

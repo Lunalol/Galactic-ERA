@@ -664,7 +664,7 @@ trait gameStates
 		}
 //
 		if ($round === 3 || $round === 7) return $this->gamestate->nextState('dominationCardExchange');
-		if ($round > 1) self::triggerEvent(DOMINATION, 'neutral');
+		self::triggerEvent(DOMINATION, 'neutral');
 		self::triggerAndNextState('next');
 	}
 	function stDomination()
@@ -1189,7 +1189,7 @@ trait gameStates
 		{
 			$technology = array_pop($technologies);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
+//			self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			switch ($technology)
 			{
@@ -1285,16 +1285,6 @@ trait gameStates
 			$counters = Factions::getStatus($color, 'counters');
 			if (in_array('switchAlignment', $counters))
 			{
-				Factions::switchAlignment($color);
-//
-				foreach (Factions::atWar($color) as $otherColor)
-				{
-					Factions::declarePeace($otherColor, $color);
-					Factions::declarePeace($color, $otherColor);
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
 //
 // ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter,
 // then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost.
@@ -1302,6 +1292,16 @@ trait gameStates
 //
 				if (Factions::getTechnology($color, 'Spirituality') < 5)
 				{
+					Factions::switchAlignment($color);
+//
+					foreach (Factions::atWar($color) as $otherColor)
+					{
+						Factions::declarePeace($otherColor, $color);
+						Factions::declarePeace($color, $otherColor);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+//* -------------------------------------------------------------------------------------------------------- */
+					}
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
 						'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
@@ -1869,17 +1869,7 @@ trait gameStates
 		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${log} ${round}</span>', [
 			'i18n' => ['log'], 'log' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
-//
-		foreach (Factions::list() as $color)
-		{
-			Factions::setStatus($color, 'stock');
-			Factions::setStatus($color, 'counters');
-			Factions::setStatus($color, 'used');
-			Factions::setStatus($color, 'bonus');
-			Factions::setStatus($color, 'contact');
-			Factions::setStatus($color, 'trade');
-			Factions::setStatus($color, 'peace');
-		}
+		foreach (Factions::list() as $color) Factions::clearStatus($color);
 //
 		if ($round < 8) return $this->gamestate->nextState('nextRound');
 //

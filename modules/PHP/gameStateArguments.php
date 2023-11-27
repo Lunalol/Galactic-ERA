@@ -73,7 +73,7 @@ trait gameStateArguments
 	{
 		$color = Factions::getActive();
 //
-		return ['active' => $color, 'hand' => $this->domination->getPlayerHand($color)];
+		return ['active' => $color, '_private' => [$player_id => ['hand' => $this->domination->getPlayerHand($color)]]];
 	}
 	function argFleets()
 	{
@@ -500,8 +500,9 @@ trait gameStateArguments
 				$this->possible['counters'] = [];
 				foreach (Factions::getStatus($color, 'stock') as $counter) if (in_array($counter, $this->OVAL)) $this->possible['counters'][] = $counter;
 				$this->possible['Spirituality'] = true;
-				break;
 //
+				$this->possible['dominationCardExchange'] = $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color) < 2;
+				if ($this->possible['dominationCardExchange']) $this->possible['hand'] = $this->domination->getPlayerHand($color);
 		}
 //
 		$counters = [];

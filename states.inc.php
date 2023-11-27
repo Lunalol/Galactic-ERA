@@ -410,7 +410,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argResearchPlus',
 		'action' => 'stResearchPlus',
-		'possibleactions' => ['declareWar', 'declarePeace', 'researchPlus'],
+		'possibleactions' => ['declareWar', 'declarePeace', 'dominationCardExchange', 'researchPlus'],
 		'transitions' => ['continue' => RESEARCHPLUS, 'end' => POP_EVENT]
 	],
 	DOMINATION => [
