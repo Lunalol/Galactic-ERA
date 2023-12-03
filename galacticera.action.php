@@ -306,8 +306,7 @@ class action_galacticera extends APP_GameAction
 //
 		$color = self::getArg("color", AT_alphanum, true);
 		$location = self::getArg("location", AT_json, true);
-		$locationsRemoved = self::getArg("locationsRemoved", AT_json, true);
-		$this->game->acGainStar($color, $location, $locationsRemoved);
+		$this->game->acGainStar($color, $location);
 //
 		self::ajaxResponse("");
 	}
@@ -318,9 +317,18 @@ class action_galacticera extends APP_GameAction
 		$color = self::getArg("color", AT_alphanum, true);
 		$locations = self::getArg("locations", AT_json, true);
 		$locationsBonus = self::getArg("locationsBonus", AT_json, true);
-		$locationsRemoved = self::getArg("locationsRemoved", AT_json, true);
 		$bonus = self::getArg("bonus", AT_json, false);
-		$this->game->acGrowPopulation($color, $locations, $locationsBonus, $locationsRemoved, $bonus);
+		$this->game->acGrowPopulation($color, $locations, $locationsBonus, $bonus);
+//
+		self::ajaxResponse("");
+	}
+	public function removePopulation()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$locations = self::getArg("locations", AT_json, true);
+		$this->game->acRemovePopulation($color, $locations);
 //
 		self::ajaxResponse("");
 	}

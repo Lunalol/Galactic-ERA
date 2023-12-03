@@ -403,6 +403,15 @@ $machinestates = [
 		'possibleactions' => ['stealTechnology'],
 		'transitions' => ['continue' => POP_EVENT]
 	],
+	REMOVEPOPULATION => [
+		'name' => 'removePopulation',
+		'description' => clienttranslate('${actplayer} have to remove ${population} population disc(s)'),
+		'descriptionmyturn' => clienttranslate('${you} have to remove ${population} population disc(s)'),
+		'type' => 'activeplayer',
+		'args' => 'argRemovePopulation',
+		'possibleactions' => ['removePopulation'],
+		'transitions' => ['end' => POP_EVENT]
+	],
 	RESEARCHPLUS => [
 		'name' => 'researchPlus',
 		'description' => clienttranslate('${actplayer} can use a Research+ effect for ${technology}'),

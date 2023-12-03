@@ -990,6 +990,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 				case 'removePopulation':
 				case 'teleportPopulation':
+					if (this.isCurrentPlayerActive())
 					{
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 						dojo.setStyle(svg, 'position', 'absolute');
@@ -1013,6 +1014,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					break;
 //
 				case 'growPopulation':
+					if (this.isCurrentPlayerActive())
 					{
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 						dojo.setStyle(svg, 'position', 'absolute');
@@ -1039,6 +1041,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					break;
 //
 				case 'bonusPopulation':
+					if (this.isCurrentPlayerActive())
 					{
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 						dojo.setStyle(svg, 'position', 'absolute');
@@ -1198,12 +1201,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							}
 							if (html)
 							{
-								this.myDlg = new ebg.popindialog();
-								this.myDlg.create('ERAtrade');
-								this.myDlg.setTitle(_('You must accept or refuse trading'));
-								this.myDlg.setContent(html);
-								this.myDlg.hideCloseIcon();
-								this.myDlg.show();
+								this.ERAtrade = new ebg.popindialog();
+								this.ERAtrade.create('ERAtrade');
+								this.ERAtrade.setTitle(_('You must accept or refuse trading'));
+								this.ERAtrade.setContent(html);
+								this.ERAtrade.hideCloseIcon();
+								this.ERAtrade.show();
 								dojo.style('popin_ERAtrade_underlay', 'visibility', 'hidden');
 							}
 						}
@@ -1279,9 +1282,11 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			dojo.query('#ERAfleets').addClass('ERAhide');
 			dojo.query('.ERAselected').removeClass('ERAselected');
 			dojo.query('.ERAselectable').removeClass('ERAselectable');
+			dojo.query('.ERAdisabled').removeClass('ERAdisabled');
 			dojo.query(`#ERAboard>.ERAship`).style('opacity', '');
 //
 			dojo.query('#popin_trade').remove();
+			dojo.query('#popin_ERAtrade').remove();
 		},
 		onUpdateActionButtons: function (stateName, args)
 		{
@@ -1839,13 +1844,19 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							const counter = $('ERAchoice').querySelector('.ERAcounter.ERAselected');
 							if (counter)
 							{
-								if (population <= 0)
+								if (population > 0)
+								{
+									this.confirmationDialog(dojo.string.substitute(_('You will have to remove ${population} population disc(s)'), {population: population}), () =>
+									{
+										this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), locationsRemoved: '[]', bonus: counter.getAttribute('counter') === 'growPopulation+'});
+										dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
+									});
+								}
+								else
 								{
 									this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), locationsRemoved: '[]', bonus: counter.getAttribute('counter') === 'growPopulation+'});
 									dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
 								}
-								else
-									this.setClientState('removePopulation', {descriptionmyturn: dojo.string.substitute(_('End of population track: ${you} must select ${population} population disc(s) to remove'), {you: '${you}', population: population})});
 							}
 						}, null, false, 'red');
 						break;
@@ -1853,12 +1864,10 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					case 'removePopulation':
 //
 						{
-							const populationNode = dojo.place(`<div id='ERAremovePopulation' style='display:inline-flex;flex-direction:row;align-items:center;vertical-align:middle;margin-left:10px;'></div>`, 'generalactions');
+							this.addActionButton('ERAcancelButton', _('Cancel'), () => this.restoreServerGameState());
 //
-							const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
-							const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
-							const population = locations.length + locationsBonus.length - args._private.population;
-							for (let i = 0; i < population; i++)
+							const populationNode = dojo.place(`<div id='ERAremovePopulation' style='display:inline-flex;flex-direction:row;align-items:center;vertical-align:middle;margin-left:10px;'></div>`, 'generalactions');
+							for (let i = 0; i < args.population; i++)
 							{
 								const node = dojo.place(`<div class='ERAcounter ERAcounter-${this.color} ERAcounter-populationDisc ERAsmall' location='' style='pointer-events:all !important;'></div>`, 'ERAremovePopulation');
 								dojo.connect(node, 'click', (event) => {
@@ -1879,20 +1888,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							}
 //
 							this.addActionButton('ERAremovePopulationButton', _('Confirm'), () => {
-								const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
-								const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
 								const locationsRemoved = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAremovePopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
-								const population = locations.length + locationsBonus.length - locationsRemoved.length - args._private.population;
-//
-								const counter = $('ERAchoice').querySelector('.ERAcounter.ERAselected');
-								if (counter)
-								{
-									if (population <= 0)
-									{
-										this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), locationsRemoved: JSON.stringify(locationsRemoved), bonus: counter.getAttribute('counter') === 'growPopulation+'});
-										dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
-									}
-								}
+								if (locationsRemoved.length === args.population) this.action('removePopulation', {color: this.color, locations: JSON.stringify(locationsRemoved)});
 							}, null, false, 'red');
 							dojo.addClass('ERAremovePopulationButton', 'disabled');
 						}
@@ -2284,11 +2281,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		{
 			if (this.gamedatas.gamestate.args._private.populations.includes(location))
 			{
-				const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
-				const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
 				const locationsRemoved = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAremovePopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
 //
-				let population = locations.length + locationsBonus.length - locationsRemoved.length - this.gamedatas.gamestate.args._private.population;
+				let population = locationsRemoved.length;
 //
 				const nodes1 = dojo.query(`.ERAcounter-populationDisc[location='${location}']:not(.ERAdisabled)`, 'ERAboard');
 				const nodes2 = dojo.query(`.ERAcounter-populationDisc:not(.ERAdisabled)`, 'ERAremovePopulation');
@@ -2298,9 +2293,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					node = nodes2.pop();
 					dojo.addClass(node, 'ERAdisabled');
 					dojo.setAttr(node, 'location', location);
-					population--;
+					population++;
 				}
-				dojo.toggleClass('ERAremovePopulationButton', 'disabled', population > 0);
+				dojo.toggleClass('ERAremovePopulationButton', 'disabled', this.gamedatas.gamestate.args.population !== population);
 			}
 		},
 		planetaryDeathRay: function (location, target)

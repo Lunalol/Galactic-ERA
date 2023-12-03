@@ -275,6 +275,8 @@ trait gameStateArguments
 		$player_id = Factions::getPlayer($color);
 
 		$this->possible = ['counters' => Factions::getStatus($color, 'counters'), 'color' => $color];
+		$this->possible['population'] = 39 - Factions::getPopulation($color);
+		$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
 		foreach ($this->possible['counters'] as $counter)
 		{
 			switch ($counter)
@@ -292,7 +294,6 @@ trait gameStateArguments
 							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][] = $location;
 							if (in_array($location, Ships::getHomeStar()) && $location !== Ships::getHomeStarLocation($color)) $this->possible['gainStar'][] = $location;
 						}
-						$this->possible['population'] = 39 - Factions::getPopulation($color);
 					}
 					break;
 				case 'growPopulation':
@@ -303,7 +304,6 @@ trait gameStateArguments
 						$this->possible['growPopulation'] = [];
 						foreach (Counters::getPopulations($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
 						$this->possible['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
-						$this->possible['population'] = 39 - Factions::getPopulation($color);
 					}
 					break;
 				case 'buildShips':
@@ -340,7 +340,6 @@ trait gameStateArguments
 			$teleport = Factions::TELEPORT[Factions::getTechnology($color, 'Propulsion')];
 			if ($teleport) $this->possible['teleportPopulation'] = $teleport;
 		}
-		$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
 //
 		$homeStar = Ships::getHomeStarLocation($color);
 		$evacuation = false;
@@ -348,6 +347,16 @@ trait gameStateArguments
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters, 'evacuation' => $evacuation
 		];
+	}
+	function argRemovePopulation()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		$this->possible = ['color' => $color];
+		$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'population' => Factions::getPopulation($color) - 39];
 	}
 	function argStealTechnology()
 	{
