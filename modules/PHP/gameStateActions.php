@@ -1325,7 +1325,7 @@ trait gameStateActions
 		self::updateScoring();
 		self::triggerAndNextState('end');
 	}
-	function acGainStar(string $color, string $location, bool $automa = false)
+	function acGainStar(string $color, string $location, array $locationsRemoved, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1470,6 +1470,33 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //
+		foreach ($locationsRemoved as $location)
+		{
+			$populationDiscs = Counters::getAtLocation($location, 'populationDisc');
+			if (!$populationDiscs) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+//
+			$populationDisc = Counters::get(array_pop($populationDiscs));
+			if ($populationDisc['color'] !== $color) throw new BgaVisibleSystemException('Invalid counter color: ' . $populationDisc['color']);
+//
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			Counters::destroy($populationDisc['id']);
+//
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} loses one <B>population(s)</B>'), ['GPS' => $location,
+				'PLANET' => [
+					'log' => '<span style = "color:#' . $populationDisc['color'] . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+			]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::starsBecomingUninhabited($location);
+		}
+//
+		if (Factions::getPopulation($color) > 39) throw new BgaVisibleSystemException('Too much population discs used');
 		$newShips = 0;
 		$relics = Counters::getAtLocation($location, 'relic');
 		foreach ($relics as $relic)
@@ -1703,7 +1730,7 @@ trait gameStateActions
 			Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
 		}
 	}
-	function acGrowPopulation(string $color, array $locations, array $locationsBonus, bool $bonus = false, bool $automa = false): void
+	function acGrowPopulation(string $color, array $locations, array $locationsBonus, array $locationsRemoved, bool $bonus = false, bool $automa = false): void
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1757,6 +1784,34 @@ trait gameStateActions
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
+//
+		foreach ($locationsRemoved as $location)
+		{
+			$populationDiscs = Counters::getAtLocation($location, 'populationDisc');
+			if (!$populationDiscs) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+//
+			$populationDisc = Counters::get(array_pop($populationDiscs));
+			if ($populationDisc['color'] !== $color) throw new BgaVisibleSystemException('Invalid counter color: ' . $populationDisc['color']);
+//
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('removeCounter', '', ['counter' => $populationDisc]);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $populationDisc['color'], 'population' => Factions::gainPopulation($populationDisc['color'], -1)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			Counters::destroy($populationDisc['id']);
+//
+			$sector = Sectors::get($location[0]);
+			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} loses one <B>population(s)</B>'), ['GPS' => $location,
+				'PLANET' => [
+					'log' => '<span style = "color:#' . $populationDisc['color'] . ';font-weight:bold;">${PLANET}</span>',
+					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+			]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::starsBecomingUninhabited($location);
+		}
+//
+		if (Factions::getPopulation($color) > 39) throw new BgaVisibleSystemException('Too much population discs used');
 //
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search($counter, $counters)]);

@@ -988,6 +988,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					break;
 //
+				case 'removePopulation':
 				case 'teleportPopulation':
 					{
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -1832,35 +1833,92 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						this.addActionButton('ERAbonusPopulationButton', _('Confirm'), () => {
 							const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
 							const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
+//
+							const population = locations.length + locationsBonus.length - args._private.population;
+//
 							const counter = $('ERAchoice').querySelector('.ERAcounter.ERAselected');
 							if (counter)
 							{
-								this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), bonus: counter.getAttribute('counter') === 'growPopulation+'});
-								dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
+								if (population <= 0)
+								{
+									this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), locationsRemoved: '[]', bonus: counter.getAttribute('counter') === 'growPopulation+'});
+									dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
+								}
+								else
+									this.setClientState('removePopulation', {descriptionmyturn: dojo.string.substitute(_('End of population track: ${you} must select ${population} population disc(s) to remove'), {you: '${you}', population: population})});
 							}
 						}, null, false, 'red');
 						break;
 //
+					case 'removePopulation':
+//
+						{
+							const populationNode = dojo.place(`<div id='ERAremovePopulation' style='display:inline-flex;flex-direction:row;align-items:center;vertical-align:middle;margin-left:10px;'></div>`, 'generalactions');
+//
+							const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
+							const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
+							const population = locations.length + locationsBonus.length - args._private.population;
+							for (let i = 0; i < population; i++)
+							{
+								const node = dojo.place(`<div class='ERAcounter ERAcounter-${this.color} ERAcounter-populationDisc ERAsmall' location='' style='pointer-events:all !important;'></div>`, 'ERAremovePopulation');
+								dojo.connect(node, 'click', (event) => {
+									dojo.stopEvent(event);
+									if (dojo.hasClass(event.currentTarget, 'ERAdisabled'))
+									{
+										const location = dojo.getAttr(event.currentTarget, 'location');
+										const nodes = dojo.query(`.ERAcounter-populationDisc[location='${location}'].ERAdisabled`, 'ERAboard');
+										if (nodes.length)
+										{
+											dojo.removeClass(nodes.pop(), 'ERAdisabled');
+											dojo.removeClass(event.currentTarget, 'ERAdisabled');
+											dojo.setAttr(event.currentTarget, 'location', '');
+											dojo.addClass('ERAremovePopulationButton', 'disabled');
+										}
+									}
+								});
+							}
+//
+							this.addActionButton('ERAremovePopulationButton', _('Confirm'), () => {
+								const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
+								const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
+								const locationsRemoved = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAremovePopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
+								const population = locations.length + locationsBonus.length - locationsRemoved.length - args._private.population;
+//
+								const counter = $('ERAchoice').querySelector('.ERAcounter.ERAselected');
+								if (counter)
+								{
+									if (population <= 0)
+									{
+										this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), locationsRemoved: JSON.stringify(locationsRemoved), bonus: counter.getAttribute('counter') === 'growPopulation+'});
+										dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
+									}
+								}
+							}, null, false, 'red');
+							dojo.addClass('ERAremovePopulationButton', 'disabled');
+						}
+						break;
+//
 					case 'teleportPopulation':
 //
-						const populationNode = dojo.place(`<div id='ERAteleportPopulation' style='display:inline-flex;flex-direction:row;align-items:center;vertical-align:middle;margin-left:10px;'></div>`, 'generalactions');
-						this.addActionButton('ERAteleportButton', _('Select destination'), (event) => {
-							if (dojo.hasClass(event.currentTarget, 'bgabutton_blue'))
-							{
-								event.currentTarget.innerHTML = _('Teleport discs');
-								dojo.removeClass(event.currentTarget, 'bgabutton_blue');
-								dojo.addClass(event.currentTarget, 'bgabutton_red disabled');
-							}
-							else
-							{
-								const from = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAteleportPopulation').reduce((L, node) => [...L, node.getAttribute('location')
-									], []);
-								const to = dojo.query('.ERAprovisional', 'ERAboard').reduce((L, node) => [...L, node.getAttribute('location')], []);
-								this.action('teleportPopulation', {color: this.color, from: JSON.stringify(from), to: JSON.stringify(to)});
-								dojo.query('.ERAcounter-populationDisc.ERAprovisional', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
-							}
-						});
-						dojo.addClass('ERAteleportButton', 'disabled');
+						{
+							const populationNode = dojo.place(`<div id='ERAteleportPopulation' style='display:inline-flex;flex-direction:row;align-items:center;vertical-align:middle;margin-left:10px;'></div>`, 'generalactions');
+							this.addActionButton('ERAteleportButton', _('Select destination'), (event) => {
+								if (dojo.hasClass(event.currentTarget, 'bgabutton_blue'))
+								{
+									event.currentTarget.innerHTML = _('Teleport discs');
+									dojo.removeClass(event.currentTarget, 'bgabutton_blue');
+									dojo.addClass(event.currentTarget, 'bgabutton_red disabled');
+								}
+								else
+								{
+									const from = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAteleportPopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
+									const to = dojo.query('.ERAprovisional', 'ERAboard').reduce((L, node) => [...L, node.getAttribute('location')], []);
+									this.action('teleportPopulation', {color: this.color, from: JSON.stringify(from), to: JSON.stringify(to)});
+									dojo.query('.ERAcounter-populationDisc.ERAprovisional', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
+								}
+							});
+							dojo.addClass('ERAteleportButton', 'disabled');
+						}
 						break;
 //
 					case 'gainStar':
@@ -2105,7 +2163,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		gainStar: function (location)
 		{
-			if (this.gamedatas.gamestate.args._private.gainStar.includes(location)) this.action('gainStar', {color: this.color, location: JSON.stringify(location)});
+			if (this.gamedatas.gamestate.args._private.gainStar.includes(location))
+			{
+				const locationsRemoved = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAremovePopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
+				this.action('gainStar', {color: this.color, location: JSON.stringify(location), locationsRemoved: JSON.stringify(locationsRemoved)});
+			}
+			;
 		},
 		buildShips: function (location, fleet = 'ship')
 		{
@@ -2195,7 +2258,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				if (dojo.hasClass('ERAteleportButton', 'bgabutton_blue'))
 				{
 					const nodes = dojo.query(`.ERAcounter-populationDisc[location='${location}']:not(.ERAdisabled)`, 'ERAboard');
-					console.log(nodes.lenght);
 					if (nodes.length && dojo.query(`.ERAcounter-populationDisc`, 'ERAteleportPopulation').length < this.gamedatas.gamestate.args._private.teleportPopulation)
 					{
 						dojo.addClass(nodes.pop(), 'ERAdisabled');
@@ -2216,6 +2278,29 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						dojo.toggleClass('ERAteleportButton', 'disabled', dojo.query(`.ERAcounter-populationDisc`, 'ERAteleportPopulation').length === 0);
 					}
 				}
+			}
+		},
+		removePopulation: function (location)
+		{
+			if (this.gamedatas.gamestate.args._private.populations.includes(location))
+			{
+				const locations = dojo.query('.ERAprovisional').reduce((L, node) => [...L, node.getAttribute('location')], []);
+				const locationsBonus = dojo.query('.ERAprovisionalBonus').reduce((L, node) => [...L, node.getAttribute('location')], []);
+				const locationsRemoved = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAremovePopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
+//
+				let population = locations.length + locationsBonus.length - locationsRemoved.length - this.gamedatas.gamestate.args._private.population;
+//
+				const nodes1 = dojo.query(`.ERAcounter-populationDisc[location='${location}']:not(.ERAdisabled)`, 'ERAboard');
+				const nodes2 = dojo.query(`.ERAcounter-populationDisc:not(.ERAdisabled)`, 'ERAremovePopulation');
+				if (nodes1.length && nodes2.length)
+				{
+					dojo.addClass(nodes1.pop(), 'ERAdisabled');
+					node = nodes2.pop();
+					dojo.addClass(node, 'ERAdisabled');
+					dojo.setAttr(node, 'location', location);
+					population--;
+				}
+				dojo.toggleClass('ERAremovePopulationButton', 'disabled', population > 0);
 			}
 		},
 		planetaryDeathRay: function (location, target)

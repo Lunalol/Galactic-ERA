@@ -72,6 +72,7 @@ trait gameStateArguments
 	function argDominationCardExchange()
 	{
 		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
 //
 		return ['active' => $color, '_private' => [$player_id => ['hand' => $this->domination->getPlayerHand($color)]]];
 	}
@@ -291,6 +292,7 @@ trait gameStateArguments
 							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][] = $location;
 							if (in_array($location, Ships::getHomeStar()) && $location !== Ships::getHomeStarLocation($color)) $this->possible['gainStar'][] = $location;
 						}
+						$this->possible['population'] = 39 - Factions::getPopulation($color);
 					}
 					break;
 				case 'growPopulation':
@@ -301,6 +303,7 @@ trait gameStateArguments
 						$this->possible['growPopulation'] = [];
 						foreach (Counters::getPopulations($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
 						$this->possible['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
+						$this->possible['population'] = 39 - Factions::getPopulation($color);
 					}
 					break;
 				case 'buildShips':
@@ -335,12 +338,9 @@ trait gameStateArguments
 		if (!in_array('teleportPopulation', $counters[$color]['used']))
 		{
 			$teleport = Factions::TELEPORT[Factions::getTechnology($color, 'Propulsion')];
-			if ($teleport)
-			{
-				$this->possible['teleportPopulation'] = $teleport;
-				$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
-			}
+			if ($teleport) $this->possible['teleportPopulation'] = $teleport;
 		}
+		$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
 //
 		$homeStar = Ships::getHomeStarLocation($color);
 		$evacuation = false;

@@ -1056,7 +1056,7 @@ class Automas extends APP_GameClass
 					$counters[] = 'buildShips';
 					Factions::setStatus($color, 'buildShips', Factions::getStatus($color, 'growPopulation'));
 				}
-				else $bgagame->acGrowPopulation($color, $locations, $locationsBonus, false, true);
+				else $bgagame->acGrowPopulation($color, $locations, $locationsBonus, [], false, true);
 //
 				Factions::setStatus($color, 'growPopulation');
 //
