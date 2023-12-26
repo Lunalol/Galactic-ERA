@@ -292,7 +292,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				8: [_('Defense Grid'), [
 						_('Any player conquering or liberating this star needs 8 ships more than usual to do that'),
 						_('This only applies when the star is owned by a player'),
-						_('Once this star has been taken by a player for the first time, all ships and population discs here are immune to the “Planetary Death Ray”, regardless of ownership')]],
+						_('Once this star has been taken by a player for the first time, all ships and population discs here are immune to the “Planetary Death Ray”, regardless of ownership')
+					]],
 				9: [_('Super-Stargate'), [
 						_('The player who owns this star may use stargate movement from any star of theirs to this one or vice versa (regardless of their level in Propulsion)'),
 						_('If the player has Propulsion 5 this movement cannot be blocked (in either direction)')]]
@@ -385,6 +386,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			this.factions = new Factions(this);
 			this.counters = new Counters(this);
 			this.ships = new Ships(this);
+//
+			dojo.addClass('ebd-body', 'ERAextended');
 //
 // Setup factions
 //
@@ -974,6 +977,29 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				case 'selectCounters':
 					break;
 //
+				case 'blockAction':
+					if ('_private' in state.args)
+					{
+						const location = state.args._private.location;
+//
+						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+						dojo.setStyle(svg, 'position', 'absolute');
+						dojo.setStyle(svg, 'left', '0px');
+						dojo.setStyle(svg, 'top', '0px');
+						dojo.setStyle(svg, 'z-index', '1');
+						dojo.setStyle(svg, 'pointer-events', 'all');
+						svg.setAttribute("width", 10000);
+						svg.setAttribute("height", 10000);
+						svg.id = 'ERAstars';
+//
+						dojo.query(`[location='${location}']`, 'ERAboard').addClass('ERAselectable');
+						const path = svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
+//						path.setAttribute('class', 'ERAselected');
+//
+						this.board.board.appendChild(svg);
+					}
+					break;
+//
 				case 'resolveGrowthActions':
 					dojo.query('.ERAprovisional,.ERAprovisionalBonus').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));
 					dojo.query('.ERAdisabled').removeClass('ERAdisabled');
@@ -1467,10 +1493,14 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					case 'domination':
 //
-						this.addActionButton('ERAPassButton', _('Pass'), () => {
-							this.action('null', {color: this.color});
-							if (this.factions.dialog) this.factions.dialog.destroy();
-						});
+						if (!args.lastChange)
+						{
+							this.addActionButton('ERAPassButton', _('Pass'), () => {
+								this.action('null', {color: this.color});
+								if (this.factions.dialog) this.factions.dialog.destroy();
+							});
+						}
+//
 						break;
 //
 					case 'dominationCardExchange':
@@ -1764,6 +1794,15 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						this.board.centerMap(this.gamedatas.factions[this.players[this.player_id]].homeStar + ':+0+0+0');
 //
 						if (args._private.voluntary) this.addActionButton('ERAundoButton', _('Cancel'), () => this.action('homeStarEvacuation', {color: this.color}));
+						break;
+//
+					case 'blockAction':
+//
+						this.board.centerMap(args._private.location);
+//
+						this.addActionButton('ERAcancelButton', dojo.string.substitute(_('Don`t block ${action}'), {action: this.GROWTHACTIONS[args._private.action][0]}), () => this.action('blockAction', {color: this.color, blocked: false}));
+						this.addActionButton('ERAblockButton', dojo.string.substitute(_('Declare war and block ${action}'), {action: this.GROWTHACTIONS[args._private.action][0]}), () => this.action('blockAction', {color: this.color, blocked: true}), null, false, 'red');
+//
 						break;
 //
 					case 'resolveGrowthActions':
@@ -2211,7 +2250,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				{
 					for (let i = 0; i < (this.gamedatas.factions[this.color].starPeople === 'Mantids' ? 2 : 1); i++)
 					{
-						const population = +this.gamedatas.gamestate.args._private.growPopulation[location].population;
+						const population = +this.gamedatas.gamestate.args._private.growPopulation[location].population + i;
 						const limit = +this.gamedatas.gamestate.args._private.growPopulation[location].growthLimit;
 						if (population < limit) dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisional');
 					}

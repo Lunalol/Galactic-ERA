@@ -1198,6 +1198,24 @@ trait gameStateActions
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 	}
+	function acBlockAction(string $color, bool $blocked)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('blockAction');
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if ($blocked) self::acDeclareWar($color, Factions::getActive(), true);
+//
+		if ($this->gamestate->setPlayerNonMultiactive($player_id, 'end'))
+		{
+			$action = Factions::getStatus(Factions::getActive(), 'action');
+			if (!Counters::isBlocked(Factions::getActive(), $action['location'])) return call_user_func("self::${action['function']}Validated", ...$action['params']);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', 'Growth action is blocked', []);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+	}
 	function acSwitchAlignment(string $color)
 	{
 		$player_id = Factions::getPlayer($color);
@@ -1356,6 +1374,67 @@ trait gameStateActions
 			{
 				$sizeOfPopulation += 6;
 				$otherColor = Ships::get($homeStar[0])['color'];
+			}
+			$populations = Counters::getAtLocation($location, 'populationDisc');
+			if ($populations)
+			{
+				$sizeOfPopulation += sizeof($populations);
+				$otherColor = Counters::get($populations[0])['color'];
+			}
+			if (!$sizeOfPopulation) throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
+			if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
+		}
+//
+// An STO player can only declare war on STS players and only to block the subjugation or conquest of a star with “innocent” population
+// (i.e., primitive or advanced neutral stars or those of STO players)
+// Multiple STO players may use the same opportunity to declare war, even though one would be enough to block it
+//
+		if (Factions::getTechnology($color, 'Spirituality') < 5)
+		{
+			$toBlock = [];
+			foreach (Factions::list(false) as $otherColor)
+			{
+				if (in_array($otherColor, Factions::atPeace($color)))
+				{
+					if (Ships::getAtLocation($location, $otherColor))
+					{
+						if (Factions::getAlignment($otherColor) === 'STO')
+						{
+							if ($type === SUBJUGATE || $type === CONQUER) $toBlock[] = Factions::getPlayer($otherColor);
+							if ($type === CONQUERVS && Factions::getAlignment($color) === 'STO') $toBlock[] = Factions::getPlayer($otherColor);
+						}
+					}
+				}
+			}
+			if ($toBlock)
+			{
+				$sector = Sectors::get($location[0]);
+				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to gain ${PLANET} '), ['GPS' => $location, 'SHIPS' => $SHIPS,
+					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
+				Factions::setStatus($color, 'action', ['name' => 'gainStar', 'location' => $location, 'function' => __FUNCTION__, 'params' => func_get_args()]);
+				return $this->gamestate->nextState('blockAction');
+			}
+		}
+		return self::acGainStarValidated($color, $location, $automa);
+	}
+	function acGainStarValidated(string $color, string $location, bool $automa = false)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		[$type, $SHIPS, $population] = Counters::gainStar($color, $location);
+		if ($type === LIBERATE || $type === CONQUERVS)
+		{
+			$sizeOfPopulation = 0;
+//
+			$homeStar = Ships::getAtLocation($location, null, 'homeStar');
+			if ($homeStar)
+			{
+				$sizeOfPopulation += 6;
+				$otherColor = Ships::get($homeStar[0])['color'];
 				Factions::setStatus($otherColor, 'evacuate', 'involuntary');
 				if (Factions::getPlayer($otherColor) === 0)
 				{
@@ -1371,9 +1450,6 @@ trait gameStateActions
 				$sizeOfPopulation += sizeof($populations);
 				$otherColor = Counters::get($populations[0])['color'];
 			}
-			if (!$sizeOfPopulation) throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
-//
-			if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
 			Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
 			if (Factions::getPlayer($color) > 0) self::triggerEvent(STEALTECHNOLOGY, $color);
 //
@@ -2181,6 +2257,7 @@ trait gameStateActions
 		}
 //
 		$cards = $this->domination->countCardInLocation('hand', $color) + $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color);
+		if ($cards < 2)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${player_name} draw a new card'), ['player_name' => Factions::getName($color)]);
@@ -2211,6 +2288,8 @@ trait gameStateActions
 //
 		if ($id)
 		{
+			Factions::setStatus($color, 'exchange', 'done');
+//
 			$dominationCard = $this->domination->getCard($id);
 			if (!$dominationCard) throw new BgaVisibleSystemException('Invalid card : ' . $id);
 //

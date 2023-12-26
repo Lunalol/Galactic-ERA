@@ -1,6 +1,6 @@
 {OVERALL_GAME_HEADER}
 
-<div id='ERApanels' class='ERAextended'>
+<div id='ERApanels'>
 	<div id='ERAplayArea'>
 		<div id='ERAfleets' class='ERAfleets ERAhide'></div>
 		<div id='ERAboard'></div>

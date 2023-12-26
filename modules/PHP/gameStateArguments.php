@@ -18,7 +18,7 @@ trait gameStateArguments
 	function argStarPeople()
 	{
 		$private = [];
-		foreach (Factions::list() as $color)
+		foreach (Factions::list(false) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
 			if ($player_id > 0)
@@ -34,7 +34,7 @@ trait gameStateArguments
 	function argAlignment()
 	{
 		$private = [];
-		foreach (Factions::list() as $color)
+		foreach (Factions::list(false) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
 			if ($player_id > 0)
@@ -60,14 +60,14 @@ trait gameStateArguments
 	function argDomination()
 	{
 		$counters = [];
-		foreach (Factions::list() as $otherColor)
+		foreach (Factions::list(false) as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
 			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
 		}
 //
-		return ['counters' => $counters];
+		return ['counters' => $counters, 'lastChange' => self::getGameStateValue('last')];
 	}
 	function argDominationCardExchange()
 	{
@@ -107,7 +107,7 @@ trait gameStateArguments
 	function argAdvancedFleetTactics()
 	{
 		$this->possible = [];
-		foreach (Factions::list() as $color)
+		foreach (Factions::list(false) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
 			if ($player_id > 0)
@@ -244,7 +244,7 @@ trait gameStateArguments
 	function argSelectCounters()
 	{
 		$this->possible = [];
-		foreach (Factions::list() as $color)
+		foreach (Factions::list(false) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
 			if ($player_id > 0)
@@ -268,6 +268,23 @@ trait gameStateArguments
 		}
 //
 		return ['_private' => $this->possible];
+	}
+	function argBlockAction()
+	{
+		$color = Factions::getActive();
+		foreach (Factions::list(false) as $otherColor)
+		{
+			$player_id = Factions::getPlayer($otherColor);
+			if ($this->gamestate->isPlayerActive($player_id))
+			{
+				$action = Factions::getStatus($color, 'action');
+//
+				$this->possible[$player_id]['color'] = $otherColor;
+				$this->possible[$player_id]['action'] = $action['name'];
+				$this->possible[$player_id]['location'] = $action['location'];
+			}
+		}
+		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
 	}
 	function argResolveGrowthActions()
 	{
@@ -328,7 +345,7 @@ trait gameStateArguments
 		}
 //
 		$counters = [];
-		foreach (Factions::list() as $otherColor)
+		foreach (Factions::list(false) as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
@@ -373,7 +390,7 @@ trait gameStateArguments
 	function argHomeStarEvacuation()
 	{
 		$this->possible = [];
-		foreach (Factions::list() as $color)
+		foreach (Factions::list(false) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
 			if ($player_id >= 0 && Factions::getStatus($color, 'evacuate'))
@@ -458,7 +475,7 @@ trait gameStateArguments
 	function argTradingPhase()
 	{
 		$private = [];
-		foreach (Factions::list() as $from)
+		foreach (Factions::list(false) as $from)
 		{
 //
 			$player_id = Factions::getPlayer($from);
@@ -510,12 +527,13 @@ trait gameStateArguments
 				foreach (Factions::getStatus($color, 'stock') as $counter) if (in_array($counter, $this->OVAL)) $this->possible['counters'][] = $counter;
 				$this->possible['Spirituality'] = true;
 //
-				$this->possible['dominationCardExchange'] = $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color) < 2;
+				$cards = $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color);
+				$this->possible['dominationCardExchange'] = ($cards < 2) && is_null(Factions::getStatus($color, 'exchange'));
 				if ($this->possible['dominationCardExchange']) $this->possible['hand'] = $this->domination->getPlayerHand($color);
 		}
 //
 		$counters = [];
-		foreach (Factions::list() as $otherColor)
+		foreach (Factions::list(false) as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;

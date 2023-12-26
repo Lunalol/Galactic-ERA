@@ -20,8 +20,20 @@ trait gameUtils
 	function gainDP(string $color, int $delta): int
 	{
 		$player_id = Factions::getPlayer($color);
-		if ($player_id > 0) self::dbIncScore($player_id, $delta);
+		if ($player_id > 0)
+		{
+			$DP = self::dbGetScore($player_id);
+			$FINAL = self::dbIncScore($player_id, $delta);
 //
+			while ($DP != $FINAL)
+			{
+				if ($delta > 0) $DP++;
+				else $DP--;
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => $DP]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+		}
 		return Factions::gainDP($color, $delta);
 	}
 	function gainTechnology(string $color, string $technology): int

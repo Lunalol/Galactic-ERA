@@ -39,6 +39,7 @@ define('NEVER', 2);
 // Game globals
 //
 define('ROUND', 10);
+define('LAST', 11);
 //
 // Automas (2)
 //

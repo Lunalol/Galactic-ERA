@@ -283,8 +283,8 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
-		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'switchAlignment', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'next' => 400]
+		'possibleactions' => ['domination', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'switchAlignment', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400]
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',
@@ -305,6 +305,15 @@ $machinestates = [
 		'args' => 'argBuriedShips',
 		'possibleactions' => ['buildShips', 'done'],
 		'transitions' => ['domination', 'continue' => 410]
+	],
+	450 => [
+		'name' => 'blockAction',
+		'description' => clienttranslate('Some players can block ${otherplayer} growth action'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer} growth action'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argBlockAction',
+		'possibleactions' => ['blockAction'],
+		'transitions' => ['end' => 410]
 	],
 	500 => [
 		'name' => 'tradingPhase',
@@ -440,6 +449,6 @@ $machinestates = [
 		'description' => clienttranslate('End of game'),
 		'type' => 'manager',
 		'action' => 'stGameEnd',
-		'args' => 'argGameEnd'
+		'args' => 'argGameEnd                        '
 	]
 ];

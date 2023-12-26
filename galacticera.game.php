@@ -21,6 +21,7 @@ class GalacticEra extends Table
 	use gameStateArguments;
 	use gameStateActions;
 	use gameUtils;
+
 //
 	function __construct()
 	{
@@ -29,7 +30,7 @@ class GalacticEra extends Table
 		$this->GLOBALLABELS = [
 			'game' => GAME, 'difficulty' => DIFFICULTY,
 			'galacticStory' => GALACTICSTORY, 'galacticGoal' => GALACTICGOAL,
-			'round' => ROUND,
+			'round' => ROUND, 'last' => LAST,
 		];
 //
 		self::initGameStateLabels($this->GLOBALLABELS);

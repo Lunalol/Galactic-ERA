@@ -663,14 +663,18 @@ trait gameStates
 			if ($relicID) Counters::setStatus($relicID, 'available', 1);
 		}
 //
-		if ($round === 3 || $round === 7) return $this->gamestate->nextState('dominationCardExchange');
+		if ($round === 3 || $round === 7 || true) return $this->gamestate->nextState('dominationCardExchange');
 		self::triggerEvent(DOMINATION, 'neutral');
 		self::triggerAndNextState('next');
 	}
 	function stDomination()
 	{
 		$players = [];
-		foreach (Factions::list(false) as $color) if ($this->domination->countCardInLocation('hand', $color) > 0) $players[] = Factions::getPlayer($color);
+		foreach (Factions::list(false) as $color)
+		{
+			Factions::setStatus($color, 'exchange');
+			if ($this->domination->countCardInLocation('hand', $color) > 0) $players[] = Factions::getPlayer($color);
+		}
 //
 		$this->gamestate->setPlayersMultiactive($players, 'end', true);
 	}
@@ -1539,6 +1543,8 @@ trait gameStates
 			while ($technology = array_shift($technologies)) self::acResearch($slavers, [$technology], true);
 		}
 //
+		if (+self::getGameStateValue('last') === 8) self::getGameStateValue('last', 1);
+//
 		self::triggerEvent(DOMINATION, 'neutral');
 		self::triggerAndNextState('next');
 	}
@@ -1892,14 +1898,11 @@ trait gameStates
 		{
 			foreach (Factions::list(false) as $color)
 			{
-				if ($i < $populationScore[$color])
-				{
-					self::gainDP($color, 1);
-					self::incStat(1, 'DP_POP', Factions::getPlayer($color));
+				self::gainDP($color, $populationScore[$color]);
+				self::incStat($populationScore[$color], 'DP_POP', Factions::getPlayer($color));
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				}
 			}
 		}
 //* -------------------------------------------------------------------------------------------------------- */

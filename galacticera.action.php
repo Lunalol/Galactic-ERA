@@ -269,6 +269,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function blockAction()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$blocked = self::getArg("blocked", AT_bool, true);
+		$this->game->acBlockAction($color, $blocked);
+//
+		self::ajaxResponse("");
+	}
 	public function switchAlignment()
 	{
 		self::setAjaxMode();

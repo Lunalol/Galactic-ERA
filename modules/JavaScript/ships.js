@@ -123,7 +123,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		arrange: function (location)
 		{
 			let index = fleet = 0;
-			nodes = Array.from(dojo.query(`.ERAship[location='${location}']`, 'ERAboard')).sort((a, b) => dojo.hasAttr(a, 'fleet') ? -1 : 1);
+			nodes = Array.from(dojo.query(`.ERAship[location='${location}']`, 'ERAboard')).sort((a, b) => {
+				const score_a = (dojo.getAttr(a, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(a, 'fleet') ? 1 : 0);
+				const score_b = (dojo.getAttr(b, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(b, 'fleet') ? 1 : 0);
+				return score_a - score_b;
+			});
 			for (const node of nodes)
 			{
 				if (dojo.hasAttr(node, 'fleet'))
