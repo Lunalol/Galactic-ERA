@@ -73,6 +73,7 @@ trait gameUtils
 		if ($technology === 'Spirituality' && $level >= 5 && Factions::getAlignment($color) === 'STS')
 		{
 			Factions::switchAlignment($color);
+			self::incGameStateValue('alignment', 1);
 //
 			foreach (Factions::atWar($color) as $otherColor)
 			{

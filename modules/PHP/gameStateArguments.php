@@ -67,7 +67,10 @@ trait gameStateArguments
 			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
 		}
 //
-		return ['counters' => $counters, 'lastChange' => self::getGameStateValue('last')];
+		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		$phase = $this->gamestate->states[$event['trigger_state']]['name'];
+//
+		return ['counters' => $counters, 'phase' => $this->PHASES[$phase], 'lastChance' => +self::getGameStateValue('round') === 8 && $phase === 'tradingPhaseEnd'];
 	}
 	function argDominationCardExchange()
 	{
@@ -286,6 +289,23 @@ trait gameStateArguments
 		}
 		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
 	}
+	function argBlockMovement()
+	{
+		$color = Factions::getActive();
+		foreach (Factions::list(false) as $otherColor)
+		{
+			$player_id = Factions::getPlayer($otherColor);
+			if ($this->gamestate->isPlayerActive($player_id))
+			{
+				$action = Factions::getStatus($color, 'action');
+//
+				$this->possible[$player_id]['color'] = $otherColor;
+				$this->possible[$player_id]['from'] = $action['from'];
+				$this->possible[$player_id]['to'] = $action['to'];
+			}
+		}
+		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
+	}
 	function argResolveGrowthActions()
 	{
 		$color = Factions::getActive();
@@ -314,6 +334,7 @@ trait gameStateArguments
 					}
 					break;
 				case 'growPopulation':
+				case 'growPopulation+':
 					{
 						$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 						$this->possible['ancientPyramids'] = ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $color) ? Counters::get($ancientPyramids)['location'] : null;
@@ -377,13 +398,14 @@ trait gameStateArguments
 	}
 	function argStealTechnology()
 	{
-		$color = Factions::getActive();
-		$player_id = Factions::getPlayer($color);
+		$player_id = self::getActivePlayerId();
+		$color = Factions::getColor($player_id);
 //
 		['from' => $from, 'levels' => $levels] = Factions::getStatus($color, 'steal');
 //
 		$this->possible = ['counters' => [], 'color' => $color];
-		foreach (array_keys($this->TECHNOLOGIES) as $technology) if (Factions::getTechnology($from, $technology) > Factions::getTechnology($color, $technology)) $this->possible['counters'][] = $technology;
+		foreach (array_keys($this->TECHNOLOGIES) as $technology) foreach ($from as $otherColor) if (Factions::getTechnology($otherColor, $technology) > Factions::getTechnology($color, $technology)) $this->possible['counters'][] = $technology;
+		$this->possible['counters'] = array_unique($this->possible['counters']);
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'levels' => $levels];
 	}
@@ -416,7 +438,7 @@ trait gameStateArguments
 							{
 								$hexagon = sprintf('%+2d%+2d%+2d', $current['q'], $current['r'], $current['s']);
 								$location = Factions::getHomeStar($color) . ':' . $hexagon;
-								$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation(Factions::getHomeStar($color)));
+								$rotated = Sectors::rotate($hexagon, Sectors::getOrientation(Factions::getHomeStar($color)));
 								if (!array_key_exists($rotated, Sectors::SECTORS[$sector]) && !Ships::getAtLocation($location))
 								{
 									$this->possible[$player_id]['evacuate'][] = $location;
@@ -542,5 +564,14 @@ trait gameStateArguments
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters,
 			'technology' => $technology, 'i18n' => ['technology']];
+	}
+	function argOneTimeEffect()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
+		$this->possible = [];
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'dominationCard' => $this->DOMINATIONCARDS[ACQUISITION], 'i18n' => ['dominationCard']];
 	}
 }

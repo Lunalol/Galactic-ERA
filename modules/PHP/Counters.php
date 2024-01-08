@@ -58,6 +58,14 @@ class Counters extends APP_GameClass
 //
 		return $populations;
 	}
+	static function getOwner($location)
+	{
+		$homeStar = Ships::getAtLocation($location, null, 'homeStar');
+		if ($homeStar) return(Ships::get($homeStar[0])['color']);
+		$populations = Counters::getAtLocation($location, 'populationDisc');
+		if ($populations) return(Counters::get($populations[0])['color']);
+		return null;
+	}
 	static function isBlocked(string $color, string $location, string $willDeclareWarOn = '')
 	{
 		if (Factions::getTechnology($color, 'Spirituality') >= 5) return false;
@@ -80,9 +88,9 @@ class Counters extends APP_GameClass
 		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star','relic')", true);
 		return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type = '$type'", true);
 	}
-	static function gainStar(string $color, string $location, bool $willDeclareWar = false): array
+	static function gainStar(string $color, string $location, bool $willDeclareWar = false, bool $bonus = false): array
 	{
-		if (self::isBlocked($color, $location)) return [0, 0, 0];
+		if (!$willDeclareWar && self::isBlocked($color, $location, $willDeclareWar)) return [0, 0, 0];
 //
 		$sizeOfPopulation = 0;
 //
@@ -110,11 +118,11 @@ class Counters extends APP_GameClass
 		$ships = 0;
 		foreach (Ships::getAtLocation($location, $color) as $ship)
 		{
-			if (Ships::isShip($color, $ship)) $ships++;
+			if (Ships::isShip($color, $ship)) $ships += $bonus ? 2 : 1;
 			else
 			{
 				$fleet = Ships::getStatus($ship, 'fleet');
-				$ships += Ships::getStatus($ship, 'ships');
+				$ships += $bonus ? 2 * Ships::getStatus($ship, 'ships') : Ships::getStatus($ship, 'ships');
 //
 // (B)omb: For every 2 ships in this fleet increase the ship count by 1 for purposes of conquering or liberating a star
 //

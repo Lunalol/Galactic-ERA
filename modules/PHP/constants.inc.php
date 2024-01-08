@@ -12,6 +12,7 @@ define('STEALTECHNOLOGY', 1200);
 define('REMOVEPOPULATION', 1300);
 define('RESEARCHPLUS', 1500);
 define('DOMINATION', 2000);
+define('ONETIMEEFFECT', 2100);
 //
 // Game options
 //
@@ -39,7 +40,7 @@ define('NEVER', 2);
 // Game globals
 //
 define('ROUND', 10);
-define('LAST', 11);
+define('SWITCHALIGNMENT', 21);
 //
 // Automas (2)
 //

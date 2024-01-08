@@ -195,6 +195,17 @@ class Ships extends APP_GameClass
 					{
 						$possible[$next_location] = ['MP' => $next_MP, 'from' => $location];
 						$locations[$next_location] = $next_MP;
+						if ($type === 'WORMHOLE')
+						{
+							foreach (Factions::atPeace($ship['color']) as $otherColor)
+							{
+								if (Factions::getAlignment($otherColor) === 'STS' && Counters::isBlocked($ship['color'], $next_location, $otherColor))
+								{
+									$possible[$next_location]['wormhole'] = true;
+									unset($locations[$next_location]);
+								}
+							}
+						}
 					}
 				}
 			}

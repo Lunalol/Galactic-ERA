@@ -1411,9 +1411,12 @@ class Sectors extends APP_GameClass
 	static function setup($playersNumber)
 	{
 		$locations = range(1, 6);
+//
 		switch ($playersNumber)
 		{
+//
 			case 1:
+//
 				$locations = [1];
 				foreach (Automas::WORMHOLES as $location)
 				{
@@ -1421,22 +1424,29 @@ class Sectors extends APP_GameClass
 					Counters::create('neutral', 'wormhole', $location);
 				}
 				break;
+//
 			case 2:
 			case 3:
+//
 				$index = random_int(0, 5);
 				unset($locations[$index]);
 				unset($locations[($index + 2) % 6]);
 				unset($locations[($index + 4) % 6]);
 				break;
+//
 			case 4:
+//
 				$index = random_int(0, 5);
 				unset($locations[$index]);
 				unset($locations[($index + 3) % 6]);
 				break;
+//
 			case 5:
+//
 				unset($locations[random_int(0, 5)]);
 				break;
 		}
+//
 		$setup = array_merge([0], array_values($locations));
 //
 		$available = range(0, 8);

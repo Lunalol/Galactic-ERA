@@ -167,7 +167,16 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argMovement',
 		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'planetaryDeathRay', 'done'],
-		'transitions' => ['undo' => 210, 'continue' => 220, 'next' => 230]
+		'transitions' => ['undo' => 210, 'continue' => 220, 'blockMovement' => 215, 'next' => 230]
+	],
+	215 => [
+		'name' => 'blockMovement',
+		'description' => clienttranslate('Some players can block ${otherplayer} movement'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer} movement'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argBlockMovement',
+		'possibleactions' => ['blockMovement'],
+		'transitions' => ['end' => 220]
 	],
 	230 => [
 		'name' => 'combatChoice',
@@ -433,12 +442,21 @@ $machinestates = [
 	],
 	DOMINATION => [
 		'name' => 'domination',
-		'description' => clienttranslate('Players have the opportunity to play a domination card'),
-		'descriptionmyturn' => clienttranslate('${you} have the opportunity to play a domination card'),
+		'description' => clienttranslate('${phase}: Players have the opportunity to play a domination card'),
+		'descriptionmyturn' => clienttranslate('${phase}: ${you} have the opportunity to play a domination card'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argDomination',
 		'action' => 'stDomination',
 		'possibleactions' => ['domination', 'null'],
+		'transitions' => ['continue' => DOMINATION, 'end' => POP_EVENT]
+	],
+	ONETIMEEFFECT => [
+		'name' => 'oneTimeEffect',
+		'description' => clienttranslate('${actplayer} must use One-Time Effect for ${dominationCard}'),
+		'descriptionmyturn' => clienttranslate('${you} must use One-Time Effect for ${dominationCard}'),
+		'type' => 'activeplayer',
+		'args' => 'argOneTimeEffect',
+		'possibleactions' => [''],
 		'transitions' => ['end' => POP_EVENT]
 	],
 //
@@ -449,6 +467,6 @@ $machinestates = [
 		'description' => clienttranslate('End of game'),
 		'type' => 'manager',
 		'action' => 'stGameEnd',
-		'args' => 'argGameEnd                        '
+		'args' => 'argGameEnd'
 	]
 ];

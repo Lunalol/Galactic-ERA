@@ -13,72 +13,95 @@ class DominationCards extends APP_GameClass
 //
 		return $deck;
 	}
-	static function A(string $color, int $domination): bool
+	static function A(string $color, int $domination): int
 	{
+		$scoringPhase = false;
+		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		if ($event && $event['trigger_state'] == 550) $scoringPhase = true;
+//
 		switch ($domination)
 		{
 			case ACQUISITION:
 // Conquer/liberate 2 player owned stars on the same turn
 // Play this card when this happens
-				return false;
+				$acquisition = Factions::getStatus($color, 'acquisition') ?? [];
+				return (sizeof($acquisition) >= 2) ? 10 : 0;
 			case ALIGNMENT:
 // Can only be played at the end of the scoring phase
 // Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then
-				return true;
+				$best = true;
+				$DP = Factions::getDP($color);
+				$alignement = Factions::getAlignment($color);
+				foreach (Factions::list() as $otherColor) if ($color !== $otherColor && $alignement === Factions::getAlignment($otherColor) && Factions::getDP($otherColor) >= $DP) $best = false;
+				return ($scoringPhase && Factions::getDP($color) >= 5 && $best) ? 9 : 0;
 			case CENTRAL:
 // Own 4 stars in the center sector
 				$numberOfStars = 0;
 				foreach (array_keys(Counters::getPopulations($color, false)) as $location) if ($location[0] === '0') $numberOfStars++;
-				return $numberOfStars >= 4;
+				return ($numberOfStars >= 4) ? 12 : 0;
 			case DEFENSIVE:
 // Own all the stars (except neutron stars) in your home star sector (i.e., the sector with your home star)
-				return false;
+				$all = true;
+				$owned = array_keys(Counters::getPopulations($color));
+				foreach (Sectors::SECTORS[Sectors::get(Factions::getHomeStar($color))] as $hexagon => $type)
+				{
+					if ($type === Sectors::PLANET || $type === Sectors::HOME)
+					{
+						$rotated = Sectors::rotate($hexagon, -Sectors::getOrientation(Factions::getHomeStar($color)));
+						if (!in_array(Factions::getHomeStar($color) . ':' . $rotated, $owned)) $all = false;
+					}
+				}
+				return $all ? 9 : 0;
 			case DENSITY:
 // Have 3 stars with 5 or more population each
 				$numberOfStars = 0;
 				foreach (Counters::getPopulations($color, false) as $population) if ($population >= 5) $numberOfStars++;
-				return $numberOfStars >= 3;
+				return ($numberOfStars >= 3) ? 7 : 0;
 			case DIPLOMATIC:
 // Have Spirituality level 4 or higher, own the center star of the center sector and be at peace with every player
 				return
-					Factions::getTechnology($color, 'Spirituality') >= 4 &&
+					(Factions::getTechnology($color, 'Spirituality') >= 4 &&
 					array_key_exists('0:+0+0+0', Counters::getPopulations($color, false)) &&
-					!Factions::atWar($color);
+					!Factions::atWar($color)) ? 14 : 0;
 			case ECONOMIC:
 // Build 10 ships in a single Build Ships growth action
 // Any ships built as the direct result of star people special effects (e.g. STS Rogue AI) do not count for fulfilling this
 // Play this card when this happens
-				return false;
+				return (0) ? 7 : 0;
 			case ETHERIC:
 // Have a ship each in 4 nebula hexes at the start of your movement
 				$numberOfShips = 0;
 				foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::NEBULA) $numberOfShips++;
-				return $numberOfShips >= 4;
+				return ($numberOfShips >= 4) ? 8 : 0;
 			case EXPLORATORY:
 // Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors
-				return false;
+				return (0) ? 13 : 0;
 			case GENERALSCIENTIFIC:
 // Have a total of 16 technology levels
 				$levels = 0;
 				foreach (array_keys(Factions::TECHNOLOGIES) as $technology) $levels += Factions::getTechnology($color, $technology);
-				return $levels >= 16;
+				return ($levels >= 16) ? 9 : 0;
 			case MILITARY:
 // Have ships totaling 120 in CV (not counting bonuses of any kind)
 // Reveal enough ships to prove this
 // If you play this card during a battle, all your ships in that battle still count toward the total (even if they would be destroyed).
-				return false;
+				return (0) ? 10 : 0;
 			case SPATIAL:
 // Own 10 stars
 				return sizeof(Counters::getPopulations($color, false)) >= 10;
 			case SPECIALSCIENTIFIC:
 // Have level 6 in 1 technology field and level 5 or higher in another field
-				return false;
+				return (0) ? 11 : 0;
 			default:
 				throw new BgaVisibleSystemException('Invalid Domination Card: ' . $domination);
 		}
 	}
 	static function B(string $color, int $domination): array
 	{
+		$scoringPhase = false;
+		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		if ($event && $event['trigger_state'] == 550) $scoringPhase = true;
+//
 		$scoring = [];
 		switch ($domination)
 		{
@@ -91,8 +114,8 @@ class DominationCards extends APP_GameClass
 				$scoring[] = 1 * Factions::getTechnology($color, 'Military');
 				break;
 			case ALIGNMENT:
-//
-				$scoring[] = 0;
+// 4 if you did not get any DP for your alignment in the scoring phase of this round
+				$scoring[] = ($scoringPhase && Factions::getStatus($color, 'alignment')) ? 0 : 4;
 // 1 DP per Spirituality level
 				$scoring[] = 1 * Factions::getTechnology($color, 'Spirituality');
 				break;
@@ -120,7 +143,7 @@ class DominationCards extends APP_GameClass
 				$scoring[] = 1 * sizeof(array_filter(Counters::getPopulations($color, false), fn($population) => ($population >= 4)));
 				break;
 			case DIPLOMATIC:
-// 2 DP per other player’s home star where you have a ship (including puppet)
+// 2 DP per other player’s home star where you have a ship (including automa)
 				$numberOfHomeStar = 0;
 				foreach (Factions::list(true) as $otherColor) if ($otherColor !== $color && Ships::getHomeStarLocation($otherColor) && Ships::getAtLocation(Ships::getHomeStarLocation($otherColor), $color)) $numberOfHomeStar++;
 				$scoring[] = 2 * $numberOfHomeStar;

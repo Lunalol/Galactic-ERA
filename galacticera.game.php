@@ -30,7 +30,7 @@ class GalacticEra extends Table
 		$this->GLOBALLABELS = [
 			'game' => GAME, 'difficulty' => DIFFICULTY,
 			'galacticStory' => GALACTICSTORY, 'galacticGoal' => GALACTICGOAL,
-			'round' => ROUND, 'last' => LAST,
+			'round' => ROUND, 'alignment' => SWITCHALIGNMENT
 		];
 //
 		self::initGameStateLabels($this->GLOBALLABELS);
@@ -231,9 +231,10 @@ class GalacticEra extends Table
 		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state <> 0 ORDER BY id LIMIT 1");
 		if ($event)
 		{
+			$state = $this->gamestate->state_id();
 			$old_state = $nextState ? $this->gamestate->state()['transitions'][$nextState] : 0;
 			$old_active_faction = Factions::getActive() ?? 0;
-			self::DbQuery("UPDATE stack SET old_state = $old_state, old_active_faction = '$old_active_faction' WHERE id = $event[id]");
+			self::DbQuery("UPDATE stack SET trigger_state = $state, old_state = $old_state, old_active_faction = '$old_active_faction' WHERE id = $event[id]");
 //
 			return $this->gamestate->jumpToState(PUSH_EVENT);
 		}

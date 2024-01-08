@@ -124,8 +124,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		{
 			let index = fleet = 0;
 			nodes = Array.from(dojo.query(`.ERAship[location='${location}']`, 'ERAboard')).sort((a, b) => {
-				const score_a = (dojo.getAttr(a, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(a, 'fleet') ? 1 : 0);
-				const score_b = (dojo.getAttr(b, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(b, 'fleet') ? 1 : 0);
+				const score_a = (dojo.getAttr(a, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(a, 'fleet') ? 0 : 1);
+				const score_b = (dojo.getAttr(b, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(b, 'fleet') ? 0 : 1);
 				return score_a - score_b;
 			});
 			for (const node of nodes)
@@ -133,7 +133,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				if (dojo.hasAttr(node, 'fleet'))
 				{
 					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${-10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
-					dojo.style(node, 'z-index', 200 + fleet);
+					dojo.style(node, 'z-index', 200 + index);
 					fleet++;
 				}
 				else
@@ -231,8 +231,10 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					if (this.bgagame.gamedatas.gamestate.name === 'remoteViewing') return this.bgagame.remoteViewing('fleet', ship);
 					if (this.bgagame.gamedatas.gamestate.name === 'combatChoice') return this.bgagame.combatChoice(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'gainStar') return this.bgagame.gainStar(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'gainStar+') return this.bgagame.gainStar(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'buildShips') return this.bgagame.buildShips(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'growPopulation') return this.bgagame.growPopulation(location);
+					if (this.bgagame.gamedatas.gamestate.name === 'growPopulation+') return this.bgagame.growPopulation(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'bonusPopulation') return this.bgagame.bonusPopulation(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'teleportPopulation') return this.bgagame.teleportPopulation(location);
 					if (this.bgagame.gamedatas.gamestate.name === 'removePopulation') return this.bgagame.removePopulation(location);

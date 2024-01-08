@@ -22,8 +22,6 @@ SOLO:
 /* NOT IMPLEMENTED */
 /*******************/
 
-6.2.5 Gain Star
-    • End of Population Track
 7.2.3 Blocking Movement
     • Newly declare war
 7.3 When to Declare War
@@ -32,8 +30,6 @@ SOLO:
 	• A-Section
 9. Variants
 11.5 Galactic Goals
-11.7 Ancient Relics
-    • Ancient Pyramids bonus population
 
 /***************/
 /* IMPLEMENTED */
@@ -50,6 +46,7 @@ SOLO:
 6.2.2 Switch Alignment
 6.2.3 Change Turn Order
 6.2.4 Resolve Other Growth Actions
+6.2.5 Gain Star
 6.2.6 Grow Population
 6.2.7 Build Ships
 6.2.8 Research
@@ -70,15 +67,16 @@ SOLO:
 11.1 Star Peoples:
     • Avians
     • Dracos
+    • Mantids
     • Orion Republic / Orion Empire
     • Plejars
     • Yowies
 11.2 Technologies:
-    • Military:     (1-6)
-    • Spirituality: (1-6)
-    • Propulsion:   (1-6)
-    • Robotics:     (1-6)
-    • Genetics:     (1-6)
+    • Military:     (1-6)+
+    • Spirituality: (1-6)+
+    • Propulsion:   (1-6)+
+    • Robotics:     (1-6)+
+    • Genetics:     (1-6)+
 11.4 Galactic Stories
 11.6 Sector Starting Bonus
 11.7 Ancient Relics

@@ -397,6 +397,17 @@ trait gameStateActions
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!in_array($on, Factions::atPeace($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
 //
+// GREYS STO: You may not declare war on other players (also not on a automa)
+//
+			if (Factions::getAlignment($color) === 'STO' && Factions::getStarPeople($color) === 'Greys') throw new BgaUserException(self::_('Greys STO may not declare war'));
+//------------------------
+// A-section: Diplomatic //
+//------------------------
+			if (Factions::getStatus($on, 'diplomatic')) throw new BgaUserException(self::_('You can\'t declare war on this player (Diplomatic)'));
+//------------------------
+// A-section: Diplomatic //
+//------------------------
+//
 // PLEJARS STS: May declare war on STS players during your movement
 //
 			if (Factions::getAlignment($color) === 'STO')
@@ -609,7 +620,7 @@ trait gameStateActions
 				}
 //* -------------------------------------------------------------------------------------------------------- */
 				$sector = Sectors::get($location[0]);
-				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} loses one <B>population(s)</B>'), ['GPS' => $location,
 					'PLANET' => [
 						'log' => '<span style = "color:#' . $populationDisc['color'] . ';font-weight:bold;">${PLANET}</span>',
@@ -668,9 +679,19 @@ trait gameStateActions
 			}
 		}
 //
+		if ($player_id > 0)
+		{
+			$undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
+			foreach ($ships as $ship)
+			{
+				$json = self::escapeStringForDB(json_encode(Ships::get($ship)));
+				self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$ship,'$color','move','$json')");
+			}
+		}
+//
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
@@ -700,23 +721,36 @@ trait gameStateActions
 //
 		foreach ($locations as $next_location)
 		{
-			self::notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $next_location, 'old' => $location]);
-			$location = $next_location;
-		}
-//
-		if ($player_id > 0) $undoID = self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'") + 1;
-		foreach ($ships as $ship)
-		{
-			if ($player_id > 0)
+			if (array_key_exists('wormhole', $this->possible['move'][$ships[0]][$next_location]))
 			{
-				$json = self::escapeStringForDB(json_encode(Ships::get($ship)));
-				self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$ship,'$color','move','$json')");
+				if (Factions::getTechnology($color, 'Spirituality') < 5)
+				{
+					$toBlock = [];
+					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($next_location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+					if ($toBlock)
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
+						$params = func_get_args();
+						Factions::setStatus($color, 'action', ['name' => 'wormhole', 'from' => $location, 'to' => $next_location, 'function' => __FUNCTION__, 'params' => $params]);
+						return $this->gamestate->nextState('blockMovement');
+					}
+				}
 			}
 //
-			$MP = $this->possible['move'][$ship][$location]['MP'];
-			Ships::setMP($ship, $MP);
-			Ships::setActivation($ship, $MP == 0 ? 'done' : 'yes');
-			Ships::setLocation($ship, $location);
+			self::notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $next_location, 'old' => $location]);
+			$location = $next_location;
+//
+			foreach ($ships as $ship)
+			{
+				$MP = $this->possible['move'][$ship][$location]['MP'];
+				Ships::setMP($ship, $MP);
+				Ships::setActivation($ship, $MP == 0 ? 'done' : 'yes');
+				Ships::setLocation($ship, $location);
+			}
+//
 		}
 //
 		self::updateScoring();
@@ -833,7 +867,7 @@ trait gameStateActions
 		self::updateScoring();
 		self::triggerAndNextState('continue');
 	}
-	function acHomeStarEvacuation(string $color, string $location, bool $automa = false)
+	function acHomeStarEvacuation(string $color, $location, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -864,7 +898,7 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
@@ -897,7 +931,7 @@ trait gameStateActions
 		if (Factions::getStatus($color, 'evacuate') === 'voluntary')
 		{
 			$sector = Sectors::get($previousLocation[0]);
-			$rotated = Sectors::rotate(substr($previousLocation, 2), +Sectors::getOrientation($previousLocation[0]));
+			$rotated = Sectors::rotate(substr($previousLocation, 2), Sectors::getOrientation($previousLocation[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} gains ${population} <B>population(s)</B>'), [
 				'PLANET' => [
@@ -933,7 +967,7 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 		{
@@ -987,7 +1021,7 @@ trait gameStateActions
 //
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
-		$rotated = Sectors::rotate($hexagon, +Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
 //
 		if ($this->gamestate->state()['name'] === 'retreatE')
 		{
@@ -1216,6 +1250,46 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 	}
+	function acBlockMovement(string $color, bool $blocked)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('blockMovement');
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if ($blocked)
+		{
+			self::acDeclareWar($color, Factions::getActive(), true);
+			self::DbQuery("DELETE FROM `undo` WHERE color = '" . Factions::getActive() . "'");
+		}
+//
+		if ($this->gamestate->setPlayerNonMultiactive($player_id, 'end'))
+		{
+			$action = Factions::getStatus(Factions::getActive(), 'action');
+			$location = $action['to'];
+//* -------------------------------------------------------------------------------------------------------- */
+			if (Counters::isBlocked(Factions::getActive(), $location)) self::notifyAllPlayers('msg', 'Movement is blocked', []);
+//* -------------------------------------------------------------------------------------------------------- */
+			{
+				self::argMovement();
+//
+				$ships = $action['params'][2];
+				self::notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $location, 'old' => $action['from']]);
+//
+				foreach ($ships as $ship)
+				{
+					$MP = $this->possible['move'][$ship][$location]['MP'];
+					if (Counters::isBlocked(Factions::getActive(), $location)) $MP = 0;
+					Ships::setMP($ship, $MP);
+					Ships::setActivation($ship, $MP == 0 ? 'done' : 'yes');
+					Ships::setLocation($ship, $location);
+				}
+//
+				self::updateScoring();
+				$this->gamestate->nextState('continue');
+			}
+		}
+	}
 	function acSwitchAlignment(string $color)
 	{
 		$player_id = Factions::getPlayer($color);
@@ -1231,6 +1305,13 @@ trait gameStateActions
 		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
 			Factions::switchAlignment($color);
+//------------------------
+// A-section: Alignment //
+//------------------------
+			self::incGameStateValue('alignment', 1);
+//------------------------
+// A-section: Alignment //
+//------------------------
 //
 			foreach (Factions::atWar($color) as $otherColor)
 			{
@@ -1343,22 +1424,25 @@ trait gameStateActions
 		self::updateScoring();
 		self::triggerAndNextState('end');
 	}
-	function acGainStar(string $color, string $location, bool $automa = false)
+	function acGainStar(string $color, string $location, bool $center = false, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
+//
+		$counter = $center ? 'gainStar+' : 'gainStar';
 //
 		if (!$automa)
 		{
 			$this->checkAction('gainStar');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
-			if (!in_array('gainStar', $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'gainStar');
+			if (!in_array($counter, $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'gainStar');
+			if ($counter === 'gainStar+' && $location[0] !== '0') throw new BgaVisibleSystemException("Invalid location: $location");
 		}
 //
 		$ships = Ships::getAtLocation($location, $color);
 		if (!$ships) throw new BgaVisibleSystemException('No ships at location: ' . $location);
 //
-		[$type, $SHIPS, $population] = Counters::gainStar($color, $location);
+		[$type, $SHIPS, $population] = Counters::gainStar($color, $location, $automa, $center);
 		if (!$type)
 		{
 			if ($SHIPS > 0) throw new BgaUserException(sprintf(self::_('You need at least %d ships to gain this star'), $SHIPS));
@@ -1367,21 +1451,8 @@ trait gameStateActions
 //
 		if ($type === LIBERATE || $type === CONQUERVS)
 		{
-			$sizeOfPopulation = 0;
-//
-			$homeStar = Ships::getAtLocation($location, null, 'homeStar');
-			if ($homeStar)
-			{
-				$sizeOfPopulation += 6;
-				$otherColor = Ships::get($homeStar[0])['color'];
-			}
-			$populations = Counters::getAtLocation($location, 'populationDisc');
-			if ($populations)
-			{
-				$sizeOfPopulation += sizeof($populations);
-				$otherColor = Counters::get($populations[0])['color'];
-			}
-			if (!$sizeOfPopulation) throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
+			$otherColor = Counters::getOwner($location);
+			if (!$otherColor) throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
 			if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
 		}
 //
@@ -1389,7 +1460,7 @@ trait gameStateActions
 // (i.e., primitive or advanced neutral stars or those of STO players)
 // Multiple STO players may use the same opportunity to declare war, even though one would be enough to block it
 //
-		if (Factions::getTechnology($color, 'Spirituality') < 5)
+		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
 		{
 			$toBlock = [];
 			foreach (Factions::list(false) as $otherColor)
@@ -1409,7 +1480,7 @@ trait gameStateActions
 			if ($toBlock)
 			{
 				$sector = Sectors::get($location[0]);
-				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to gain ${PLANET} '), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
@@ -1419,13 +1490,15 @@ trait gameStateActions
 				return $this->gamestate->nextState('blockAction');
 			}
 		}
-		return self::acGainStarValidated($color, $location, $automa);
+		return self::acGainStarValidated($color, $location, $center, $automa);
 	}
-	function acGainStarValidated(string $color, string $location, bool $automa = false)
+	function acGainStarValidated(string $color, string $location, bool $center = false, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
-		[$type, $SHIPS, $population] = Counters::gainStar($color, $location);
+		$counter = $center ? 'gainStar+' : 'gainStar';
+//
+		[$type, $SHIPS, $population] = Counters::gainStar($color, $location, false, $center);
 		if ($type === LIBERATE || $type === CONQUERVS)
 		{
 			$sizeOfPopulation = 0;
@@ -1450,7 +1523,7 @@ trait gameStateActions
 				$sizeOfPopulation += sizeof($populations);
 				$otherColor = Counters::get($populations[0])['color'];
 			}
-			Factions::setStatus($color, 'steal', ['from' => $otherColor, 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
+			Factions::setStatus($color, 'steal', ['from' => [$otherColor], 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
 			if (Factions::getPlayer($color) > 0) self::triggerEvent(STEALTECHNOLOGY, $color);
 //
 			if (Factions::getEmergencyReserve($otherColor))
@@ -1459,6 +1532,20 @@ trait gameStateActions
 				foreach (Factions::list() as $_color) $starCount[$_color] = sizeof(Counters::getPopulations($_color));
 				if ($starCount[$color] <= min($starCount) - 2) self::triggerEvent(EMERGENCYRESERVE, $otherColor);
 			}
+//--------------------------
+// A-section: Acquisition //
+//--------------------------
+//
+// Conquer/liberate 2 player owned stars on the same turn
+// Play this card when this happens
+//
+			$acquisition = Factions::getStatus($color, 'acquisition') ?? [];
+			$acquisition[] = $otherColor;
+			Factions::setStatus($color, 'acquisition', $acquisition);
+//
+//--------------------------
+// A-section: Acquisition //
+//--------------------------
 		}
 //
 		foreach (Counters::getAtLocation($location, 'star') as $star)
@@ -1471,7 +1558,7 @@ trait gameStateActions
 		}
 //
 		$sector = Sectors::get($location[0]);
-		$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+		$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //
 		switch ($type)
 		{
@@ -1729,9 +1816,9 @@ trait gameStateActions
 		}
 //
 		$counters = Factions::getStatus($color, 'counters');
-		if (array_search('gainStar', $counters) !== false) unset($counters[array_search('gainStar', $counters)]);
+		if (array_search($counter, $counters) !== false) unset($counters[array_search($counter, $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
-		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
+		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), [$counter])));
 //
 		self::updateScoring();
 		if (!$automa)
@@ -1806,7 +1893,7 @@ trait gameStateActions
 			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
 			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
@@ -1823,7 +1910,7 @@ trait gameStateActions
 			unset($this->possible['growPopulation'][$location]);
 //
 			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
@@ -1894,7 +1981,7 @@ trait gameStateActions
 			Counters::destroy($populationDisc['id']);
 //
 			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 			self::notifyAllPlayers('msg', clienttranslate('${GPS} ${PLANET} loses one <B>population(s)</B>'), ['GPS' => $location,
 				'PLANET' => [
 					'log' => '<span style = "color:#' . $populationDisc['color'] . ';font-weight:bold;">${PLANET}</span>',
@@ -1928,7 +2015,7 @@ trait gameStateActions
 			Counters::destroy($counter['id']);
 //
 			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('removeCounter', clienttranslate('${GPS} ${PLANET} teleports a <B>population</B>'), [
 				'PLANET' => [
@@ -1943,7 +2030,7 @@ trait gameStateActions
 			if (!in_array($location, $this->possible['populations'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
 			$sector = Sectors::get($location[0]);
-			$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
 				'PLANET' => [
@@ -2012,7 +2099,7 @@ trait gameStateActions
 			else
 			{
 				$sector = Sectors::get($location[0]);
-				$rotated = Sectors::rotate(substr($location, 2), +Sectors::getOrientation($location[0]));
+				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //
 				if ($automa)
 				{
@@ -2216,6 +2303,8 @@ trait gameStateActions
 //
 				$section = 'A';
 				if ($this->domination->countCardInLocation($section, $player_id)) throw new BgaVisibleSystemException('A-Section already played');
+				if (!DominationCards::A($color, $domination)) throw new BgaUserException(self::_('Play this card when primary condition happens'));
+//
 				$this->domination->moveCard($id, $section, $color);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('playDomination', clienttranslate('${player_name} plays <B>${DOMINATION}</B>'), [
@@ -2223,13 +2312,58 @@ trait gameStateActions
 					'card' => $dominationCard, 'section' => $section
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
-				throw new BgaVisibleSystemException('A-Section NOT implemented');
+				switch ($domination)
+				{
+					case ACQUISITION:
+						$DP = 10;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional technology level from one of the players you took a star from this turn')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'steal', ['from' => Factions::getStatus($color, 'acquisition'), 'levels' => 1]);
+						self::triggerEvent(STEALTECHNOLOGY, $color);
+						break;
+					case ALIGNMENT:
+						$DP = 9 + 2 * self::getGameStateValue('alignment');
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional 2 DP for every Switch Alignment growth action counter played this round (including your own)')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+					case CENTRAL:
+						$DP = 12;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('On your turn in this growth phase, you get a free Gain Star action, which you can use in the center sector only<BR>Your ships count double for this action (apply before calculating Fleet “B” bonus)')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
+						break;
+					case DEFENSIVE:
+						$DP = 9;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Add 20 CV to your side in the current battle if it is in your home star sector<BR>You may play this card even after ships have been revealed')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+					case DENSITY:
+						$DP = 7;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Add 1 population disc to each of your stars with 5+ population (regardless of any limits or blocking)')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+					case DIPLOMATIC:
+						$DP = 14;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('No players may declare war on you for the rest of this round')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'diplomatic', true);
+						break;
+					default:
+						throw new BgaVisibleSystemException('A-Section NOT implemented');
+				}
 //
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_DC_A', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
+				break;
 //
 			case 'B':
 //
@@ -2244,7 +2378,7 @@ trait gameStateActions
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$DP = max(DominationCards::B($color, $domination));
-				if (!$DP) throw new BgaUserException(self::_('Useless scoring'));
+//				if (!$DP) throw new BgaUserException(self::_('Useless scoring'));
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_DC_B', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2275,9 +2409,11 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('updateFaction', '', ['player_id' => $player_id, 'faction' => $faction]);
 //* -------------------------------------------------------------------------------------------------------- */
-		self::updateScoring();
 //
-		if ($this->gamestate->state()['name'] === 'domination' && $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color) === 2) $this->gamestate->setPlayerNonMultiactive($player_id, 'end');
+//		if ($this->gamestate->state()['name'] === 'domination' && $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color) === 2) $this->gamestate->setPlayerNonMultiactive($player_id, 'end');
+//
+		self::updateScoring();
+		self::triggerAndNextState('continue');
 	}
 	function acDominationCardExchange(string $color, int $id)
 	{

@@ -60,6 +60,14 @@ $this->DOMINATIONCARDS = [
 	SPECIALSCIENTIFIC => clienttranslate('Special Scientific'),
 ];
 //
+// Domination play phase (4)
+//
+$this->PHASES = [
+	'startOfRound' => clienttranslate('Start of round'),
+	'changeTurnOrder' => clienttranslate('Start of Growth phase'),
+	'scoringPhase' => clienttranslate('End of round')
+];
+//
 // Star Peoples (17)
 //
 $this->STARPEOPLES = [

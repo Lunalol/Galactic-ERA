@@ -279,6 +279,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function blockMovement()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$blocked = self::getArg("blocked", AT_bool, true);
+		$this->game->acBlockMovement($color, $blocked);
+//
+		self::ajaxResponse("");
+	}
 	public function switchAlignment()
 	{
 		self::setAjaxMode();
@@ -316,7 +326,8 @@ class action_galacticera extends APP_GameAction
 //
 		$color = self::getArg("color", AT_alphanum, true);
 		$location = self::getArg("location", AT_json, true);
-		$this->game->acGainStar($color, $location);
+		$center = self::getArg("center", AT_json, true);
+		$this->game->acGainStar($color, $location, $center);
 //
 		self::ajaxResponse("");
 	}
@@ -327,7 +338,7 @@ class action_galacticera extends APP_GameAction
 		$color = self::getArg("color", AT_alphanum, true);
 		$locations = self::getArg("locations", AT_json, true);
 		$locationsBonus = self::getArg("locationsBonus", AT_json, true);
-		$bonus = self::getArg("bonus", AT_json, false);
+		$bonus = self::getArg("bonus", AT_json, true);
 		$this->game->acGrowPopulation($color, $locations, $locationsBonus, $bonus);
 //
 		self::ajaxResponse("");
