@@ -266,5 +266,7 @@ class GalacticEra extends Table
 	function TECH()
 	{
 		foreach (Factions::list(false) as $color) foreach (array_keys($this->TECHNOLOGIES) as $technology) self::dbQuery("UPDATE factions SET `$technology` = 6 WHERE color = '$color'");
+		foreach (Factions::list(false) as $color) self::dbQuery("UPDATE factions SET `Spirituality` = 4 WHERE color = '$color'");
+		foreach (Factions::list(false) as $color) self::dbQuery("UPDATE factions SET `Propulsion` = 4 WHERE color = '$color'");
 	}
 }

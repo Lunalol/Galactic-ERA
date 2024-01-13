@@ -190,6 +190,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				SVGcircle.setAttribute('r', 10);
 				svg.appendChild(SVGcircle);
 //
+				if ('wormhole' in paths[location]) svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + 'FFFFFF' + 'C0'));
+				if ('stargate' in paths[location]) svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + 'FFFFFF' + 'C0'));
+//
 				const SVGshape = this.board.drawHexagon(this.board.hexagons[location], 'none');
 				dojo.setAttr(SVGshape, 'location', location);
 				svg.appendChild(SVGshape);

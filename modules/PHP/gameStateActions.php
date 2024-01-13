@@ -739,6 +739,24 @@ trait gameStateActions
 					}
 				}
 			}
+			if (array_key_exists('stargate', $this->possible['move'][$ships[0]][$next_location]))
+			{
+				if (Factions::getTechnology($color, 'Spirituality') < 5)
+				{
+					$toBlock = [];
+					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getAlignment($otherColor) === 'STS' && (Ships::getAtLocation($location, $otherColor) || Ships::getAtLocation($next_location, $otherColor))) $toBlock[] = Factions::getPlayer($otherColor);
+					if ($toBlock)
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+						$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
+						$params = func_get_args();
+						Factions::setStatus($color, 'action', ['name' => 'stargate', 'from' => $location, 'to' => $next_location, 'function' => __FUNCTION__, 'params' => $params]);
+						return $this->gamestate->nextState('blockMovement');
+					}
+				}
+			}
 //
 			self::notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $next_location, 'old' => $location]);
 			$location = $next_location;
@@ -1267,12 +1285,16 @@ trait gameStateActions
 		{
 			$action = Factions::getStatus(Factions::getActive(), 'action');
 			$location = $action['to'];
-//* -------------------------------------------------------------------------------------------------------- */
-			if (Counters::isBlocked(Factions::getActive(), $location)) self::notifyAllPlayers('msg', 'Movement is blocked', []);
-//* -------------------------------------------------------------------------------------------------------- */
-			{
-				self::argMovement();
 //
+			$blocked = Counters::isBlocked(Factions::getActive(), $location);
+//* -------------------------------------------------------------------------------------------------------- */
+			if ($blocked) self::notifyAllPlayers('msg', 'Movement is blocked', []);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::argMovement();
+//
+			if ($action['name'] === 'stargate' && $blocked) $location = $action['from'];
+			else
+			{
 				$ships = $action['params'][2];
 				self::notifyAllPlayers('moveShips', '', ['ships' => $ships, 'location' => $location, 'old' => $action['from']]);
 //
@@ -1284,10 +1306,10 @@ trait gameStateActions
 					Ships::setActivation($ship, $MP == 0 ? 'done' : 'yes');
 					Ships::setLocation($ship, $location);
 				}
-//
-				self::updateScoring();
-				$this->gamestate->nextState('continue');
 			}
+//
+			self::updateScoring();
+			$this->gamestate->nextState('continue');
 		}
 	}
 	function acSwitchAlignment(string $color)

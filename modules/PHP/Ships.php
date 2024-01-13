@@ -162,11 +162,30 @@ class Ships extends APP_GameClass
 //
 // Stargate 1
 //
-			if ($propulsion === 3 || $propulsion === 4) if (array_key_exists($location, $ownStars) && $ownStars[$location] >= 3) foreach ($ownStars as $next_location => $population) if ($next_location !== $location && $population >= 3) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+			if (($propulsion === 3 || $propulsion === 4) && array_key_exists($location, $ownStars) && $ownStars[$location] >= 3)
+			{
+				foreach ($ownStars as $next_location => $population)
+				{
+					if ($next_location !== $location && $population >= 3)
+					{
+						$neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+					}
+				}
+			}
 //
 // Stargate 2
 //
-			if ($propulsion === 5) if (in_array($location, $stars)) foreach ($stars as $next_location) if ($next_location !== $location) $neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+			if ($propulsion === 5) if (in_array($location, $stars))
+				{
+					foreach ($stars as $next_location)
+					{
+						if ($next_location !== $location)
+						{
+							$neighbors[$next_location] = ['location' => $next_location, 'terrain' => Sectors::PLANET];
+						}
+					}
+				}
+
 //
 //	Super-Stargate
 //
@@ -195,14 +214,32 @@ class Ships extends APP_GameClass
 					{
 						$possible[$next_location] = ['MP' => $next_MP, 'from' => $location];
 						$locations[$next_location] = $next_MP;
-						if ($type === 'WORMHOLE')
+//
+						if (!is_int($type))
 						{
-							foreach (Factions::atPeace($ship['color']) as $otherColor)
+//
+// A ship trying to use a wormhole is blocked by a hostile ship at the exit hex of a wormhole
+// The ship still moves through the wormhole, but ends its movement in the hex it exited from the wormhole
+//
+							if ($type === 'WORMHOLE')
 							{
-								if (Factions::getAlignment($otherColor) === 'STS' && Counters::isBlocked($ship['color'], $next_location, $otherColor))
+								foreach (Factions::atPeace($ship['color']) as $otherColor)
 								{
-									$possible[$next_location]['wormhole'] = true;
-									unset($locations[$next_location]);
+									if (Factions::getAlignment($otherColor) === 'STS' && Counters::isBlocked($ship['color'], $next_location, $otherColor))
+									{
+										$possible[$next_location]['wormhole'] = true;
+//										unset($locations[$next_location]);
+									}
+								}
+							}
+							else
+							{
+								foreach (Factions::atPeace($ship['color']) as $otherColor)
+								{
+									if (Factions::getAlignment($otherColor) === 'STS' && (Counters::isBlocked($ship['color'], $location, $otherColor) || Counters::isBlocked($ship['color'], $next_location, $otherColor)))
+									{
+										$possible[$next_location]['stargate'] = true;
+									}
 								}
 							}
 						}
