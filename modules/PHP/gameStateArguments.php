@@ -60,7 +60,7 @@ trait gameStateArguments
 	function argDomination()
 	{
 		$counters = [];
-		foreach (Factions::list(false) as $otherColor)
+		foreach (Factions::list(true) as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
@@ -70,7 +70,7 @@ trait gameStateArguments
 		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
 		$phase = $this->gamestate->states[$event['trigger_state']]['name'];
 //
-		return ['counters' => $counters, 'phase' => $this->PHASES[$phase], 'lastChance' => +self::getGameStateValue('round') === 8 && $phase === 'tradingPhaseEnd'];
+		return ['counters' => $counters, 'phase' => $this->PHASES[$phase], 'lastChance' => +self::getGameStateValue('round') === 8 && $phase === 'scoringPhase'];
 	}
 	function argDominationCardExchange()
 	{
@@ -366,7 +366,7 @@ trait gameStateArguments
 		}
 //
 		$counters = [];
-		foreach (Factions::list(false) as $otherColor)
+		foreach (Factions::list(true) as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
@@ -555,7 +555,7 @@ trait gameStateArguments
 		}
 //
 		$counters = [];
-		foreach (Factions::list(false) as $otherColor)
+		foreach (Factions::list(true) as $otherColor)
 		{
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;

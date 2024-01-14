@@ -800,8 +800,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 												break;
 											case 'growPopulation+':
 												state.args._private.bonusPopulation += 2;
-												this.setClientState('growPopulation', {counter: node.id, possibleactions: ['growPopulation'
-													], descriptionmyturn: _('${you} may add one population disc to every star that is below its “growth limit”')});
+												this.setClientState('growPopulation+', {counter: node.id, possibleactions: ['growPopulation'],
+													args: state.args,
+													descriptionmyturn: _('${you} may add one population disc to every star that is below its “growth limit”')});
 												break;
 											case 'gainStar':
 												this.setClientState(counter, {counter: node.id, possibleactions: ['gainStar', 'declareWar'], descriptionmyturn: _('${you} may choose to populate or take over a star')});
@@ -1912,6 +1913,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						break;
 //
 					case 'growPopulation':
+					case 'growPopulation+':
 //
 						this.addActionButton('ERAgrowPopulationButton', _('Confirm'), () => {
 							this.setClientState('bonusPopulation', {descriptionmyturn: dojo.string.substitute(_('${you} may add ${bonus} “bonus population” discs'), {you: '${you}', bonus: args._private.bonusPopulation})});

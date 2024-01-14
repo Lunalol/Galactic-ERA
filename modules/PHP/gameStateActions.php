@@ -1382,6 +1382,8 @@ trait gameStateActions
 		unset($counters[array_search('research', $counters)]);
 		if (!in_array('research', Factions::getStatus($color, 'used'))) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research'])));
 //
+		foreach ($technologies as $technology) if ($technology !== 'Robotics') Factions::setStatus($color, 'otherTechnology', $technology);
+//
 		foreach ($technologies as $technology)
 		{
 			$level = self::gainTechnology($color, $technology);
@@ -1809,7 +1811,7 @@ trait gameStateActions
 		if (self::getGameStateValue('galacticStory') == RIVALRY && self::ERA() === 'First' && $player_id > 0)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 2 DP for every star outside of their home star sector that they take from another player')]);
+			if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 1 DP for every Gain Star action they do in this era')]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$DP = 1;
 			self::gainDP($color, $DP);

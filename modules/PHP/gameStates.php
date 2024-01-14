@@ -303,7 +303,7 @@ trait gameStates
 		}
 		else
 		{
-			if (sizeof($starPeoples) < 2 * self::getPlayersNumber()) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
+			if (sizeof($starPeoples) < 2 * self::getPlayersNumber() || DEBUG) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
 			else foreach (Factions::list(false) as $color) if (Factions::getPlayer($color) >= 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 //
 			$this->gamestate->setAllPlayersMultiactive('next');
@@ -1266,10 +1266,12 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 				case 'Robotics':
-					$technologies = array_diff(array_intersect(Factions::getStatus($color, 'used'), array_keys(Factions::TECHNOLOGIES)), ['Robotics']);
-					if ($technologies)
+					if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
+					else Factions::setStatus($color, 'researchPlus');
+					$otherTechnology = Factions::getStatus($color, 'otherTechnology');
+					if ($otherTechnology)
 					{
-						self::gainTechnology($color, array_pop($technologies));
+						self::gainTechnology($color, $otherTechnology);
 //
 						$DP = -2;
 						self::gainDP($color, $DP);
@@ -1280,14 +1282,14 @@ trait gameStates
 					}
 					break;
 				case 'Genetics':
+					if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
+					else Factions::setStatus($color, 'researchPlus');
 					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['growPopulation+']));
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} gets a free Grow Population action with 2 additional bonus population'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
 			}
-			if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
-			else Factions::setStatus($color, 'researchPlus');
 		}
 //
 		self::triggerAndNextState('end');
