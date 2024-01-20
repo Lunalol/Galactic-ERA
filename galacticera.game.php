@@ -1,5 +1,5 @@
 <?php
-// TEST for p1ngouin
+//
 require_once(APP_GAMEMODULE_PATH . 'module/table/table.game.php');
 require_once('modules/PHP/constants.inc.php');
 require_once('modules/PHP/hexagons.php');
@@ -22,7 +22,6 @@ class GalacticEra extends Table
 	use gameStateActions;
 	use gameUtils;
 
-//
 	function __construct()
 	{
 		parent::__construct();
