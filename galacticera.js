@@ -805,11 +805,10 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 													descriptionmyturn: _('${you} may add one population disc to every star that is below its “growth limit”')});
 												break;
 											case 'gainStar':
-												this.setClientState(counter, {counter: node.id, possibleactions: ['gainStar', 'declareWar'], descriptionmyturn: _('${you} may choose to populate or take over a star')});
+												this.setClientState(counter, {counter: node.id, possibleactions: ['gainStar'], descriptionmyturn: _('${you} may choose to populate or take over a star')});
 												break;
 											case 'gainStar+':
-												this.setClientState(counter, {counter: node.id, possibleactions: ['gainStar', 'declareWar'
-													], descriptionmyturn: _('${you} may choose to populate or take over a star (center sector only)')});
+												this.setClientState(counter, {counter: node.id, possibleactions: ['gainStar'], descriptionmyturn: _('${you} may choose to populate or take over a star (center sector only)')});
 												break;
 											case 'buildShips':
 												this.setClientState(counter, {counter: node.id, possibleactions: ['buildShips'
@@ -1177,7 +1176,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						svg.id = 'ERAstars';
 //
 						dojo.query(`.ERAcounter-peace`, `ERAstatus-${this.color}`).addClass('ERAselectable');
-						for (let location of state.args._private.gainStar)
+						for (let location of Object.keys(state.args._private.gainStar))
 						{
 							if (stateName === 'gainStar+' && location[0] !== '0') continue;
 							dojo.query(`#ERAboard>.ERAship[location='${location}']`).addClass('ERAselectable').style('opacity', '50%');
@@ -1553,11 +1552,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						for (let card of Object.values(args._private.hand))
 						{
-							this.addActionButton('ERAexchnageButton-' + card.id, this.DOMINATIONS[card.type].title, () => {
-								this.action('dominationCardExchange', {color: this.color, id: card.id}, () => {
-								});
-							}
-							);
+							this.addActionButton('ERAexchnageButton-' + card.id, dojo.string.substitute(_('Exchange ${domination}'), {domination: this.DOMINATIONS[card.type].title}), () => this.action('dominationCardExchange', {color: this.color, id: card.id}), null, false, 'red');
 							this.addActionButton('ERAcancelButton', _('No Exchange'), () => this.action('dominationCardExchange', {color: this.color, id: 0}), null, false, 'red');
 						}
 						break;
@@ -1846,7 +1841,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						this.board.centerMap(args._private.to);
 //
-						this.addActionButton('ERAcancelButton', _('Don`t block movement'), () => this.action('blockMovement', {color: this.color, blocked: false}));
+						this.addActionButton('ERAcancelButton', _('Don`t block movement'), () => this.action('blockMovement'
+									, {color: this.color, blocked: false}));
 						this.addActionButton('ERAblockButton', _('Declare war and block movement'), () => this.action('blockMovement', {color: this.color, blocked: true}), null, false, 'red');
 //
 						break;
@@ -2271,12 +2267,20 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		gainStar: function (location)
 		{
-			if (this.gamedatas.gamestate.args._private.gainStar.includes(location))
+			if (location in this.gamedatas.gamestate.args._private.gainStar)
 			{
 				const counter = $('ERAchoice').querySelector('.ERAcounter.ERAselected');
 				if (counter.getAttribute('counter') === 'gainStar+' && location[0] !== '0') return;
 				const locationsRemoved = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAremovePopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
-				this.action('gainStar', {color: this.color, location: JSON.stringify(location), locationsRemoved: JSON.stringify(locationsRemoved), center: counter.getAttribute('counter') === 'gainStar+'});
+				if (this.gamedatas.gamestate.args._private.gainStar[location])
+				{
+					const otherName = $(`player_name_${this.gamedatas.factions[this.gamedatas.gamestate.args._private.gainStar[location]].player_id}`).children[0].outerHTML;
+					this.confirmationDialog(dojo.string.substitute(_('You must declare war on ${on} to gain this star'), {on: `<span style='background:black'>${otherName}</span>`}), () =>
+					{
+						this.action('gainStar', {color: this.color, location: JSON.stringify(location), locationsRemoved: JSON.stringify(locationsRemoved), center: counter.getAttribute('counter') === 'gainStar+'});
+					});
+				}
+				else this.action('gainStar', {color: this.color, location: JSON.stringify(location), locationsRemoved: JSON.stringify(locationsRemoved), center: counter.getAttribute('counter') === 'gainStar+'});
 			}
 			;
 		},
