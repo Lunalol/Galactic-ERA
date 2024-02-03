@@ -17,6 +17,44 @@ trait gameUtils
 		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['B'] = DominationCards::B($color, $domination);
 		self::notifyAllPlayers('updateScoring', '', ['scoring' => $scoring]);
 	}
+	function switchAlignment($color)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		Factions::switchAlignment($color);
+//------------------------
+// A-section: Alignment //
+//------------------------
+		self::incGameStateValue('alignment', 1);
+//------------------------
+// A-section: Alignment //
+//------------------------
+		foreach (Factions::atWar($color) as $otherColor)
+		{
+			Factions::declarePeace($otherColor, $color);
+			Factions::declarePeace($color, $otherColor);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
+			'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
+			'faction' => Factions::get($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+//
+// ALLIANCE OF LIGHT (STO) / DARKNESS (STS) : Lose 2 DP every time you switch alignment (also due to reaching Spirituality level 5/6)
+//
+		if (Factions::getStarPeople($color) === 'Alliance' && $player_id > 0)
+		{
+			$DP = -2;
+			self::gainDP($color, $DP);
+			self::incStat($DP, 'DP_SP', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
+	}
 	function gainDP(string $color, int $delta): int
 	{
 		$player_id = Factions::getPlayer($color);
@@ -70,25 +108,7 @@ trait gameUtils
 // Spirituality : At levels 5 and 6 you automatically switch to STO (no growth action needed for that) and may not switch back to STS again.*
 // This happens only when the level is reached (so not during the “Switch Alignment” step).
 //
-		if ($technology === 'Spirituality' && $level >= 5 && Factions::getAlignment($color) === 'STS')
-		{
-			Factions::switchAlignment($color);
-			self::incGameStateValue('alignment', 1);
-//
-			foreach (Factions::atWar($color) as $otherColor)
-			{
-				Factions::declarePeace($otherColor, $color);
-				Factions::declarePeace($color, $otherColor);
-//* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
-//* -------------------------------------------------------------------------------------------------------- */
-			}
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
-				'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
-				'faction' => Factions::get($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
-		}
+		if ($technology === 'Spirituality' && $level >= 5 && Factions::getAlignment($color) === 'STS') self::switchAlignment($color);
 //
 // Advanced fleet tactics
 //

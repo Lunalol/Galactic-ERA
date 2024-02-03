@@ -424,6 +424,18 @@ trait gameStateActions
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
+//
+// ALLIANCE OF DARKNESS (STS) : STS players lose 3 DP every time they declare war on you
+//
+		if (Factions::getAlignment($color) === 'STS' && Factions::getStarPeople($on) === 'Alliance' && Factions::getAlignment($on) === 'STS' && $player_id > 0)
+		{
+			$DP = -3;
+			self::gainDP($color, $DP);
+			self::incStat($DP, 'DP_SP', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
 	function acDeclarePeace(string $color, string $on, $automa = false)
@@ -1324,38 +1336,10 @@ trait gameStateActions
 // then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost.
 // To do Research, you must have already chosen a technology for your square counter choice
 //
-		if (Factions::getTechnology($color, 'Spirituality') < 5)
-		{
-			Factions::switchAlignment($color);
-//------------------------
-// A-section: Alignment //
-//------------------------
-			self::incGameStateValue('alignment', 1);
-//------------------------
-// A-section: Alignment //
-//------------------------
-//
-			foreach (Factions::atWar($color) as $otherColor)
-			{
-				Factions::declarePeace($otherColor, $color);
-				Factions::declarePeace($color, $otherColor);
+		if (Factions::getTechnology($color, 'Spirituality') < 5) self::switchAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+		else self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
-			}
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
-				'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
-				'faction' => Factions::get($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
-		}
-		else
-		{
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
-		}
-//
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('switchAlignment', $counters)]);
 		Factions::setStatus($color, 'counters', array_values($counters));
@@ -1461,6 +1445,7 @@ trait gameStateActions
 			if (!array_key_exists('counters', $this->possible)) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 			if (!in_array($counter, $this->possible['counters'])) throw new BgaVisibleSystemException('Invalid action: ' . 'gainStar');
 			if ($counter === 'gainStar+' && $location[0] !== '0') throw new BgaVisibleSystemException("Invalid location: $location");
+			if (!array_key_exists($location, $this->possible['gainStar'])) throw new BgaVisibleSystemException("Invalid location: $location");
 		}
 //
 		$ships = Ships::getAtLocation($location, $color);
@@ -1477,7 +1462,12 @@ trait gameStateActions
 		{
 			$otherColor = Counters::getOwner($location);
 			if (!$otherColor) throw new BgaVisibleSystemException('No population to liberate/conquer at location: ' . $location);
-			if (!in_array($otherColor, Factions::atWar($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
+			if (!in_array($otherColor, Factions::atWar($color)))
+			{
+				self::acDeclareWar($color, $this->possible['gainStar'][$location], true);
+				return self::acGainStar($color, $location, $center, $automa);
+			}
+//			if (!in_array ($otherColor, Factions::atWar ($color))) throw new BgaUserException(self::_('You must be at war with star owner'));
 		}
 //
 // An STO player can only declare war on STS players and only to block the subjugation or conquest of a star with “innocent” population
@@ -1498,6 +1488,7 @@ trait gameStateActions
 							if ($type === SUBJUGATE || $type === CONQUER) $toBlock[] = Factions::getPlayer($otherColor);
 							if ($type === CONQUERVS && Factions::getAlignment($color) === 'STO') $toBlock[] = Factions::getPlayer($otherColor);
 						}
+						else $toBlock[] = Factions::getPlayer($otherColor);
 					}
 				}
 			}

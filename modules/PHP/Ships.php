@@ -284,7 +284,7 @@ class Ships extends APP_GameClass
 		}
 		return $locations[$min];
 	}
-	static function CV(string $color, string $location, bool $assault = false): array
+	static function CV(string $color, string $location, bool $assault = false, bool $allianceOfLight = false, bool $allianceODarkness = false): array
 	{
 		$military = Factions::TECHNOLOGIES['Military'][Factions::getTechnology($color, 'Military')];
 //
@@ -299,6 +299,11 @@ class Ships extends APP_GameClass
 //
 					$CV = $military;
 //
+// ALLIANCE OF LIGHT (STO) : Your ships get +4 CV each when defending in combat
+//
+					if ($allianceOfLight) $CV += 4;
+					if ($allianceODarkness) $CV += 2;
+//
 					$result['ships']['ships']++;
 					$result['ships']['CV'] += $CV;
 					$result['total'] += $CV;
@@ -309,6 +314,11 @@ class Ships extends APP_GameClass
 					$fleet = self::getStatus($shipID, 'fleet');
 //
 					$CV = $military * self::getStatus($shipID, 'ships');
+//
+// ALLIANCE OF LIGHT (STO) : Your ships get +4 CV each when defending in combat
+//
+					if ($allianceOfLight) $CV += 4 * self::getStatus($shipID, 'ships');
+					if ($allianceODarkness) $CV += 2 * self::getStatus($shipID, 'ships');
 //
 // (A)ssault: Whenever this fleet is involved in combat, add 1 CV per ship in this fleet
 //

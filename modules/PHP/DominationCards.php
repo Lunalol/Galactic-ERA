@@ -115,7 +115,7 @@ class DominationCards extends APP_GameClass
 				break;
 			case ALIGNMENT:
 // 4 if you did not get any DP for your alignment in the scoring phase of this round
-				$scoring[] = ($scoringPhase && Factions::getStatus($color, 'alignment')) ? 0 : 4;
+				$scoring[] = ($scoringPhase && !Factions::getStatus($color, 'alignment')) ? 4 : 0;
 // 1 DP per Spirituality level
 				$scoring[] = 1 * Factions::getTechnology($color, 'Spirituality');
 				break;

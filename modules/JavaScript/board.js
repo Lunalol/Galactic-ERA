@@ -148,9 +148,18 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			document.addEventListener('visibilitychange', () => {
 				dojo.removeClass(this.board, 'ERAhideShips ERAhideCounters');
 			});
-			window.onblur = () => {
+//			window.onblur = () => {
 //				dojo.removeClass(this.board, 'ERAhideShips ERAhideCounters');
-			};
+//			};
+//
+// Remove focus
+//
+			document.addEventListener('click', (event) => {
+				dojo.query('.ERAfocus').forEach((node) => {
+					dojo.style(node, {'pointer-events': 'none', 'z-index': '1000', 'transform': ``});
+					dojo.removeClass(node, 'ERAfocus');
+				});
+			});
 		},
 		home: function (player_id)
 		{
@@ -312,6 +321,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			];
 //
 			let location = this.nearest(x, y);
+			console.log(location.substring(2));
+			navigator.clipboard.writeText(location.substring(2));
+			return;
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
 				if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation') return this.bgagame.homeStarEvacuation(location);
@@ -330,10 +342,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				if (this.bgagame.gamedatas.gamestate.name === 'removePopulation') return this.bgagame.removePopulation(location);
 				if (this.bgagame.gamedatas.gamestate.name === 'planetaryDeathRay') return /*this.bgagame.planetaryDeathRay(location)*/;
 			}
-			dojo.query('.ERAfocus').forEach((node) => {
-				dojo.style(node, {'pointer-events': 'none', 'z-index': '1000', 'transform': ``});
-				dojo.removeClass(node, 'ERAfocus');
-			});
 //
 			if (['fleets', 'remoteViewing', 'movement'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();
 			if (!['buriedShips', 'buildShips', 'emergencyReserve'].includes(this.bgagame.gamedatas.gamestate.name)) this.bgagame.restoreServerGameState();

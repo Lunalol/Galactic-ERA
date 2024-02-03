@@ -253,20 +253,24 @@ trait gameStateArguments
 			if ($player_id > 0)
 			{
 				$this->possible[$player_id]['color'] = $color;
-				$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'stock');
-				$this->possible[$player_id]['oval'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
-				$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
-				$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
+				if ($this->gamestate->isPlayerActive($player_id))
+				{
+					$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'stock');
+					$this->possible[$player_id]['oval'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
+					$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
+					$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
 // PJL
 //				$this->possible[$player_id]['oval'] = 3;
 //				$this->possible[$player_id]['square'] = 6;
 // PJL
-				$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
+					$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
 //
-				$homeStar = Ships::getHomeStarLocation($color);
+					$homeStar = Ships::getHomeStarLocation($color);
 //
-				$this->possible[$player_id]['additional'] = 0;
-				foreach (Counters::getPopulations($color, true) as $location => $population) if ($population >= 5 && $location !== $homeStar) $this->possible[$player_id]['additional']++;
+					$this->possible[$player_id]['additional'] = 0;
+					foreach (Counters::getPopulations($color, true) as $location => $population) if ($population >= 5 && $location !== $homeStar) $this->possible[$player_id]['additional']++;
+				}
+				else $this->possible[$player_id]['counters'] = Factions::getStatus($color, 'counters');
 			}
 		}
 //
@@ -326,10 +330,10 @@ trait gameStateArguments
 						foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location)
 						{
 							$star = Counters::getAtLocation($location, 'star');
-							if ($star) $this->possible['gainStar'][] = $location;
+							if ($star) $this->possible['gainStar'][$location] = Counters::getOwner($location);
 							$populations = Counters::getAtLocation($location, 'populationDisc');
-							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][] = $location;
-							if (in_array($location, Ships::getHomeStar()) && $location !== Ships::getHomeStarLocation($color)) $this->possible['gainStar'][] = $location;
+							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][$location] = Counters::getOwner($location);
+							if (in_array($location, Ships::getHomeStar()) && $location !== Ships::getHomeStarLocation($color)) $this->possible['gainStar'][$location] = Counters::getOwner($location);
 						}
 					}
 					break;
@@ -340,7 +344,7 @@ trait gameStateArguments
 						$this->possible['ancientPyramids'] = ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $color) ? Counters::get($ancientPyramids)['location'] : null;
 //
 						$this->possible['growPopulation'] = [];
-						foreach (Counters::getPopulations($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
+						foreach (Counters::getPopulations($color, true) as $location => $population) $this->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location, $color)];
 						$this->possible['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
 					}
 					break;

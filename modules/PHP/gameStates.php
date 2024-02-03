@@ -1002,7 +1002,13 @@ trait gameStates
 			}
 		}
 //
-		$attackerCVs = Ships::CV($attacker, $location, $defenderAssault);
+// ALLIANCE OF LIGHT (STS) : Your ships get +2 CV each when you are the attacker in combat against an STO player (even if there are also STS players involved)
+//
+		$STO = false;
+		foreach ($defenders as $defender) if (Factions::getAlignment($defender) === 'STO') $STO = true;
+		$allianceOfDarkness = Factions::getStarPeople($attacker) === 'Alliance' && Factions::getAlignment($attacker) == 'STS' && $STO;
+//
+		$attackerCVs = Ships::CV($attacker, $location, $defenderAssault, false, $allianceOfDarkness);
 		foreach ($attackerCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1034,7 +1040,11 @@ trait gameStates
 		{
 			Factions::setStatus($defender, 'retreat');
 //
-			$defenderCVs = Ships::CV($defender, $location, $attackerAssault);
+// ALLIANCE OF LIGHT (STO) : Your ships get +4 CV each when defending in combat
+//
+			$allianceOfLight = Factions::getStarPeople($color) === 'Alliance' && Factions::getAlignment($color) == 'STO';
+//
+			$defenderCVs = Ships::CV($defender, $location, $attackerAssault, $allianceOfLight, false);
 			foreach ($defenderCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1353,37 +1363,10 @@ trait gameStates
 // ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter, then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost
 // To do Research, you must have already chosen a technology for your square counter choice
 //
-				if (Factions::getTechnology($color, 'Spirituality') < 5)
-				{
-					Factions::switchAlignment($color);
-//------------------------
-// A-section: Alignment //
-//------------------------
-					self::incGameStateValue('alignment', 1);
-//------------------------
-// A-section: Alignment //
-//------------------------
-//
-					foreach (Factions::atWar($color) as $otherColor)
-					{
-						Factions::declarePeace($otherColor, $color);
-						Factions::declarePeace($color, $otherColor);
+				if (Factions::getTechnology($color, 'Spirituality') < 5) self::switchAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($otherColor)]);
+				else self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
-					}
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} switches alignment (<B>${ALIGNMENT}</B>)'), [
-						'player_name' => Factions::getName($color), 'i18n' => ['ALIGNMENT'], 'ALIGNMENT' => Factions::getAlignment($color),
-						'faction' => Factions::get($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
-				else
-				{
-//* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
-//* -------------------------------------------------------------------------------------------------------- */
-				}
 				$counters = Factions::getStatus($color, 'counters');
 				unset($counters[array_search('switchAlignment', $counters)]);
 				Factions::setStatus($color, 'counters', array_values($counters));

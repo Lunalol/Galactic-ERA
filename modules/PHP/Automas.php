@@ -1048,7 +1048,7 @@ class Automas extends APP_GameClass
 				$bgagame->possible = ['growPopulation' => []];
 				foreach (Counters::getPopulations($color, true) as $location => $population)
 				{
-					$bgagame->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location)];
+					$bgagame->possible['growPopulation'][$location] = ['population' => intval($population), 'growthLimit' => Sectors::nearest($location, $color)];
 					if ($bgagame->possible['growPopulation'][$location]['population'] < $bgagame->possible['growPopulation'][$location]['growthLimit']) $locations[] = $location;
 				}
 				$bgagame->possible['bonusPopulation'] = Factions::TECHNOLOGIES['Genetics'][Factions::getTechnology($color, 'Genetics')];
