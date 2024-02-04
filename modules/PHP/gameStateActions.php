@@ -425,23 +425,27 @@ trait gameStateActions
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 			if (!in_array($on, Factions::atPeace($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
 //
+			if (!self::getGameStateValue('GODMODE'))
+			{
+//
 // GREYS STO: You may not declare war on other players (also not on a automa)
 //
-			if (Factions::getAlignment($color) === 'STO' && Factions::getStarPeople($color) === 'Greys') throw new BgaUserException(self::_('Greys STO may not declare war'));
+				if (Factions::getAlignment($color) === 'STO' && Factions::getStarPeople($color) === 'Greys') throw new BgaUserException(self::_('Greys STO may not declare war'));
 //------------------------
 // A-section: Diplomatic //
 //------------------------
-			if (Factions::getStatus($on, 'diplomatic')) throw new BgaUserException(self::_('You can\'t declare war on this player (Diplomatic)'));
+				if (Factions::getStatus($on, 'diplomatic')) throw new BgaUserException(self::_('You can\'t declare war on this player (Diplomatic)'));
 //------------------------
 // A-section: Diplomatic //
 //------------------------
 //
 // PLEJARS STS: May declare war on STS players during your movement
 //
-			if (Factions::getAlignment($color) === 'STO')
-			{
-				if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) ;
-				else throw new BgaUserException(self::_('You can\'t declare war now'));
+				if (Factions::getAlignment($color) === 'STO')
+				{
+					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) ;
+					else throw new BgaUserException(self::_('You can\'t declare war now'));
+				}
 			}
 		}
 //
@@ -477,33 +481,36 @@ trait gameStateActions
 			if (!in_array($on, Factions::atWar($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
 		}
 //
-		if (Factions::getPlayer($on) === 0) throw new BgaUserException(self::_('Automa will not accept peace'));
-		if (Factions::getPlayer($on) < 0)
+		if (!self::getGameStateValue('GODMODE'))
 		{
-			if (Factions::getStatus($on, 'peace')) throw new BgaUserException(self::_('You can make peace only once per round'));
+			if (Factions::getPlayer($on) === 0) throw new BgaUserException(self::_('Automa will not accept peace'));
+			if (Factions::getPlayer($on) < 0)
+			{
+				if (Factions::getStatus($on, 'peace')) throw new BgaUserException(self::_('You can make peace only once per round'));
 //
 // #offboard population : 2 - Slavers never make peace
 //
-			if (Factions::getPlayer($on) == SLAVERS && Factions::getDP($on) >= 2) throw new BgaUserException(self::_('Slavers’ Offboard Power Effects: Slavers never make peace'));
-			Factions::setStatus($on, 'peace', 'once per round');
+				if (Factions::getPlayer($on) == SLAVERS && Factions::getDP($on) >= 2) throw new BgaUserException(self::_('Slavers’ Offboard Power Effects: Slavers never make peace'));
+				Factions::setStatus($on, 'peace', 'once per round');
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name1} proposes peace to ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name1} proposes peace to ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
-			$dice = bga_rand(1, 6);
+				$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
-				'player_name' => Factions::getName($on), 'DICE' => $dice]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+					'player_name' => Factions::getName($on), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
-			if ($dice > Automas::makingPeace($on))
-			{
+				if ($dice > Automas::makingPeace($on))
+				{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} reject peace'), ['player_name' => Factions::getName($on)]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} reject peace'), ['player_name' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
-				return;
+					return;
+				}
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} accept peace'), ['player_name' => Factions::getName($on)]);
+//* -------------------------------------------------------------------------------------------------------- */
 			}
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} accept peace'), ['player_name' => Factions::getName($on)]);
-//* -------------------------------------------------------------------------------------------------------- */
 		}
 //
 		Factions::declarePeace($color, $on);
