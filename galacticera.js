@@ -28,6 +28,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			dojo.destroy('debug_output');
 //
+			dojo.place(`<div id='ERAalien' class='upperrightmenu_item' style='margin-top:10px;font-size:x-large;'>👽</div>`, 'upperrightmenu', 'first');
+			dojo.connect($('ERAalien'), 'click', () => this.action('GODMODE', {god: JSON.stringify({action: 'toggle'})}));
+//
 // Translations
 //
 			this.GALATIC_STORIES = {
@@ -110,7 +113,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						_('1 DP per Military level')]},
 				1: {title: _('Alignment'), DP: 9,
 					A: [_('Can only be played at the end of the scoring phase'),
-						_('Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then')],
+						_('Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then')
+					],
 					B: [_('4 DP if you did not get any DP for your alignment in the scoring phase of this round'),
 						_('1 DP per Spirituality level')]},
 				2: {title: _('Central'), DP: 12,
@@ -593,6 +597,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			console.log('Entering state: ' + stateName, state.args);
 //
 			if (!(state.args)) return;
+			dojo.query('.ERAship', 'ERAplayArea').forEach((node) => dojo.setAttr(node, 'draggable', +this.gamedatas.GODMODE === 1));
+			dojo.toggleClass('page-title', 'GODMODE', +this.gamedatas.GODMODE === 1);
 //
 			dojo.query('.ERAcounters').empty();
 			if ('counters' in state.args)
@@ -718,7 +724,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									{
 										if (stateName === 'selectCounters')
 										{
-											if (state.args._private.square > 1)
+											if (state.args._private.square > 1 || this.gamedatas.GODMODE)
 											{
 												dojo.toggleClass(event.currentTarget, 'ERAselected');
 												dojo.toggleClass('ERAselectButton', 'disabled', !this.checkGrowthActions());
@@ -749,7 +755,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									dojo.stopEvent(event);
 									if (this.isCurrentPlayerActive())
 									{
-										if (state.args._private.square > 1)
+										if (state.args._private.square > 1 || this.gamedatas.GODMODE)
 										{
 											if (!dojo.hasClass(event.currentTarget, 'ERAselected')) dojo.query('#ERAchoice .ERAcounter-turnOrder.ERAselected').removeClass('ERAselected');
 											dojo.toggleClass(event.currentTarget, 'ERAselected');
@@ -2081,6 +2087,11 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		{
 			console.log('notifications subscriptions setup');
 //
+			dojo.subscribe('GODMODE', (notif) => {
+				this.gamedatas.GODMODE = +notif.args.GODMODE;
+				this.restoreServerGameState();
+			});
+//
 			dojo.subscribe('updateScoring', (notif) => {
 				for (let color in notif.args.scoring)
 				{
@@ -2102,8 +2113,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			dojo.subscribe('update_score', (notif) => this.scoreCtrl[notif.args.player_id].setValue(notif.args.score));
 			dojo.subscribe('updateRound', (notif) => this.updateRound(notif.args.round));
 			dojo.subscribe('updateFaction', (notif) => this.factions.update(notif.args.faction));
-//			dojo.subscribe('discardDomination', (notif) => this.discardDomination(notif.args.id));
-//			dojo.subscribe('drawDomination', (notif) => this.drawDomination(notif.args.color, notif.args.id, notif.args.domination));
 			dojo.subscribe('playDomination', (notif) => this.playDomination(notif.args.card, notif.args.section));
 //
 			dojo.subscribe('placeCounter', (notif) => this.counters.place(notif.args.counter));
@@ -2126,8 +2135,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		{
 			this.notifqueue.setSynchronous('updateRound', DELAY);
 			this.notifqueue.setSynchronous('updateFaction', DELAY / 2);
-//			this.notifqueue.setSynchronous('discardDomination', DELAY * 2);
-//			this.notifqueue.setSynchronous('drawDomination', DELAY * 2);
 			this.notifqueue.setSynchronous('playDomination', DELAY);
 //
 			this.notifqueue.setSynchronous('placeCounter', DELAY / 2);
@@ -2438,6 +2445,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		checkGrowthActions: function ()
 		{
+			if (this.gamedatas.GODMODE) return true;
+//
 			const oval = dojo.query('#ERAchoice .ERAcounter-growth.ERAselected').length;
 			const square = dojo.query('#ERAchoice .ERAcounter-technology.ERAselected,#ERAchoice .ERAcounter-turnOrder.ERAselected').length;
 //
@@ -2500,6 +2509,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		action: function (action, args =
 		{}, success = () => {}, fail = undefined)
 		{
+			if ((action === 'GODMODE')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
 			if ((action === 'domination')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
 			if ((action === 'trade' && this.checkPossibleActions(action)) || this.checkAction(action))
 			{

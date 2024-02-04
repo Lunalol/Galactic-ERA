@@ -28,6 +28,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'transform', `scale(30%) rotate(calc(-1 * var(--ROTATE))) translateX(3px)`);
 //
 						dojo.connect(node, 'click', this, 'click');
+//						dojo.connect(node, 'dragstart', this, (event) => event.dataTransfer.setData("text", ship.id));
 					}
 					break;
 				case 'ship':
@@ -39,6 +40,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'top', this.board.hexagons[ship.location].y - node.clientHeight / 2 + 'px');
 //
 						dojo.connect(node, 'click', this, 'click');
+						dojo.connect(node, 'dragstart', this, (event) => event.dataTransfer.setData("text", ship.id));
 					}
 					break;
 				case 'fleet':
@@ -65,6 +67,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 							dojo.setAttr(node, 'fleet', ship.fleet);
 //
 							dojo.connect(node, 'click', this, 'click');
+							dojo.connect(node, 'dragstart', this, (event) => event.dataTransfer.setData("text", ship.id));
 						}
 					}
 					break;

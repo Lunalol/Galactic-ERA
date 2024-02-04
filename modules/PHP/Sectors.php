@@ -1806,8 +1806,8 @@ class Sectors extends APP_GameClass
 //
 						return $distance[$next_location];
 					}
+					$queue->enqueue($next_location);
 				}
-				$queue->enqueue($next_location);
 			}
 		}
 		return 999;

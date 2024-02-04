@@ -99,6 +99,8 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			dojo.connect($('leftright_page_wrapper'), 'oncontextmenu', (event) => dojo.stopEvent(event));
 			dojo.connect(this.playarea, 'click', this, 'click');
+			dojo.connect(this.playarea, 'dragover', this, (event) => event.preventDefault());
+			dojo.connect(this.playarea, 'ondrop', this, 'drop');
 //
 // Event listeners for drag gestures
 //
@@ -304,6 +306,27 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				this.playarea.scrollTo({left: x * zoom - this.playarea.clientWidth / 2, top: y * zoom - this.playarea.clientHeight / 2, behavior: 'smooth'});
 			}
 		},
+		drop: function (event)
+		{
+			const rect = this.playarea.getBoundingClientRect();
+			const scale = parseFloat(this.board.scale);
+			const angle = parseFloat(this.rotate.value) * Math.PI / 180.;
+			const zoom = window.getComputedStyle($('page-content')).zoom || 1;
+			let x = (event.clientX / zoom + this.playarea.scrollLeft - rect.left) / scale;
+			let y = (event.clientY / zoom + this.playarea.scrollTop - rect.top) / scale;
+//
+			[x, y] = [
+				this.boardWidth / 2 + Math.cos(angle) * (x - this.boardWidth / 2) + Math.sin(angle) * (y - this.boardHeight / 2),
+				this.boardHeight / 2 - Math.sin(angle) * (x - this.boardWidth / 2) + Math.cos(angle) * (y - this.boardHeight / 2)
+			];
+//
+			let location = this.nearest(x, y);
+			if (location !== undefined)
+			{
+				const ship = event.dataTransfer.getData("text");
+				this.bgagame.action('GODMODE', {god: JSON.stringify({action: 'move', ship: ship, location: location})});
+			}
+		},
 		click: function (event)
 		{
 			if (this.dragging === true) return;
@@ -321,9 +344,9 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			];
 //
 			let location = this.nearest(x, y);
-			console.log(location.substring(2));
-			navigator.clipboard.writeText(location.substring(2));
-			return;
+//			console.log(location.substring(2));
+//			navigator.clipboard.writeText(location.substring(2));
+//
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{
 				if (this.bgagame.gamedatas.gamestate.name === 'homeStarEvacuation') return this.bgagame.homeStarEvacuation(location);

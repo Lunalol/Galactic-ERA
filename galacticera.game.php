@@ -29,7 +29,8 @@ class GalacticEra extends Table
 		$this->GLOBALLABELS = [
 			'game' => GAME, 'difficulty' => DIFFICULTY,
 			'galacticStory' => GALACTICSTORY, 'galacticGoal' => GALACTICGOAL,
-			'round' => ROUND, 'alignment' => SWITCHALIGNMENT
+			'round' => ROUND, 'alignment' => SWITCHALIGNMENT,
+			'GODMODE' => GODMODE
 		];
 //
 		self::initGameStateLabels($this->GLOBALLABELS);
@@ -106,7 +107,7 @@ class GalacticEra extends Table
 	{
 		$player_id = intval(self::getCurrentPlayerId());
 //
-		$result = [];
+		$result = ['GODMODE' => self::getGameStateValue('GODMODE')];
 //
 		$result['players'] = Players::getAllDatas();
 		$result['factions'] = Factions::getAllDatas();

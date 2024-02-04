@@ -40,6 +40,7 @@ define('NEVER', 2);
 // Game globals
 //
 define('ROUND', 10);
+define('GODMODE', 20);
 define('SWITCHALIGNMENT', 21);
 //
 // Automas (2)

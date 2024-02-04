@@ -6,6 +6,34 @@
  */
 trait gameStateActions
 {
+	function acGODMODE(array $god)
+	{
+		switch ($god['action'])
+		{
+			case 'toggle':
+				if (self::getGameStateValue('GODMODE'))
+				{
+					self::notifyAllPlayers('GODMODE', 'GOD mode OFF', ['GODMODE' => 0]);
+					self::setGameStateValue('GODMODE', 0);
+				}
+				else
+				{
+					self::notifyAllPlayers('GODMODE', 'GOD mode ON', ['GODMODE' => 1]);
+					self::setGameStateValue('GODMODE', 1);
+				}
+				break;
+			case 'move':
+				self::notifyAllPlayers('moveShips', '', ['ships' => [$god['ship']], 'location' => $god['location'], 'old' => Ships::get($god['ship'])['location']]);
+				Ships::setLocation($god['ship'], $god['location']);
+				self::updateScoring();
+				break;
+			case 'technology':
+				self::dbQuery("UPDATE factions SET `$god[technology]` = $god[level] WHERE color = '$god[color]'");
+				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($god['color'])]);
+				self::updateScoring();
+				break;
+		}
+	}
 	function acNull(string $color): void
 	{
 		$player_id = Factions::getPlayer($color);
@@ -1248,15 +1276,18 @@ trait gameStateActions
 		$this->checkAction('selectCounters');
 		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		$oval = $square = 0;
-		foreach ($counters as $counter)
+		if (!self::getGameStateValue('GODMODE'))
 		{
-			if (in_array($counter, ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'])) $oval++;
-			else $square++;
+			$oval = $square = 0;
+			foreach ($counters as $counter)
+			{
+				if (in_array($counter, ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'])) $oval++;
+				else $square++;
+			}
+			if ($oval < $this->possible[$player_id]['oval']) throw new BgaVisibleSystemException("Invalid number of oval counters: $oval");
+			if ($oval > $this->possible[$player_id]['oval'] + $this->possible[$player_id]['additional']) throw new BgaVisibleSystemException('Invalid number of oval counters: ' . $oval);
+			if ($square < 1 || $square > $this->possible[$player_id]['square']) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
 		}
-		if ($oval < $this->possible[$player_id]['oval']) throw new BgaVisibleSystemException("Invalid number of oval counters: $oval");
-		if ($oval > $this->possible[$player_id]['oval'] + $this->possible[$player_id]['additional']) throw new BgaVisibleSystemException('Invalid number of oval counters: ' . $oval);
-		if ($square < 1 || $square > $this->possible[$player_id]['square']) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
 //
 		Factions::setStatus($color, 'counters', array_values($counters));
 //

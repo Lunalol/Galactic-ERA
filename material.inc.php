@@ -71,7 +71,7 @@ $this->PHASES = [
 // Star Peoples (17)
 //
 $this->STARPEOPLES = [
-//	'Alliance' => ['STO' => clienttranslate('Alliance of Light'), 'STS' => clienttranslate('Alliance of Darkness')],
+	'Alliance' => ['STO' => clienttranslate('Alliance of Light'), 'STS' => clienttranslate('Alliance of Darkness')],
 //	'Anchara' => ['STO' => clienttranslate('Anchara Coalition'), 'STS' => clienttranslate('Anchara Coalition')],
 //	'Annunaki' => ['STO' => clienttranslate('Annunaki'), 'STS' => clienttranslate('Annunaki')],
 	'Avians' => ['STO' => clienttranslate('Avians'), 'STS' => clienttranslate('Avians')],
@@ -136,6 +136,13 @@ $this->SECTORS = [
 	],
 	1 => [
 		'+0+0+0' => /* clienttranslate */('Arcuturus'),
+		'-1+1+0' => /* clienttranslate */('Apu'),
+		'+0+1-1' => /* clienttranslate */('Janos'),
+		'-1+2-1' => /* clienttranslate */('Tiamat'),
+		'+2-2+0' => /* clienttranslate */('Sidar'),
+		'+3-1-2' => /* clienttranslate */('Inxtria'),
+		'-1-2+3' => /* clienttranslate */('Teetonia'),
+		'+4+0-4' => /* clienttranslate */('Zenetae'),
 	],
 	2 => [
 		'+0+0+0' => /* clienttranslate */('Khaa'),
@@ -167,6 +174,13 @@ $this->SECTORS = [
 	],
 	5 => [
 		'+0+0+0' => /* clienttranslate */('Alpha Draconis'),
+		'+0-1+1' => /* clienttranslate */('Mars'),
+		'-3+3+0' => /* clienttranslate */('Taygeta'),
+		'+3-3+0' => /* clienttranslate */('Marcab'),
+		'+0-3+3' => /* clienttranslate */('Deneb'),
+		'-2-1+3' => /* clienttranslate */('ICC 13'),
+		'-3+2+1' => /* clienttranslate */('Serpo'),
+		'+4+0-4' => /* clienttranslate */('Korender'),
 	],
 	6 => [
 		'+0+0+0' => /* clienttranslate */('Zeta Reticuli'),
@@ -179,6 +193,12 @@ $this->SECTORS = [
 	],
 	7 => [
 		'+0+0+0' => /* clienttranslate */('Zeta Reticuli'),
+		'-1-1+2' => /* clienttranslate */('Hyades'),
+		'+1+2-3' => /* clienttranslate */('Alnilan'),
+		'+3-1-2' => /* clienttranslate */('Thiaoouba'),
+		'+0-3+3' => /* clienttranslate */('Altair'),
+		'-3+2+1' => /* clienttranslate */('Koshnak'),
+		'+1+3-4' => /* clienttranslate */('Ba\'avi'),
 	],
 	8 => [
 		'+0+0+0' => /* clienttranslate */('Sirius'),
@@ -192,6 +212,13 @@ $this->SECTORS = [
 	],
 	9 => [
 		'+0+0+0' => /* clienttranslate */('Sirius'),
+		'+0+2-2' => /* clienttranslate */('Ummo'),
+		'+1-2+1' => /* clienttranslate */('Harus'),
+		'+0-2+2' => /* clienttranslate */('Planet X'),
+		'+3+0-3' => /* clienttranslate */('Iarga'),
+		'+3-3+0' => /* clienttranslate */('Epsilon Eridani'),
+		'-3+0+3' => /* clienttranslate */('Axthada'),
+		'-2+4-2' => /* clienttranslate */('Fomalhaut'),
 	],
 	10 => [
 		'+0+0+0' => /* clienttranslate */('Pleiades'),
@@ -204,6 +231,12 @@ $this->SECTORS = [
 	],
 	11 => [
 		'+0+0+0' => /* clienttranslate */('Pleiades'),
+		'-1+2-1' => /* clienttranslate */('Tishtae'),
+		'+2+1-3' => /* clienttranslate */('Nibiru'),
+		'+3-3+0' => /* clienttranslate */('Bellatrix'),
+		'-1-2+3' => /* clienttranslate */('Mintaka'),
+		'-2+4-2' => /* clienttranslate */('Onoogi'),
+		'-4+1+3' => /* clienttranslate */('Tau Ceti'),
 	],
 	12 => [
 		'+0+0+0' => /* clienttranslate */('Lyra'),
@@ -216,6 +249,12 @@ $this->SECTORS = [
 	],
 	13 => [
 		'+0+0+0' => /* clienttranslate */('Lyra'),
+		'+1-2+1' => /* clienttranslate */('Kappa Fornacis'),
+		'-2+1+1' => /* clienttranslate */('Izar'),
+		'-3+3+0' => /* clienttranslate */('Sagittarius B'),
+		'+3-2-1' => /* clienttranslate */('Giliese 581'),
+		'-2-1+3' => /* clienttranslate */('Procyon'),
+		'+1-4+3' => /* clienttranslate */('Uru'),
 	],
 	14 => [
 		'+0+0+0' => /* clienttranslate */('Xilox'),
@@ -228,6 +267,12 @@ $this->SECTORS = [
 	],
 	15 => [
 		'+0+0+0' => /* clienttranslate */('Xilox'),
+		'-2+3-1' => /* clienttranslate */('Neb-Heru'),
+		'+2+1-3' => /* clienttranslate */('Aldebaran'),
+		'+2-3+1' => /* clienttranslate */('Barnard\'s Star'),
+		'+0-3+3' => /* clienttranslate */('Wolf 424'),
+		'-3+0+3' => /* clienttranslate */('Alpha Centauri'),
+		'+1-4+3' => /* clienttranslate */('Teka'),
 	],
 	16 => [
 		'+0+0+0' => /* clienttranslate */('Rigel'),
@@ -241,6 +286,13 @@ $this->SECTORS = [
 	],
 	17 => [
 		'+0+0+0' => /* clienttranslate */('Rigel'),
+		'+0+1-1' => /* clienttranslate */('Blaveh'),
+		'+1-1+0' => /* clienttranslate */('Intibi Ra II'),
+		'+0+3-3' => /* clienttranslate */('Betelgeuse'),
+		'+2-3+1' => /* clienttranslate */('New Erra'),
+		'-4+4+0' => /* clienttranslate */('P\'taah'),
+		'-2-2+4' => /* clienttranslate */('Denala'),
+		'-3-1+4' => /* clienttranslate */('Ectom'),
 	],
 ];
 // </editor-fold>

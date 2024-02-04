@@ -1319,6 +1319,24 @@ trait gameStates
 		$players = array_values(Factions::advancedFleetTactics());
 		$this->gamestate->setPlayersMultiactive($players, 'next', true);
 	}
+	function stGrowthPhase()
+	{
+		Factions::setActivation();
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
+			'i18n' => ['LOG'], 'LOG' => clienttranslate('Growth Phase')
+		]);
+//* -------------------------------------------------------------------------------------------------------- */
+		foreach (Factions::list() as $color)
+		{
+			Factions::setStatus($color, 'stock', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
+			Factions::setStatus($color, 'counters', []);
+			Factions::setStatus($color, 'used', []);
+		}
+//
+		$this->gamestate->setAllPlayersMultiactive('next');
+		$this->gamestate->nextState('next');
+	}
 	function stSwitchAlignment()
 	{
 		foreach (Factions::list() as $color)
@@ -1430,33 +1448,14 @@ trait gameStates
 //		self::triggerEvent(DOMINATION, 'neutral');
 		self::triggerAndNextState('next');
 	}
-	function stGrowthPhase()
-	{
-		Factions::setActivation();
-//* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', [
-			'i18n' => ['LOG'], 'LOG' => clienttranslate('Growth Phase')
-		]);
-//* -------------------------------------------------------------------------------------------------------- */
-		foreach (Factions::list() as $color)
-		{
-			Factions::setStatus($color, 'stock', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
-			Factions::setStatus($color, 'counters', []);
-			Factions::setStatus($color, 'used', []);
-		}
-//
-		$this->gamestate->setAllPlayersMultiactive('next');
-		$this->gamestate->nextState('next');
-	}
 	function stGrowthActions()
 	{
 		$color = Factions::getNext();
 		if (!$color) return $this->gamestate->nextState('next');
 //
 		Factions::setActivation($color, 'yes');
-//
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
 		if ($player_id <= 0)
@@ -1482,7 +1481,7 @@ trait gameStates
 	{
 		Factions::setActivation('ALL', 'done');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('Trading Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1595,7 +1594,7 @@ trait gameStates
 	function stScoringPhase()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('Scoring Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1920,7 +1919,7 @@ trait gameStates
 	{
 		$round = self::getGameStateValue('round');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG} ${round}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG} ${round}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color) Factions::clearStatus($color);
@@ -1929,7 +1928,7 @@ trait gameStates
 		if ($round < 8) return $this->gamestate->nextState('nextRound');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Game End Scoring')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Game End Scoring')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player scores DP equal to the highest number on their population track without a disc')]);
 //* -------------------------------------------------------------------------------------------------------- */

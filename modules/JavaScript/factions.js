@@ -291,23 +291,29 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					dojo.setAttr(node, 'level', faction[technology]);
 //
 					let html = '';
-					for (let i = 1; i <= 6; i++) html += `<span class='${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
+					for (let i = 1; i <= 6; i++) html += `<span id='ERAtechnology-${faction.color}-${i}-${technology}' class='${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
 					node.children[0].innerHTML = html;
+					for (let i = 1; i <= 6; i++) dojo.connect($(`ERAtechnology-${faction.color}-${i}-${technology}`), 'click', (event) => {
+							if (+this.bgagame.gamedatas.GODMODE === 1)
+							{
+								this.bgagame.action('GODMODE', {god: JSON.stringify({action: 'technology', color: faction.color, technology: technology, level: i})});
+							}
+						});
 				}
 			});
 //
-			if ('order' in faction) dojo.query(`.ERAorder[faction=${faction.color}]`).forEach((node) => dojo.setAttr(node, 'order', faction.order));
+			if ('order' in faction) dojo.query(`.ERAorder[faction = ${faction.color}]`).forEach((node) => dojo.setAttr(node, 'order', faction.order));
 //
 			if ('atWar' in faction)
 			{
 				const atWar = JSON.parse(faction.atWar);
-				dojo.query(`.ERAcounter-peace[color='${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', atWar.includes(dojo.getAttr(node, 'on'))));
-				dojo.query(`.ERAcounter-war[color='${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', !atWar.includes(dojo.getAttr(node, 'on'))));
+				dojo.query(`.ERAcounter - peace[color = '${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', atWar.includes(dojo.getAttr(node, 'on'))));
+				dojo.query(`.ERAcounter - war[color = '${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', !atWar.includes(dojo.getAttr(node, 'on'))));
 			}
 //
-			if ('ships' in faction) dojo.query(`.ERAships[faction=${faction.color}]`).forEach((node) => node.innerHTML = faction.ships);
-			if ('emergencyReserve' in faction) dojo.query(`.ERAemergencyReserve-${faction.color}`).toggleClass('ERAhide', faction.emergencyReserve !== '1');
-			if (faction.player_id <= 0) dojo.query(`.ERAemergencyReserve-${faction.color}`).addClass('ERAhide');
+			if ('ships' in faction) dojo.query(`.ERAships[faction = ${faction.color}]`).forEach((node) => node.innerHTML = faction.ships);
+			if ('emergencyReserve' in faction) dojo.query(`.ERAemergencyReserve - ${faction.color}`).toggleClass('ERAhide', faction.emergencyReserve !== '1');
+			if (faction.player_id <= 0) dojo.query(`.ERAemergencyReserve - ${faction.color}`).addClass('ERAhide');
 //
 // Panels order
 //
