@@ -1042,7 +1042,7 @@ trait gameStates
 //
 // ALLIANCE OF LIGHT (STO) : Your ships get +4 CV each when defending in combat
 //
-			$allianceOfLight = Factions::getStarPeople($color) === 'Alliance' && Factions::getAlignment($color) == 'STO';
+			$allianceOfLight = Factions::getStarPeople($defender) === 'Alliance' && Factions::getAlignment($defender) == 'STO';
 //
 			$defenderCVs = Ships::CV($defender, $location, $attackerAssault, $allianceOfLight, false);
 			foreach ($defenderCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
