@@ -288,7 +288,8 @@ trait gameStateArguments
 //
 				$this->possible[$player_id]['color'] = $otherColor;
 				$this->possible[$player_id]['action'] = $action['name'];
-				$this->possible[$player_id]['location'] = $action['location'];
+				$this->possible[$player_id]['locations'] = [];
+				foreach ($action['locations'] as $location) if (Ships::getAtLocation($location, $otherColor)) $this->possible[$player_id]['locations'][] = $location;
 			}
 		}
 		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];

@@ -1312,7 +1312,10 @@ trait gameStateActions
 		if ($this->gamestate->setPlayerNonMultiactive($player_id, 'end'))
 		{
 			$action = Factions::getStatus(Factions::getActive(), 'action');
-			if (!Counters::isBlocked(Factions::getActive(), $action['location'])) return call_user_func("self::${action['function']}Validated", ...$action['params']);
+//
+			$blocked = false;
+			foreach ($action['locations'] as $location) if (Counters::isBlocked(Factions::getActive(), $location)) $blocked = true;
+			if (!$blocked) return call_user_func("self::${action['function']}Validated", ...$action['params']);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', 'Growth action is blocked', []);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1470,6 +1473,39 @@ trait gameStateActions
 		self::updateScoring();
 		self::triggerAndNextState('end');
 	}
+	function acSpecial($color, $N)
+	{
+		if ($N > 0)
+		{
+			Factions::gainPopulation($color, $N);
+			$DP = self::gainDP($color, $N);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes ${N} population disc(s) (add to offboard power track)'), [
+				'player_name' => Factions::getName($color), 'faction' => Factions::get($color), 'N' => $N]);
+//* -------------------------------------------------------------------------------------------------------- */
+			if ($DP >= 5)
+			{
+//
+// #offboard population : 5+ - You immediately lose 5 DP for each new offboard population
+//
+				$DP = -5;
+				self::gainDP(Factions::getNotAutomas(), $DP);
+				self::incStat($DP, 'DP_LOST', Factions::getPlayer(Factions::getNotAutomas()));
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP,
+					'player_name' => Factions::getName(Factions::getNotAutomas()),
+					'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+		}
+		$counters = Factions::getStatus($color, 'counters');
+		if ($counters)
+		{
+			unset($counters[array_search('gainStar', $counters)]);
+			Factions::setStatus($color, 'counters', array_values($counters));
+			Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
+		}
+	}
 	function acGainStar(string $color, string $location, bool $center = false, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
@@ -1535,11 +1571,11 @@ trait gameStateActions
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to gain ${PLANET} '), ['GPS' => $location, 'SHIPS' => $SHIPS,
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to gain ${PLANET}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
-				Factions::setStatus($color, 'action', ['name' => 'gainStar', 'location' => $location, 'function' => __FUNCTION__, 'params' => func_get_args()]);
+				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
+				Factions::setStatus($color, 'action', ['name' => 'gainStar', 'locations' => [$location], 'function' => __FUNCTION__, 'params' => func_get_args()]);
 				return $this->gamestate->nextState('blockAction');
 			}
 		}
@@ -1887,40 +1923,7 @@ trait gameStateActions
 //
 		if ($newShips) self::acBuildShips($color, Automas::BuildShips($color, [$location => 3]), true, true);
 	}
-	function acSpecial($color, $N)
-	{
-		if ($N > 0)
-		{
-			Factions::gainPopulation($color, $N);
-			$DP = self::gainDP($color, $N);
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes ${N} population disc(s) (add to offboard power track)'), [
-				'player_name' => Factions::getName($color), 'faction' => Factions::get($color), 'N' => $N]);
-//* -------------------------------------------------------------------------------------------------------- */
-			if ($DP >= 5)
-			{
-//
-// #offboard population : 5+ - You immediately lose 5 DP for each new offboard population
-//
-				$DP = -5;
-				self::gainDP(Factions::getNotAutomas(), $DP);
-				self::incStat($DP, 'DP_LOST', Factions::getPlayer(Factions::getNotAutomas()));
-//* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP,
-					'player_name' => Factions::getName(Factions::getNotAutomas()),
-					'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
-//* -------------------------------------------------------------------------------------------------------- */
-			}
-		}
-		$counters = Factions::getStatus($color, 'counters');
-		if ($counters)
-		{
-			unset($counters[array_search('gainStar', $counters)]);
-			Factions::setStatus($color, 'counters', array_values($counters));
-			Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
-		}
-	}
-	function acGrowPopulation(string $color, array $locations, array $locationsBonus, bool $bonus = false, bool $automa = false): void
+	function acGrowPopulation(string $color, array $locations, array $locationsBonus, bool $bonus = false, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1941,10 +1944,40 @@ trait gameStateActions
 			if ($bonusPopulation > $this->possible['bonusPopulation'] + ($bonus ? 2 : 0)) throw new BgaVisibleSystemException('Invalid bonus population: ' . sizeof($locationsBonus));
 		}
 //
+		foreach ($locations as $location) if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+		foreach ($locationsBonus as $location) if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
+//
+		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
+		{
+			$toBlock = [];
+			foreach (Factions::list(false) as $otherColor)
+			{
+				if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)))
+				{
+					foreach ($locations as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+					foreach ($locationsBonus as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+				}
+			}
+			if ($toBlock)
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} try to growth population'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
+				Factions::setStatus($color, 'action', ['name' => 'growPopulation', 'locations' => array_unique(array_merge($locations, $locationsBonus)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
+				return $this->gamestate->nextState('blockAction');
+			}
+		}
+		return self::acGrowPopulationValidated($color, $locations, $locationsBonus, $bonus, $automa);
+	}
+	function acGrowPopulationValidated(string $color, array $locations, array $locationsBonus, bool $bonus = false, bool $automa = false): void
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$counter = $bonus ? 'growPopulation+' : 'growPopulation';
+//
 		foreach ($locations as $location)
 		{
-			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
-//
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1957,11 +1990,9 @@ trait gameStateActions
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
+//
 		foreach ($locationsBonus as $location)
 		{
-			if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
-			unset($this->possible['growPopulation'][$location]);
-//
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2099,7 +2130,7 @@ trait gameStateActions
 		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
-	function acBuildShips(string $color, array $buildShips, bool $automa = false, bool $buriedShips = false): void
+	function acBuildShips(string $color, array $buildShips, bool $automa = false, bool $buriedShips = false)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -2113,10 +2144,44 @@ trait gameStateActions
 //
 		foreach ($buildShips['fleets'] as $Fleet => $location)
 		{
+			$fleet = Ships::get(Ships::getFleet($color, $Fleet));
+			if ($fleet['location'] !== 'stock') throw new BgaVisibleSystemException("Invalid fleet location: $fleet[location] !== 'stock'");
+		}
+//
+		$remainingShips = 16 - sizeof(Ships::getAll($color, 'ship'));
+		foreach (array_count_values($buildShips['ships']) as $location => $ships) if (!in_array($location, Ships::FLEETS)) $remainingShips -= $ships;
+		if ($remainingShips < 0) throw new BgaUserException(self::_('No more ship minis'));
+//
+		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
+		{
+			$toBlock = [];
+			foreach (Factions::list(false) as $otherColor)
+			{
+				if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)))
+				{
+					foreach (array_keys(Counters::getPopulations($color)) as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+				}
+			}
+			if ($toBlock)
+			{
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} try to Build Ships'), ['player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
+				Factions::setStatus($color, 'action', ['name' => 'buildShips', 'locations' => array_keys(Counters::getPopulations($color)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
+				return $this->gamestate->nextState('blockAction');
+			}
+		}
+		return self::acBuildShipsValidated($color, $buildShips, $automa, $buriedShips);
+	}
+	function acBuildShipsValidated(string $color, array $buildShips, bool $automa = false, bool $buriedShips = false): void
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		foreach ($buildShips['fleets'] as $Fleet => $location)
+		{
 			$fleetID = Ships::getFleet($color, $Fleet);
 			$fleet = Ships::get($fleetID);
-//
-			if ($fleet['location'] !== 'stock') throw new BgaVisibleSystemException("Invalid fleet location: $fleet[location] !== 'stock'");
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('removeShip', '', ['ship' => Ships::get($fleetID)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2180,7 +2245,6 @@ trait gameStateActions
 					}
 				}
 				$remainingShips -= $ships;
-				if ($remainingShips < 0) throw new BgaUserException(self::_('No more ship minis'));
 				for ($i = 0; $i < $ships; $i++) self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get(Ships::create($color, 'ship', $location))]);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => $remainingShips]]);

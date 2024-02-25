@@ -1028,23 +1028,24 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				case 'blockAction':
 					if ('_private' in state.args)
 					{
-						const location = state.args._private.location;
+						for (let location of Object.values(state.args._private.locations))
+						{
+							const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+							dojo.setStyle(svg, 'position', 'absolute');
+							dojo.setStyle(svg, 'left', '0px');
+							dojo.setStyle(svg, 'top', '0px');
+							dojo.setStyle(svg, 'z-index', '1');
+							dojo.setStyle(svg, 'pointer-events', 'all');
+							svg.setAttribute("width", 10000);
+							svg.setAttribute("height", 10000);
+							svg.id = 'ERAstars';
 //
-						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-						dojo.setStyle(svg, 'position', 'absolute');
-						dojo.setStyle(svg, 'left', '0px');
-						dojo.setStyle(svg, 'top', '0px');
-						dojo.setStyle(svg, 'z-index', '1');
-						dojo.setStyle(svg, 'pointer-events', 'all');
-						svg.setAttribute("width", 10000);
-						svg.setAttribute("height", 10000);
-						svg.id = 'ERAstars';
+							dojo.query(`[location='${location}']`, 'ERAboard').addClass('ERAselectable');
+							const path = svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
+//							path.setAttribute('class', 'ERAselected');
 //
-						dojo.query(`[location='${location}']`, 'ERAboard').addClass('ERAselectable');
-						const path = svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + state.args.active + 'C0'));
-//						path.setAttribute('class', 'ERAselected');
-//
-						this.board.board.appendChild(svg);
+							this.board.board.appendChild(svg);
+						}
 					}
 					break;
 //
@@ -1364,6 +1365,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			dojo.query('#popin_trade').remove();
 			dojo.query('#popin_ERAtrade').remove();
+//
+			dojo.query('svg', 'ERAboard').remove();
 		},
 		onUpdateActionButtons: function (stateName, args)
 		{
@@ -1786,7 +1789,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								});
 							}
 							else if (counters.filter(action => ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown'
-								].includes(action)).length < args._private.square)
+								].includes(action)).length < args._private.square && !this.gamedatas.GODMODE)
 							{
 								this.confirmationDialog($('ERAwarning').innerHTML, () => {
 									this.action('selectCounters', {color: args._private.color, counters: JSON.stringify(counters)}, () => {

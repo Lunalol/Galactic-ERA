@@ -332,7 +332,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		if (FAST_START)
 		{
-			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'alignment', false);
+			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'alignment', true);
 			$this->gamestate->nextState('next');
 		}
 		else $this->gamestate->setAllPlayersMultiactive('next');
