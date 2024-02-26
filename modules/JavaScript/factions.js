@@ -293,12 +293,13 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					let html = '';
 					for (let i = 1; i <= 6; i++) html += `<span id='ERAtechnology-${faction.color}-${i}-${technology}' class='${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
 					node.children[0].innerHTML = html;
-					for (let i = 1; i <= 6; i++) dojo.connect($(`ERAtechnology-${faction.color}-${i}-${technology}`), 'click', (event) => {
-							if (+this.bgagame.gamedatas.GODMODE === 1)
-							{
-								this.bgagame.action('GODMODE', {god: JSON.stringify({action: 'technology', color: faction.color, technology: technology, level: i})});
-							}
+//
+					for (let i = 1; i <= 6; i++)
+					{
+						dojo.connect($(`ERAtechnology-${faction.color}-${i}-${technology}`), 'click', (event) => {
+							if (+this.bgagame.gamedatas.GODMODE === 1) this.bgagame.action('GODMODE', {god: JSON.stringify({action: 'technology', color: faction.color, technology: technology, level: i})});
 						});
+					}
 				}
 			});
 //

@@ -32,6 +32,12 @@ trait gameStateActions
 				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($god['color'])]);
 				self::updateScoring();
 				break;
+			case 'declareWar':
+				self::acDeclareWar($god['color'], $god['on'], true);
+				break;
+			case 'declarePeace':
+				self::acDeclarePeace($god['color'], $god['on'], true);
+				break;
 		}
 	}
 	function acNull(string $color): void
@@ -439,18 +445,38 @@ trait gameStateActions
 // A-section: Diplomatic //
 //------------------------
 //
-// PLEJARS STS: May declare war on STS players during your movement
+// PLEJARS STO: May declare war on STS players during your movement
 //
+				$possible = false;
 				if (Factions::getAlignment($color) === 'STO')
 				{
-					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) ;
-					else throw new BgaUserException(self::_('You can\'t declare war now'));
+					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) $possible = true;
 				}
+				if (Factions::getAlignment($color) === 'STS')
+				{
+					if ($this->gamestate->state()['name'] === 'selectCounters')
+					{
+						$homeStar = Ships::getHomeStarLocation($on);
+						foreach (Counters::getPopulations($on, true) as $location => $population) if ($population >= 5 && $location !== $homeStar && Ships::getAtLocation($location, $color)) $possible = true;
+					}
+				}
+				if (!$possible) throw new BgaUserException(self::_('You can\'t declare war now'));
 			}
 		}
 //
 		Factions::declareWar($color, $on);
 		Factions::declareWar($on, $color);
+//
+		if ($this->gamestate->state()['name'] === 'selectCounters')
+		{
+			$player_id = Factions::getPlayer($on);
+			if ($player_id > 0)
+			{
+				Factions::setStatus($on, 'counters', []);
+				self::dbSetPlayerMultiactive($player_id, 1);
+				$this->gamestate->updateMultiactiveOrNextState('next');
+			}
+		}
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', clienttranslate('${player_name1} declares war on ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
@@ -515,6 +541,17 @@ trait gameStateActions
 //
 		Factions::declarePeace($color, $on);
 		Factions::declarePeace($on, $color);
+//
+		if ($this->gamestate->state()['name'] === 'selectCounters')
+		{
+			$player_id = Factions::getPlayer($on);
+			if ($player_id > 0)
+			{
+				Factions::setStatus($on, 'counters', []);
+				self::dbSetPlayerMultiactive($player_id, 1);
+				$this->gamestate->updateMultiactiveOrNextState('next');
+			}
+		}
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', clienttranslate('${player_name1} is at peace with ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
@@ -777,7 +814,7 @@ trait gameStateActions
 					if ($toBlock)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
 						$params = func_get_args();
@@ -795,7 +832,7 @@ trait gameStateActions
 					if ($toBlock)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 						$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
 						$params = func_get_args();
@@ -961,22 +998,38 @@ trait gameStateActions
 		if (!array_key_exists('evacuate', $this->possible[$player_id])) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!in_array($location, $this->possible[$player_id]['evacuate'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
+		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
+		{
+			$toBlock = [];
+			foreach (Factions::list(false) as $otherColor) if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)) && Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+		}
+		if ($toBlock)
+		{
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to evacuate home star ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
+//* -------------------------------------------------------------------------------------------------------- */
+			$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
+			Factions::setStatus($color, 'action', ['name' => 'homeStarEvacuation', 'locations' => [$location], 'function' => __FUNCTION__, 'params' => func_get_args()]);
+			return $this->gamestate->nextState('blockAction');
+		}
+		return self::acHomeStarEvacuationValidated($color, $location, $automa);
+	}
+	function acHomeStarEvacuationValidated(string $color, $location, bool $automa = false)
+	{
+		$player_id = Factions::getPlayer($color);
+//
 		$sector = Sectors::get($location[0]);
 		$hexagon = substr($location, 2);
 		$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
-		{
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${player_name} evacuates near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
-		}
 		else
-		{
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${player_name} evacuates ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
-		}
 //
 		$homeStar = Ships::getHomeStar($color);
 		$previousLocation = Ships::getHomeStarLocation($color);
@@ -1571,7 +1624,7 @@ trait gameStateActions
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} try to gain ${PLANET}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to gain ${PLANET}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
@@ -1961,7 +2014,7 @@ trait gameStateActions
 			if ($toBlock)
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} try to growth population'), ['player_name' => Factions::getName($color)]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to growth population'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
 				Factions::setStatus($color, 'action', ['name' => 'growPopulation', 'locations' => array_unique(array_merge($locations, $locationsBonus)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
@@ -2152,24 +2205,27 @@ trait gameStateActions
 		foreach (array_count_values($buildShips['ships']) as $location => $ships) if (!in_array($location, Ships::FLEETS)) $remainingShips -= $ships;
 		if ($remainingShips < 0) throw new BgaUserException(self::_('No more ship minis'));
 //
-		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
+		if ($this->gamestate->state()['name'] !== 'emergencyReserve')
 		{
-			$toBlock = [];
-			foreach (Factions::list(false) as $otherColor)
+			if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
 			{
-				if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)))
+				$toBlock = [];
+				foreach (Factions::list(false) as $otherColor)
 				{
-					foreach (array_keys(Counters::getPopulations($color)) as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+					if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)))
+					{
+						foreach (array_keys(Counters::getPopulations($color)) as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+					}
 				}
-			}
-			if ($toBlock)
-			{
+				if ($toBlock)
+				{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} try to Build Ships'), ['player_name' => Factions::getName($color)]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to build ships'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
-				Factions::setStatus($color, 'action', ['name' => 'buildShips', 'locations' => array_keys(Counters::getPopulations($color)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
-				return $this->gamestate->nextState('blockAction');
+					$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
+					Factions::setStatus($color, 'action', ['name' => 'buildShips', 'locations' => array_keys(Counters::getPopulations($color)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
+					return $this->gamestate->nextState('blockAction');
+				}
 			}
 		}
 		return self::acBuildShipsValidated($color, $buildShips, $automa, $buriedShips);

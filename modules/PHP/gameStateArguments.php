@@ -256,13 +256,11 @@ trait gameStateArguments
 				if ($this->gamestate->isPlayerActive($player_id))
 				{
 					$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'stock');
+//
 					$this->possible[$player_id]['oval'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
 					$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
+//
 					$this->possible[$player_id]['square'] = (Factions::getTechnology($color, 'Robotics') >= 5 ? 2 : 1);
-// PJL
-//				$this->possible[$player_id]['oval'] = 3;
-//				$this->possible[$player_id]['square'] = 6;
-// PJL
 					$this->possible[$player_id]['additionalSquareCost'] = Factions::getTechnology($color, 'Robotics') === 5 ? 2 : 0;
 //
 					$homeStar = Ships::getHomeStarLocation($color);
@@ -278,6 +276,8 @@ trait gameStateArguments
 	}
 	function argBlockAction()
 	{
+		$this->possible = [];
+//
 		$color = Factions::getActive();
 		foreach (Factions::list(false) as $otherColor)
 		{
@@ -296,6 +296,8 @@ trait gameStateArguments
 	}
 	function argBlockMovement()
 	{
+		$this->possible = [];
+//
 		$color = Factions::getActive();
 		foreach (Factions::list(false) as $otherColor)
 		{
@@ -417,6 +419,7 @@ trait gameStateArguments
 	function argHomeStarEvacuation()
 	{
 		$this->possible = [];
+//
 		foreach (Factions::list(false) as $color)
 		{
 			$player_id = Factions::getPlayer($color);

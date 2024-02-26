@@ -259,8 +259,8 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} have to select growth actions'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argSelectCounters',
-		'possibleactions' => ['domination', 'selectCounters'],
-		'transitions' => ['next' => 310]
+		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'selectCounters'],
+		'transitions' => ['continue' => 305, 'next' => 310]
 	],
 	310 => [
 		'name' => 'growthPhase',
@@ -390,7 +390,16 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argHomeStarEvacuation',
 		'possibleactions' => ['homeStarEvacuation'],
-		'transitions' => ['continue' => POP_EVENT]
+		'transitions' => ['continue' => POP_EVENT, 'blockAction' => HOMESTAREVACUATION + 1]
+	],
+	HOMESTAREVACUATION + 1 => [
+		'name' => 'blockHomeStarEvacuation',
+		'description' => clienttranslate('Some players can block ${otherplayer} home star evacuation'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer} home star evacuation'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argBlockAction',
+		'possibleactions' => ['blockAction'],
+		'transitions' => ['end' => HOMESTAREVACUATION]
 	],
 	EMERGENCYRESERVE => [
 		'name' => 'emergencyReserve',

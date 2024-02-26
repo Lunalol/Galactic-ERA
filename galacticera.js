@@ -485,6 +485,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						dojo.toggleClass(nodePeace, 'ERAselectable', this.color === faction.color);
 						if (this.player_id === +faction.player_id) dojo.connect(nodePeace, 'click', (event) => {
 								dojo.stopEvent(event);
+								if (+this.gamedatas.GODMODE === 1) return this.action('GODMODE', {god: JSON.stringify({action: 'declareWar', color: faction.color, on: otherFaction.color})});
 								if (this.isCurrentPlayerActive() && this.gamedatas.gamestate.possibleactions.includes('declareWar'))
 								{
 									this.confirmationDialog(dojo.string.substitute(_('Declare war on ${on}'), {on: `<span style='background:black'>${otherName}</span>`}), () =>
@@ -498,6 +499,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						dojo.toggleClass(nodeWar, 'ERAselectable', this.color === faction.color);
 						if (this.player_id === +faction.player_id) dojo.connect(nodeWar, 'click', (event) => {
 								dojo.stopEvent(event);
+								if (+this.gamedatas.GODMODE === 1) return this.action('GODMODE', {god: JSON.stringify({action: 'declarePeace', color: faction.color, on: otherFaction.color})});
 								if (this.isCurrentPlayerActive() && this.gamedatas.gamestate.possibleactions.includes('declarePeace'))
 								{
 									this.confirmationDialog(dojo.string.substitute(_('Propose peace to ${on}'), {on: `<span style='background:black'>${otherName}</span>`}), () =>
@@ -724,7 +726,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									{
 										if (stateName === 'selectCounters')
 										{
-											if (state.args._private.square > 1 || this.gamedatas.GODMODE)
+											if (state.args._private.square > 1 || +this.gamedatas.GODMODE === 1)
 											{
 												dojo.toggleClass(event.currentTarget, 'ERAselected');
 												dojo.toggleClass('ERAselectButton', 'disabled', !this.checkGrowthActions());
@@ -755,7 +757,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									dojo.stopEvent(event);
 									if (this.isCurrentPlayerActive())
 									{
-										if (state.args._private.square > 1 || this.gamedatas.GODMODE)
+										if (state.args._private.square > 1 || +this.gamedatas.GODMODE === 1)
 										{
 											if (!dojo.hasClass(event.currentTarget, 'ERAselected')) dojo.query('#ERAchoice .ERAcounter-turnOrder.ERAselected').removeClass('ERAselected');
 											dojo.toggleClass(event.currentTarget, 'ERAselected');
@@ -1026,6 +1028,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					break;
 //
 				case 'blockAction':
+				case 'blockHomeStarEvacuation':
 					if ('_private' in state.args)
 					{
 						for (let location of Object.values(state.args._private.locations))
@@ -1789,7 +1792,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								});
 							}
 							else if (counters.filter(action => ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown'
-								].includes(action)).length < args._private.square && !this.gamedatas.GODMODE)
+								].includes(action)).length < args._private.square && +this.gamedatas.GODMODE === 0)
 							{
 								this.confirmationDialog($('ERAwarning').innerHTML, () => {
 									this.action('selectCounters', {color: args._private.color, counters: JSON.stringify(counters)}, () => {
@@ -1862,6 +1865,15 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						this.addActionButton('ERAcancelButton', dojo.string.substitute(_('Don`t block ${action}'), {action: this.GROWTHACTIONS[args._private.action][0]}), () => this.action('blockAction', {color: this.color, blocked: false}));
 						this.addActionButton('ERAblockButton', dojo.string.substitute(_('Declare war and block ${action}'), {action: this.GROWTHACTIONS[args._private.action][0]}), () => this.action('blockAction', {color: this.color, blocked: true}), null, false, 'red');
+//
+						break;
+//
+					case 'blockHomeStarEvacuation':
+//
+						this.board.centerMap(args._private.location);
+//
+						this.addActionButton('ERAcancelButton', _('Don`t block home star evacuation'), () => this.action('blockAction', {color: this.color, blocked: false}));
+						this.addActionButton('ERAblockButton', _('Declare war and home star evacuation'), () => this.action('blockAction', {color: this.color, blocked: true}), null, false, 'red');
 //
 						break;
 //
@@ -2448,7 +2460,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		checkGrowthActions: function ()
 		{
-			if (this.gamedatas.GODMODE) return true;
+			if (+this.gamedatas.GODMODE === 1) return true;
 //
 			const oval = dojo.query('#ERAchoice .ERAcounter-growth.ERAselected').length;
 			const square = dojo.query('#ERAchoice .ERAcounter-technology.ERAselected,#ERAchoice .ERAcounter-turnOrder.ERAselected').length;
