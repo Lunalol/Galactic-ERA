@@ -459,6 +459,9 @@ trait gameStateActions
 						$homeStar = Ships::getHomeStarLocation($on);
 						foreach (Counters::getPopulations($on, true) as $location => $population) if ($population >= 5 && $location !== $homeStar && Ships::getAtLocation($location, $color)) $possible = true;
 					}
+					if ($this->gamestate->state()['name'] === 'fleets') $possible = true;
+					if ($this->gamestate->state()['name'] === 'movement') $possible = true;
+					if ($this->gamestate->state()['name'] === 'researchPlus') $possible = true;
 				}
 				if (!$possible) throw new BgaUserException(self::_('You can\'t declare war now'));
 			}
@@ -496,15 +499,15 @@ trait gameStateActions
 		}
 		if (!$automa) $this->gamestate->nextState('continue');
 	}
-	function acDeclarePeace(string $color, string $on, $automa = false)
+	function acDeclarePeace(string $from, string $on, $automa = false)
 	{
-		$player_id = Factions::getPlayer($color);
+		$player_id = Factions::getPlayer($from);
 //
 		if (!$automa)
 		{
 			$this->checkAction('declarePeace');
-			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-			if (!in_array($on, Factions::atWar($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
+			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
+			if (!in_array($on, Factions::atWar($from))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
 		}
 //
 		if (!self::getGameStateValue('GODMODE'))
@@ -519,7 +522,7 @@ trait gameStateActions
 				if (Factions::getPlayer($on) == SLAVERS && Factions::getDP($on) >= 2) throw new BgaUserException(self::_('Slavers’ Offboard Power Effects: Slavers never make peace'));
 				Factions::setStatus($on, 'peace', 'once per round');
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name1} proposes peace to ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name1} proposes peace to ${player_name2}'), ['player_name1' => Factions::getName($from), 'player_name2' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -536,11 +539,34 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${player_name} accept peace'), ['player_name' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
+				return self::acAcceptPeace($from, $on, true);
 			}
 		}
 //
-		Factions::declarePeace($color, $on);
-		Factions::declarePeace($on, $color);
+		$pending = Factions::getStatus($on, 'peace') ?? [];
+		if (!in_array($from, $pending))
+		{
+			$pending[] = $from;
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyPlayer(Factions::getPlayer($from), 'msg', clienttranslate('You propose peace to ${player_name}'), ['player_name' => Factions::getName($on)]);
+			self::notifyPlayer(Factions::getPlayer($on), 'peace', clienttranslate('${player_name} wants to make peace'), ['player_name' => Factions::getName($from), 'from' => $from]);
+//* -------------------------------------------------------------------------------------------------------- */
+			Factions::setStatus($on, 'peace', $pending);
+		}
+	}
+	function acAcceptPeace(string $on, string $from, $automa = false)
+	{
+		if (!$automa)
+		{
+			$pending = Factions::getStatus($on, 'peace') ?? [];
+			if (!in_array($from, $pending)) throw new BgaUserException(self::_('Peace agreement not found !'));
+			unset($pending[array_search($from, $pending)]);
+			if ($pending) Factions::setStatus($on, 'peace', array_values($pending));
+			else Factions::setStatus($on, 'peace');
+		}
+//
+		Factions::declarePeace($from, $on);
+		Factions::declarePeace($on, $from);
 //
 		if ($this->gamestate->state()['name'] === 'selectCounters')
 		{
@@ -553,11 +579,26 @@ trait gameStateActions
 			}
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('${player_name1} is at peace with ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
-		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
+		self::notifyAllPlayers('msg', clienttranslate('${player_name1} accepts peace with ${player_name2}'), ['player_name1' => Factions::getName($from), 'player_name2' => Factions::getName($on)]);
+		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($from)]);
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		if (!$automa) $this->gamestate->nextState('continue');
+	}
+	function acRejectPeace(string $on, string $from, $automa = false)
+	{
+		if (!$automa)
+		{
+			$pending = Factions::getStatus($on, 'peace') ?? [];
+			if (!in_array($from, $pending)) throw new BgaUserException(self::_('Peace agreement not found !'));
+			unset($pending[array_search($from, $pending)]);
+			if ($pending) Factions::setStatus($on, 'peace', array_values($pending));
+			else Factions::setStatus($on, 'peace');
+		}
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyPlayer(Factions::getPlayer($from), 'msg', clienttranslate('${player_name} refuses peace'), ['player_name' => Factions::getName($on)]);
+		self::notifyPlayer(Factions::getPlayer($on), 'msg', clienttranslate('You refuse peace with ${player_name}'), ['player_name' => Factions::getName($from)]);
+//* -------------------------------------------------------------------------------------------------------- */
 	}
 	function acRemoteViewing(string $color, bool $ancientPyramids, string $type, string $id)
 	{
