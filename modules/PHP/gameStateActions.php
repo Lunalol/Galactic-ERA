@@ -393,12 +393,13 @@ trait gameStateActions
 		$this->checkAction('done');
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
+		$etheric = Factions::getStatus($color, 'etheric');
 		foreach (Ships::getAll($color) as $ship)
 		{
 			if ($ship['location'] !== 'stock')
 			{
 				$MP = Factions::TECHNOLOGIES['Propulsion'][Factions::getTechnology($color, 'Propulsion')];
-				if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += 2;
+				if (Sectors::terrainFromLocation($ship['location']) === Sectors::NEBULA) $MP += $etheric ? 4 : 2;
 				if (Ships::getStatus($ship['id'], 'fleet') === 'D')
 				{
 					$MP++;
@@ -421,22 +422,22 @@ trait gameStateActions
 		self::updateScoring();
 		$this->gamestate->nextState('next');
 	}
-	function acDeclareWar(string $color, string $on, $automa = false)
+	function acDeclareWar(string $from, string $on, $automa = false)
 	{
-		$player_id = Factions::getPlayer($color);
+		$player_id = Factions::getPlayer($from);
 //
 		if (!$automa)
 		{
 			$this->checkAction('declareWar');
-			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-			if (!in_array($on, Factions::atPeace($color))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
+			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
+			if (!in_array($on, Factions::atPeace($from))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
 //
 			if (!self::getGameStateValue('GODMODE'))
 			{
 //
 // GREYS STO: You may not declare war on other players (also not on a automa)
 //
-				if (Factions::getAlignment($color) === 'STO' && Factions::getStarPeople($color) === 'Greys') throw new BgaUserException(self::_('Greys STO may not declare war'));
+				if (Factions::getAlignment($from) === 'STO' && Factions::getStarPeople($from) === 'Greys') throw new BgaUserException(self::_('Greys STO may not declare war'));
 //------------------------
 // A-section: Diplomatic //
 //------------------------
@@ -448,16 +449,16 @@ trait gameStateActions
 // PLEJARS STO: May declare war on STS players during your movement
 //
 				$possible = false;
-				if (Factions::getAlignment($color) === 'STO')
+				if (Factions::getAlignment($from) === 'STO')
 				{
-					if (Factions::getStarPeople($color) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) $possible = true;
+					if (Factions::getStarPeople($from) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) $possible = true;
 				}
-				if (Factions::getAlignment($color) === 'STS')
+				if (Factions::getAlignment($from) === 'STS')
 				{
 					if ($this->gamestate->state()['name'] === 'selectCounters')
 					{
 						$homeStar = Ships::getHomeStarLocation($on);
-						foreach (Counters::getPopulations($on, true) as $location => $population) if ($population >= 5 && $location !== $homeStar && Ships::getAtLocation($location, $color)) $possible = true;
+						foreach (Counters::getPopulations($on, true) as $location => $population) if ($population >= 5 && $location !== $homeStar && Ships::getAtLocation($location, $from)) $possible = true;
 					}
 					if ($this->gamestate->state()['name'] === 'fleets') $possible = true;
 					if ($this->gamestate->state()['name'] === 'movement') $possible = true;
@@ -467,8 +468,11 @@ trait gameStateActions
 			}
 		}
 //
-		Factions::declareWar($color, $on);
-		Factions::declareWar($on, $color);
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$from'");
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$on'");
+//
+		Factions::declareWar($from, $on);
+		Factions::declareWar($on, $from);
 //
 		if ($this->gamestate->state()['name'] === 'selectCounters')
 		{
@@ -481,20 +485,20 @@ trait gameStateActions
 			}
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('${player_name1} declares war on ${player_name2}'), ['player_name1' => Factions::getName($color), 'player_name2' => Factions::getName($on)]);
-		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
+		self::notifyAllPlayers('msg', clienttranslate('${player_name1} declares war on ${player_name2}'), ['player_name1' => Factions::getName($from), 'player_name2' => Factions::getName($on)]);
+		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($from)]);
 		self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // ALLIANCE OF DARKNESS (STS) : STS players lose 3 DP every time they declare war on you
 //
-		if (Factions::getAlignment($color) === 'STS' && Factions::getStarPeople($on) === 'Alliance' && Factions::getAlignment($on) === 'STS' && $player_id > 0)
+		if (Factions::getAlignment($from) === 'STS' && Factions::getStarPeople($on) === 'Alliance' && Factions::getAlignment($on) === 'STS' && $player_id > 0)
 		{
 			$DP = -3;
-			self::gainDP($color, $DP);
+			self::gainDP($from, $DP);
 			self::incStat($DP, 'DP_SP', $player_id);
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP, 'player_name' => Factions::getName($from), 'faction' => ['color' => $from, 'DP' => Factions::getDP($from)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		if (!$automa) $this->gamestate->nextState('continue');
@@ -564,6 +568,9 @@ trait gameStateActions
 			if ($pending) Factions::setStatus($on, 'peace', array_values($pending));
 			else Factions::setStatus($on, 'peace');
 		}
+//
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$from'");
+		self::DbQuery("DELETE FROM `undo` WHERE color = '$on'");
 //
 		Factions::declarePeace($from, $on);
 		Factions::declarePeace($on, $from);
@@ -705,6 +712,31 @@ trait gameStateActions
 						if (Factions::getPlayer($ship['color']) > 0) self::notifyPlayer(Factions::getPlayer($ship['color']), 'revealShip', '', ['ship' => ['id' => $id, 'fleet' => $Fleet, 'ships' => Ships::getStatus($id, 'ships')]]);
 						break;
 				}
+//
+// WAR Second : All players score 1 DP for every ship of opponents they destroy
+//
+				if (self::getGameStateValue('galacticStory') == WAR && self::ERA() === 'Second')
+				{
+					{
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All players score 1 DP for every ship of opponents they destroy (also as losers of a battle)')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						$player_id = Factions::getPlayer($color);
+						if ($player_id > 0)
+						{
+							$DP = 1;
+							if ($DP)
+							{
+								self::gainDP($color, $DP);
+								self::incStat($DP, 'DP_GS', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+								self::notifyAllPlayers('updateFaction', clienttranslate('Galactic Story: ${player_name} scores ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+							}
+						}
+					}
+				}
+//
 				break;
 //
 			case 'disc':
@@ -975,7 +1007,6 @@ trait gameStateActions
 		}
 //
 		self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'ships' => 16 - sizeof(Ships::getAll($color, 'ship'))]]);
-
 //
 		self::updateScoring();
 		$this->gamestate->nextState('continue');
@@ -2517,7 +2548,7 @@ trait gameStateActions
 //
 				$section = 'A';
 				if ($this->domination->countCardInLocation($section, $player_id)) throw new BgaVisibleSystemException('A-Section already played');
-				if (!DominationCards::A($color, $domination)) throw new BgaUserException(self::_('Play this card when primary condition happens'));
+				if (!DominationCards::A($color, $domination, $this->gamestate->state()['name'])) throw new BgaUserException(self::_('Play this card when primary condition happens'));
 //
 				$this->domination->moveCard($id, $section, $color);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2567,6 +2598,13 @@ trait gameStateActions
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('No players may declare war on you for the rest of this round')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'diplomatic', true);
+						break;
+					case ETHERIC:
+						$DP = 8;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All of your ships starting their move in a nebula hex now get +4 range (instead of +2)')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'etheric', true);
 						break;
 					default:
 						throw new BgaVisibleSystemException('A-Section NOT implemented');

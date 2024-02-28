@@ -13,7 +13,7 @@ trait gameUtils
 	function updateScoring()
 	{
 		$scoring = [];
-		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination);
+		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination, $this->gamestate->state()['name']);
 		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['B'] = DominationCards::B($color, $domination);
 		self::notifyAllPlayers('updateScoring', '', ['scoring' => $scoring]);
 	}
@@ -86,7 +86,7 @@ trait gameUtils
 				Factions::setStatus($color, 'researchPlus', array_merge(Factions::getStatus($color, 'researchPlus') ?? [], [$technology]));
 				self::triggerEvent(RESEARCHPLUS, $color);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
+//				self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 			return 0;
@@ -96,7 +96,7 @@ trait gameUtils
 //
 // YOWIES SPECIAL STO & STS: You may not have Robotics higher than level 1
 //
-		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('Yowies may not have Robotics higher than level 1'));
+//		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('Yowies may not have Robotics higher than level 1'));
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
 			'player_name' => Factions::getName($color),

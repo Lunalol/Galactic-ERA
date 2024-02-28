@@ -202,10 +202,6 @@ class Factions extends APP_GameClass
 			self::dbQuery("UPDATE factions SET status = JSON_SET(status, '$.$status', '$json') WHERE color = '$color'");
 		}
 	}
-	static function clearStatus(string $color): void
-	{
-		self::dbQuery("UPDATE factions SET status = '{}' WHERE color = '$color'");
-	}
 	static function ships(string $color): int
 	{
 		$population = max(6, array_sum(Counters::getPopulations($color, true)));

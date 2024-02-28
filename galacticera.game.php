@@ -94,8 +94,8 @@ class GalacticEra extends Table
 //
 		foreach (array_keys(self::loadPlayersBasicInfos()) as $player_id)
 		{
-			$datas = self::retrieveLegacyData($player_id, 'ALPHA');
-			$legacy = $datas ? json_decode($datas['ALPHA']) : [0 => '', 1 => '', 2 => '', 3 => ''];
+			$datas = self::retrieveLegacyData($player_id, LEGACYDATA);
+			$legacy = $datas ? json_decode($datas[LEGACYDATA]) : [0 => '', 1 => '', 2 => '', 3 => ''];
 //
 			if ($legacy[0] !== '') self::initStat('player', 'easy', $legacy[0], $player_id);
 			if ($legacy[1] !== '') self::initStat('player', 'standard', $legacy[1], $player_id);
@@ -121,7 +121,7 @@ class GalacticEra extends Table
 		{
 			if (Factions::getPlayer($color) > 0)
 			{
-				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination);
+				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination, $this->gamestate->state()['name']);
 				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['B'] = DominationCards::B($color, $domination);
 			}
 //
@@ -134,6 +134,7 @@ class GalacticEra extends Table
 					if ($fleet['color'] === $color) $result['factions'][$color]['revealed']['fleets'][$fleet['id']] = ['fleet' => Ships::getStatus($fleet['id'], 'fleet'), 'ships' => Ships::getStatus($fleet['id'], 'ships')];
 					else if (Ships::getStatus($fleet['id'], 'fleet') === 'D') $result['factions'][$color]['revealed']['fleets'][$fleet['id']] = ['fleet' => 'D', 'ships' => '?'];
 				}
+				$result['peace'] = Factions::getStatus($color, 'peace');
 			}
 //
 			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][$domination['id']] = ($player_id === Factions::getPlayer($color)) ? $domination['type'] : 'back';

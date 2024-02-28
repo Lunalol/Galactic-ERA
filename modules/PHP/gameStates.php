@@ -245,7 +245,7 @@ trait gameStates
 		{
 			foreach (Factions::list(false) as $index => $color)
 			{
-				$cards = $this->domination->getCardsOfType($index + 3);
+				$cards = $this->domination->getCardsOfType($index + 0);
 				$card = array_pop($cards);
 				$this->domination->moveCard($card['id'], 'hand', $color);
 			}
@@ -1261,7 +1261,7 @@ trait gameStates
 		{
 			$technology = array_pop($technologies);
 //* -------------------------------------------------------------------------------------------------------- */
-//			self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} gains a <B>${TECHNOLOGY}+ effect</B>'), ['player_name' => Factions::getName($color), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
 //* -------------------------------------------------------------------------------------------------------- */
 			switch ($technology)
 			{
@@ -1301,6 +1301,9 @@ trait gameStates
 					break;
 			}
 		}
+//
+		if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
+		else Factions::setStatus($color, 'researchPlus');
 //
 		self::triggerAndNextState('end');
 	}
@@ -1875,7 +1878,7 @@ trait gameStates
 //
 						case WAR:
 //
-// JOURNEYS Third : At the end of the round, each player who researched Military in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level
+// WAR Third : At the end of the round, each player who researched Military in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Military level
 // The same applies for Robotics. A Research action that did not result in an increased technology level does not count, neither for scoring nor for preventing scoring (*)
 //
 							foreach (['Military', 'Robotics'] as $technology)
@@ -1922,7 +1925,24 @@ trait gameStates
 		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG} ${round}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
-		foreach (Factions::list() as $color) Factions::clearStatus($color);
+		foreach (Factions::list() as $color)
+		{
+			Factions::setStatus($color, 'counters');
+			Factions::setStatus($color, 'stock');
+			Factions::setStatus($color, 'used');
+//
+			Factions::setStatus($color, 'alignment');
+			Factions::setStatus($color, 'view');
+			Factions::setStatus($color, 'etheric');
+			Factions::setStatus($color, 'otherTechnology');
+			Factions::setStatus($color, 'exchange');
+//
+			Factions::setStatus($color, 'trade');
+			Factions::setStatus($color, 'inContact');
+//
+			$toClean = self::getUniqueValueFromDB("SELECT status FROM factions WHERE color = '$color'");
+			if ($toClean !== '{}') self::notifyAllPlayers('msg', $toClean, []);
+		}
 //
 		self::updateScoring();
 		if ($round < 8) return $this->gamestate->nextState('nextRound');
@@ -2006,8 +2026,8 @@ trait gameStates
 			$difficulty = intval(self::getGameStateValue('difficulty'));
 			$score = self::dbGetScore($player_id);
 //
-			$datas = self::retrieveLegacyData($player_id, 'ALPHA');
-			$legacy = $datas ? json_decode($datas['ALPHA']) : [0 => '', 1 => '', 2 => '', 3 => ''];
+			$datas = self::retrieveLegacyData($player_id, LEGACYDATA);
+			$legacy = $datas ? json_decode($datas[LEGACYDATA]) : [0 => '', 1 => '', 2 => '', 3 => ''];
 			$legacy[$difficulty] = ($legacy[$difficulty] === '') ? $score : max($score, $legacy[$difficulty]);
 //
 			if ($legacy[0] !== '') self::setStat($legacy[0], 'easy', $player_id);
@@ -2015,7 +2035,7 @@ trait gameStates
 			if ($legacy[2] !== '') self::setStat($legacy[2], 'hard', $player_id);
 			if ($legacy[3] !== '') self::setStat($legacy[3], 'insane', $player_id);
 //
-			self::storeLegacyData($player_id, 'ALPHA', $legacy);
+			self::storeLegacyData($player_id, LEGACYDATA, $legacy);
 		}
 //
 		$this->gamestate->nextState('gameEnd');

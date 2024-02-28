@@ -79,7 +79,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		reveal: function (fleet)
 		{
-			console.info('reveal', fleet);
+//			console.info('reveal', fleet);
 //
 			let node = $(`ERAship-${fleet.id}`);
 			if (node)
@@ -90,7 +90,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		homeStarEvacuation: function (homeStar, to)
 		{
-			console.info('homeStarEvacuation', homeStar, to);
+//			console.info('homeStarEvacuation', homeStar, to);
 //
 			const node = $(`ERAhomeStar-${homeStar}`);
 			dojo.style(node, 'left', this.board.hexagons[to].x - node.clientWidth / 2 + 'px');
@@ -102,7 +102,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		move: function (ships, to)
 		{
-			console.info('moveShips', ships, to);
+//			console.info('moveShips', ships, to);
 //
 			for (const ship of ships)
 			{
@@ -117,7 +117,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		remove: function (ship)
 		{
-			console.info('removeShip', ship);
+//			console.info('removeShip', ship);
 //
 			dojo.query(`#ERAboard .ERAship[ship=${ship.id}]`).remove();
 //

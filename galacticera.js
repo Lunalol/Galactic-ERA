@@ -29,7 +29,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			dojo.destroy('debug_output');
 //
 			dojo.place(`<div id='ERAalien' class='upperrightmenu_item' style='margin-top:10px;font-size:x-large;'>👽</div>`, 'upperrightmenu', 'first');
-			dojo.connect($('ERAalien'), 'click', () => this.action('GODMODE', {god: JSON.stringify({action: 'toggle'})}));
+			dojo.connect($('ERAalien'), 'click', () => {
+				if (!this.isSpectator) this.action('GODMODE', {god: JSON.stringify({action: 'toggle'})})
+			});
 //
 // Translations
 //
@@ -96,7 +98,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					],
 					3: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
-						_('At the end of the round, each player who researched Military in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Spirituality level'),
+						_('At the end of the round, each player who researched Military in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Military level'),
 						_('At the end of the round, each player who researched Robotics in that round and has the highest level (ties allowed) in that field among all the players who also researched that, scores 7 minus their Robotics level')
 					]
 				}
@@ -590,6 +592,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				}
 			}
 //
+			if (gamedatas.peace) for (let color of gamedatas.peace) this.peace(color);
+//
+
 			this.setupNotifications();
 //
 			console.log("Ending game setup");
@@ -2130,6 +2135,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			dojo.subscribe('updateFaction', (notif) => this.factions.update(notif.args.faction));
 			dojo.subscribe('playDomination', (notif) => this.playDomination(notif.args.card, notif.args.section));
 //
+			dojo.subscribe('peace', (notif) => this.peace(notif.args.from));
+//
 			dojo.subscribe('placeCounter', (notif) => this.counters.place(notif.args.counter));
 			dojo.subscribe('flipCounter', (notif) => this.counters.flip(notif.args.counter));
 			dojo.subscribe('removeCounter', (notif) => this.counters.remove(notif.args.counter));
@@ -2193,6 +2200,17 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				dojo.style('ERApawn', 'left', (84.7 * round) + 'px');
 				dojo.setAttr('ERApawn', 'title', dojo.string.substitute(_('Round ${round} of 8'), {round: round}));
 			}
+		},
+		peace: function (from)
+		{
+			const otherName = $(`player_name_${this.gamedatas.factions[from].player_id}`).children[0].outerHTML;
+			this.confirmationDialog(dojo.string.substitute(_('${player_name} wants to make peace'), {player_name: `<span style='background:black'>${otherName}</span>`}), () =>
+			{
+				this.action('acceptPeace', {color: this.color, from: from});
+			}, () => {
+				this.action('rejectPeace', {color: this.color, from: from});
+			});
+			dojo.query('.standard_popin_underlay').style('visibility', 'hidden');
 		},
 		playDomination: function (card, section)
 		{
@@ -2294,7 +2312,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				const counter = $('ERAchoice').querySelector('.ERAcounter.ERAselected');
 				if (counter.getAttribute('counter') === 'gainStar+' && location[0] !== '0') return;
 				const locationsRemoved = dojo.query(`.ERAcounter-populationDisc.ERAdisabled`, 'ERAremovePopulation').reduce((L, node) => [...L, node.getAttribute('location')], []);
-				if (this.gamedatas.gamestate.args._private.gainStar[location])
+				if (this.gamedatas.gamestate.args._private.gainStar[location] && !this.gamedatas.factions[this.color].atWar.includes(this.gamedatas.gamestate.args._private.gainStar[location]))
 				{
 					const otherName = $(`player_name_${this.gamedatas.factions[this.gamedatas.gamestate.args._private.gainStar[location]].player_id}`).children[0].outerHTML;
 					this.confirmationDialog(dojo.string.substitute(_('You must declare war on ${on} to gain this star'), {on: `<span style='background:black'>${otherName}</span>`}), () =>
@@ -2526,6 +2544,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		{
 			if ((action === 'GODMODE')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
 			if ((action === 'domination')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
+			if ((action === 'declarePeace')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
+			if ((action === 'acceptPeace')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
+			if ((action === 'rejectPeace')) return this.ajaxcall(`/galacticera/galacticera/${action}.html`, args, this, success, fail);
 			if ((action === 'trade' && this.checkPossibleActions(action)) || this.checkAction(action))
 			{
 				args.lock = true;

@@ -13,7 +13,7 @@ class DominationCards extends APP_GameClass
 //
 		return $deck;
 	}
-	static function A(string $color, int $domination): int
+	static function A(string $color, int $domination, string $gamestate): int
 	{
 		$scoringPhase = false;
 		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
@@ -30,9 +30,26 @@ class DominationCards extends APP_GameClass
 // Can only be played at the end of the scoring phase
 // Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then
 				$best = true;
-				$DP = Factions::getDP($color);
 				$alignement = Factions::getAlignment($color);
-				foreach (Factions::list() as $otherColor) if ($color !== $otherColor && $alignement === Factions::getAlignment($otherColor) && Factions::getDP($otherColor) >= $DP) $best = false;
+				if (sizeof(Factions::list(false)) > 1)
+				{
+					$DP = Factions::getDP($color);
+					foreach (Factions::list() as $otherColor) if ($color !== $otherColor && $alignement === Factions::getAlignment($otherColor) && Factions::getDP($otherColor) >= $DP) $best = false;
+				}
+				else
+				{
+					$levels = 0;
+					foreach (array_keys(Factions::TECHNOLOGIES) as $technology) $levels += Factions::getTechnology($color, $technology);
+					foreach (Factions::list() as $otherColor)
+					{
+						if ($color !== $otherColor && $alignement === Factions::getAlignment($otherColor))
+						{
+							$other_levels = 0;
+							foreach (array_keys(Factions::TECHNOLOGIES) as $technology) $other_levels += Factions::getTechnology($otherColor, $technology);
+							if ($other_levels >= $levels) $best = false;
+						}
+					}
+				}
 				return ($scoringPhase && Factions::getDP($color) >= 5 && $best) ? 9 : 0;
 			case CENTRAL:
 // Own 4 stars in the center sector
@@ -72,7 +89,7 @@ class DominationCards extends APP_GameClass
 // Have a ship each in 4 nebula hexes at the start of your movement
 				$numberOfShips = 0;
 				foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::NEBULA) $numberOfShips++;
-				return ($numberOfShips >= 4) ? 8 : 0;
+				return ($numberOfShips >= 4 && $gamestate === 'fleets') ? 8 : 0;
 			case EXPLORATORY:
 // Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors
 				return (0) ? 13 : 0;

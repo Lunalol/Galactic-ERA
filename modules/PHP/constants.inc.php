@@ -3,6 +3,8 @@ define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== 
 define('FAST_START', 0);
 define('DEBUG', 1);
 //
+define('LEGACYDATA', 'ALPHA2');
+//
 define('PUSH_EVENT', 998);
 define('POP_EVENT', 999);
 define('HOMESTAREVACUATION', 1000);

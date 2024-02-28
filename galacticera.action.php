@@ -154,6 +154,26 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function acceptPeace()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$from = self::getArg("from", AT_alphanum, true);
+		$this->game->acAcceptPeace($color, $from);
+//
+		self::ajaxResponse("");
+	}
+	public function rejectPeace()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$from = self::getArg("from", AT_alphanum, true);
+		$this->game->acRejectPeace($color, $from);
+//
+		self::ajaxResponse("");
+	}
 	public function remoteViewing()
 	{
 		self::setAjaxMode();

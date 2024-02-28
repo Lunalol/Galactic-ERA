@@ -156,6 +156,7 @@ $machinestates = [
 		'description' => clienttranslate('${actplayer} can Create/Swap fleets'),
 		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
 		'type' => 'activeplayer',
+		'action' => 'updateScoring',
 		'args' => 'argFleets',
 		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done'],
 		'transitions' => ['continue' => 210, 'next' => 220]
@@ -165,6 +166,7 @@ $machinestates = [
 		'description' => clienttranslate('${actplayer} may move any or all ships'),
 		'descriptionmyturn' => clienttranslate('${you} may move any or all ships'),
 		'type' => 'activeplayer',
+		'action' => 'updateScoring',
 		'args' => 'argMovement',
 		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'planetaryDeathRay', 'done'],
 		'transitions' => ['undo' => 210, 'continue' => 220, 'blockMovement' => 215, 'next' => 230]
@@ -456,7 +458,7 @@ $machinestates = [
 		'type' => 'multipleactiveplayer',
 		'args' => 'argDomination',
 		'action' => 'stDomination',
-		'possibleactions' => ['domination', 'null'],
+		'possibleactions' => ['declarePeace', 'domination', 'null'],
 		'transitions' => ['continue' => DOMINATION, 'end' => POP_EVENT]
 	],
 	ONETIMEEFFECT => [

@@ -10,8 +10,8 @@ trait gameStateArguments
 	{
 		$player_id = self::getActivePlayerId();
 //
-		$datas = self::retrieveLegacyData($player_id, 'ALPHA');
-		$legacy = $datas ? json_decode($datas['ALPHA']) : [0 => '', 1 => '', 2 => '', 3 => ''];
+		$datas = self::retrieveLegacyData($player_id, LEGACYDATA);
+		$legacy = $datas ? json_decode($datas[LEGACYDATA]) : [0 => '', 1 => '', 2 => '', 3 => ''];
 //
 		return ['legacy' => $legacy];
 	}
@@ -328,6 +328,7 @@ trait gameStateArguments
 				case 'research':
 					break;
 				case 'gainStar':
+				case 'gainStar+':
 					{
 						$this->possible['gainStar'] = [];
 						foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location)
@@ -539,27 +540,31 @@ trait gameStateArguments
 //
 		$this->possible = [];
 //
+		$technology = '';
 		$technologies = Factions::getStatus($color, 'researchPlus');
-		$technology = array_pop($technologies);
-//
-		switch ($technology)
+		if ($technologies)
 		{
+			$technology = array_pop($technologies);
 //
-			case 'Military':
+			switch ($technology)
+			{
 //
-				foreach (Factions::atWar($color) as $otherColor) $this->possible['Military'][$otherColor] = array_diff(Factions::getStatus($otherColor, 'counters'), array_keys($this->TECHNOLOGIES));
-				break;
+				case 'Military':
 //
-			case 'Spirituality':
+					foreach (Factions::atWar($color) as $otherColor) $this->possible['Military'][$otherColor] = array_diff(Factions::getStatus($otherColor, 'counters'), array_keys($this->TECHNOLOGIES));
+					break;
 //
-				$this->possible['color'] = $color;
-				$this->possible['counters'] = [];
-				foreach (Factions::getStatus($color, 'stock') as $counter) if (in_array($counter, $this->OVAL)) $this->possible['counters'][] = $counter;
-				$this->possible['Spirituality'] = true;
+				case 'Spirituality':
 //
-				$cards = $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color);
-				$this->possible['dominationCardExchange'] = ($cards < 2) && is_null(Factions::getStatus($color, 'exchange'));
-				if ($this->possible['dominationCardExchange']) $this->possible['hand'] = $this->domination->getPlayerHand($color);
+					$this->possible['color'] = $color;
+					$this->possible['counters'] = [];
+					foreach (Factions::getStatus($color, 'stock') as $counter) if (in_array($counter, $this->OVAL)) $this->possible['counters'][] = $counter;
+					$this->possible['Spirituality'] = true;
+//
+					$cards = $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color);
+					$this->possible['dominationCardExchange'] = ($cards < 2) && is_null(Factions::getStatus($color, 'exchange'));
+					if ($this->possible['dominationCardExchange']) $this->possible['hand'] = $this->domination->getPlayerHand($color);
+			}
 		}
 //
 		$counters = [];
