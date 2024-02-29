@@ -1421,6 +1421,7 @@ trait gameStateActions
 			if ($square < 1 || $square > $this->possible[$player_id]['square']) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
 		}
 //
+		if (Factions::getStatus($color, 'central')) array_push($counters, 'gainStar+');
 		Factions::setStatus($color, 'counters', array_values($counters));
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
@@ -2578,7 +2579,8 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('On your turn in this growth phase, you get a free Gain Star action, which you can use in the center sector only<BR>Your ships count double for this action (apply before calculating Fleet “B” bonus)')]);
 //* -------------------------------------------------------------------------------------------------------- */
-						Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
+						if (Factions::getStatus($color, 'counters')) Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
+						Factions::setStatus($color, 'central', true);
 						break;
 					case DEFENSIVE:
 						$DP = 9;
@@ -2605,6 +2607,15 @@ trait gameStateActions
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All of your ships starting their move in a nebula hex now get +4 range (instead of +2)')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'etheric', true);
+						break;
+					case EXPLORATORY:
+						$DP = 13;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('You may inspect the unplayed domination cards of another player<BR>In a game with 5+ players, you may even do this with 2 players')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'domination', $domination);
+						Factions::setStatus($color, 'exploratory', sizeof(Factions::list()) >= 5 ? 2 : 1);
+						self::triggerEvent(ONETIMEEFFECT, $color);
 						break;
 					default:
 						throw new BgaVisibleSystemException('A-Section NOT implemented');
@@ -2703,5 +2714,43 @@ trait gameStateActions
 //
 		self::updateScoring();
 		$this->gamestate->nextState('nextPlayer');
+	}
+	function acOneTimeEffect(string $color, array $json)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('oneTimeEffect');
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		$domination = Factions::getStatus($color, 'domination');
+//
+		switch ($domination)
+		{
+//
+			case EXPLORATORY:
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} inspects unplayed domination cards of ${player_name1}'), ['player_name' => Factions::getName($color), 'player_name1' => Factions::getName($json['color'])]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$dominationCards = $this->domination->getPlayerHand($json['color']);
+//* -------------------------------------------------------------------------------------------------------- */
+				foreach ($dominationCards as $dominationCard) self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${DOMINATION}</B>'), ['i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$dominationCard['type']]]);
+//* -------------------------------------------------------------------------------------------------------- */
+				$count = Factions::getStatus($color, 'exploratory') - 1;
+				if ($count > 0)
+				{
+					Factions::setStatus($color, 'exploratory', $count);
+					return $this->gamestate->nextState('continue');
+				}
+				Factions::setStatus($color, 'exploratory');
+//
+				break;
+//
+			default:
+//
+				throw new BgaVisibleSystemException("Invalid oneTimeEffect: $domination");
+//
+		}
+//
+		return $this->gamestate->nextState('end');
 	}
 }
