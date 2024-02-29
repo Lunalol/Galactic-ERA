@@ -1203,6 +1203,7 @@ trait gameStates
 			$stock = Factions::getStatus($color, 'stock');
 			foreach ($counters as $counter)
 			{
+				if ($counter === 'gainStar+') continue;
 				$index = array_search($counter, $stock);
 				if ($index === false) throw new BgaVisibleSystemException('Invalid counter: ' . $counter);
 				unset($stock[$index]);
@@ -1335,6 +1336,7 @@ trait gameStates
 			Factions::setStatus($color, 'stock', ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment', 'Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics', 'changeTurnOrderUp', 'changeTurnOrderDown']);
 			Factions::setStatus($color, 'counters', []);
 			Factions::setStatus($color, 'used', []);
+			if (Factions::getStatus($color, 'central')) Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
 		}
 //
 		$this->gamestate->setAllPlayersMultiactive('next');
@@ -1927,21 +1929,35 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color)
 		{
+//
+// Movement phase
+//
+			Factions::setStatus($color, 'view');
+//
+// Growth phase
+//
 			Factions::setStatus($color, 'counters');
 			Factions::setStatus($color, 'stock');
 			Factions::setStatus($color, 'used');
-//
-			Factions::setStatus($color, 'alignment');
-			Factions::setStatus($color, 'view');
-			Factions::setStatus($color, 'etheric');
 			Factions::setStatus($color, 'otherTechnology');
-			Factions::setStatus($color, 'exchange');
+//
+// Trading phase
 //
 			Factions::setStatus($color, 'trade');
 			Factions::setStatus($color, 'inContact');
 //
+// Domination cards reset
+//
+			Factions::setStatus($color, 'acquisition');
+			Factions::setStatus($color, 'alignment');
+			Factions::setStatus($color, 'central');
+			Factions::setStatus($color, 'diplomatic');
+			Factions::setStatus($color, 'etheric');
+			Factions::setStatus($color, 'exchange');
+			Factions::setStatus($color, 'exploratory');
+//
 			$toClean = self::getUniqueValueFromDB("SELECT status FROM factions WHERE color = '$color'");
-			if ($toClean !== '{}') self::notifyAllPlayers('msg', $toClean, []);
+			if ($toClean !== '{}' && DEBUG) self::notifyAllPlayers('msg', 'Status debug: ' . $toClean, []);
 		}
 //
 		self::updateScoring();

@@ -785,6 +785,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							const node = dojo.place(this.format_block('ERAcounter', {id: 'growthAction-' + index, color: state.args._private.color, type: 'growth', subtype: counter, location: ''}), container);
 							dojo.setAttr(node, 'counter', counter);
 							dojo.addClass(node, 'ERAselectable');
+							if (counter === 'gainStar+' && stateName === 'selectCounters') dojo.addClass(node, 'ERAdisabled');
 							this.addTooltip(node.id, ...this.GROWTHACTIONS[counter]);
 							dojo.connect(node, 'click', (event) => {
 								dojo.stopEvent(event);
@@ -1351,7 +1352,19 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						}
 						this.board.board.appendChild(svg);
 					}
+//
+				case 'oneTimeEffect':
+//
+					if (this.isCurrentPlayerActive())
+					{
+						if ('exploratory' in state.args._private) {
+							dojo.place(`<span style='font-size:small;'><BR>${_('You may inspect the unplayed domination cards of another player (in a game with 5+ players, you may even do this with 2 players)')}</span>`, 'generalactions');
+							dojo.query(`.ERAdominationCard[domination='back']`).addClass('ERAselectable ERAselected');
+						}
 
+					}
+//
+					break;
 			}
 		},
 		onLeavingState: function (stateName)
@@ -1790,7 +1803,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									this.action('selectCounters', {color: args._private.color, counters: JSON.stringify(counters)}, () => {
 										if (this.gamedatas.gamestate.name === 'selectCounters')
 										{
-											this.last_server_state.args._private.counters = counters;
+											const special = dojo.query(`#ERAchoice .ERAdisabled`).reduce((L, node) => [...L, node.getAttribute('counter')], []);
+											this.last_server_state.args._private.counters = counters.concat(special);
 											this.restoreServerGameState();
 										}
 									});
@@ -1803,7 +1817,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									this.action('selectCounters', {color: args._private.color, counters: JSON.stringify(counters)}, () => {
 										if (this.gamedatas.gamestate.name === 'selectCounters')
 										{
-											this.last_server_state.args._private.counters = counters;
+											const special = dojo.query(`#ERAchoice .ERAdisabled`).reduce((L, node) => [...L, node.getAttribute('counter')], []);
+											this.last_server_state.args._private.counters = counters.concat(special);
 											this.restoreServerGameState();
 										}
 									});
@@ -1817,7 +1832,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								this.action('selectCounters', {color: args._private.color, counters: JSON.stringify(counters)}, () => {
 									if (this.gamedatas.gamestate.name === 'selectCounters')
 									{
-										this.last_server_state.args._private.counters = counters;
+										const special = dojo.query(`#ERAchoice .ERAdisabled`).reduce((L, node) => [...L, node.getAttribute('counter')], []);
+										this.last_server_state.args._private.counters = counters.concat(special);
 										this.restoreServerGameState();
 									}
 								});

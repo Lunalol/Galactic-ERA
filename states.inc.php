@@ -413,15 +413,6 @@ $machinestates = [
 		'possibleactions' => ['buildShips', 'done'],
 		'transitions' => ['continue' => POP_EVENT]
 	],
-	DECLAREWAR => [
-		'name' => 'declareWar',
-		'description' => clienttranslate('${actplayer} can declare war to block an opponent'),
-		'descriptionmyturn' => clienttranslate('${you} can declare war to block an opponent'),
-		'type' => 'activeplayer',
-		'args' => 'argDeclareWar',
-		'possibleactions' => ['declareWar'],
-		'transitions' => ['continue' => POP_EVENT]
-	],
 	STEALTECHNOLOGY => [
 		'name' => 'stealTechnology',
 		'description' => clienttranslate('${actplayer} can gain ${levels} level(s) in one technology field'),
@@ -467,8 +458,8 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} must use One-Time Effect for ${dominationCard}'),
 		'type' => 'activeplayer',
 		'args' => 'argOneTimeEffect',
-		'possibleactions' => [''],
-		'transitions' => ['end' => POP_EVENT]
+		'possibleactions' => ['oneTimeEffect'],
+		'transitions' => ['continue' => ONETIMEEFFECT, 'end' => POP_EVENT]
 	],
 //
 // game End (BGA)

@@ -256,6 +256,7 @@ trait gameStateArguments
 				if ($this->gamestate->isPlayerActive($player_id))
 				{
 					$this->possible[$player_id]['counters'] = Factions::getStatus($color, 'stock');
+					if (Factions::getStatus($color, 'central')) array_push($this->possible[$player_id]['counters'], 'gainStar+');
 //
 					$this->possible[$player_id]['oval'] = 2 + (Factions::getStatus($color, 'bonus') === 'Grow' ? 1 : 0);
 					$this->possible[$player_id]['additionalOvalCost'] = Factions::ADDITIONAL[Factions::getTechnology($color, 'Genetics')];
@@ -580,11 +581,19 @@ trait gameStateArguments
 	}
 	function argOneTimeEffect()
 	{
-		$color = Factions::getActive();
-		$player_id = Factions::getPlayer($color);
+		$player_id = self::getActivePlayerId();
+		$color = Factions::getColor($player_id);
 //
 		$this->possible = [];
+		$domination = Factions::getStatus($color, 'domination');
 //
-		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'dominationCard' => $this->DOMINATIONCARDS[ACQUISITION], 'i18n' => ['dominationCard']];
+		switch ($domination)
+		{
+			case EXPLORATORY:
+				$this->possible['exploratory'] = +Factions::getStatus($color, 'exploratory');
+				break;
+		}
+//
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'dominationCard' => $this->DOMINATIONCARDS[$domination], 'i18n' => ['dominationCard']];
 	}
 }

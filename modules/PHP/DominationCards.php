@@ -92,7 +92,17 @@ class DominationCards extends APP_GameClass
 				return ($numberOfShips >= 4 && $gamestate === 'fleets') ? 8 : 0;
 			case EXPLORATORY:
 // Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors
-				return (0) ? 13 : 0;
+				$sectors = array_fill_keys(Sectors::getAll(), ['ships' => 0, 'stars' => 0]);
+				foreach (Ships::getAll($color) as $ship) if ($ship['location'] !== 'stock') $sectors[$ship['location'][0]]['ships'] |= 1;
+				foreach (array_keys(Counters::getPopulations($color)) as $location) $sectors[$location[0]]['stars'] |= 1;
+//
+				$numberOfSectors = ['ships' => 0, 'stars' => 0];
+				foreach ($sectors as $sector => $result)
+				{
+					if ($result['ships']) $numberOfSectors['ships']++;
+					if ($result['stars']) $numberOfSectors['stars']++;
+				}
+				return (Factions::getTechnology($color, 'propulsion') >= 4 && $numberOfSectors['ships'] >= 4 && $numberOfSectors['stars'] >= 4) ? 13 : 0;
 			case GENERALSCIENTIFIC:
 // Have a total of 16 technology levels
 				$levels = 0;

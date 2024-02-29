@@ -146,7 +146,15 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 							else this.bgagame.focus(event.currentTarget);
 						});
 					}
-					else this.bgagame.ERAdominationCards.addTarget(node);
+					else
+					{
+						this.bgagame.ERAdominationCards.addTarget(node);
+						dojo.connect(node, 'click', (event) => {
+							dojo.stopEvent(event);
+							if (dojo.hasClass(node, 'ERAselected') && this.bgagame.gamedatas.gamestate.possibleactions.includes('oneTimeEffect'))
+								this.bgagame.action('oneTimeEffect', {color: this.bgagame.color, json: JSON.stringify({color: faction.color})});
+						});
+					}
 					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
 				}
 //
@@ -166,7 +174,15 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 							else this.bgagame.focus(event.currentTarget);
 						});
 					}
-					else this.bgagame.ERAdominationCards.addTarget(node);
+					else
+					{
+						this.bgagame.ERAdominationCards.addTarget(node);
+						dojo.connect(node, 'click', (event) => {
+							dojo.stopEvent(event);
+							if (dojo.hasClass(node, 'ERAselected') && this.bgagame.gamedatas.gamestate.possibleactions.includes('oneTimeEffect'))
+								this.bgagame.action('oneTimeEffect', {color: this.bgagame.color, json: JSON.stringify({color: faction.color})});
+						});
+					}
 					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
 				}
 			}

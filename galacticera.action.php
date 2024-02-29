@@ -434,4 +434,14 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function oneTimeEffect()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$json = self::getArg("json", AT_json, true);
+		$this->game->acOneTimeEffect($color, $json);
+//
+		self::ajaxResponse("");
+	}
 }
