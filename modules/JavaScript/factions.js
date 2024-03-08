@@ -25,7 +25,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 				html += '</div>';
 			}
 //
-			new dijit.Tooltip({connectId: galacticStoryNode, showDelay: 500, hideDelay: 0, label: html, position: ['above']});
+			this.story = new dijit.Tooltip({connectId: galacticStoryNode, showDelay: 500, hideDelay: 0, label: html, position: ['above']});
 //
 		},
 		dominationDialog: function (faction, id)

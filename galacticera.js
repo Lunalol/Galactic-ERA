@@ -886,6 +886,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					this.levelOfDifficulty.setContent(html);
 					this.levelOfDifficulty.hideCloseIcon();
 					this.levelOfDifficulty.show();
+					dojo.style('popin_ERAlevelOfDifficulty_underlay', 'visibility', 'hidden');
 //
 					let level = 4;
 					while (--level > 0) if (state.args.legacy[level - 1] > 0) break;
@@ -1516,7 +1517,15 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							const fleetToShips = dojo.query(`#ERAfleets .ERAship.ERAselected[ship='${fleet}']:not([fleet])`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
 							if (fleetToShips.length)
 							{
-//								dojo.empty('ERAfleets');
+								const ships = dojo.query(`>.ERAship[color='FF3333']:not([fleet])`, 'ERAboard').length;
+								if (ships + fleetToShips.length > 16)
+								{
+									this.confirmationDialog(_('Not enough ship minis: excess will be destroyed'), () =>
+									{
+										this.action('fleetToShips', {color: this.color, fleet: fleet, ships: fleetToShips.length});
+									});
+									return;
+								}
 								return this.action('fleetToShips', {color: this.color, fleet: fleet, ships: fleetToShips.length});
 							}
 							const fleetToFleet = dojo.query(`#ERAfleets .ERAship.ERAselected:not([ship='${fleet}']):not([fleet])`);

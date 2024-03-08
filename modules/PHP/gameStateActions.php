@@ -205,6 +205,8 @@ trait gameStateActions
 //
 		if ($ships)
 		{
+			$shipsUsed = sizeof(Ships::getAll($color, 'ship'));
+//
 			$fleetID = Ships::getFleet($color, $Fleet);
 			$fleet = Ships::get($fleetID);
 			$location = $fleet['location'];
@@ -218,7 +220,7 @@ trait gameStateActions
 			if ($MP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn.'));
 //
 			if (intval(Ships::getStatus($fleetID, 'ships')) < $ships) throw new BgaVisibleSystemException('Not enough ships: ' . $ships);
-			if (sizeof(Ships::getAll($color, 'ship')) + $ships > 16) throw new BgaUserException(self::_('No more ship minis'));
+//			if ($shipsUsed + $ships > 16) throw new BgaUserException(self::_('No more ship minis'));
 //
 // UNDO
 //
@@ -241,15 +243,19 @@ trait gameStateActions
 //
 			for ($i = 0; $i < $ships; $i++)
 			{
-				$shipID = Ships::create($color, 'ship', $location);
+				if ($shipsUsed < 16)
+				{
+					$shipID = Ships::create($color, 'ship', $location);
 //
 // UNDO
 //
-				self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$shipID,'$color','destroy','[]')");
+					self::DbQuery("INSERT INTO `undo` VALUES ($undoID,$shipID,'$color','destroy','[]')");
 //
-				self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get($shipID)]);
-				Ships::setMP($shipID, $MP);
-				Ships::setActivation($shipID, $MP == 0 ? 'done' : 'yes');
+					self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get($shipID)]);
+					Ships::setMP($shipID, $MP);
+					Ships::setActivation($shipID, $MP == 0 ? 'done' : 'yes');
+					$shipsUsed++;
+				}
 			}
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) leave fleet ${GPS}'), ['GPS' => $location, 'N' => $ships]);
