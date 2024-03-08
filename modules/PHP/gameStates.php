@@ -2004,16 +2004,36 @@ trait gameStates
 			self::dbSetScore($player_id, self::dbGetScore($player_id), $tie);
 		}
 //
-// Legacy
-//
 		if (self::getPlayersNumber() === 1)
 		{
 			$player_id = Factions::getPlayer(Factions::getNotAutomas());
 			$difficulty = intval(self::getGameStateValue('difficulty'));
 			$score = self::dbGetScore($player_id);
 //
+//
+// Ranking
+//
+			if ($score >= 115) $ranking = 5;
+			else if ($score >= 100) $ranking = 4;
+			else if ($score >= 85) $ranking = 3;
+			else if ($score >= 70) $ranking = 2;
+			else $ranking = 1;
+//
+			if (self::getGameStateValue('galacticGoal') == NONE) $ranking -= 1;
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', '${RANKING}', ['RANKING' => $ranking]);
+//* -------------------------------------------------------------------------------------------------------- */
+//
+// Legacy
+//
 			$datas = self::retrieveLegacyData($player_id, LEGACYDATA);
 			$legacy = $datas ? json_decode($datas[LEGACYDATA]) : [0 => '', 1 => '', 2 => '', 3 => ''];
+//
+//* -------------------------------------------------------------------------------------------------------- */
+			if ($legacy[$difficulty] === '') self::notifyAllPlayers('msg', 'New high-score: ${VP}', ['VP' => $score]);
+//* -------------------------------------------------------------------------------------------------------- */
+			else if ($score > $legacy[$difficulty]) self::notifyAllPlayers('msg', 'You beat your own high-score: ${VP}', ['VP' => $score]);
+//* -------------------------------------------------------------------------------------------------------- */
 			$legacy[$difficulty] = ($legacy[$difficulty] === '') ? $score : max($score, $legacy[$difficulty]);
 //
 			if ($legacy[0] !== '') self::setStat($legacy[0], 'easy', $player_id);

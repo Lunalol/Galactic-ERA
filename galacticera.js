@@ -305,7 +305,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						_('If the player has Propulsion 5 this movement cannot be blocked (in either direction)')]]
 			};
 //
-			this.RANKINGS = {0: _('lunar'), 1: _('planetary'), 2: _('stellar'), 3: _('galactic'), 4: _('cosmic')};
+			this.RANKINGS = {0: _('sublunar'), 1: _('lunar'), 2: _('planetary'), 3: _('stellar'), 4: _('galactic'), 5: _('cosmic')};
 //
 			this.ERAtechnologyTooltips = new dijit.Tooltip({
 				showDelay: 500, hideDelay: 0,
@@ -2528,7 +2528,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				if ('DICE2' in args) args.DICE2 = `<span class='ERAdice' style='background-position-x:-${30 * (args.DICE2 - 1)}px'></span>`;
 //
 				if ('RANKING' in args)
-					args.RANKING = `<div style='text-align:center;'><img src='${g_gamethemeurl}/img/ranking/${args.RANKING}.png' style='height:50px;vertical-align:middle;filter:invert(1)'></img><span> ${this.RANKINGS[args.RANKING]} </span><img src='${g_gamethemeurl}/img/ranking/${args.RANKING}.png' style='height:50px;vertical-align:middle;filter:invert(1)'></img></div>`;
+					args.RANKING = `<div style='text-align:center;'><img src='${g_gamethemeurl}/img/ranking/${args.RANKING}.png' style='height:50px;vertical-align:middle;filter:invert(1)'></img><span> ${this.RANKINGS[args.RANKING].toUpperCase()} </span><img src='${g_gamethemeurl}/img/ranking/${args.RANKING}.png' style='height:50px;vertical-align:middle;filter:invert(1)'></img></div>`;
 			}
 			return this.inherited(arguments);
 		},
