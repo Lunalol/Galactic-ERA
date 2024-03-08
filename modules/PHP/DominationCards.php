@@ -84,7 +84,7 @@ class DominationCards extends APP_GameClass
 // Build 10 ships in a single Build Ships growth action
 // Any ships built as the direct result of star people special effects (e.g. STS Rogue AI) do not count for fulfilling this
 // Play this card when this happens
-				return (0) ? 7 : 0;
+				return (Factions::getStatus($color, 'economic')) ? 7 : 0;
 			case ETHERIC:
 // Have a ship each in 4 nebula hexes at the start of your movement
 				$numberOfShips = 0;
@@ -97,7 +97,7 @@ class DominationCards extends APP_GameClass
 				foreach (array_keys(Counters::getPopulations($color)) as $location) $sectors[$location[0]]['stars'] |= 1;
 //
 				$numberOfSectors = ['ships' => 0, 'stars' => 0];
-				foreach ($sectors as $sector => $result)
+				foreach ($sectors as $result)
 				{
 					if ($result['ships']) $numberOfSectors['ships']++;
 					if ($result['stars']) $numberOfSectors['stars']++;
@@ -105,20 +105,35 @@ class DominationCards extends APP_GameClass
 				return (Factions::getTechnology($color, 'propulsion') >= 4 && $numberOfSectors['ships'] >= 4 && $numberOfSectors['stars'] >= 4) ? 13 : 0;
 			case GENERALSCIENTIFIC:
 // Have a total of 16 technology levels
-				$levels = 0;
-				foreach (array_keys(Factions::TECHNOLOGIES) as $technology) $levels += Factions::getTechnology($color, $technology);
+				$levels = array_reduce(array_keys(Factions::TECHNOLOGIES), fn($levels, $technology) => $levels + Factions::getTechnology($color, $technology), 0);
 				return ($levels >= 16) ? 9 : 0;
 			case MILITARY:
 // Have ships totaling 120 in CV (not counting bonuses of any kind)
 // Reveal enough ships to prove this
 // If you play this card during a battle, all your ships in that battle still count toward the total (even if they would be destroyed).
-				return (0) ? 10 : 0;
+				$military = Factions::TECHNOLOGIES['Military'][Factions::getTechnology($color, 'Military')];
+				$CV = 0;
+				foreach (Ships::getAll($color) as $shipID => $ship)
+				{
+					switch ($ship['fleet'])
+					{
+						case 'ship':
+							$CV += $military;
+							break;
+						case 'fleet':
+							$CV += $military * Ships::getStatus($shipID, 'ships');
+							break;
+					}
+				}
+				return ($CV >= 120) ? 10 : 0;
 			case SPATIAL:
 // Own 10 stars
 				return sizeof(Counters::getPopulations($color, false)) >= 10;
 			case SPECIALSCIENTIFIC:
 // Have level 6 in 1 technology field and level 5 or higher in another field
-				return (0) ? 11 : 0;
+				$technologies = array_map(fn($technology) => Factions::getTechnology($color, $technology), array_keys(Factions::TECHNOLOGIES));
+				rsort($technologies);
+				return ($technologies[0] === 6 && $technologies[1] >= 5) ? 11 : 0;
 			default:
 				throw new BgaVisibleSystemException('Invalid Domination Card: ' . $domination);
 		}

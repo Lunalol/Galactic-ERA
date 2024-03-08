@@ -1582,7 +1582,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						for (let card of Object.values(args._private.hand))
 						{
-							this.addActionButton('ERAexchnageButton-' + card.id, dojo.string.substitute(_('Exchange ${domination}'), {domination: this.DOMINATIONS[card.type].title}), () => this.action('dominationCardExchange', {color: this.color, id: card.id}), null, false, 'red');
+							this.addActionButton('ERAexchangeButton-' + card.id, dojo.string.substitute(_('Exchange ${domination}'), {domination: this.DOMINATIONS[card.type].title}), () => this.action('dominationCardExchange', {color: this.color, id: card.id}), null, false, 'red');
 							this.addActionButton('ERAcancelButton', _('No Exchange'), () => this.action('dominationCardExchange', {color: this.color, id: 0}), null, false, 'red');
 						}
 						break;
@@ -1904,7 +1904,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						if (args.evacuation) this.addActionButton('ERAevacuationButton', _('Voluntary Home Star Evacuation'), () => this.action('homeStarEvacuation', {color: this.color}));
 //
-						if ('teleportPopulation' in args._private)
+						if ('_private' in args && 'teleportPopulation' in args._private)
 							this.addActionButton('ERAteleportButton', _('Teleport population') + ` (${args._private.teleportPopulation})`, () => {
 								this.setClientState('teleportPopulation', {phase: 'from', descriptionmyturn: dojo.string.substitute(_('${you} can select up to ${population} population disc(s) to teleport'), {you: '${you}', population: args._private.teleportPopulation})});
 							});
@@ -1940,11 +1940,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							dojo.place(`<BR><span>${_('Exchange a domination card (do it first):')} </span>`, 'generalactions');
 							for (let card of Object.values(args._private.hand))
 							{
-								this.addActionButton('ERAexchnageButton-' + card.id, this.DOMINATIONS[card.type].title, () => {
-									this.action('dominationCardExchange', {color: this.color, id: card.id}, () => {
-									});
-								}
-								);
+								this.addActionButton('ERAexchangeButton-' + card.id, dojo.string.substitute(_('Exchange ${domination}'), {domination: this.DOMINATIONS[card.type].title}), () => this.action('dominationCardExchange', {color: this.color, id: card.id}), null, false, 'red');
 							}
 						}
 //

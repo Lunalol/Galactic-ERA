@@ -107,7 +107,6 @@ class Automas extends APP_GameClass
 //
 				foreach (Ships::getAll($color) as $ship)
 				{
-					$dice = 2;
 					$location = $ship['location'];
 //
 					switch ($dice)
@@ -827,6 +826,7 @@ class Automas extends APP_GameClass
 				break;
 			case SLAVERS:
 				$ships = $difficulty + Factions::ships($color);
+				$dice = 2;
 				switch ($dice)
 				{
 					case 1:
@@ -844,6 +844,7 @@ class Automas extends APP_GameClass
 // Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'player');
+						Factions::setStatus($color, 'special', true);
 // Spawn ships at 2 wormholes
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_combine(array_slice($wormholes, 0, 2), [$ships, $ships]));
@@ -872,6 +873,7 @@ class Automas extends APP_GameClass
 // Gain a star(**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'any');
+						Factions::setStatus($color, 'special', true);
 // Grow population (if they cannot grow any population, then they spawn ships at the center sector wormhole instead)
 						$counters[] = 'growPopulation';
 //						$counters[] = 'buildShips';
@@ -881,6 +883,7 @@ class Automas extends APP_GameClass
 // Gain a neutral star (otherwise one of yours)(**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'neutral');
+						Factions::setStatus($color, 'special', true);
 // Research a randomly selected technology (determine which one immediately and use a technology counter to mark as reminder)
 						$counters[] = 'research';
 						self::randomTechnology($color, $counters);
@@ -900,20 +903,26 @@ class Automas extends APP_GameClass
 		foreach (array_keys($technologies) as $technology) if (Factions::getTechnology($color, $technology) === 6) unset($technologies[$technology]);
 		if ($technologies) $counters[] = array_rand($technologies);
 	}
-	function actions(object $bgagame, string $color): void
+	function actions(object $bgagame, string $color)
 	{
-		while ($counters = Factions::getStatus($color, 'counters'))
+		$counters = Factions::getStatus($color, 'counters');
+		$counter = array_shift($counters);
+//
+		switch ($counter)
 		{
-			$gainStar = array_search('gainStar', $counters);
-			if ($gainStar !== false)
-			{
+//
+			case 'gainStar':
+//
 				$shipLocations = array_unique(array_column(Ships::getAll($color), 'location'));
 				$stars = array_keys(Counters::getPopulations(Factions::getNotAutomas()));
 //
 				switch (Factions::getStatus($color, 'gainStar'))
 				{
+//
 					case 'player':
+//
 // Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
+//
 						$locations = [];
 						foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location, true)[0]) $locations[] = $location;
 						if ($locations)
@@ -936,26 +945,42 @@ class Automas extends APP_GameClass
 						}
 						else
 						{
-							foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
-							shuffle($locations);
-							if (DEBUG)
-							{
-								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-								$bgagame->notifyAllPlayers('msg', '<B>Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)</B>', []);
-								foreach ($locations as $location)
-								{
-									$sector = Sectors::get($location[0]);
-									$hexagon = substr($location, 2);
-									$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
-									$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$rotated]]);
-								}
-								$bgagame->notifyAllPlayers('msg', '<HR>', []);
-							}
-							$locations = array_slice($locations, 0, 2);
+							Factions::setStatus($color, 'gainStar', 'neutral2');
+							Factions::setStatus($color, 'counters', ['gainStar', 'gainStar', ...$counters]);
+//
+							return $bgagame->gamestate->nextState('continue');
 						}
+//
 						break;
+//
+					case 'neutral2':
+//
+// Gain a neutral star (**)
+//
+						$locations = [];
+						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
+						shuffle($locations);
+						if (DEBUG)
+						{
+							$bgagame->notifyAllPlayers('msg', '<HR>', []);
+							$bgagame->notifyAllPlayers('msg', '<B>Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)</B>', []);
+							foreach ($locations as $location)
+							{
+								$sector = Sectors::get($location[0]);
+								$hexagon = substr($location, 2);
+								$rotated = Sectors::rotate($hexagon, Sectors::getOrientation($location[0]));
+								$bgagame->notifyAllPlayers('msg', '${GPS} ${PLANET}', ['GPS' => $location, 'i18n' => ['PLANET'], 'PLANET' => $bgagame->SECTORS[$sector][$rotated]]);
+							}
+							$bgagame->notifyAllPlayers('msg', '<HR>', []);
+						}
+						$locations = array_slice($locations, 0, 1);
+//
+						break;
+//
 					case 'any':
+//
 // Gain a star(**)
+//
 						$locations = [];
 						foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location, true)[0]) $locations[] = $location;
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
@@ -974,9 +999,13 @@ class Automas extends APP_GameClass
 							$bgagame->notifyAllPlayers('msg', '<HR>', []);
 						}
 						$locations = array_slice($locations, 0, 1);
+//
 						break;
+//
 					case 'neutral':
+//
 // Gain a neutral star (otherwise one of yours)(**)
+//
 						$locations = [];
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						if (!$locations) foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location, true)[0]) $locations[] = $location;
@@ -995,54 +1024,27 @@ class Automas extends APP_GameClass
 							$bgagame->notifyAllPlayers('msg', '<HR>', []);
 						}
 						$locations = array_slice($locations, 0, 1);
+//
 						break;
+//
 					default:
+//
 						throw new BgaVisibleSystemException('Not implemented: gainStar ' . Factions::getStatus($color, 'gainStar'));
+//
 				}
 //
 				if ($locations)
 				{
-					foreach ($locations as $location)
-					{
-						if (in_array($location, $stars)) foreach (Factions::atPeace($color) as $otherColor) $bgagame->acDeclareWar($color, $otherColor, true);
-					}
-					foreach ($locations as $location) $bgagame->acGainStar($color, $location, false, true);
+					$location = array_pop($locations);
+					if (in_array($location, $stars)) foreach (Factions::atPeace($color) as $otherColor) $bgagame->acDeclareWar($color, $otherColor, true);
+					return $bgagame->acGainStar($color, $location, false, true);
 				}
-				else $bgagame->acSpecial($color, 1);
 //
-				Factions::setStatus($color, 'gainStar');
+				Factions::setStatus($color, 'counters', $counters);
+				return $bgagame->gamestate->nextState('continue');
 //
-				$steal = Factions::getStatus($color, 'steal');
-				if ($steal)
-				{
-					['from' => $from, 'levels' => $levels] = $steal;
-					Factions::setStatus($color, 'steal');
+			case 'growPopulation':
 //
-					$technologies = [];
-					foreach ($from as $otherColor)
-					{
-						foreach (array_keys(Factions::TECHNOLOGIES) as $technology)
-						{
-							if ($technology === 'Spirituality' && Factions::getTechnology($color, $technology) >= 4) continue; // SLAVERS //
-							if (Factions::getTechnology($color, $technology) < Factions::getTechnology($otherColor, $technology)) $technologies[] = $technology;
-						}
-					}
-					$technologies = array_unique($technologies);
-					if ($technologies)
-					{
-						shuffle($technologies);
-						$technology = array_pop($technologies);
-//* -------------------------------------------------------------------------------------------------------- */
-						$bgagame->notifyAllPlayers('msg', clienttranslate('<B>${TECHNOLOGY} is stealed at ${player_name}</B>'), ['player_name' => Factions::getName($otherColor), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $bgagame->TECHNOLOGIES[$technology]]);
-//* -------------------------------------------------------------------------------------------------------- */
-						for ($i = 0; $i < $levels; $i++) $bgagame->gainTechnology($color, $technology);
-					}
-				}
-				continue;
-			}
-			$growPopulation = array_search('growPopulation', $counters);
-			if ($growPopulation !== false)
-			{
 				$locations = [];
 //
 				$bgagame->possible = ['growPopulation' => []];
@@ -1059,34 +1061,26 @@ class Automas extends APP_GameClass
 //
 				if (!$locations && !$locationsBonus)
 				{
+//
 // If they cannot grow any population, then they spawn ships at the center sector wormhole instead
+//
 					$counters[] = 'buildShips';
-					Factions::setStatus($color, 'buildShips', Factions::getStatus($color, 'growPopulation'));
+					Factions::setStatus($color, 'counters', $counters);
+					return $bgagame->acBuildShips($color, self::BuildShips($color, Factions::getStatus($color, 'growPopulation')), true);
 				}
-				else $bgagame->acGrowPopulation($color, $locations, $locationsBonus, false, true);
+				else return $bgagame->acGrowPopulation($color, $locations, $locationsBonus, false, true);
 //
-				Factions::setStatus($color, 'growPopulation');
+			case 'research':
 //
-				unset($counters[$growPopulation]);
-				Factions::setStatus($color, 'counters', array_values($counters));
-				continue;
-			}
-			$research = array_search('research', $counters);
-			if ($research !== false)
-			{
-				$technologies = array_intersect($counters, array_keys(Factions::TECHNOLOGIES));
-				$bgagame->acResearch($color, $technologies, true);
-				continue;
-			}
-			$buildShips = array_search('buildShips', $counters);
-			if ($buildShips !== false)
-			{
-				$bgagame->acBuildShips($color, self::BuildShips($color, Factions::getStatus($color, 'buildShips')), true);
-				Factions::setStatus($color, 'buildShips');
-				continue;
-			}
+				return $bgagame->acResearch($color, array_intersect($counters, array_keys(Factions::TECHNOLOGIES)), true);
 //
-			Factions::setStatus($color, 'counters', array_diff($counters, array_keys(Factions::TECHNOLOGIES)));
+			case 'buildShips':
+//
+				return $bgagame->acBuildShips($color, self::BuildShips($color, Factions::getStatus($color, 'buildShips')), true);
+//
+			default:
+//
+				throw new BgaVisibleSystemException("Invalid action $counter");
 		}
 	}
 	function buildShips(string $color, array $locations): array

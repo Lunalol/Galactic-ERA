@@ -331,4 +331,30 @@ trait gameUtils
 			}
 		}
 	}
+	function special($color, $N)
+	{
+		if ($N > 0)
+		{
+			Factions::gainPopulation($color, $N);
+			$DP = self::gainDP($color, $N);
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes ${N} population disc(s) (add to offboard power track)'), [
+				'player_name' => Factions::getName($color), 'faction' => Factions::get($color), 'N' => $N]);
+//* -------------------------------------------------------------------------------------------------------- */
+			if ($DP >= 5)
+			{
+//
+// #offboard population : 5+ - You immediately lose 5 DP for each new offboard population
+//
+				$DP = -5;
+				self::gainDP(Factions::getNotAutomas(), $DP);
+				self::incStat($DP, 'DP_LOST', Factions::getPlayer(Factions::getNotAutomas()));
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP,
+					'player_name' => Factions::getName(Factions::getNotAutomas()),
+					'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+		}
+	}
 }

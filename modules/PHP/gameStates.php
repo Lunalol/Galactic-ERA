@@ -523,7 +523,7 @@ trait gameStates
 					foreach (Automas::startBonus($color, $dice) as $technology => $level)
 					{
 						if ($technology !== 'offboard') self::gainTechnology($color, $technology);
-						else self::acSpecial($color, 2);
+						else self::special($color, 2);
 					}
 					break;
 			}
@@ -1463,24 +1463,25 @@ trait gameStates
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
+		if ($player_id > 0) $this->gamestate->changeActivePlayer($player_id);
+//
+		$this->gamestate->nextState('nextPlayer');
+	}
+	function stResolveGrowthActions()
+	{
+		$color = Factions::getActive();
+		$player_id = Factions::getPlayer($color);
+//
 		if ($player_id <= 0)
 		{
-			if ($player_id < 0) Automas::actions($this, $color);
-			Factions::setActivation($color, 'done');
-//
-//			foreach (Factions::list(false) as $color)
-//			{
-//				if (Factions::getStatus($color, 'evacuate'))
-//				{
-//					$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
-//					return $this->gamestate->nextState('evacuate');
-//				}
-//			}
-			return self::triggerAndNextState('continue');
+			if (Factions::getStatus($color, 'counters')) Automas::actions($this, $color);
+			else
+			{
+				if (Factions::getStatus($color, 'special')) self::special($color, 1);
+				self::acPass($color, true);
+			}
 		}
-//
-		$this->gamestate->changeActivePlayer($player_id);
-		$this->gamestate->nextState('nextPlayer');
+		else $this->gamestate->nextState('resolveGrowthActions');
 	}
 	function stTradingPhase()
 	{
@@ -1591,7 +1592,7 @@ trait gameStates
 		{
 			$technologies = [];
 			Automas::randomTechnology($slavers, $technologies);
-			while ($technology = array_shift($technologies)) self::acResearch($slavers, [$technology], true);
+			if ($technologies) return self::acResearch($slavers, $technologies, true);
 		}
 //
 		$this->gamestate->nextState('next');
@@ -1927,38 +1928,7 @@ trait gameStates
 		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG} ${round}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
-		foreach (Factions::list() as $color)
-		{
-//
-// Movement phase
-//
-			Factions::setStatus($color, 'view');
-//
-// Growth phase
-//
-			Factions::setStatus($color, 'counters');
-			Factions::setStatus($color, 'stock');
-			Factions::setStatus($color, 'used');
-			Factions::setStatus($color, 'otherTechnology');
-//
-// Trading phase
-//
-			Factions::setStatus($color, 'trade');
-			Factions::setStatus($color, 'inContact');
-//
-// Domination cards reset
-//
-			Factions::setStatus($color, 'acquisition');
-			Factions::setStatus($color, 'alignment');
-			Factions::setStatus($color, 'central');
-			Factions::setStatus($color, 'diplomatic');
-			Factions::setStatus($color, 'etheric');
-			Factions::setStatus($color, 'exchange');
-			Factions::setStatus($color, 'exploratory');
-//
-			$toClean = self::getUniqueValueFromDB("SELECT status FROM factions WHERE color = '$color'");
-			if ($toClean !== '{}' && DEBUG) self::notifyAllPlayers('msg', 'Status debug: ' . $toClean, []);
-		}
+		foreach (Factions::list() as $color) Factions::clearStatus($color);
 //
 		self::updateScoring();
 		if ($round < 8) return $this->gamestate->nextState('nextRound');

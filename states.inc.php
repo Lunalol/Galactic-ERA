@@ -169,22 +169,22 @@ $machinestates = [
 		'action' => 'updateScoring',
 		'args' => 'argMovement',
 		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'planetaryDeathRay', 'done'],
-		'transitions' => ['undo' => 210, 'continue' => 220, 'blockMovement' => 215, 'next' => 230]
+		'transitions' => ['undo' => 210, 'continue' => 220, 'blockMovement' => 225, 'next' => 230]
 	],
-	215 => [
+	225 => [
 		'name' => 'blockMovement',
 		'description' => clienttranslate('Some players can block ${otherplayer} movement'),
 		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer} movement'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockMovement',
 		'possibleactions' => ['blockMovement'],
-		'transitions' => ['end' => 220]
+		'transitions' => ['continue' => 220, 'blockMovement' => 225, 'next' => 230]
 	],
 	230 => [
 		'name' => 'combatChoice',
 		'type' => 'game',
 		'action' => 'stCombatChoice',
-		'transitions' => ['domination', 'combatChoice' => 235, 'engage' => 240, 'nextPlayer' => 200]
+		'transitions' => ['combatChoice' => 235, 'engage' => 240, 'nextPlayer' => 200]
 	],
 	235 => [
 		'name' => 'combatChoice',
@@ -290,6 +290,12 @@ $machinestates = [
 	],
 	410 => [
 		'name' => 'resolveGrowthActions',
+		'type' => 'game',
+		'action' => 'stResolveGrowthActions',
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400, 'resolveGrowthActions' => 411]
+	],
+	411 => [
+		'name' => 'resolveGrowthActions',
 		'description' => clienttranslate('${actplayer} resolves all their remaining growth actions'),
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
@@ -305,7 +311,7 @@ $machinestates = [
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
-		'transitions' => ['domination', 'continue' => 415, 'next' => 410]
+		'transitions' => ['continue' => 415, 'next' => 410]
 	],
 	420 => [
 		'name' => 'buriedShips',
@@ -315,16 +321,16 @@ $machinestates = [
 		'action' => 'stBuriedShips',
 		'args' => 'argBuriedShips',
 		'possibleactions' => ['buildShips', 'done'],
-		'transitions' => ['domination', 'continue' => 410]
+		'transitions' => ['continue' => 410]
 	],
 	450 => [
 		'name' => 'blockAction',
-		'description' => clienttranslate('Some players can block ${otherplayer} growth action'),
-		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer} growth action'),
+		'description' => clienttranslate('Some players can block ${other_player} growth action'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${other_player} growth action'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockAction',
 		'possibleactions' => ['blockAction'],
-		'transitions' => ['end' => 410]
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400]
 	],
 	500 => [
 		'name' => 'tradingPhase',
@@ -338,14 +344,14 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may trade technology'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argTradingPhase',
-		'possibleactions' => ['trade', 'pass'],
-		'transitions' => ['domination', 'continue' => 510, 'next' => 540]
+		'possibleactions' => ['domination', 'trade', 'pass'],
+		'transitions' => ['continue' => 510, 'next' => 540]
 	],
 	540 => [
 		'name' => 'tradingPhaseEnd',
 		'type' => 'game',
 		'action' => 'stTradingPhaseEnd',
-		'transitions' => ['next' => 545]
+		'transitions' => ['next' => 545, 'advancedFleetTactics' => 545]
 	],
 	545 => [
 		'name' => 'advancedFleetTactics',
@@ -355,7 +361,7 @@ $machinestates = [
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
-		'transitions' => ['domination', 'continue' => 545, 'next' => 550]
+		'transitions' => ['continue' => 545, 'next' => 550]
 	],
 	550 => [
 		'name' => 'scoringPhase',

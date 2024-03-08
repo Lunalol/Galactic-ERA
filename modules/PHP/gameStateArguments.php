@@ -293,7 +293,7 @@ trait gameStateArguments
 				foreach ($action['locations'] as $location) if (Ships::getAtLocation($location, $otherColor)) $this->possible[$player_id]['locations'][] = $location;
 			}
 		}
-		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
+		return ['_private' => $this->possible, 'active' => $color, 'other_player' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
 	}
 	function argBlockMovement()
 	{
@@ -312,12 +312,15 @@ trait gameStateArguments
 				$this->possible[$player_id]['to'] = $action['to'];
 			}
 		}
-		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
+		return ['_private' => $this->possible, 'active' => $color, 'other_player' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
 	}
 	function argResolveGrowthActions()
 	{
 		$color = Factions::getActive();
+		if (!$color) return [];
+//
 		$player_id = Factions::getPlayer($color);
+		if ($player_id <= 0) return [];
 
 		$this->possible = ['counters' => Factions::getStatus($color, 'counters'), 'color' => $color];
 		$this->possible['population'] = 39 - Factions::getPopulation($color);

@@ -25,12 +25,10 @@ trait gameStateActions
 			case 'move':
 				self::notifyAllPlayers('moveShips', '', ['ships' => [$god['ship']], 'location' => $god['location'], 'old' => Ships::get($god['ship'])['location']]);
 				Ships::setLocation($god['ship'], $god['location']);
-				self::updateScoring();
 				break;
 			case 'technology':
 				self::dbQuery("UPDATE factions SET `$god[technology]` = $god[level] WHERE color = '$god[color]'");
 				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($god['color'])]);
-				self::updateScoring();
 				break;
 			case 'declareWar':
 				self::acDeclareWar($god['color'], $god['on'], true);
@@ -39,6 +37,8 @@ trait gameStateActions
 				self::acDeclarePeace($god['color'], $god['on'], true);
 				break;
 		}
+//
+		self::updateScoring();
 	}
 	function acNull(string $color): void
 	{
@@ -57,7 +57,7 @@ trait gameStateActions
 //
 		self::setGameStateValue('difficulty', $levelOfDifficulty);
 		$slavers = Factions::getAutoma(SLAVERS);
-		if ($slavers) self::acSpecial($slavers, Automas::DIFFICULTY[$levelOfDifficulty]);
+		self::special($slavers, Automas::DIFFICULTY[$levelOfDifficulty]);
 //
 		$this->gamestate->nextState('next');
 	}
@@ -1011,12 +1011,15 @@ trait gameStateActions
 		self::updateScoring();
 		$this->gamestate->nextState('continue');
 	}
-	function acPass(string $color): void
+	function acPass(string $color, bool $automa = false): void
 	{
 		$player_id = Factions::getPlayer($color);
 //
-		$this->checkAction('pass');
-		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (!$automa)
+		{
+			$this->checkAction('pass');
+			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		}
 //
 		Factions::setActivation($color, 'done');
 //
@@ -1070,7 +1073,7 @@ trait gameStateActions
 		if (!array_key_exists('evacuate', $this->possible[$player_id])) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!in_array($location, $this->possible[$player_id]['evacuate'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
-		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
+		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
 			$toBlock = [];
 			foreach (Factions::list(false) as $otherColor) if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)) && Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
@@ -1433,18 +1436,26 @@ trait gameStateActions
 		$this->checkAction('blockAction');
 		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
-		if ($blocked) self::acDeclareWar($color, Factions::getActive(), true);
-//
-		if ($this->gamestate->setPlayerNonMultiactive($player_id, 'end'))
+		$blockedColor = Factions::getActive();
+		if ($blocked)
 		{
-			$action = Factions::getStatus(Factions::getActive(), 'action');
+			self::acDeclareWar($color, $blockedColor, true);
+			self::DbQuery("DELETE FROM `undo` WHERE color = '$blockedColor'");
+		}
+//
+		if ($this->gamestate->setPlayerNonMultiactive($player_id, 'blockAction'))
+		{
+			$action = Factions::getStatus($blockedColor, 'action');
+			Factions::setStatus($blockedColor, 'action');
 //
 			$blocked = false;
-			foreach ($action['locations'] as $location) if (Counters::isBlocked(Factions::getActive(), $location)) $blocked = true;
+			foreach ($action['locations'] as $location) if (Counters::isBlocked($blockedColor, $location)) $blocked = true;
 			if (!$blocked) return call_user_func("self::${action['function']}Validated", ...$action['params']);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', 'Growth action is blocked', []);
 //* -------------------------------------------------------------------------------------------------------- */
+			self::updateScoring();
+			$this->gamestate->nextState('continue');
 		}
 	}
 	function acBlockMovement(string $color, bool $blocked)
@@ -1454,17 +1465,19 @@ trait gameStateActions
 		$this->checkAction('blockMovement');
 		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
 //
+		$blockedColor = Factions::getActive();
 		if ($blocked)
 		{
-			self::acDeclareWar($color, Factions::getActive(), true);
-			self::DbQuery("DELETE FROM `undo` WHERE color = '" . Factions::getActive() . "'");
+			self::acDeclareWar($color, $blockedColor, true);
+			self::DbQuery("DELETE FROM `undo` WHERE color = '$blockedColor'");
 		}
 //
-		if ($this->gamestate->setPlayerNonMultiactive($player_id, 'end'))
+		if ($this->gamestate->setPlayerNonMultiactive($player_id, 'blockMovement'))
 		{
-			$action = Factions::getStatus(Factions::getActive(), 'action');
-			$location = $action['to'];
+			$action = Factions::getStatus($blockedColor, 'action');
+			Factions::setStatus($blockedColor, 'action');
 //
+			$location = $action['to'];
 			$blocked = Counters::isBlocked(Factions::getActive(), $location);
 //* -------------------------------------------------------------------------------------------------------- */
 			if ($blocked) self::notifyAllPlayers('msg', 'Movement is blocked', []);
@@ -1550,7 +1563,7 @@ trait gameStateActions
 		Factions::setStatus($color, 'counters', array_values($counters));
 //
 		self::updateScoring();
-		if (!$automa) self::triggerAndNextState('advancedFleetTactics');
+		self::triggerAndNextState('advancedFleetTactics');
 	}
 	function acResearchPlus($color, $technology, $otherColor, $growthAction)
 	{
@@ -1599,39 +1612,6 @@ trait gameStateActions
 		self::updateScoring();
 		self::triggerAndNextState('end');
 	}
-	function acSpecial($color, $N)
-	{
-		if ($N > 0)
-		{
-			Factions::gainPopulation($color, $N);
-			$DP = self::gainDP($color, $N);
-//* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} removes ${N} population disc(s) (add to offboard power track)'), [
-				'player_name' => Factions::getName($color), 'faction' => Factions::get($color), 'N' => $N]);
-//* -------------------------------------------------------------------------------------------------------- */
-			if ($DP >= 5)
-			{
-//
-// #offboard population : 5+ - You immediately lose 5 DP for each new offboard population
-//
-				$DP = -5;
-				self::gainDP(Factions::getNotAutomas(), $DP);
-				self::incStat($DP, 'DP_LOST', Factions::getPlayer(Factions::getNotAutomas()));
-//* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP,
-					'player_name' => Factions::getName(Factions::getNotAutomas()),
-					'faction' => ['color' => Factions::getNotAutomas(), 'DP' => Factions::getDP(Factions::getNotAutomas())]]);
-//* -------------------------------------------------------------------------------------------------------- */
-			}
-		}
-		$counters = Factions::getStatus($color, 'counters');
-		if ($counters)
-		{
-			unset($counters[array_search('gainStar', $counters)]);
-			Factions::setStatus($color, 'counters', array_values($counters));
-			Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['gainStar'])));
-		}
-	}
 	function acGainStar(string $color, string $location, bool $center = false, bool $automa = false)
 	{
 		$player_id = Factions::getPlayer($color);
@@ -1674,7 +1654,7 @@ trait gameStateActions
 // (i.e., primitive or advanced neutral stars or those of STO players)
 // Multiple STO players may use the same opportunity to declare war, even though one would be enough to block it
 //
-		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
+		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
 			$toBlock = [];
 			foreach (Factions::list(false) as $otherColor)
@@ -1738,8 +1718,38 @@ trait gameStateActions
 				$sizeOfPopulation += sizeof($populations);
 				$otherColor = Counters::get($populations[0])['color'];
 			}
+//
 			Factions::setStatus($color, 'steal', ['from' => [$otherColor], 'levels' => $sizeOfPopulation >= 6 ? 2 : 1]);
 			if (Factions::getPlayer($color) > 0) self::triggerEvent(STEALTECHNOLOGY, $color);
+			else
+			{
+				$steal = Factions::getStatus($color, 'steal');
+				if ($steal)
+				{
+					['from' => $from, 'levels' => $levels] = $steal;
+					Factions::setStatus($color, 'steal');
+//
+					$technologies = [];
+					foreach ($from as $otherColor)
+					{
+						foreach (array_keys(Factions::TECHNOLOGIES) as $technology)
+						{
+							if ($technology === 'Spirituality' && Factions::getTechnology($color, $technology) >= 4) continue; // SLAVERS //
+							if (Factions::getTechnology($color, $technology) < Factions::getTechnology($otherColor, $technology)) $technologies[] = $technology;
+						}
+					}
+					if ($technologies)
+					{
+						$technologies = array_unique($technologies);
+						shuffle($technologies);
+						$technology = array_pop($technologies);
+//* -------------------------------------------------------------------------------------------------------- */
+						self::notifyAllPlayers('msg', clienttranslate('<B>${TECHNOLOGY} is stealed at ${player_name}</B>'), ['player_name' => Factions::getName($otherColor), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						for ($i = 0; $i < $levels; $i++) self::gainTechnology($color, $technology);
+					}
+				}
+			}
 //
 			if (Factions::getEmergencyReserve($otherColor))
 			{
@@ -1754,14 +1764,19 @@ trait gameStateActions
 // Conquer/liberate 2 player owned stars on the same turn
 // Play this card when this happens
 //
-			$acquisition = Factions::getStatus($color, 'acquisition') ?? [];
-			$acquisition[] = $otherColor;
-			Factions::setStatus($color, 'acquisition', $acquisition);
+			if ($player_id > 0)
+			{
+				$acquisition = Factions::getStatus($color, 'acquisition') ?? [];
+				$acquisition[] = $otherColor;
+				Factions::setStatus($color, 'acquisition', $acquisition);
+			}
 //
 //--------------------------
 // A-section: Acquisition //
 //--------------------------
 		}
+//
+		if ($player_id <= 0) Factions::setStatus($color, 'special', false);
 //
 		foreach (Counters::getAtLocation($location, 'star') as $star)
 		{
@@ -2036,18 +2051,20 @@ trait gameStateActions
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), [$counter])));
 //
 		self::updateScoring();
-		if (!$automa)
+//
+		if (Factions::getPopulation($color) > 39) self::triggerEvent(REMOVEPOPULATION, $color);
+//
+		if ($newShips)
 		{
-			if (Factions::getPopulation($color) > 39) self::triggerEvent(REMOVEPOPULATION, $color);
-			if ($newShips)
+			if (!$automa)
 			{
 				Factions::setStatus($color, 'buriedShips', ['location' => $location, 'ships' => $newShips]);
 				return self::triggerAndNextState('buriedShips');
 			}
-			return self::triggerAndNextState('advancedFleetTactics');
+			else return self::acBuildShips($color, Automas::BuildShips($color, [$location => 3]), true, true);
 		}
 //
-		if ($newShips) self::acBuildShips($color, Automas::BuildShips($color, [$location => 3]), true, true);
+		self::triggerAndNextState('advancedFleetTactics');
 	}
 	function acGrowPopulation(string $color, array $locations, array $locationsBonus, bool $bonus = false, bool $automa = false)
 	{
@@ -2073,7 +2090,7 @@ trait gameStateActions
 		foreach ($locations as $location) if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 		foreach ($locationsBonus as $location) if (!array_key_exists($location, $this->possible['growPopulation'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
-		if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
+		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
 			$toBlock = [];
 			foreach (Factions::list(false) as $otherColor)
@@ -2161,11 +2178,10 @@ trait gameStateActions
 		}
 //
 		self::updateScoring();
-		if (!$automa)
-		{
-			if (Factions::getPopulation($color) > 39) self::triggerEvent(REMOVEPOPULATION, $color);
-			self::triggerAndNextState('continue');
-		}
+//
+		if (Factions::getPopulation($color) > 39) self::triggerEvent(REMOVEPOPULATION, $color);
+//
+		self::triggerAndNextState('continue');
 	}
 	function acRemovePopulation(string $color, array $locations): void
 	{
@@ -2387,6 +2403,13 @@ trait gameStateActions
 			unset($counters[array_search('buildShips', $counters)]);
 			Factions::setStatus($color, 'counters', array_values($counters));
 			Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['buildShips'])));
+//------------------------
+// A-section: Economic //
+//------------------------
+			if (sizeof($buildShips) >= 10) Factions::setStatus($color, 'economic', true);
+//------------------------
+// A-section: Economic //
+//------------------------
 //
 // Scoring
 //
@@ -2412,7 +2435,8 @@ trait gameStateActions
 		}
 //
 		self::updateScoring();
-		if (!$automa) $this->gamestate->nextState('continue');
+//
+		$this->gamestate->nextState('continue');
 	}
 	function acTrade(string $from, string $to, string $technology, $toTeach = null)
 	{
