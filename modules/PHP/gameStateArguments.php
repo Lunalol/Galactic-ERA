@@ -595,6 +595,10 @@ trait gameStateArguments
 			case EXPLORATORY:
 				$this->possible['exploratory'] = +Factions::getStatus($color, 'exploratory');
 				break;
+			case SPATIAL:
+				break;
+			case SPECIALSCIENTIFIC:
+				break;
 		}
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'dominationCard' => $this->DOMINATIONCARDS[$domination], 'i18n' => ['dominationCard']];

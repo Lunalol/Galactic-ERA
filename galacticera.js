@@ -124,7 +124,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					B: [_('1 DP per population of one of your stars in the center sector')]},
 				3: {title: _('Defensive'), DP: 9,
 					A: [_('Own all the stars (except neutron stars) in your home star sector')],
-					B: [_('4 DP if no other player owns a star in your home sector + 1 DP per 2 Military level')]},
+					B: [_('4 DP if no other player owns a star in your home sector + 1 DP per 2 Military levels')]},
 				4: {title: _('Density'), DP: 7,
 					A: [_('Have 3 stars with 5 or more population each')],
 					B: [_('1 DP per star you own with 4+ population')]},

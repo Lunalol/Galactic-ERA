@@ -1750,7 +1750,7 @@ trait gameStateActions
 						shuffle($technologies);
 						$technology = array_pop($technologies);
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('<B>${TECHNOLOGY} is stealed at ${player_name}</B>'), ['player_name' => Factions::getName($otherColor), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
+						self::notifyAllPlayers('msg', clienttranslate('<B>${TECHNOLOGY} is stolen from ${player_name}</B>'), ['player_name' => Factions::getName($otherColor), 'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						for ($i = 0; $i < $levels; $i++) self::gainTechnology($color, $technology);
 					}
@@ -1886,7 +1886,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} takes control of <B>${RELIC}</B>'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -1955,7 +1955,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} takes control of <B>${RELIC}</B>'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -1964,7 +1964,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} takes control of <B>${RELIC}</B>'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -1973,7 +1973,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} take control of <B>${RELIC}</B>'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} takes control of <B>${RELIC}</B>'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -2412,7 +2412,7 @@ trait gameStateActions
 //------------------------
 // A-section: Economic //
 //------------------------
-			if (sizeof($buildShips) >= 10) Factions::setStatus($color, 'economic', true);
+			if ($player_id > 0 && sizeof($buildShips) >= 10) Factions::setStatus($color, 'economic', true);
 //------------------------
 // A-section: Economic //
 //------------------------
@@ -2611,6 +2611,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						if (Factions::getStatus($color, 'counters')) Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
 						Factions::setStatus($color, 'central', true);
+						Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
 						break;
 					case DEFENSIVE:
 						$DP = 9;
@@ -2631,6 +2632,12 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'diplomatic', true);
 						break;
+					case ECONOMIC:
+						$DP = 7;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional 6 ships which you can place at any of your stars<BR>Otherwise, use the same rules for placing new ships as when doing the Build Ships action<BR>This effect cannot be blocked though')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
 					case ETHERIC:
 						$DP = 8;
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2645,6 +2652,35 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'domination', $domination);
 						Factions::setStatus($color, 'exploratory', sizeof(Factions::list()) >= 5 ? 2 : 1);
+						self::triggerEvent(ONETIMEEFFECT, $color);
+						break;
+					case GENERALSCIENTIFIC:
+						$DP = 9;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'generalscientific', true);
+						break;
+					case MILITARY:
+						$DP = 10;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						break;
+					case SPATIAL:
+						$DP = 11;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'domination', $domination);
+						self::triggerEvent(ONETIMEEFFECT, $color);
+						break;
+					case SPECIALSCIENTIFIC:
+						$DP = 11;
+//* -------------------------------------------------------------------------------------------------------- */
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
+//* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'domination', $domination);
 						self::triggerEvent(ONETIMEEFFECT, $color);
 						break;
 					default:

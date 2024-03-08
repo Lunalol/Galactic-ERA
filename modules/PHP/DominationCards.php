@@ -167,7 +167,7 @@ class DominationCards extends APP_GameClass
 				$scoring[] = $locations ? max($locations) : 0;
 				break;
 			case DEFENSIVE:
-// 4 DP if no other player owns a star in your home sector + 1 DP per 2 Military level
+// 4 DP if no other player owns a star in your home sector + 1 DP per 2 Military levels
 				$defensive = 1;
 				$sector = Factions::getHomeStar($color);
 				foreach (Sectors::stars() as $location)

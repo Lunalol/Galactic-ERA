@@ -411,8 +411,8 @@ $machinestates = [
 	],
 	EMERGENCYRESERVE => [
 		'name' => 'emergencyReserve',
-		'description' => clienttranslate('${actplayer} must use their emergency reserve'),
-		'descriptionmyturn' => clienttranslate('${you} must use your emergency reserve'),
+		'description' => clienttranslate('${actplayer} can use their emergency reserve'),
+		'descriptionmyturn' => clienttranslate('${you} can use your emergency reserve'),
 		'type' => 'activeplayer',
 		'args' => 'argEmergencyReserve',
 		'action' => 'stEmergencyReserve',
