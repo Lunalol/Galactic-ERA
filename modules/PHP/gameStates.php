@@ -30,16 +30,16 @@ trait gameStates
 //
 		$galacticStory = self::getGameStateValue('galacticStory');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('Galactic Story: <B>${STORY}</B>'), ['i18n' => ['STORY'], 'STORY' => $this->STORIES[$galacticStory]]);
+		self::notifyAllPlayers('msg', clienttranslate('Galactic Story: <B>${galacticStory}</B>'), ['i18n' => ['galacticStory'], 'galacticStory' => $this->STORIES[$galacticStory]]);
+		self::notifyAllPlayers('msg', '${STORY}', ['STORY' => $this->STORIES[$galacticStory]]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Randomly draw a galactic goal tile
 //
 		$galacticGoal = self::getGameStateValue('galacticGoal');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('Galactic goal: <B>${GOAL}</B>'), ['i18n' => ['GOAL'], 'GOAL' => $this->GOALS[$galacticGoal]]);
-//* -------------------------------------------------------------------------------------------------------- */
-		if ($galacticGoal != NONE) self::notifyAllPlayers('msg', clienttranslate('---- Galactic goal not implemented ----'), []);
+		self::notifyAllPlayers('msg', clienttranslate('Galactic goal: <B>${galacticGoal}</B>'), ['i18n' => ['galacticGoal'], 'galacticGoal' => $this->GOALS[$galacticGoal]]);
+		if ($galacticGoal != NONE) self::notifyAllPlayers('msg', '${GOAL}', ['GOAL' => $this->GOALS[$galacticGoal]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$this->gamestate->nextState('next');
 	}
@@ -1948,6 +1948,9 @@ trait gameStates
 //
 // Final scoring
 //
+//
+// Every player scores DP equal to the highest number on their population track without a disc.
+//
 		foreach (Factions::list(false) as $color)
 		{
 			self::gainDP($color, $populationScore[$color]);
@@ -1959,6 +1962,14 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)')]);
 //* -------------------------------------------------------------------------------------------------------- */
+//
+// Galactic Goal
+//
+		$galacticGoal = self::getGameStateValue('galacticGoal');
+		if ($galacticGoal != NONE) self::galacticGoal($galacticGoal);
+//
+// For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)
+//
 		$sectors = [];
 		foreach (Factions::list() as $color)
 		{
@@ -1990,19 +2001,22 @@ trait gameStates
 				}
 			}
 		}
-		foreach (Factions::list(false) as $color)
-		{
-			$player_id = Factions::getPlayer($color);
-			self::setStat(self::dbGetScore($player_id), 'DP', $player_id);
 //
 // If players are tied then the one with the highest number of stars among the tied wins.
 // If this is also a tie, then use the turn order
 // The player who is first in turn order among those tied wins
 //
+		foreach (Factions::list(false) as $color)
+		{
+			$player_id = Factions::getPlayer($color);
+			self::setStat(self::dbGetScore($player_id), 'DP', $player_id);
+//
 			$tie = sizeof(Counters::getPopulations($color)) * 10 + (self::getPlayersNumber() - Factions::getOrder($color));
 //
 			self::dbSetScore($player_id, self::dbGetScore($player_id), $tie);
 		}
+//
+// SOLO game
 //
 		if (self::getPlayersNumber() === 1)
 		{
@@ -2011,7 +2025,7 @@ trait gameStates
 			$score = self::dbGetScore($player_id);
 //
 //
-// Ranking
+// SOLO game: Ranking
 //
 			if ($score >= 115) $ranking = 5;
 			else if ($score >= 100) $ranking = 4;
@@ -2024,7 +2038,7 @@ trait gameStates
 			self::notifyAllPlayers('msg', '${RANKING}', ['RANKING' => $ranking]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
-// Legacy
+// SOLO game: Legacy
 //
 			$datas = self::retrieveLegacyData($player_id, LEGACYDATA);
 			$legacy = $datas ? json_decode($datas[LEGACYDATA]) : [0 => '', 1 => '', 2 => '', 3 => ''];
@@ -2045,5 +2059,63 @@ trait gameStates
 		}
 //
 		$this->gamestate->nextState('gameEnd');
+	}
+	function galacticGoal(int $galacticGoal)
+	{
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('msg', clienttranslate('Galactic goal: <B>${galacticGoal}</B>'), ['i18n' => ['galacticGoal'], 'galacticGoal' => $this->GOALS[$galacticGoal]]);
+		self::notifyAllPlayers('msg', '${GOAL}', ['GOAL' => $this->GOALS[$galacticGoal]]);
+//* -------------------------------------------------------------------------------------------------------- */
+		switch ($galacticGoal)
+		{
+//
+			case CONTROL:
+//
+// Players score 10 DP per star they have in the center of a sector at game end
+//
+				foreach (Factions::list(false) as $color)
+				{
+					$centralStars = 0;
+					foreach (array_keys(Counters::getPopulations($color)) as $location) if ($location[0] === '0') $centralStars++;
+//
+					$DP = 10 * $centralStars;
+					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_GG', Factions::getPlayer($color));
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+//
+				break;
+//
+			case COOPERATION:
+//
+				break;
+//
+			case LEGACY:
+//
+// Player scores 10 DP per star they have with a relic at game end (the one-time effect relics do not count)
+//
+				foreach (Factions::list(false) as $color)
+				{
+					$relics = 0;
+					foreach (array_keys(Counters::getPopulations($color)) as $location) if (Counters::getAtLocation($location, 'relic')) $relics++;
+//
+					$DP = 10 * $relics;
+					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_GG', Factions::getPlayer($color));
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+//
+				break;
+			default:
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', '<-- Galactic goal not implemented -->', []);
+//* -------------------------------------------------------------------------------------------------------- */
+				break;
+//
+		}
 	}
 }

@@ -27,6 +27,15 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 //
 			this.story = new dijit.Tooltip({connectId: galacticStoryNode, showDelay: 500, hideDelay: 0, label: html, position: ['above']});
 //
+			if (this.bgagame.gamedatas.galacticGoal !== 'None')
+			{
+				const galacticGoalNode = dojo.place(`<img id='ERAgalacticGoal' src='${g_gamethemeurl}img/galacticGoals/${this.bgagame.gamedatas.galacticGoal}.png' draggable='false'>`, 'ERA-DP');
+//
+				let html = `<H1 style='font-family:ERA;'>${_('Galactic Goal') + ' ' + _(this.bgagame.gamedatas.galacticGoal)}</H1>`;
+				html += '<div style="text-align:justify;">' + bgagame.GALACTIC_GOALS[this.bgagame.gamedatas.galacticGoal] + '</div>';
+//
+				this.goal = new dijit.Tooltip({connectId: galacticGoalNode, showDelay: 500, hideDelay: 0, label: html, position: ['below']});
+			}
 		},
 		dominationDialog: function (faction, id)
 		{
