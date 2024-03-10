@@ -8,6 +8,11 @@ trait gameStateActions
 {
 	function acGODMODE(array $god)
 	{
+		$color = $god['color'];
+//
+		$player_id = Factions::getPlayer($color);
+//		if ($player_id !== Players::getAdmin()) throw new BgaVisibleSystemException('Only table admin can use GOD MODE');
+//
 		switch ($god['action'])
 		{
 			case 'toggle':
@@ -27,14 +32,31 @@ trait gameStateActions
 				Ships::setLocation($god['ship'], $god['location']);
 				break;
 			case 'technology':
-				self::dbQuery("UPDATE factions SET `$god[technology]` = $god[level] WHERE color = '$god[color]'");
-				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($god['color'])]);
+				self::dbQuery("UPDATE factions SET `$god[technology]` = $god[level] WHERE color = '$color'");
+				self::notifyAllPlayers('updateFaction', '', ['faction' => Factions::get($color)]);
 				break;
 			case 'declareWar':
-				self::acDeclareWar($god['color'], $god['on'], true);
+				self::acDeclareWar($color, $god['on'], true);
 				break;
 			case 'declarePeace':
-				self::acDeclarePeace($god['color'], $god['on'], true);
+				self::acAcceptPeace($color, $god['on'], true);
+				break;
+			case 'domination':
+				self::dBQuery("UPDATE domination SET card_type = $god[domination] WHERE card_location = 'hand' AND card_location_arg = '$color'");
+				$faction = ['color' => $color, 'domination' => []];
+				foreach ($this->domination->getPlayerHand($color) as $domination) $faction['domination'][$domination['id']] = $domination['type'];
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyPlayer($player_id, 'updateFaction', '', ['faction' => $faction]);
+//* -------------------------------------------------------------------------------------------------------- */
+				break;
+			case 'fleet':
+				$fleetID = $god['id'];
+				$Fleet = Ships::getStatus($fleetID, 'fleet');
+				Ships::setStatus($fleetID, 'ships', max(1, intval(Ships::getStatus($fleetID, 'ships')) + $god['delta']));
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
+				self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
+//* -------------------------------------------------------------------------------------------------------- */
 				break;
 		}
 //
@@ -525,12 +547,12 @@ trait gameStateActions
 			if (Factions::getPlayer($on) === 0) throw new BgaUserException(self::_('Automa will not accept peace'));
 			if (Factions::getPlayer($on) < 0)
 			{
-				if (Factions::getStatus($on, 'peace')) throw new BgaUserException(self::_('You can make peace only once per round'));
+				if (Factions::getStatus($on, 'peaceAlreadyRejected')) throw new BgaUserException(self::_('You can make peace only once per round'));
 //
 // #offboard population : 2 - Slavers never make peace
 //
 				if (Factions::getPlayer($on) == SLAVERS && Factions::getDP($on) >= 2) throw new BgaUserException(self::_('Slavers’ Offboard Power Effects: Slavers never make peace'));
-				Factions::setStatus($on, 'peace', 'once per round');
+				Factions::setStatus($on, 'peaceAlreadyRejected', 'once per round');
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${player_name1} proposes peace to ${player_name2}'), ['player_name1' => Factions::getName($from), 'player_name2' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2403,7 +2425,7 @@ trait gameStateActions
 			}
 		}
 //
-		if ($this->gamestate->state()['name'] !== 'buriedShips' && !$buriedShips)
+		if ($this->gamestate->state()['name'] !== 'emergencyReserve' && $this->gamestate->state()['name'] !== 'buriedShips' && !$buriedShips)
 		{
 			$counters = Factions::getStatus($color, 'counters');
 			unset($counters[array_search('buildShips', $counters)]);

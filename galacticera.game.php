@@ -259,7 +259,7 @@ class GalacticEra extends Table
 		{
 			$this->DbQuery("DELETE FROM stack WHERE id = $event[id]");
 //
-			if ($event['old_active_faction']) $this->gamestate->changeActivePlayer(Factions::getPlayer($event['old_active_faction']));
+			if ($event['old_active_faction'] > 0) $this->gamestate->changeActivePlayer(Factions::getPlayer($event['old_active_faction']));
 			if ($event['old_state'] && $this->gamestate->states[$event['old_state']]['type'] === 'multipleactiveplayer') $this->gamestate->setAllPlayersMultiactive('next');
 			if ($event['old_state']) return $this->gamestate->jumpToState($event['old_state']);
 		}

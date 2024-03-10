@@ -68,6 +68,41 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 							dojo.connect(node, 'click', this, 'click');
 							dojo.connect(node, 'dragstart', this, (event) => event.dataTransfer.setData("text", ship.id));
+//
+// GOD MODE
+//
+							dojo.connect(node, 'oncontextmenu', (event) => {
+//
+								if (+this.bgagame.gamedatas.GODMODE === 1)
+								{
+									dojo.stopEvent(event);
+									dojo.query('.godMode').remove();
+//
+									const menu = dojo.place(`<div class='godMode' id='godMode'><ul class='godMode-options' style='color:#${ship.color};'>${ship.fleet}</ul></div>`, 'ebd-body');
+									menu.style.left = `${event.clientX - 10}px`;
+									menu.style.top = `${event.clientY - 10}px`;
+//
+									dojo.place(`<li class='godMode-option'><HR></li>`, menu);
+//
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: -50})});">-50</li>`, menu);
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: -10})});">-10</li>`, menu);
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: -5})});">-5</li>`, menu);
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: -1})});">-1</li>`, menu);
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: +1})});">+1</li>`, menu);
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: +5})});">+5</li>`, menu);
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: +10})});">+10</li>`, menu);
+									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'fleet', color: '${ship.color}', id: ${ship.id}, delta: +50})});">+50</li>`, menu);
+//
+									dojo.place(`<li class='godMode-option'><HR></li>`, menu);
+									dojo.place(`<li class='godMode-option'>CANCEL</li>`, menu);
+//
+									dojo.connect(menu, 'onclick', () => dojo.destroy(menu));
+								}
+							});
+//
+// GOD MODE
+//
+
 						}
 					}
 					break;
@@ -135,13 +170,13 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				if (dojo.hasAttr(node, 'fleet'))
 				{
-					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${-10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
+					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${ -10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
 					dojo.style(node, 'z-index', 200 + index);
 					fleet++;
 				}
 				else
 				{
-					dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${-10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
+					dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${ -10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
 					dojo.style(node, 'z-index', 205 + index);
 				}
 				index++;

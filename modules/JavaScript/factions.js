@@ -182,34 +182,6 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 							if (true) this.dominationDialog(faction, index, domination);
 							else this.bgagame.focus(event.currentTarget);
 						});
-//
-// GOD MODE
-//
-						dojo.connect(node, 'oncontextmenu', (event) => {
-//
-							if (+this.bgagame.gamedatas.GODMODE === 1)
-							{
-								dojo.stopEvent(event);
-								dojo.query('.godMode').remove();
-//
-								const menu = dojo.place(`<div class='godMode' id='godMode'><ul class='godMode-options' style='color:#${faction.color};'>Domination card</ul></div>`, 'ebd-body');
-								menu.style.left = `${event.clientX - 10}px`;
-								menu.style.top = `${event.clientY - 10}px`;
-//
-								dojo.place(`<li class='godMode-option'><HR></li>`, menu);
-//
-								for (let domination in this.bgagame.DOMINATIONS)
-									dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'domination', color: '${faction.color}', id: ${index}, domination: ${domination}})});">${this.bgagame.DOMINATIONS[domination].title}</li>`, menu);
-//
-								dojo.place(`<li class='godMode-option'><HR></li>`, menu);
-								dojo.place(`<li class='godMode-option'>CANCEL</li>`, menu);
-//
-								dojo.connect(menu, 'onclick', () => dojo.destroy(menu));
-							}
-						});
-//
-// GOD MODE
-//
 					}
 					else
 					{
@@ -221,6 +193,34 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 						});
 					}
 					dojo.connect(node, 'transitionend', () => dojo.style(node, {'pointer-events': '', 'z-index': ''}));
+//
+// GOD MODE
+//
+					dojo.connect(node, 'oncontextmenu', (event) => {
+//
+						if (+this.bgagame.gamedatas.GODMODE === 1)
+						{
+							dojo.stopEvent(event);
+							dojo.query('.godMode').remove();
+//
+							const menu = dojo.place(`<div class='godMode' id='godMode'><ul class='godMode-options' style='color:#${faction.color};'>Domination card</ul></div>`, 'ebd-body');
+							menu.style.left = `${event.clientX - 10}px`;
+							menu.style.top = `${event.clientY - 10}px`;
+//
+							dojo.place(`<li class='godMode-option'><HR></li>`, menu);
+//
+							for (let domination in this.bgagame.DOMINATIONS)
+								dojo.place(`<li class='godMode-option' onclick="gameui.action('GODMODE', {god: JSON.stringify({action: 'domination', color: '${faction.color}', id: ${index}, domination: ${domination}})});">${this.bgagame.DOMINATIONS[domination].title}</li>`, menu);
+//
+							dojo.place(`<li class='godMode-option'><HR></li>`, menu);
+							dojo.place(`<li class='godMode-option'>CANCEL</li>`, menu);
+//
+							dojo.connect(menu, 'onclick', () => dojo.destroy(menu));
+						}
+					});
+//
+// GOD MODE
+//
 				}
 			}
 //

@@ -1282,3 +1282,30 @@ path.ERAselected
 	stroke: white;
 	stroke-width: 20;
 }
+
+/* <editor-fold defaultstate="collapsed" desc="GODMODE"> */
+.godMode {
+    display:flex;
+    flex-direction:column;
+    position:fixed;
+    background-color:black;
+    color:white;
+    border-radius:10px;
+    border:1px solid grey;
+    padding:10px;
+    z-index:1001;
+}
+.godMode-options {
+    list-style:none;
+    padding:5px;
+}
+.godMode-option {
+    font-weight:500;
+    font-size:14px;
+    padding:5px;
+    cursor:pointer;
+}
+.godMode-option:hover {
+    background:rgba(128, 128, 128, 0.2);
+}
+/* </editor-fold> */

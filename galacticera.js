@@ -29,9 +29,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			dojo.destroy('debug_output');
 //
 			dojo.place(`<div id='ERAalien' class='upperrightmenu_item' style='margin-top:10px;font-size:x-large;'>👽</div>`, 'upperrightmenu', 'first');
-			dojo.connect($('ERAalien'), 'click', () => {
-				if (!this.isSpectator) this.action('GODMODE', {god: JSON.stringify({action: 'toggle'})})
-			});
 //
 // Translations
 //
@@ -397,6 +394,15 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			this.players = {};
 			for (let faction of Object.values(gamedatas.factions)) this.players[faction.player_id] = faction.color;
 			this.color = this.player_id in this.players ? this.players[this.player_id] : null;
+//
+// GOD MODE
+//
+			dojo.connect($('ERAalien'), 'click', () => {
+				if (!this.isSpectator) this.action('GODMODE', {god: JSON.stringify({action: 'toggle', color: this.color})})
+			});
+//
+// GOD MODE
+//
 //
 // Setup game Board
 //

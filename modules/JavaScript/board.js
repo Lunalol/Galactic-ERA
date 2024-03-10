@@ -324,7 +324,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			if (location !== undefined)
 			{
 				const ship = event.dataTransfer.getData("text");
-				this.bgagame.action('GODMODE', {god: JSON.stringify({action: 'move', ship: ship, location: location})});
+				this.bgagame.action('GODMODE', {god: JSON.stringify({action: 'move', color: this.bgagame.color, ship: ship, location: location})});
 			}
 		},
 		click: function (event)
