@@ -20,11 +20,11 @@ class Automas extends APP_GameClass
 			case FARMERS:
 				return [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${NAME}</span>',
-					'args' => ['NAME' => clienttranslate('Farmers'), 'i18n' => ['NAME']]];
+					'args' => ['NAME' => clienttranslate('Farmers automa'), 'i18n' => ['NAME']]];
 			case SLAVERS:
 				return [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${NAME}</span>',
-					'args' => ['NAME' => clienttranslate('Slavers'), 'i18n' => ['NAME']]];
+					'args' => ['NAME' => clienttranslate('Slavers automa'), 'i18n' => ['NAME']]];
 			default:
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}

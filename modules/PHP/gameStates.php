@@ -517,7 +517,7 @@ trait gameStates
 //
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), [
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 						'player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 					foreach (Automas::startBonus($color, $dice) as $technology => $level)
@@ -955,7 +955,7 @@ trait gameStates
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), [
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 						'player_name' => Factions::getName($defender), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
@@ -1362,7 +1362,7 @@ trait gameStates
 					$dice2 = bga_rand(1, 6);
 					$dice = min($dice1, $dice2);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE1} ${DICE2}'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE1} ${DICE2}'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
 					self::notifyAllPlayers('msg', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
@@ -1370,7 +1370,7 @@ trait gameStates
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				Factions::setStatus($color, 'counters', Automas::growthActions($color, intval(self::getGameStateValue('difficulty')), $dice));
@@ -1530,7 +1530,7 @@ trait gameStates
 								{
 									$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('msg', clienttranslate('${player_name} roll ${DICE}'), [
+									self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
 										'player_name' => Factions::getName($with), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 								}
@@ -1959,17 +1959,20 @@ trait gameStates
 			self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		}
-//* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)')]);
-//* -------------------------------------------------------------------------------------------------------- */
 //
 // Galactic Goal
 //
 		$galacticGoal = self::getGameStateValue('galacticGoal');
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => ['log' => clienttranslate('Galactic goal: <B>${galacticGoal}</B>'), 'args' => ['i18n' => ['galacticGoal'], 'galacticGoal' => $this->GOALS[$galacticGoal]]]]);
+//* -------------------------------------------------------------------------------------------------------- */
 		if ($galacticGoal != NONE) self::galacticGoal($galacticGoal);
 //
 // For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)
 //
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)')]);
+//* -------------------------------------------------------------------------------------------------------- */
 		$sectors = [];
 		foreach (Factions::list() as $color)
 		{
@@ -2033,7 +2036,7 @@ trait gameStates
 			else if ($score >= 70) $ranking = 2;
 			else $ranking = 1;
 //
-			if (self::getGameStateValue('galacticGoal') == NONE) $ranking -= 1;
+			if (self::getGameStateValue('galacticGoal') != NONE) $ranking -= 1;
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', '${RANKING}', ['RANKING' => $ranking]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2063,7 +2066,6 @@ trait gameStates
 	function galacticGoal(int $galacticGoal)
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('Galactic goal: <B>${galacticGoal}</B>'), ['i18n' => ['galacticGoal'], 'galacticGoal' => $this->GOALS[$galacticGoal]]);
 		self::notifyAllPlayers('msg', '${GOAL}', ['GOAL' => $this->GOALS[$galacticGoal]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		switch ($galacticGoal)

@@ -344,8 +344,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			];
 //
 			let location = this.nearest(x, y);
-//			console.log(location.substring(2));
-//			navigator.clipboard.writeText(location.substring(2));
 //
 			if (location !== undefined && this.bgagame.isCurrentPlayerActive())
 			{

@@ -109,7 +109,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 		},
 		update: function (faction)
 		{
-//			console.log('updateFaction', faction);
+//			console.info('updateFaction', faction);
 //
 			if ('starPeople' in faction)
 			{

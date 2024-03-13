@@ -105,7 +105,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		remove: function (counter)
 		{
-			console.info('removeCounter', counter);
+//			console.info('removeCounter', counter);
 //
 			dojo.query(`#ERAcounter-${counter.id}`).remove();
 			this.arrange(counter.location);

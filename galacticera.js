@@ -23,7 +23,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		setup: function (gamedatas)
 		{
-			console.log("Starting game setup");
 			console.debug(gamedatas);
 //
 			dojo.destroy('debug_output');
@@ -608,10 +607,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			if (gamedatas.peace) for (let color of gamedatas.peace) this.peace(color);
 //
-
 			this.setupNotifications();
-//
-			console.log("Ending game setup");
 		},
 		onEnteringState: function (stateName, state)
 		{
@@ -2140,8 +2136,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		setupNotifications: function ()
 		{
-			console.log('notifications subscriptions setup');
-//
 			dojo.subscribe('GODMODE', (notif) => {
 				this.gamedatas.GODMODE = +notif.args.GODMODE;
 				this.restoreServerGameState();

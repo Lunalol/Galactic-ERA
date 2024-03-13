@@ -564,12 +564,12 @@ trait gameStateActions
 				if ($dice > Automas::makingPeace($on))
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} reject peace'), ['player_name' => Factions::getName($on)]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} rejects peace'), ['player_name' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					return;
 				}
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} accept peace'), ['player_name' => Factions::getName($on)]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} accepts peace'), ['player_name' => Factions::getName($on)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				return self::acAcceptPeace($from, $on, true);
 			}
@@ -631,7 +631,7 @@ trait gameStateActions
 			else Factions::setStatus($on, 'peace');
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyPlayer(Factions::getPlayer($from), 'msg', clienttranslate('${player_name} refuses peace'), ['player_name' => Factions::getName($on)]);
+		self::notifyPlayer(Factions::getPlayer($from), 'msg', clienttranslate('${player_name} rejects peace'), ['player_name' => Factions::getName($on)]);
 		self::notifyPlayer(Factions::getPlayer($on), 'msg', clienttranslate('You refuse peace with ${player_name}'), ['player_name' => Factions::getName($from)]);
 //* -------------------------------------------------------------------------------------------------------- */
 	}
