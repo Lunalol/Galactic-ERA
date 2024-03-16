@@ -121,8 +121,8 @@ class GalacticEra extends Table
 		{
 			if (Factions::getPlayer($color) > 0)
 			{
-				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination, $this->gamestate->state()['name']);
-				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['B'] = DominationCards::B($color, $domination);
+				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
+				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['B'] = DominationCards::B($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
 			}
 //
 			if ($player_id === Factions::getPlayer($color))

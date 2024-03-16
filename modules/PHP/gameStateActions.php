@@ -355,7 +355,7 @@ trait gameStateActions
 			Ships::setStatus($toID, 'ships', intval(Ships::getStatus($toID, 'ships')) + $ships);
 			Ships::setMP($toID, min($fromFleetMP, $toFleetMP));
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('Some ship(s) swap fleet ${GPS}'), ['GPS' => $location]);
+			self::notifyAllPlayers('msg', clienttranslate('Some ship(s) swap fleets ${GPS}'), ['GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			if (intval(Ships::getStatus($fromID, 'ships')) === 0)
 			{
@@ -686,7 +686,7 @@ trait gameStateActions
 		}
 		else throw new BgaVisibleSystemException('Invalid relic : Planetary Death Ray');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('${player_name} uses <B>Planetary Death Ray</B>'), ['player_name' => Factions::getName($color)]);
+		self::notifyAllPlayers('msg', clienttranslate('${player_name} uses the <B>Planetary Death Ray</B>'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		switch ($type)
 		{
@@ -893,7 +893,7 @@ trait gameStateActions
 		{
 			if (Ships::isShip($color, $ships[0]))
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) moves ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
+				self::notifyAllPlayers('msg', clienttranslate('${N} ship(s) move ${GPS}'), ['GPS' => $location, 'N' => sizeof($ships)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			else
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1127,7 +1127,7 @@ trait gameStateActions
 //
 		if (array_key_exists($rotated, $this->SECTORS[$sector]))
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} evacuates near ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} evacuates to ${PLANET} ${GPS}'), ['player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 		else
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1546,7 +1546,7 @@ trait gameStateActions
 //
 		if (Factions::getTechnology($color, 'Spirituality') < 5) self::switchAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
-		else self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
+		else self::notifyAllPlayers('msg', clienttranslate('${player_name} cannot switch alignment'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$counters = Factions::getStatus($color, 'counters');
 		unset($counters[array_search('switchAlignment', $counters)]);
@@ -1859,7 +1859,7 @@ trait gameStateActions
 				break;
 			case ALLY:
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} allies oneself with ${PLANET}'), ['GPS' => $location,
+				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} allies with ${PLANET}'), ['GPS' => $location,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
@@ -2132,7 +2132,7 @@ trait gameStateActions
 			if ($toBlock)
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to growth population'), ['player_name' => Factions::getName($color)]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to grow population'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
 				Factions::setStatus($color, 'action', ['name' => 'growPopulation', 'locations' => array_unique(array_merge($locations, $locationsBonus)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
@@ -2298,7 +2298,8 @@ trait gameStateActions
 		Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['teleportPopulation'])));
 //
 		self::updateScoring();
-		$this->gamestate->nextState('continue');
+		if ($this->gamestate->state()['name'] === 'oneTimeEffect') $this->gamestate->nextState('end');
+		else $this->gamestate->nextState('continue');
 	}
 	function acBuildShips(string $color, array $buildShips, bool $automa = false, bool $buriedShips = false)
 	{
@@ -2601,7 +2602,9 @@ trait gameStateActions
 //
 				$section = 'A';
 				if ($this->domination->countCardInLocation($section, $player_id)) throw new BgaVisibleSystemException('A-Section already played');
-				if (!DominationCards::A($color, $domination, $this->gamestate->state()['name'])) throw new BgaUserException(self::_('Play this card when primary condition happens'));
+//
+				$DP = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
+				if (!$DP) throw new BgaUserException(self::_('Play this card when primary condition happens'));
 //
 				$this->domination->moveCard($id, $section, $color);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2612,100 +2615,130 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				switch ($domination)
 				{
+//
 					case ACQUISITION:
-						$DP = 10;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional technology level from one of the players you took a star from this turn')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'steal', ['from' => Factions::getStatus($color, 'acquisition'), 'levels' => 1]);
 						self::triggerEvent(STEALTECHNOLOGY, $color);
+//
 						break;
+//
 					case ALIGNMENT:
-						$DP = 9 + 2 * self::getGameStateValue('alignment');
+						$DP += 2 * self::getGameStateValue('alignment');
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional 2 DP for every Switch Alignment growth action counter played this round (including your own)')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						break;
+//
 					case CENTRAL:
-						$DP = 12;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('On your turn in this growth phase, you get a free Gain Star action, which you can use in the center sector only<BR>Your ships count double for this action (apply before calculating Fleet “B” bonus)')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						if (Factions::getStatus($color, 'counters')) Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
 						Factions::setStatus($color, 'central', true);
 						Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
+//
 						break;
+//
 					case DEFENSIVE:
-						$DP = 9;
 //* -------------------------------------------------------------------------------------------------------- */
-						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Add 20 CV to your side in the current battle if it is in your home star sector<BR>You may play this card even after ships have been revealed')]);
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Add 20 CV to your side in the current battle if it is in your Home Star sector<BR>Play this card even after ships have been revealed')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						break;
+//
 					case DENSITY:
-						$DP = 7;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Add 1 population disc to each of your stars with 5+ population (regardless of any limits or blocking)')]);
 //* -------------------------------------------------------------------------------------------------------- */
+						foreach (Counters::getPopulations($color) as $location => $population)
+						{
+							if ($population >= 5)
+							{
+								$sector = Sectors::get($location[0]);
+								$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
+//* -------------------------------------------------------------------------------------------------------- */
+								self::notifyAllPlayers('placeCounter', clienttranslate('${GPS} ${PLANET} gains a <B>population</B>'), [
+									'PLANET' => [
+										'log' => '<span style = "color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+										'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+									], 'GPS' => $location, 'counter' => Counters::get(Counters::create($color, 'populationDisc', $location))]);
+//* -------------------------------------------------------------------------------------------------------- */
+								self::notifyAllPlayers('updateFaction', '', ['faction' => ['color' => $color, 'population' => Factions::gainPopulation($color, 1)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+							}
+						}
+						if (Factions::getPopulation($color) > 39) self::triggerEvent(REMOVEPOPULATION, $color);
+//
 						break;
+//
 					case DIPLOMATIC:
-						$DP = 14;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('No players may declare war on you for the rest of this round')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'diplomatic', true);
+//
 						break;
+//
 					case ECONOMIC:
-						$DP = 7;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional 6 ships which you can place at any of your stars<BR>Otherwise, use the same rules for placing new ships as when doing the Build Ships action<BR>This effect cannot be blocked though')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						break;
+//
 					case ETHERIC:
-						$DP = 8;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All of your ships starting their move in a nebula hex now get +4 range (instead of +2)')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'etheric', true);
+//
 						break;
+//
 					case EXPLORATORY:
-						$DP = 13;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('You may inspect the unplayed domination cards of another player<BR>In a game with 5+ players, you may even do this with 2 players')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'domination', $domination);
 						Factions::setStatus($color, 'exploratory', sizeof(Factions::list()) >= 5 ? 2 : 1);
 						self::triggerEvent(ONETIMEEFFECT, $color);
+//
 						break;
+//
 					case GENERALSCIENTIFIC:
-						$DP = 9;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'generalscientific', true);
+//
 						break;
+//
 					case MILITARY:
-						$DP = 10;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						break;
+//
 					case SPATIAL:
-						$DP = 11;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'domination', $domination);
 						self::triggerEvent(ONETIMEEFFECT, $color);
+//
 						break;
+//
 					case SPECIALSCIENTIFIC:
-						$DP = 11;
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'domination', $domination);
 						self::triggerEvent(ONETIMEEFFECT, $color);
+//
 						break;
+//
 					default:
+//
 						throw new BgaVisibleSystemException('A-Section NOT implemented');
 				}
 //
@@ -2745,7 +2778,7 @@ trait gameStateActions
 		if ($cards < 2)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${player_name} draw a new card'), ['player_name' => Factions::getName($color)]);
+			self::notifyAllPlayers('msg', clienttranslate('${player_name} draws a new card'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$this->domination->pickCard('deck', $color);
 		}
@@ -2817,7 +2850,7 @@ trait gameStateActions
 //
 			case EXPLORATORY:
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} inspects unplayed domination cards of ${player_name1}'), ['player_name' => Factions::getName($color), 'player_name1' => Factions::getName($json['color'])]);
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} inspects the unplayed domination cards of ${player_name1}'), ['player_name' => Factions::getName($color), 'player_name1' => Factions::getName($json['color'])]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$dominationCards = $this->domination->getPlayerHand($json['color']);
 //* -------------------------------------------------------------------------------------------------------- */

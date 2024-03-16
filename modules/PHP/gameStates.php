@@ -818,7 +818,7 @@ trait gameStates
 					$dice2 = bga_rand(1, 6);
 					$dice = min($dice1, $dice2);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${DICE1} ${DICE2} are rolled'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
+					self::notifyAllPlayers('msg', clienttranslate('${DICE1} ${DICE2} were rolled'), ['player_name' => Factions::getName($color), 'DICE1' => $dice1, 'DICE2' => $dice2]);
 					self::notifyAllPlayers('msg', clienttranslate('${DICE} is used'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
@@ -826,7 +826,7 @@ trait gameStates
 				{
 					$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${DICE} is rolled'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
+					self::notifyAllPlayers('msg', clienttranslate('${DICE} was rolled'), ['player_name' => Factions::getName($color), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				Automas::movement($this, $color, $dice);
@@ -1082,7 +1082,7 @@ trait gameStates
 		{
 			$totalVictory = $attackerCV >= 3 * $defenderCV;
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('<B>Attacker</B> side wins the battle'), []);
+			self::notifyAllPlayers('msg', clienttranslate('<B>Attacking</B> side wins the battle'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 			$bonus = false;
 			foreach (Ships::getAtLocation($location, $attacker, 'fleet')as $fleet) $bonus |= Factions::getAdvancedFleetTactics($attacker, Ships::getStatus($fleet, 'fleet')) === 'DP';
@@ -1101,7 +1101,7 @@ trait gameStates
 		{
 			$totalVictory = $defenderCV >= 3 * $attackerCV;
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('<B>Defender</B> side wins the battle'), []);
+			self::notifyAllPlayers('msg', clienttranslate('<B>Defending</B> side wins the battle'), []);
 //* -------------------------------------------------------------------------------------------------------- */
 			$ships = [];
 			foreach ($defenders as $defender)
@@ -1315,7 +1315,7 @@ trait gameStates
 //
 		Factions::useEmergencyReserve($color);
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('useEmergencyReserve', clienttranslate('${player_name} uses emergency reserve'), ['player_name' => Factions::getName($color)]);
+		self::notifyAllPlayers('useEmergencyReserve', clienttranslate('${player_name} uses their Emergency Reserve'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 	}
 	function stAdvancedFleetTactics()
@@ -2112,6 +2112,52 @@ trait gameStates
 				}
 //
 				break;
+//
+			case POWER:
+//
+// Players score 8 DP if they have more ships in a sector than all other players’ ships there combined (no DP in case of a tie)
+//
+				$sectors = array_fill_keys(Sectors::getAll(), array_fill_keys(Factions::list(true), 0));
+				foreach (Factions::list(true) as $color) foreach (Ships::getAll($color) as $ship) if ($ship['location'] !== 'stock') $sectors[$ship['location'][0]][$color]++;
+//
+				foreach (Factions::list(false) as $color)
+				{
+					$majority = 0;
+					foreach (Sectors::getAll() as $sector) if (2 * $sectors[$sector][$color] > array_sum($sectors[$sector])) $majority++;
+//
+					$DP = 8 * $majority;
+					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_GG', Factions::getPlayer($color));
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+//
+				break;
+//
+			case PERSONALGROWTH:
+//
+				break;
+//
+			case PRESENCE:
+//
+// Players score 10 DP per sector where they have at least 2 stars at game end
+//
+				foreach (Factions::list(false) as $color)
+				{
+					$sectors = array_fill_keys(Sectors::getAll(), 0);
+					foreach (array_keys(Counters::getPopulations($color)) as $location) $sectors[$location[0]]++;
+//
+					$DP = 10 * sizeof(array_filter($sectors, fn($stars) => $stars >= 2));
+					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_GG', Factions::getPlayer($color));
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} +${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($color)]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+//
+				break;
+//
 			default:
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', '<-- Galactic goal not implemented -->', []);

@@ -15,9 +15,9 @@ $this->STORIES = [
 $this->GOALS = [
 	NONE => clienttranslate('None'),
 	CONTROL => clienttranslate('Control'),
-	COOPERATION => clienttranslate('Cooperation'),
-	DISCOVERY => clienttranslate('Discovery'),
-	LEADERSHIP => clienttranslate('Leadership'),
+//	COOPERATION => clienttranslate('Cooperation'),
+//	DISCOVERY => clienttranslate('Discovery'),
+//	LEADERSHIP => clienttranslate('Leadership'),
 	LEGACY => clienttranslate('Legacy'),
 	PERSONALGROWTH => clienttranslate('Personal Growth'),
 	POWER => clienttranslate('Power'),
@@ -64,7 +64,7 @@ $this->DOMINATIONCARDS = [
 //
 $this->PHASES = [
 	'startOfRound' => clienttranslate('Start of round'),
-	'changeTurnOrder' => clienttranslate('Start of Growth phase'),
+	'changeTurnOrder' => clienttranslate('Start of Growth Phase'),
 	'scoringPhase' => clienttranslate('End of round')
 ];
 //

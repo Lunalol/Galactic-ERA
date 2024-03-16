@@ -13,8 +13,8 @@ trait gameUtils
 	function updateScoring()
 	{
 		$scoring = [];
-		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination, $this->gamestate->state()['name']);
-		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['B'] = DominationCards::B($color, $domination);
+		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
+		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['B'] = DominationCards::B($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
 		self::notifyAllPlayers('updateScoring', '', ['scoring' => $scoring]);
 	}
 	function switchAlignment($color)
@@ -146,7 +146,7 @@ trait gameUtils
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyPlayer(Factions::getPlayer($color), 'msg', clienttranslate('Top of deck: <B>${DOMINATION}</B>'), ['i18n' => ['DOMINATION'], 'DOMINATION' => $this->DOMINATIONCARDS[$dominationCard['type']]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				if ($verbose) self::notifyAllPlayers('msg', clienttranslate('${player_name} is remote viewing domination deck'), ['player_id' => Factions::getPlayer($color), 'player_name' => Factions::getName($color)]);
+				if ($verbose) self::notifyAllPlayers('msg', clienttranslate('${player_name} is remote viewing the domination card deck'), ['player_id' => Factions::getPlayer($color), 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
 //
@@ -178,7 +178,7 @@ trait gameUtils
 						self::notifyPlayer(Factions::getPlayer($otherColor), 'msg', '<div class="ERA-removeViewing" style="background:#${color};color:black;"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
 							'color' => $ship['color'], 'GPS' => $ship['location'],
 							'LOG' => [
-								'log' => clienttranslate('<B>${fleet}</B> fleet is spied on by ${player_name}'),
+								'log' => clienttranslate('<B>${fleet}</B> fleet is remote viewed by ${player_name}'),
 								'args' => ['fleet' => Ships::getStatus($id, 'fleet'), 'player_name' => Factions::getName($color)]
 							]
 						]);
@@ -190,7 +190,7 @@ trait gameUtils
 						self::notifyPlayer(Factions::getPlayer($otherColor), 'msg', '<div class="ERA-removeViewing" style="background:#${color};color:black;"><span class="fa fa-eye fa-spin"></span>&nbsp${LOG} ${GPS}</div>', [
 							'color' => $ship['color'], 'GPS' => $ship['location'],
 							'LOG' => [
-								'log' => clienttranslate('${owner} is spying a fleet fleet from ${player_name}'),
+								'log' => clienttranslate('${owner} is remote viewing a fleet from ${player_name}'),
 								'args' => ['owner' => Factions::getName($ship['color']), 'player_name' => Factions::getName($color)]
 							]
 						]);

@@ -58,15 +58,15 @@ $machinestates = [
 	],
 	70 => [
 		'name' => 'alignement',
-		'description' => clienttranslate('Players have to choose their Alignment'),
+		'description' => clienttranslate('Players have to choose their alignment'),
 		'type' => 'game',
 		'action' => 'stAlignment',
 		'transitions' => ['next' => 75]
 	],
 	75 => [
 		'name' => 'alignmentChoice',
-		'description' => clienttranslate('Players have to choose their Alignment'),
-		'descriptionmyturn' => clienttranslate('${you} have to select an Alignment'),
+		'description' => clienttranslate('Players have to choose their alignment'),
+		'descriptionmyturn' => clienttranslate('${you} have to select an alignment'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAlignment',
 		'possibleactions' => ['alignmentChoice'],
@@ -81,15 +81,15 @@ $machinestates = [
 	],
 	85 => [
 		'name' => 'individualChoices',
-		'description' => clienttranslate('Players have to make some individual choices'),
+		'description' => clienttranslate('Players must make some individual choices'),
 		'type' => 'game',
 		'action' => 'stIndividualChoices',
 		'transitions' => ['continue' => 85, 'individualChoice' => 90, 'next' => 91]
 	],
 	90 => [
 		'name' => 'individualChoice',
-		'description' => clienttranslate('${actplayer} have to make some individual choices'),
-		'descriptionmyturn' => clienttranslate('${you} must choose a different technology field to start with level 2'),
+		'description' => clienttranslate('${actplayer} must make some individual choices'),
+		'descriptionmyturn' => clienttranslate('${you} must choose a different technology field to start with at level 2'),
 		'type' => 'activeplayer',
 		'args' => 'argIndividualChoice',
 		'possibleactions' => ['individualChoice'],
@@ -153,8 +153,8 @@ $machinestates = [
 	],
 	210 => [
 		'name' => 'fleets',
-		'description' => clienttranslate('${actplayer} can Create/Swap fleets'),
-		'descriptionmyturn' => clienttranslate('${you} can Create/Swap fleets'),
+		'description' => clienttranslate('${actplayer} can create/swap fleets'),
+		'descriptionmyturn' => clienttranslate('${you} can create/swap fleets'),
 		'type' => 'activeplayer',
 		'action' => 'updateScoring',
 		'args' => 'argFleets',
@@ -173,8 +173,8 @@ $machinestates = [
 	],
 	225 => [
 		'name' => 'blockMovement',
-		'description' => clienttranslate('Some players can block ${otherplayer} movement'),
-		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer} movement'),
+		'description' => clienttranslate('Some players can block ${other_player}\'s movement'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${other_player}\'s movement'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockMovement',
 		'possibleactions' => ['blockMovement'],
@@ -315,7 +315,7 @@ $machinestates = [
 	],
 	420 => [
 		'name' => 'buriedShips',
-		'description' => clienttranslate('${actplayer} find buried ships'),
+		'description' => clienttranslate('${actplayer} finds buried ships'),
 		'descriptionmyturn' => clienttranslate('${you} find buried ships'),
 		'type' => 'activeplayer',
 		'action' => 'stBuriedShips',
@@ -325,8 +325,8 @@ $machinestates = [
 	],
 	450 => [
 		'name' => 'blockAction',
-		'description' => clienttranslate('Some players can block ${other_player} growth action'),
-		'descriptionmyturn' => clienttranslate('${you} can block ${other_player} growth action'),
+		'description' => clienttranslate('Some players can block ${other_player}\'s growth action'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${other_player}\'s growth action'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockAction',
 		'possibleactions' => ['blockAction'],
@@ -402,8 +402,8 @@ $machinestates = [
 	],
 	HOMESTAREVACUATION + 1 => [
 		'name' => 'blockHomeStarEvacuation',
-		'description' => clienttranslate('Some players can block ${otherplayer} home star evacuation'),
-		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer} home star evacuation'),
+		'description' => clienttranslate('Some players can block ${otherplayer}\'s home star evacuation'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer}\'s home star evacuation'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockAction',
 		'possibleactions' => ['blockAction'],
@@ -411,8 +411,8 @@ $machinestates = [
 	],
 	EMERGENCYRESERVE => [
 		'name' => 'emergencyReserve',
-		'description' => clienttranslate('${actplayer} can use their emergency reserve'),
-		'descriptionmyturn' => clienttranslate('${you} can use your emergency reserve'),
+		'description' => clienttranslate('${actplayer} must use their Emergency Reserve'),
+		'descriptionmyturn' => clienttranslate('${you} must use your Emergency Reserve'),
 		'type' => 'activeplayer',
 		'args' => 'argEmergencyReserve',
 		'action' => 'stEmergencyReserve',
@@ -431,8 +431,8 @@ $machinestates = [
 	],
 	REMOVEPOPULATION => [
 		'name' => 'removePopulation',
-		'description' => clienttranslate('${actplayer} have to remove ${population} population disc(s)'),
-		'descriptionmyturn' => clienttranslate('${you} have to remove ${population} population disc(s)'),
+		'description' => clienttranslate('${actplayer} must remove ${population} population disc(s)'),
+		'descriptionmyturn' => clienttranslate('${you} must remove ${population} population disc(s)'),
 		'type' => 'activeplayer',
 		'args' => 'argRemovePopulation',
 		'possibleactions' => ['removePopulation'],
@@ -460,11 +460,11 @@ $machinestates = [
 	],
 	ONETIMEEFFECT => [
 		'name' => 'oneTimeEffect',
-		'description' => clienttranslate('${actplayer} must use One-Time Effect for ${dominationCard}'),
-		'descriptionmyturn' => clienttranslate('${you} must use One-Time Effect for ${dominationCard}'),
+		'description' => clienttranslate('${actplayer} must use the Immediate Effect for ${dominationCard}'),
+		'descriptionmyturn' => clienttranslate('${you} must use the Immediate Effect for ${dominationCard}'),
 		'type' => 'activeplayer',
 		'args' => 'argOneTimeEffect',
-		'possibleactions' => ['oneTimeEffect'],
+		'possibleactions' => ['oneTimeEffect', 'teleportPopulation'],
 		'transitions' => ['continue' => ONETIMEEFFECT, 'end' => POP_EVENT]
 	],
 //

@@ -140,7 +140,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					A: [_('Build 10 ships in a single Build Ships growth action'),
 						_('Any ships built as the direct result of star people special effects (e.g. STS Rogue AI) do not count for fulfilling this'),
 						_('Play this card when this happens')],
-					B: [_('1 DP per Asteroid system where you have a ship'),
+					B: [_('1 DP per Asteroid System where you have a ship'),
 						_('1 DP per Robotics level')]},
 				7: {title: _('Etheric'), DP: 8,
 					A: [_('Have a ship each in 4 nebula hexes at the start of your movement')],
@@ -509,7 +509,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									});
 								}
 							});
-						this.addTooltip(`ERApeace-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} at <B>peace</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to declare War') : '');
+						this.addTooltip(`ERApeace-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} at <B>peace</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to declare war') : '');
 						const nodeWar = dojo.place(`<div id='ERAwar-${faction.color}-${otherFaction.color}'  class='ERAsmall ERAcounter ERAcounter-${otherFaction.color} ERAcounter-war' color='${faction.color}' on='${otherFaction.color}'></div>`, nodeStatus);
 						dojo.toggleClass(nodeWar, 'ERAselectable', this.color === faction.color);
 						if (this.player_id === +faction.player_id) dojo.connect(nodeWar, 'click', (event) => {
@@ -523,7 +523,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									});
 								}
 							});
-						this.addTooltip(`ERAwar-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} at <B>war</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to propose Peace') : '');
+						this.addTooltip(`ERAwar-${faction.color}-${otherFaction.color}`, dojo.string.substitute(_('${player1} at <B>war</B> with ${player2}'), {player1: name, player2: otherName}), this.player_id === +faction.player_id ? _('Click to propose peace') : '');
 					}
 				}
 				this.factions.update(faction);
@@ -1368,9 +1368,15 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					if (this.isCurrentPlayerActive())
 					{
-						if ('exploratory' in state.args._private) {
-							dojo.place(`<span style='font-size:small;'><BR>${_('You may inspect the unplayed domination cards of another player (in a game with 5+ players, you may even do this with 2 players)')}</span>`, 'generalactions');
-							dojo.query(`.ERAdominationCard[domination='back']`).addClass('ERAselectable ERAselected');
+						switch (state.args.dominationCard)
+						{
+							case 'Exploratory':
+								dojo.place(`<span style='font-size:small;'><BR>${_('You may inspect the unplayed domination cards of another player (in a game with 5+ players, you may even do this with 2 players)')}</span>`, 'generalactions');
+								dojo.query(`.ERAdominationCard[domination='back']`).addClass('ERAselectable ERAselected');
+								break;
+							case 'Spatial':
+								this.setClientState('teleportPopulation', {phase: 'from', descriptionmyturn: dojo.string.substitute(_('${you} can select up to ${population} population disc(s) to teleport'), {you: '${you}', population: state.args._private.teleportPopulation})});
+								break;
 						}
 
 					}
@@ -1912,8 +1918,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						this.board.centerMap(args._private.location);
 //
-						this.addActionButton('ERAcancelButton', _('Don`t block home star evacuation'), () => this.action('blockAction', {color: this.color, blocked: false}));
-						this.addActionButton('ERAblockButton', _('Declare war and home star evacuation'), () => this.action('blockAction', {color: this.color, blocked: true}), null, false, 'red');
+						this.addActionButton('ERAcancelButton', _('Don`t block Home Star evacuation'), () => this.action('blockAction', {color: this.color, blocked: false}));
+						this.addActionButton('ERAblockButton', _('Declare war and block Home Star evacuation'), () => this.action('blockAction', {color: this.color, blocked: true}), null, false, 'red');
 //
 						break;
 //
@@ -1969,7 +1975,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					case 'growPopulation+':
 //
 						this.addActionButton('ERAgrowPopulationButton', _('Confirm'), () => {
-							this.setClientState('bonusPopulation', {descriptionmyturn: dojo.string.substitute(_('${you} may add ${bonus} “bonus population” discs'), {you: '${you}', bonus: args._private.bonusPopulation})});
+							this.setClientState('bonusPopulation', {descriptionmyturn: dojo.string.substitute(_('${you} may add ${bonus} bonus population discs'), {you: '${you}', bonus: args._private.bonusPopulation})});
 						});
 //
 						break;
@@ -1994,7 +2000,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							{
 								if (population > 0)
 								{
-									this.confirmationDialog(dojo.string.substitute(_('You will have to remove ${population} population disc(s)'), {population: population}), () =>
+									this.confirmationDialog(dojo.string.substitute(_('You must remove ${population} population disc(s)'), {population: population}), () =>
 									{
 										this.action('growPopulation', {color: this.color, locations: JSON.stringify(locations), locationsBonus: JSON.stringify(locationsBonus), locationsRemoved: '[]', bonus: counter.getAttribute('counter') === 'growPopulation+'});
 										dojo.query('.ERAcounter-populationDisc.ERAprovisional,.ERAprovisionalBonus', 'ERAboard').remove().forEach((node) => this.counters.arrange(dojo.getAttr(node, 'location')));

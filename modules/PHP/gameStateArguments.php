@@ -596,6 +596,8 @@ trait gameStateArguments
 				$this->possible['exploratory'] = +Factions::getStatus($color, 'exploratory');
 				break;
 			case SPATIAL:
+				$this->possible['teleportPopulation'] = 3;
+				$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
 				break;
 			case SPECIALSCIENTIFIC:
 				break;
