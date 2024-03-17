@@ -117,7 +117,10 @@ trait gameStateActions
 //
 		self::gainTechnology($color, $technology);
 //
+		if ($this->gamestate->state()['name'] === 'oneTimeEffect') return self::triggerAndNextState('advancedFleetTactics');
+//
 		Factions::setActivation($color, 'done');
+//
 		$this->gamestate->nextState('nextPlayer');
 	}
 	function acAdvancedFleetTactics(string $color, string $Fleet, string $tactics)
@@ -2323,7 +2326,7 @@ trait gameStateActions
 		foreach (array_count_values($buildShips['ships']) as $location => $ships) if (!in_array($location, Ships::FLEETS)) $remainingShips -= $ships;
 		if ($remainingShips < 0) throw new BgaUserException(self::_('No more ship minis'));
 //
-		if ($this->gamestate->state()['name'] !== 'emergencyReserve')
+		if ($this->gamestate->state()['name'] !== 'emergencyReserve' && $this->gamestate->state()['name'] !== 'oneTimeEffect')
 		{
 			if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
 			{
@@ -2435,7 +2438,7 @@ trait gameStateActions
 //------------------------
 // A-section: Economic //
 //------------------------
-			if ($player_id > 0 && sizeof($buildShips) >= 10) Factions::setStatus($color, 'economic', true);
+			if ($player_id > 0 && sizeof($buildShips['ships']) >= 10) Factions::setStatus($color, 'economic', true);
 //------------------------
 // A-section: Economic //
 //------------------------
@@ -2465,7 +2468,8 @@ trait gameStateActions
 //
 		self::updateScoring();
 //
-		$this->gamestate->nextState('continue');
+		if ($this->gamestate->state()['name'] === 'oneTimeEffect') $this->gamestate->nextState('end');
+		else $this->gamestate->nextState('continue');
 	}
 	function acTrade(string $from, string $to, string $technology, $toTeach = null)
 	{
@@ -2626,10 +2630,11 @@ trait gameStateActions
 						break;
 //
 					case ALIGNMENT:
-						$DP += 2 * self::getGameStateValue('alignment');
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional 2 DP for every Switch Alignment growth action counter played this round (including your own)')]);
 //* -------------------------------------------------------------------------------------------------------- */
+						$DP += 2 * self::getGameStateValue('alignment');
+//
 						break;
 //
 					case CENTRAL:
@@ -2685,6 +2690,9 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Get an additional 6 ships which you can place at any of your stars<BR>Otherwise, use the same rules for placing new ships as when doing the Build Ships action<BR>This effect cannot be blocked though')]);
 //* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'domination', $domination);
+						self::triggerEvent(ONETIMEEFFECT, $color);
+//
 						break;
 //
 					case ETHERIC:
@@ -2721,7 +2729,7 @@ trait gameStateActions
 //
 					case SPATIAL:
 //* -------------------------------------------------------------------------------------------------------- */
-						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Teleport up to 3 population (as described in chapter 7.1)<BR>This cannot be blocked though, and you can do this anytime (when you play the card)')]);
 //* -------------------------------------------------------------------------------------------------------- */
 						Factions::setStatus($color, 'domination', $domination);
 						self::triggerEvent(ONETIMEEFFECT, $color);

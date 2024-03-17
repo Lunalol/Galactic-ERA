@@ -1370,12 +1370,19 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					{
 						switch (state.args.dominationCard)
 						{
+							case 'Economic':
+								this.setClientState('buildShips', {counter: null, possibleactions: ['buildShips'
+									], descriptionmyturn: dojo.string.substitute(_('${you} get ${SHIPS} new ship(s)'), {you: '${you}', SHIPS: state.args._private.newShips})});
+								break;
 							case 'Exploratory':
 								dojo.place(`<span style='font-size:small;'><BR>${_('You may inspect the unplayed domination cards of another player (in a game with 5+ players, you may even do this with 2 players)')}</span>`, 'generalactions');
 								dojo.query(`.ERAdominationCard[domination='back']`).addClass('ERAselectable ERAselected');
 								break;
 							case 'Spatial':
 								this.setClientState('teleportPopulation', {phase: 'from', descriptionmyturn: dojo.string.substitute(_('${you} can select up to ${population} population disc(s) to teleport'), {you: '${you}', population: state.args._private.teleportPopulation})});
+								break;
+							case 'Special Scientific':
+								this.setClientState('individualChoice', {descriptionmyturn: _('Get a free Research action in a technology field for which you have a technology counter that you did not select this round')});
 								break;
 						}
 

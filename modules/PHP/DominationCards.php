@@ -133,7 +133,7 @@ class DominationCards extends APP_GameClass
 // Have level 6 in 1 technology field and level 5 or higher in another field
 				$technologies = array_map(fn($technology) => Factions::getTechnology($color, $technology), array_keys(Factions::TECHNOLOGIES));
 				rsort($technologies);
-				return ($technologies[0] === 6 && $technologies[1] >= 5) ? 11 * $multiplier : 0;
+				return ($technologies[0] === 6 && $technologies[1] >= 5 && $gamestate === 'resolveGrowthActions' && Factions::getActive() === $color) ? 11 * $multiplier : 0;
 			default:
 				throw new BgaVisibleSystemException('Invalid Domination Card: ' . $domination);
 		}

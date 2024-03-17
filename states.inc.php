@@ -464,8 +464,18 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} must use the Immediate Effect for ${dominationCard}'),
 		'type' => 'activeplayer',
 		'args' => 'argOneTimeEffect',
-		'possibleactions' => ['oneTimeEffect', 'teleportPopulation'],
-		'transitions' => ['continue' => ONETIMEEFFECT, 'end' => POP_EVENT]
+		'possibleactions' => ['oneTimeEffect', 'teleportPopulation', 'buildShips', 'individualChoice'],
+		'transitions' => ['continue' => ONETIMEEFFECT, 'advancedFleetTactics' => ONETIMEEFFECT + 1, 'end' => POP_EVENT]
+	],
+	ONETIMEEFFECT + 1 => [
+		'name' => 'advancedFleetTactics',
+		'description' => clienttranslate('Some players get an advanced fleet tactics'),
+		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactics'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argAdvancedFleetTactics',
+		'action' => 'stAdvancedFleetTactics',
+		'possibleactions' => ['advancedFleetTactics'],
+		'transitions' => ['continue' => ONETIMEEFFECT + 1, 'next' => POP_EVENT]
 	],
 //
 // game End (BGA)
