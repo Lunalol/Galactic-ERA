@@ -592,14 +592,42 @@ trait gameStateArguments
 //
 		switch ($domination)
 		{
-			case EXPLORATORY:
-				$this->possible['exploratory'] = +Factions::getStatus($color, 'exploratory');
+//
+			case ECONOMIC:
+//
+				$this->possible['newShips'] = 6;
+				$this->possible['stars'] = [];
+				foreach (Counters::getPopulations($color, false) as $location => $population) $this->possible['stars'][] = $location;
+//
+				foreach (Ships::getAll($color) as $ship)
+				{
+					$this->possible['ships'][] = $ship['id'];
+					if ($ship['fleet'] === 'fleet')
+					{
+						$fleet = Ships::getStatus($ship['id'], 'fleet');
+						$this->possible['fleets'][$fleet] = $ship;
+						$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
+					}
+				}
+//
 				break;
+//
+			case EXPLORATORY:
+//
+				$this->possible['exploratory'] = +Factions::getStatus($color, 'exploratory');
+//
+				break;
+//
 			case SPATIAL:
+//
 				$this->possible['teleportPopulation'] = 3;
 				$this->possible['populations'] = array_keys(Counters::getPopulations($color, true));
 				break;
+//
 			case SPECIALSCIENTIFIC:
+//
+				$this->possible['color'] = $color;
+				$this->possible['counters'] = array_diff(array_keys(Factions::TECHNOLOGIES), Factions::getStatus($color, 'used'));
 				break;
 		}
 //
