@@ -13,8 +13,15 @@ trait gameUtils
 	function updateScoring()
 	{
 		$scoring = [];
-		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
+//
+		foreach (Factions::list(false) as $color)
+		{
+			if ($this->domination->countCardInLocation('A', $color) == 0) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
+			else foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = 0;
+		}
+//
 		foreach (Factions::list(false) as $color) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['B'] = DominationCards::B($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
+//
 		self::notifyAllPlayers('updateScoring', '', ['scoring' => $scoring]);
 	}
 	function switchAlignment($color)

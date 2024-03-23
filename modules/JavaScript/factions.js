@@ -43,6 +43,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 			if (!node) return;
 //
 			const domination = node.getAttribute('domination');
+			const multiplier = this.bgagame.gamedatas.galacticGoal === 'Personal Growth' ? 2 : 1;
 //
 			this.dialog = new ebg.popindialog();
 			this.dialog.create('ERAdominationDialog');
@@ -57,7 +58,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 			html += `<div style='display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;'>`;
 			html += `<div id='ERAdominationButtonA' class='bgabutton bgabutton_red' style='font-size:large;'>${_('A-Section')}</div>`;
 			html += `<div style='margin:20px;font-family:ERA;font-size:large;color:#${faction.color};'>`;
-			html += `<div style='font-family:ERA;font-size:${this.bgagame.DOMINATIONS[domination].DP * 2 + 10}pt'>${this.bgagame.DOMINATIONS[domination].DP}  DP</div>`;
+			html += `<div style='font-family:ERA;font-size:${this.bgagame.DOMINATIONS[domination].DP * multiplier * 2 + 10}pt'>${this.bgagame.DOMINATIONS[domination].DP * multiplier}  DP</div>`;
 			html += `</div>`;
 			html += `</div>`;
 //

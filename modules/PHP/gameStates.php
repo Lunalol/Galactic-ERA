@@ -241,16 +241,7 @@ trait gameStates
 //
 // Deal one domination card face down to each player
 //
-		if (FAST_START)
-		{
-			foreach (Factions::list(false) as $index => $color)
-			{
-				$cards = $this->domination->getCardsOfType($index + 0);
-				$card = array_pop($cards);
-				$this->domination->moveCard($card['id'], 'hand', $color);
-			}
-		}
-		else foreach (Factions::list(false) as $color) $this->domination->pickCard('deck', $color);
+		foreach (Factions::list(false) as $color) $this->domination->pickCard('deck', $color);
 //
 // Each player places 3 ship pieces of their color at their home star.
 //
@@ -1269,6 +1260,7 @@ trait gameStates
 				case 'Military':
 					return;
 				case 'Spirituality':
+					Factions::setStatus($color, 'exchange');
 					return;
 				case 'Propulsion':
 					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar', 'gainStar']));
@@ -1743,7 +1735,7 @@ trait gameStates
 								foreach (Factions::atWar($color) as $otherColor)
 								{
 									if (Factions::getTechnology($otherColor, 'Spirituality') >= 5) continue;
-									foreach (Counters::getPopulations($color, false) as $location) if (Ships::getAtLocation($location, $color)) $DP++;
+									foreach (Counters::getPopulations($otherColor, false) as $location) if (Ships::getAtLocation($location, $color)) $DP++;
 								}
 								if ($DP)
 								{
@@ -1948,6 +1940,7 @@ trait gameStates
 //
 // Final scoring
 //
+		foreach (Factions::list(true) as $color) foreach (Ships::getAll($color, 'fleet') as $shipID => $ship) self::notifyAllPlayers('revealShip', '', ['ship' => ['id' => $shipID, 'fleet' => Ships::getStatus($shipID, 'fleet'), 'ships' => Ships::getStatus($shipID, 'ships')]]);
 //
 // Every player scores DP equal to the highest number on their population track without a disc.
 //
@@ -2118,7 +2111,17 @@ trait gameStates
 // Players score 8 DP if they have more ships in a sector than all other players’ ships there combined (no DP in case of a tie)
 //
 				$sectors = array_fill_keys(Sectors::getAll(), array_fill_keys(Factions::list(true), 0));
-				foreach (Factions::list(true) as $color) foreach (Ships::getAll($color) as $ship) if ($ship['location'] !== 'stock') $sectors[$ship['location'][0]][$color]++;
+				foreach (Factions::list(true) as $color)
+				{
+					foreach (Ships::getAll($color) as $ship)
+					{
+						if ($ship['location'] !== 'stock')
+						{
+							if ($ship['fleet'] === 'ship') $sectors[$ship['location'][0]][$color]++;
+							if ($ship['fleet'] === 'fleet') $sectors[$ship['location'][0]][$color] += Ships::getStatus($ship['id'], 'ships');
+						}
+					}
+				}
 //
 				foreach (Factions::list(false) as $color)
 				{

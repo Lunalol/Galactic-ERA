@@ -1877,7 +1877,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							const node = dojo.place(`<span><BR>${_('Additional action(s):')}</span>`, 'generalactions');
 							for (i = 0; i < args._private.additional; i++)
 							{
-								dojo.connect(dojo.place(`<span index='${i}' class=' ERAadditionalAction action-button bgabutton bgabutton_small bgabutton_blue'>${args._private.additionalOvalCost ? '-' + args._private.additionalOvalCost + ' DP' : _('free')}</span>`, node), 'click', (event) => {
+								dojo.connect(dojo.place(`<span index='${i}' class='ERAadditionalAction action-button bgabutton bgabutton_small bgabutton_blue'>${args._private.additionalOvalCost ? '-' + args._private.additionalOvalCost + ' DP' : _('free')}</span>`, node), 'click', (event) => {
 									dojo.toggleClass(event.currentTarget, 'bgabutton_blue bgabutton_red');
 									args._private.oval = this.last_server_state.args._private.oval + dojo.query('.ERAadditionalAction.bgabutton_red').length;
 									$('ERAselectButton').innerHTML = dojo.string.substitute(_('Select Growth Actions (${oval})'), {oval: args._private.oval});
@@ -1906,8 +1906,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						this.board.centerMap(args._private.to);
 //
-						this.addActionButton('ERAcancelButton', _('Don`t block movement'), () => this.action('blockMovement'
-									, {color: this.color, blocked: false}));
+						this.addActionButton('ERAcancelButton', _('Don`t block movement'), () => this.action('blockMovement', {color: this.color, blocked: false}));
 						this.addActionButton('ERAblockButton', _('Declare war and block movement'), () => this.action('blockMovement', {color: this.color, blocked: true}), null, false, 'red');
 //
 						break;

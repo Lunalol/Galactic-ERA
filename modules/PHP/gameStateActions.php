@@ -914,7 +914,7 @@ trait gameStateActions
 				if (Factions::getTechnology($color, 'Spirituality') < 5)
 				{
 					$toBlock = [];
-					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($next_location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($next_location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 					if ($toBlock)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -932,7 +932,7 @@ trait gameStateActions
 				if (Factions::getTechnology($color, 'Spirituality') < 5)
 				{
 					$toBlock = [];
-					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getAlignment($otherColor) === 'STS' && (Ships::getAtLocation($location, $otherColor) || Ships::getAtLocation($next_location, $otherColor))) $toBlock[] = Factions::getPlayer($otherColor);
+					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS' && (Ships::getAtLocation($location, $otherColor) || Ships::getAtLocation($next_location, $otherColor))) $toBlock[] = Factions::getPlayer($otherColor);
 					if ($toBlock)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1107,7 +1107,7 @@ trait gameStateActions
 		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
 			$toBlock = [];
-			foreach (Factions::list(false) as $otherColor) if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)) && Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+			foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 		}
 		if ($toBlock)
 		{
@@ -1688,9 +1688,9 @@ trait gameStateActions
 		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
 			$toBlock = [];
-			foreach (Factions::list(false) as $otherColor)
+			foreach (Factions::atPeace($color) as $otherColor)
 			{
-				if (in_array($otherColor, Factions::atPeace($color)))
+				if (Factions::getPlayer($otherColor) > 0)
 				{
 					if (Ships::getAtLocation($location, $otherColor))
 					{
@@ -2124,9 +2124,9 @@ trait gameStateActions
 		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
 			$toBlock = [];
-			foreach (Factions::list(false) as $otherColor)
+			foreach (Factions::atPeace($color) as $otherColor)
 			{
-				if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)))
+				if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS')
 				{
 					foreach ($locations as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 					foreach ($locationsBonus as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
@@ -2331,9 +2331,9 @@ trait gameStateActions
 			if (Factions::getTechnology($color, 'Spirituality') < 5 && $player_id > 0)
 			{
 				$toBlock = [];
-				foreach (Factions::list(false) as $otherColor)
+				foreach (Factions::atPeace($color) as $otherColor)
 				{
-					if (Factions::getAlignment($otherColor) === 'STS' && in_array($otherColor, Factions::atPeace($color)))
+					if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS')
 					{
 						foreach (array_keys(Counters::getPopulations($color)) as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 					}
@@ -2605,7 +2605,7 @@ trait gameStateActions
 			case 'A':
 //
 				$section = 'A';
-				if ($this->domination->countCardInLocation($section, $player_id)) throw new BgaVisibleSystemException('A-Section already played');
+				if ($this->domination->countCardInLocation($section, $color)) throw new BgaVisibleSystemException('A-Section already played');
 //
 				$DP = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
 				if (!$DP) throw new BgaUserException(self::_('Play this card when primary condition happens'));
@@ -2769,7 +2769,7 @@ trait gameStateActions
 					'card' => $dominationCard, 'section' => $section
 				]);
 //* -------------------------------------------------------------------------------------------------------- */
-				$DP = max(DominationCards::B($color, $domination));
+				$DP = max(DominationCards::B($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1));
 //				if (!$DP) throw new BgaUserException(self::_('Useless scoring'));
 				self::gainDP($color, $DP);
 				self::incStat($DP, 'DP_DC_B', $player_id);

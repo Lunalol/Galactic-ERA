@@ -1077,6 +1077,15 @@ class Automas extends APP_GameClass
 //
 				return $bgagame->acBuildShips($color, self::BuildShips($color, Factions::getStatus($color, 'buildShips')), true);
 //
+			case 'Military':
+			case 'Spirituality':
+			case 'Propulsion':
+			case 'Robotics':
+			case 'Genetics':
+//
+				Factions::setStatus($color, 'counters', $counters);
+				return $bgagame->gamestate->nextState('continue');
+//
 			default:
 //
 				throw new BgaVisibleSystemException("Invalid action $counter");

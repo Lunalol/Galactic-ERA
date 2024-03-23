@@ -460,8 +460,8 @@ $machinestates = [
 	],
 	ONETIMEEFFECT => [
 		'name' => 'oneTimeEffect',
-		'description' => clienttranslate('${actplayer} must use the Immediate Effect for ${dominationCard}'),
-		'descriptionmyturn' => clienttranslate('${you} must use the Immediate Effect for ${dominationCard}'),
+		'description' => clienttranslate('${actplayer} may use the Immediate Effect for ${dominationCard}'),
+		'descriptionmyturn' => clienttranslate('${you} may use the Immediate Effect for ${dominationCard}'),
 		'type' => 'activeplayer',
 		'args' => 'argOneTimeEffect',
 		'possibleactions' => ['oneTimeEffect', 'teleportPopulation', 'buildShips', 'individualChoice'],

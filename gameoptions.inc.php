@@ -9,7 +9,7 @@ $game_options = [
 		'values' => [
 			INTRODUCTORY => ['name' => totranslate('Introductory Game'), 'description' => totranslate('Leave out the galactic goal for an introductory game'), 'tmdisplay' => totranslate('Introductory Game (no galactic goal)')],
 			STANDARD => ['name' => totranslate('Standard Game')],
-			MANUAL => ['name' => totranslate('Manual setting')],
+			MANUAL => ['name' => totranslate('Deterministic Setup')],
 		],
 		'default' => INTRODUCTORY,
 	],
