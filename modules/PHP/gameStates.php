@@ -968,6 +968,23 @@ trait gameStates
 				return self::acRetreat($defender, array_pop($locations), true);
 			}
 		}
+//------------------------
+// A-section: Defensive //
+//------------------------
+		$players = [];
+		foreach (array_merge([$attacker], $defenders) as $color)
+		{
+			$player_id = Factions::getPlayer($color);
+			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, DEFENSIVE, 1, 'combat')) $players[] = $player_id;
+		}
+		if ($players)
+		{
+			$this->gamestate->setPlayersMultiactive($players, 'end', true);
+			return $this->gamestate->nextState('defensive');
+		}
+//------------------------
+// A-section: Defensive //
+//------------------------
 		$this->gamestate->nextState('combat');
 	}
 	function stCombat()
@@ -1023,6 +1040,20 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		$attackerCV = $attackerCVs['total'];
+//------------------------
+// A-section: Defensive //
+//------------------------
+		if (Factions::getStatus($attacker, 'defensive'))
+		{
+			$attackerCV += 20;
+//* -------------------------------------------------------------------------------------------------------- */
+			self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
+//* -------------------------------------------------------------------------------------------------------- */
+			Factions::setStatus($attacker, 'defensive');
+		}
+//------------------------
+// A-section: Defensive //
+//------------------------
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', clienttranslate('Attacker side: ${CV} CV'), ['CV' => $attackerCV]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1060,6 +1091,20 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 			$defenderCV += $defenderCVs['total'];
+//------------------------
+// A-section: Defensive //
+//------------------------
+			if (Factions::getStatus($defender, 'defensive'))
+			{
+				$defenderCV += 20;
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
+//* -------------------------------------------------------------------------------------------------------- */
+				Factions::setStatus($defender, 'defensive');
+			}
+//------------------------
+// A-section: Defensive //
+//------------------------
 		}
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', clienttranslate('Defender side: ${CV} CV'), ['CV' => $defenderCV]);

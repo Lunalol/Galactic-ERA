@@ -68,6 +68,7 @@ class DominationCards extends APP_GameClass
 						if (!in_array(Factions::getHomeStar($color) . ':' . $rotated, $owned)) $all = false;
 					}
 				}
+				return 1;
 				return $all ? 9 * $multiplier : 0;
 			case DENSITY:
 // Have 3 stars with 5 or more population each

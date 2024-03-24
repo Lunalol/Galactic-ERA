@@ -199,7 +199,7 @@ $machinestates = [
 		'name' => 'retreat',
 		'type' => 'game',
 		'action' => 'stRetreat',
-		'transitions' => ['continue' => 240, 'retreat' => 245, 'retreatE' => 246, 'combat' => 250, 'endCombat' => 230]
+		'transitions' => ['continue' => 240, 'retreat' => 245, 'retreatE' => 246, 'defensive' => 249, 'combat' => 250, 'endCombat' => 230]
 	],
 	245 => [
 		'name' => 'retreat',
@@ -218,6 +218,15 @@ $machinestates = [
 		'args' => 'argRetreat',
 		'possibleactions' => ['domination', 'retreat', 'combat'],
 		'transitions' => ['continue' => 240]
+	],
+	249 => [
+		'name' => 'domination',
+		'description' => clienttranslate('${phase}: Players have the opportunity to play a domination card'),
+		'descriptionmyturn' => clienttranslate('${phase}: ${you} have the opportunity to play a domination card'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argDomination',
+		'possibleactions' => ['domination', 'null'],
+		'transitions' => ['continue' => 250, 'end' => 250]
 	],
 	250 => [
 		'name' => 'combat',

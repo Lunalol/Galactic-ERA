@@ -2651,6 +2651,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Add 20 CV to your side in the current battle if it is in your Home Star sector<BR>Play this card even after ships have been revealed')]);
 //* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'defensive', true);
 						break;
 //
 					case DENSITY:
