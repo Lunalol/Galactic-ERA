@@ -754,21 +754,19 @@ class Automas extends APP_GameClass
 		if (Factions::getPlayer($winner) === SLAVERS)
 		{
 //
-			foreach (Ships::getAtLocation($location, $attacker, 'fleet') as $shipID) for ($i = 0;
-					$i < intval(Ships::getStatus($shipID, 'ships'));
-					$i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, Ships::getStatus($shipID, 'fleet')];
-			for ($i = 0;
-				$i < sizeof(Ships::getAtLocation($location, $attacker, 'ship'));
-				$i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, 'ships'];
+			if (!Factions::getStatus($attacker, 'military'))
+			{
+				foreach (Ships::getAtLocation($location, $attacker, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, Ships::getStatus($shipID, 'fleet')];
+				for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $attacker, 'ship')); $i++) $toDestroy[$attacker === $winner ? 'winner' : 'losers'][] = [$attacker, 'ships'];
+			}
 //
 			foreach ($defenders as $defender)
 			{
-				foreach (Ships::getAtLocation($location, $defender, 'fleet') as $shipID) for ($i = 0;
-						$i < intval(Ships::getStatus($shipID, 'ships'));
-						$i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, Ships::getStatus($shipID, 'fleet')];
-				for ($i = 0;
-					$i < sizeof(Ships::getAtLocation($location, $defender, 'ship'));
-					$i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, 'ships'];
+				if (!Factions::getStatus($defender, 'military'))
+				{
+					foreach (Ships::getAtLocation($location, $defender, 'fleet') as $shipID) for ($i = 0; $i < intval(Ships::getStatus($shipID, 'ships')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, Ships::getStatus($shipID, 'fleet')];
+					for ($i = 0; $i < sizeof(Ships::getAtLocation($location, $defender, 'ship')); $i++) $toDestroy[$attacker !== $winner ? 'winner' : 'losers'][] = [$defender, 'ships'];
+				}
 			}
 //
 			shuffle($toDestroy['winner']);

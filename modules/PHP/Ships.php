@@ -61,12 +61,14 @@ class Ships extends APP_GameClass
 	}
 	static function getConflictFactions(string $color, string $location): array
 	{
-		return self::getObjectListFromDB("SELECT DISTINCT defender.color FROM ships AS attacker"
+		return self::getObjectListFromDB("SELECT DISTINCT defender.color"
+				. " FROM ships AS attacker"
 				. " JOIN ships AS defender USING (location)"
-				. " JOIN factions ON attacker.color = factions.color"
+				. " JOIN factions AS attackerFaction ON attacker.color = attackerFaction.color"
+				. " JOIN factions AS defenderFaction ON defender.color = defenderFaction.color"
 				. " WHERE location = '$location' AND attacker.color = '$color' AND attacker.color <> defender.color"
 				. " AND attacker.fleet <> 'homeStar' AND defender.fleet <> 'homeStar'"
-				. " AND JSON_CONTAINS(atWar, CAST(defender.color AS json)) ORDER by `order`", true);
+				. " AND JSON_CONTAINS(attackerFaction.atWar, CAST(defender.color AS json)) ORDER by defenderFaction.order", true);
 	}
 	static function getAllDatas($player_id): array
 	{

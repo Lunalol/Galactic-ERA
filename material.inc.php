@@ -64,7 +64,8 @@ $this->DOMINATIONCARDS = [
 //
 $this->PHASES = [
 	'startOfRound' => clienttranslate('Start of round'),
-	'combat' => clienttranslate('Combat Phase'),
+	'dominationRetreatPhase' => clienttranslate('Retreat before combat'),
+	'dominationCombatPhase' => clienttranslate('Combat Phase'),
 	'changeTurnOrder' => clienttranslate('Start of Growth Phase'),
 	'scoringPhase' => clienttranslate('End of round')
 ];

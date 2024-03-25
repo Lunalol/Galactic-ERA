@@ -1598,6 +1598,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						);
 						break;
 //
+					case 'dominationRetreatPhase':
+					case 'dominationCombatPhase':
 					case 'domination':
 //
 						if (!args.lastChance)

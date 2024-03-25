@@ -68,7 +68,7 @@ trait gameStateArguments
 		}
 //
 		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
-		$phase = $event ? $this->gamestate->states[$event['trigger_state']]['name'] : 'combat';
+		$phase = $event ? $this->gamestate->states[$event['trigger_state']]['name'] : $this->gamestate->state()['name'];
 //
 		return ['counters' => $counters, 'phase' => $this->PHASES[$phase], 'lastChance' => +self::getGameStateValue('round') === 8 && $phase === 'scoringPhase'];
 	}
@@ -207,26 +207,13 @@ trait gameStateArguments
 //
 		$this->possible = ['winner' => [], 'losers' => []];
 
-		$ships = 0;
-		foreach (Ships::getAtLocation($location, $attacker) as $shipID)
-		{
-			$ship = Ships::get($shipID);
-			switch ($ship['fleet'])
-			{
-				case 'ship':
-					$ships++;
-					break;
-				case 'fleet':
-					$this->possible[$attacker === $winner ? 'winner' : 'losers'][$attacker][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
-					break;
-			}
-			if ($ship > 0) $this->possible[($attacker === $winner) ? 'winner' : 'losers'][$attacker]['ships'] = $ships;
-		}
-//
-		foreach ($defenders as $defender)
+//------------------------
+// A-section: Military //
+//------------------------
+		if (!Factions::getStatus($attacker, 'military'))
 		{
 			$ships = 0;
-			foreach (Ships::getAtLocation($location, $defender) as $shipID)
+			foreach (Ships::getAtLocation($location, $attacker) as $shipID)
 			{
 				$ship = Ships::get($shipID);
 				switch ($ship['fleet'])
@@ -235,10 +222,32 @@ trait gameStateArguments
 						$ships++;
 						break;
 					case 'fleet':
-						$this->possible[$attacker !== $winner ? 'winner' : 'losers'][$defender][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
+						$this->possible[$attacker === $winner ? 'winner' : 'losers'][$attacker][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
 						break;
 				}
-				if ($ship > 0) $this->possible[$attacker !== $winner ? 'winner' : 'losers'][$defender]['ships'] = $ships;
+			}
+			if ($ships > 0) $this->possible[($attacker === $winner) ? 'winner' : 'losers'][$attacker]['ships'] = $ships;
+		}
+//
+		foreach ($defenders as $defender)
+		{
+			if (!Factions::getStatus($defender, 'military'))
+			{
+				$ships = 0;
+				foreach (Ships::getAtLocation($location, $defender) as $shipID)
+				{
+					$ship = Ships::get($shipID);
+					switch ($ship['fleet'])
+					{
+						case 'ship':
+							$ships++;
+							break;
+						case 'fleet':
+							$this->possible[$attacker !== $winner ? 'winner' : 'losers'][$defender][Ships::getStatus($shipID, 'fleet')] = intval(Ships::getStatus($shipID, 'ships'));
+							break;
+					}
+				}
+				if ($ships > 0) $this->possible[$attacker !== $winner ? 'winner' : 'losers'][$defender]['ships'] = $ships;
 			}
 		}
 //

@@ -198,8 +198,23 @@ $machinestates = [
 	240 => [
 		'name' => 'retreat',
 		'type' => 'game',
+		'action' => 'stBeforeRetreat',
+		'transitions' => ['domination' => 241, 'continue' => 242]
+	],
+	241 => [
+		'name' => 'dominationRetreatPhase',
+		'description' => clienttranslate('${phase}: Players have the opportunity to play a domination card'),
+		'descriptionmyturn' => clienttranslate('${phase}: ${you} have the opportunity to play a domination card'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argDomination',
+		'possibleactions' => ['domination', 'null'],
+		'transitions' => ['continue' => 241, 'end' => 242]
+	],
+	242 => [
+		'name' => 'retreat',
+		'type' => 'game',
 		'action' => 'stRetreat',
-		'transitions' => ['continue' => 240, 'retreat' => 245, 'retreatE' => 246, 'defensive' => 249, 'combat' => 250, 'endCombat' => 230]
+		'transitions' => ['continue' => 242, 'retreat' => 245, 'retreatE' => 246, 'combat' => 250, 'endCombat' => 230]
 	],
 	245 => [
 		'name' => 'retreat',
@@ -208,7 +223,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
 		'possibleactions' => ['domination', 'retreat', 'combat'],
-		'transitions' => ['continue' => 240]
+		'transitions' => ['continue' => 242]
 	],
 	246 => [
 		'name' => 'retreatE',
@@ -217,18 +232,24 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argRetreat',
 		'possibleactions' => ['domination', 'retreat', 'combat'],
-		'transitions' => ['continue' => 240]
+		'transitions' => ['continue' => 242]
 	],
-	249 => [
-		'name' => 'domination',
+	250 => [
+		'name' => 'combat',
+		'type' => 'game',
+		'action' => 'stBeforeCombat',
+		'transitions' => ['domination' => 251, 'continue' => 252]
+	],
+	251 => [
+		'name' => 'dominationCombatPhase',
 		'description' => clienttranslate('${phase}: Players have the opportunity to play a domination card'),
 		'descriptionmyturn' => clienttranslate('${phase}: ${you} have the opportunity to play a domination card'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argDomination',
 		'possibleactions' => ['domination', 'null'],
-		'transitions' => ['continue' => 250, 'end' => 250]
+		'transitions' => ['continue' => 251, 'end' => 252]
 	],
-	250 => [
+	252 => [
 		'name' => 'combat',
 		'type' => 'game',
 		'action' => 'stCombat',

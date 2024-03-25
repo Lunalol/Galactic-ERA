@@ -2724,8 +2724,10 @@ trait gameStateActions
 //
 					case MILITARY:
 //* -------------------------------------------------------------------------------------------------------- */
-						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('')]);
+						if (DEBUG && $this->gamestate->state()['name'] === 'dominationRetreatPhase') self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('In the current battle you are involved in, your opponents may not retreat before combat (not even with fleet “E”; any star people special effects still apply though)')]);
+						if (DEBUG && $this->gamestate->state()['name'] === 'dominationCombatPhase') self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('In the current battle you are involved in, none of your ships are destroyed<BR>If none of your ships are destroyed as loser of a battle, then less ships are destroyed from the winner accordingly')]);
 //* -------------------------------------------------------------------------------------------------------- */
+						Factions::setStatus($color, 'military', true);
 						break;
 //
 					case SPATIAL:

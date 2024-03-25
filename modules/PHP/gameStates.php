@@ -857,15 +857,42 @@ trait gameStates
 		$this->gamestate->changeActivePlayer($player_id);
 		$this->gamestate->nextState('combatChoice');
 	}
-	function stRetreat()
+	function stBeforeRetreat()
 	{
 		$attacker = Factions::getActive();
 		$location = Factions::getStatus($attacker, 'combat');
 //
 		$defenders = Ships::getConflictFactions($attacker, $location);
 		if (!$defenders) return $this->gamestate->nextState('endCombat');
+//------------------------
+// A-section: Military //
+//------------------------
+		$player_id = Factions::getPlayer($attacker);
+		if ($player_id >= 0 && $this->domination->countCardInLocation('A', $attacker) == 0 && DominationCards::A($attacker, MILITARY, 1, 'combat'))
+		{
+			$this->gamestate->setPlayersMultiactive([$player_id], 'end', true);
+			return $this->gamestate->nextState('domination');
+		}
+//------------------------
+// A-section: Military //
+//------------------------
+		$this->gamestate->nextState('continue');
+	}
+	function stRetreat()
+	{
+		$attacker = Factions::getActive();
+		$location = Factions::getStatus($attacker, 'combat');
+//
+		$defenders = Ships::getConflictFactions($attacker, $location);
 //
 		$winner = Factions::getStatus($attacker, 'winner');
+//------------------------
+// A-section: Military //
+//------------------------
+		if (!$winner && Factions::getStatus($attacker, 'military')) foreach ($defenders as $defender) Factions::setStatus($defender, 'retreat', 'no');
+//------------------------
+// A-section: Military //
+//------------------------
 		foreach ((in_array($winner, $defenders)) ? [$attacker] : $defenders as $defender)
 		{
 			if (Factions::getStatus($defender, 'retreat')) continue;
@@ -968,32 +995,16 @@ trait gameStates
 				return self::acRetreat($defender, array_pop($locations), true);
 			}
 		}
-//------------------------
-// A-section: Defensive //
-//------------------------
-		$players = [];
-		foreach (array_merge([$attacker], $defenders) as $color)
-		{
-			$player_id = Factions::getPlayer($color);
-			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, DEFENSIVE, 1, 'combat')) $players[] = $player_id;
-		}
-		if ($players)
-		{
-			$this->gamestate->setPlayersMultiactive($players, 'end', true);
-			return $this->gamestate->nextState('defensive');
-		}
-//------------------------
-// A-section: Defensive //
-//------------------------
-		$this->gamestate->nextState('combat');
+//
+		if ($winner) $this->gamestate->nextState('endCombat');
+		else $this->gamestate->nextState('combat');
 	}
-	function stCombat()
+	function stBeforeCombat()
 	{
 		$attacker = Factions::getActive();
 		$location = Factions::getStatus($attacker, 'combat');
 //
 		$defenders = Ships::getConflictFactions($attacker, $location);
-		if (!$defenders) return $this->gamestate->nextState('endCombat');
 //
 		Factions::setStatus($attacker, 'retreat');
 //
@@ -1040,23 +1051,15 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 		$attackerCV = $attackerCVs['total'];
-//------------------------
-// A-section: Defensive //
-//------------------------
-		if (Factions::getStatus($attacker, 'defensive'))
-		{
-			$attackerCV += 20;
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
+		self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => $attacker,
+			'LOG' => [
+				'log' => clienttranslate('Attacker side: ${CV} CV'),
+				'args' => ['CV' => $attackerCV]
+			]
+		]);
 //* -------------------------------------------------------------------------------------------------------- */
-			Factions::setStatus($attacker, 'defensive');
-		}
-//------------------------
-// A-section: Defensive //
-//------------------------
-//* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('Attacker side: ${CV} CV'), ['CV' => $attackerCV]);
-//* -------------------------------------------------------------------------------------------------------- */
+//
 		$defenderCV = 0;
 		foreach ($defenders as $defender)
 		{
@@ -1091,24 +1094,129 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 			$defenderCV += $defenderCVs['total'];
+		}
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => 'FFFFFF',
+			'LOG' => [
+				'log' => clienttranslate('Defender side: ${CV} CV'),
+				'args' => ['CV' => $defenderCV]
+			]
+		]);
+//* -------------------------------------------------------------------------------------------------------- */
+//
+//------------------------
+// A-section: Defensive //
+// A-section: Military //
+//------------------------
+		$players = [];
+		foreach (array_merge([$attacker], $defenders) as $color)
+		{
+			$player_id = Factions::getPlayer($color);
+			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, DEFENSIVE, 1, 'combat')) $players[] = $player_id;
+			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, MILITARY, 1, 'combat')) $players[] = $player_id;
+		}
+		if ($players)
+		{
+			$this->gamestate->setPlayersMultiactive($players, 'end', true);
+			return $this->gamestate->nextState('domination');
+		}
+//------------------------
+// A-section: Defensive //
+// A-section: Military //
+//------------------------
+		$this->gamestate->nextState('continue');
+	}
+	function stCombat()
+	{
+		$attacker = Factions::getActive();
+		$location = Factions::getStatus($attacker, 'combat');
+//
+		$defenders = Ships::getConflictFactions($attacker, $location);
+//
+		Factions::setStatus($attacker, 'retreat');
+//
+		$fleet = Ships::getFleet($attacker, 'A');
+		$attackerAssault = $fleet && Ships::get($fleet)['location'] === $location;
+		$defenderAssault = false;
+		foreach ($defenders as $defender)
+		{
+			$fleet = Ships::getFleet($defender, 'A');
+			if ($fleet && Ships::get($fleet)['location'] === $location)
+			{
+				$defenderAssault = true;
+				break;
+			}
+		}
+//
+// ALLIANCE OF LIGHT (STS) : Your ships get +2 CV each when you are the attacker in combat against an STO player (even if there are also STS players involved)
+//
+		$STO = false;
+		foreach ($defenders as $defender) if (Factions::getAlignment($defender) === 'STO') $STO = true;
+		$allianceOfDarkness = Factions::getStarPeople($attacker) === 'Alliance' && Factions::getAlignment($attacker) == 'STS' && $STO;
+//
+		$attackerCVs = Ships::CV($attacker, $location, $defenderAssault, false, $allianceOfDarkness);
+		$attackerCV = $attackerCVs['total'];
+//------------------------
+// A-section: Defensive //
+//------------------------
+		if (Factions::getStatus($attacker, 'defensive'))
+		{
+			if (intval($location[0]) === Factions::getHomeStar($attacker) * 0)
+			{
+				$attackerCV += 20;
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => $attacker,
+					'LOG' => [
+						'log' => clienttranslate('Attacker side: ${CV} CV'),
+						'args' => ['CV' => $attackerCV]
+					]
+				]);
+//* -------------------------------------------------------------------------------------------------------- */
+			}
+			Factions::setStatus($attacker, 'defensive');
+		}
+//------------------------
+// A-section: Defensive //
+//------------------------
+//
+		$defenderCV = 0;
+		foreach ($defenders as $defender)
+		{
+			Factions::setStatus($defender, 'retreat');
+//
+// ALLIANCE OF LIGHT (STO) : Your ships get +4 CV each when defending in combat
+//
+			$allianceOfLight = Factions::getStarPeople($defender) === 'Alliance' && Factions::getAlignment($defender) == 'STO';
+//
+			$defenderCVs = Ships::CV($defender, $location, $attackerAssault, $allianceOfLight, false);
+			$defenderCV += $defenderCVs['total'];
 //------------------------
 // A-section: Defensive //
 //------------------------
 			if (Factions::getStatus($defender, 'defensive'))
 			{
-				$defenderCV += 20;
+				if (intval($location[0]) === Factions::getHomeStar($defender))
+				{
+					$defenderCV += 20;
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
+					self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
 //* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => 'FFFFFF',
+						'LOG' => [
+							'log' => clienttranslate('Defender side: ${CV} CV'),
+							'args' => ['CV' => $defenderCV]
+						]
+					]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
 				Factions::setStatus($defender, 'defensive');
 			}
 //------------------------
 // A-section: Defensive //
 //------------------------
 		}
-//* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('Defender side: ${CV} CV'), ['CV' => $defenderCV]);
-//* -------------------------------------------------------------------------------------------------------- */
 //
 		if ($attackerCV > $defenderCV) $attackerIsWinner = true;
 		else if ($attackerCV < $defenderCV) $attackerIsWinner = false;
