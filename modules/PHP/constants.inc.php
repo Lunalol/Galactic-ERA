@@ -38,6 +38,8 @@ define('ALWAYS', 0);
 define('MOBILE', 1);
 define('NEVER', 2);
 //
+define('PATH', 110);
+//
 // Game globals
 //
 define('ROUND', 10);

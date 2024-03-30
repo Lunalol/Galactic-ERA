@@ -1,3 +1,22 @@
+/* Simulate title property on mobile */
+@media (pointer: coarse), (hover: none) {
+	[title] {
+        position: relative;
+        display: inline-flex;
+        justify-content: center;
+	}
+	[title]:focus::after {
+        content: attr(title);
+        position: absolute;
+        top: 90%;
+        color: #000;
+        background-color: #fff;
+        border: 1px solid;
+        width: fit-content;
+        padding: 3px;
+	}
+}
+
 @font-face {
     font-family: 'ERA';
     src: url('img/fonts/Xolonium-Regular.otf') format('opentype');
@@ -17,10 +36,23 @@
     background: #ffffff00;
 }
 
+.ERAcontrols {
+	padding: 5px 0px 5px 0px;
+	font-size: 20px;
+}
+.mobile_version .ERAcontrols {
+	padding: 15px 0px 5px 0px;
+	font-size: 30px;
+}
+
+.ERAicon {
+	vertical-align: middle;
+	padding: 0px 10px;
+}
+
 html,body {
     background-image: url("img/orion.jpg") !important;
 }
-
 div,img {
 	user-select: none;
 }
@@ -43,7 +75,6 @@ div,img {
     background:rgba(50, 50, 50, 90%) !important;
     color:white !important;
 }
-
 .log_replayable .roundedbox {
     background-color:rgba(0, 0, 0, 50%);
     color:white;
@@ -51,33 +82,12 @@ div,img {
 #page-content {
 	/*	zoom: 1 !important;*/
 }
-
 .midSizeDialog {
 	max-width: fit-content;
 }
-
 #game_play_area {
 	will-change: transform;
 }
-/* Simulate title property on mobile */
-@media (pointer: coarse), (hover: none) {
-	[title] {
-        position: relative;
-        display: inline-flex;
-        justify-content: center;
-	}
-	[title]:focus::after {
-        content: attr(title);
-        position: absolute;
-        top: 90%;
-        color: #000;
-        background-color: #fff;
-        border: 1px solid;
-        width: fit-content;
-        padding: 3px;
-	}
-}
-
 .ERAbutton {
 	opacity: 50%;
 }
@@ -1281,6 +1291,10 @@ path.ERAselected
 {
 	stroke: white;
 	stroke-width: 20;
+}
+
+.ERAnoPath .ERApath {
+	display: none;
 }
 
 /* <editor-fold defaultstate="collapsed" desc="GODMODE"> */

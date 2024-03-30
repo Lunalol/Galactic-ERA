@@ -9,17 +9,33 @@ $game_options = [
 		'values' => [
 			INTRODUCTORY => ['name' => totranslate('Introductory Game'), 'description' => totranslate('Leave out the galactic goal for an introductory game'), 'tmdisplay' => totranslate('Introductory Game (no galactic goal)')],
 			STANDARD => ['name' => totranslate('Standard Game')],
-			MANUAL => ['name' => totranslate('Deterministic Setup')],
+			MANUAL => ['name' => totranslate('Selected Story & Goal')],
 		],
 		'default' => INTRODUCTORY,
 	],
 	GALACTICSTORY => [
 		'name' => totranslate('Galactic story'),
 		'values' => [
-			JOURNEYS => ['name' => totranslate('Journeys'), 'tmdisplay' => totranslate('Galactic story: Journeys')],
-			MIGRATIONS => ['name' => totranslate('Migrations'), 'tmdisplay' => totranslate('Galactic story: Migrations')],
-			RIVALRY => ['name' => totranslate('Rivalry'), 'tmdisplay' => totranslate('Galactic story: Rivalry')],
-			WAR => ['name' => totranslate('War'), 'tmdisplay' => totranslate('War')],
+			JOURNEYS => [
+				'name' => totranslate('Journeys'),
+				'tmdisplay' => totranslate('Galactic story: Journeys'),
+				'description' => totranslate('The galaxy seeks growth through exploration and traveling great distances. Seeking knowledge of the unknown is the ultimate aim of the Universe.')
+			],
+			MIGRATIONS => [
+				'name' => totranslate('Migrations'),
+				'tmdisplay' => totranslate('Galactic story: Migrations'),
+				'description' => totranslate('The galaxy seeks growth through lots of population. A plentiful harvest of souls enriches the Universe.')
+			],
+			RIVALRY => [
+				'name' => totranslate('Rivalry'),
+				'tmdisplay' => totranslate('Galactic story: Rivalry'),
+				'description' => totranslate('The galaxy seeks growth through non-destructive competition and rejects cowardice. A friendly amount of competition is the most beneficial for all.')
+			],
+			WAR => [
+				'name' => totranslate('War'),
+				'tmdisplay' => totranslate('Galactic story: War'),
+				'description' => totranslate('The galaxy seeks growth through fierce battles. The most powerful souls are forged in the fires of war.')
+			],
 		],
 		'displaycondition' => [['type' => 'otheroption', 'id' => GAME, 'value' => MANUAL]],
 	],
@@ -61,5 +77,10 @@ $game_preferences = [
 			ALWAYS => ['name' => totranslate('Always')],
 			MOBILE => ['name' => totranslate('Mobile only')],
 			NEVER => ['name' => totranslate('Never')],
+		]],
+	PATH => ['name' => totranslate('Movement paths'), 'needReload' => false, 'default' => 1,
+		'values' => [
+			0 => ['name' => totranslate('Not displayed')],
+			1 => ['name' => totranslate('Displayed')],
 		]],
 ];

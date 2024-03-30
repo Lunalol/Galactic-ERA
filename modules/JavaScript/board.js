@@ -34,6 +34,15 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			this.playarea = dojo.byId('ERAplayArea');
 			this.board = dojo.byId('ERAboard');
 //
+// Help
+//
+			dojo.setAttr('ERAhome', 'title', _('Center board on Home Star'));
+			dojo.setAttr('ERAview', 'title', _('Hide extra pop-ups'));
+			dojo.setAttr('ERAzoomMinus', 'title', _('Zoom out board'));
+			dojo.setAttr('ERAzoomPlus', 'title', _('Zoom in board'));
+			dojo.setAttr('ERArotateAntiClockwise', 'title', _('Rotate board anti-clockwise around center sector'));
+			dojo.setAttr('ERArotateClockwise', 'title', _('Rotate board clockwise around center sector'));
+//
 			for (let faction of Object.values(this.bgagame.gamedatas.factions))
 			{
 				if (true)

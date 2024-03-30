@@ -32,7 +32,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 				const galacticGoalNode = dojo.place(`<img id='ERAgalacticGoal' src='${g_gamethemeurl}img/galacticGoals/${this.bgagame.gamedatas.galacticGoal}.png' draggable='false'>`, 'ERA-DP');
 //
 				let html = `<H1 style='font-family:ERA;'>${_('Galactic Goal') + ' ' + _(this.bgagame.gamedatas.galacticGoal)}</H1>`;
-				html += '<div style="text-align:justify;">' + bgagame.GALACTIC_GOALS[this.bgagame.gamedatas.galacticGoal] + '</div>';
+				html += '<div style="text-align:justify;"><HR>' + bgagame.GALACTIC_GOALS[this.bgagame.gamedatas.galacticGoal] + '</div>';
 //
 				this.goal = new dijit.Tooltip({connectId: galacticGoalNode, showDelay: 500, hideDelay: 0, label: html, position: ['below']});
 			}
@@ -366,18 +366,9 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 				dojo.query(`.ERAcounter-war[color='${faction.color}']`).forEach((node) => dojo.toggleClass(node, 'ERAhide', !atWar.includes(dojo.getAttr(node, 'on'))));
 			}
 //
-			if ('ships' in faction) dojo.query(`.ERAships[faction=${faction.color}]`).forEach((node) => node.innerHTML = faction.ships);
+			if ('ships' in faction) dojo.query(`.ERAships[faction=${faction.color}]`).forEach((node) => node.innerHTML = `${faction.ships}/16`);
 			if ('emergencyReserve' in faction) dojo.query(`.ERAemergencyReserve-${faction.color}`).toggleClass('ERAhide', faction.emergencyReserve !== '1');
 			if (faction.player_id <= 0) dojo.query(`.ERAemergencyReserve-${faction.color}`).addClass('ERAhide');
-//
-// Panels order
-//
-//			for (let node of dojo.query('.ERAorder', 'player_boards').sort((a, b) => dojo.getAttr(a, 'order')-dojo.getAttr(b, 'order')))
-//			{
-//				const faction=dojo.getAttr(node, 'faction');
-//				$('player_boards').insertBefore($(`overall_player_board_${this.bgagame.gamedatas.factions[faction].player_id}`), null);
-//			}
-//
 		}
 	}
 	);

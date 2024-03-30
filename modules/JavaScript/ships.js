@@ -213,6 +213,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					path += 'L' + this.board.hexagons[from].x + ' ' + this.board.hexagons[from].y;
 					from = paths[from].from;
 				}
+				SVGpath.setAttribute('class', 'ERApath');
 				SVGpath.setAttribute('stroke', '#ffffff40');
 				SVGpath.setAttribute('fill', 'none');
 				SVGpath.setAttribute('d', path);

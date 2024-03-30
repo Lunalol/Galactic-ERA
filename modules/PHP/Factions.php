@@ -211,7 +211,11 @@ class Factions extends APP_GameClass
 		$population = max(6, array_sum(Counters::getPopulations($color, true)));
 //
 		$ships = self::TECHNOLOGIES['Robotics'][self::getTechnology($color, 'Robotics')];
-		foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $ships++;
+//
+// COSMIC MAYANS: May "ally" with advanced neutrals
+//
+		if (Factions::getStarPeople($color) !== 'Mayans') foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $ships++;
+//
 		foreach (self::BUILD as $step)
 		{
 			if ($step > $population) break;

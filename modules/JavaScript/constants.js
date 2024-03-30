@@ -9,6 +9,8 @@ const FAST = 2;
 //
 DELAYS = {[SLOW]: 1000, [NORMAL]: 500, [FAST]: 250};
 //
+const PATH = 110;
+//
 // Size of board
 //
 const boardWidth = 10000;

@@ -10,15 +10,15 @@
 		<div id='ERA-DP'></div>
 	</div>
 </div>
-<div id='ERAcontrols'>
-	<span id='ERAzoomMinus' style="padding: 0px 10px;">🔍</span>
+<div id='ERAcontrols' class='ERAcontrols'>
+	<span id='ERAzoomMinus' class='ERAicon'>🔍</span>
 	<input id='ERAzoomLevel' type='range' style='vertical-align:middle;'/>
-	<span id='ERAzoomPlus' style="padding: 0px 10px;">🔎</span>
-	<span id='ERAhome' class="ERAhome fa fa-home fa-lg" style="margin: 0px 10px;padding: 0px 10px;"></span>
-	<span id='ERAview' class="ERAhome fa fa-eye fa-lg" style="margin: 0px 10px;padding: 0px 10px;"></span>
-	<span id='ERArotateAntiClockwise' style="padding: 0px 10px;">⭯</span>
+	<span id='ERAzoomPlus' class='ERAicon'>🔎</span>
+	<span id='ERAhome' class="ERAicon fa fa-home fa-2x"></span>
+	<span id='ERAview' class="ERAicon fa fa-eye fa-2x"></span>
+	<span id='ERArotateAntiClockwise' class='ERAicon'>⟲</span>
 	<input id='ERArotate' type='range' min='-180' max='180' value='0' style='vertical-align:middle;'/>
-	<span id='ERArotateClockwise' style="padding: 0px 10px;">⭮</span>
+	<span id='ERArotateClockwise' class='ERAicon'>⟳</span>
 </div>
 
 <script type="text/javascript">

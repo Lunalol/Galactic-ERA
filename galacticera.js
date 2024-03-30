@@ -101,14 +101,14 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			};
 //
 			this.GALACTIC_GOALS = {
-				Control: _('<HR>Players score 10 DP per star they have in the center of a sector at game end'),
-				Cooperation: _('<HR>Players immediately score 2 DP per technology trade they are part of<HR>Players immediately lose 3 DP when they declare war on a player (you only lose this once per player)'),
-				Discovery: _('<HR>Players keep the star counters of neutral stars they took during the course of the game (a primitive neutral that was “advanced” by the STO Annunaki still counts as a primitive for this purpose)<BR>At game end, the player with the most star counters of a type scores 10 DP'),
-				Leadership: _('<HR>At the end of every era (after the scoring phase), the player with the most DP of all players belonging to an alignment places a ship of their color (from the supply or the map) on the galactic goal tile<BR>In case of a tie each player among the tied does this. At the end of the third era do this before adding any game end DP<BR>The player with the most ships on the galactic goal tile at game end scores 10 DP (solo variant: 20 DP)'),
-				Legacy: _('<HR>Player scores 10 DP per star they have with a relic at game end (the one-time effect relics do not count)'),
-				'Personal Growth': _('<HR>Players score double for domination cards (i.e., all effects on a card that directly give DP)<BR>Fractions are not rounded down (any half DP become whole)'),
-				Power: _('<HR>Players score 8 DP if they have <B>more</B> ships in a sector than all other players’ ships there <B>combined</B> (no DP in case of a tie)'),
-				Presence: _('<HR>Players score 10 DP per sector where they have at least 2 stars at game end')
+				Control: _('Players score 10 DP per star they have in the center of a sector at game end'),
+				Cooperation: _('Players immediately score 2 DP per technology trade they are part of<BR>Players immediately lose 3 DP when they declare war on a player (you only lose this once per player)'),
+				Discovery: _('Players keep the star counters of neutral stars they took during the course of the game (a primitive neutral that was “advanced” by the STO Annunaki still counts as a primitive for this purpose)<BR>At game end, the player with the most star counters of a type scores 10 DP'),
+				Leadership: _('At the end of every era (after the scoring phase), the player with the most DP of all players belonging to an alignment places a ship of their color (from the supply or the map) on the galactic goal tile<BR>In case of a tie each player among the tied does this. At the end of the third era do this before adding any game end DP<BR>The player with the most ships on the galactic goal tile at game end scores 10 DP (solo variant: 20 DP)'),
+				Legacy: _('Player scores 10 DP per star they have with a relic at game end (the one-time effect relics do not count)'),
+				'Personal Growth': _('Players score double for domination cards (i.e., all effects on a card that directly give DP)<BR>Fractions are not rounded down (any half DP become whole)'),
+				Power: _('Players score 8 DP if they have <B>more</B> ships in a sector than all other players’ ships there <B>combined</B> (no DP in case of a tie)'),
+				Presence: _('Players score 10 DP per sector where they have at least 2 stars at game end')
 			};
 //
 			this.DOMINATIONS = {
@@ -394,6 +394,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			for (let faction of Object.values(gamedatas.factions)) this.players[faction.player_id] = faction.color;
 			this.color = this.player_id in this.players ? this.players[this.player_id] : null;
 //
+			dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - this.prefs[PATH].value);
+//
 // GOD MODE
 //
 			dojo.connect($('ERAalien'), 'click', () => {
@@ -544,24 +546,28 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			dojo.query(`.ERAstarPeople`).forEach((node) =>
 			{
-				dojo.connect(node, 'click', (event) =>
+				if (!['Farmers', 'Slavers'].includes(dojo.getAttr(node, 'starpeople')))
 				{
-					dojo.stopEvent(event);
-					if (dojo.hasClass(event.currentTarget, 'ERAfocus'))
+					dojo.connect(node, 'click', (event) =>
 					{
-						if (!dojo.hasClass(event.currentTarget, 'ERA-STO')) dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STS'));
+						dojo.stopEvent(event);
+//
+						if (dojo.hasClass(event.currentTarget, 'ERAfocus'))
+						{
+							if (!dojo.hasClass(event.currentTarget, 'ERA-STO')) dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STS'));
+							else dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STO'));
+							dojo.toggleClass(event.currentTarget, 'ERA-STO');
+						}
+						else this.focus(event.currentTarget);
+					});
+					dojo.connect(node, 'transitionend', (event) =>
+					{
+						if (dojo.hasClass(event.currentTarget, 'ERA-STS')) dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STS'));
 						else dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STO'));
-						dojo.toggleClass(event.currentTarget, 'ERA-STO');
-					}
-					else this.focus(event.currentTarget);
-				});
-				dojo.connect(node, 'transitionend', (event) =>
-				{
-					if (dojo.hasClass(event.currentTarget, 'ERA-STS')) dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STS'));
-					else dojo.setAttr(event.currentTarget.querySelector('img'), 'src', dojo.getAttr(event.currentTarget, 'STO'));
-					dojo.toggleClass(event.currentTarget, 'ERA-STO', dojo.hasClass(event.currentTarget, 'ERA-STS'));
-					dojo.style(event.currentTarget, {'pointer-events': '', 'z-index': ''});
-				});
+						dojo.toggleClass(event.currentTarget, 'ERA-STO', dojo.hasClass(event.currentTarget, 'ERA-STS'));
+						dojo.style(event.currentTarget, {'pointer-events': '', 'z-index': ''});
+					});
+				}
 			});
 //
 // Gray pawn
@@ -2582,6 +2588,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						document.documentElement.style.setProperty('--DELAY', DELAY);
 						this.setSynchronous();
 						break;
+					case PATH:
+						dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - value);
 				}
 			}
 		},
