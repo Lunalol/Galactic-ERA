@@ -884,6 +884,7 @@ trait gameStates
 		$location = Factions::getStatus($attacker, 'combat');
 //
 		$defenders = Ships::getConflictFactions($attacker, $location);
+		if (!$defenders) return $this->gamestate->nextState('endCombat');
 //
 		$winner = Factions::getStatus($attacker, 'winner');
 //------------------------
@@ -1005,6 +1006,7 @@ trait gameStates
 		$location = Factions::getStatus($attacker, 'combat');
 //
 		$defenders = Ships::getConflictFactions($attacker, $location);
+		if (!$defenders) return $this->gamestate->nextState('endCombat');
 //
 		Factions::setStatus($attacker, 'retreat');
 //

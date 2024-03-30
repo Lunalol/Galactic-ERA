@@ -199,7 +199,7 @@ $machinestates = [
 		'name' => 'retreat',
 		'type' => 'game',
 		'action' => 'stBeforeRetreat',
-		'transitions' => ['domination' => 241, 'continue' => 242]
+		'transitions' => ['domination' => 241, 'continue' => 242, 'endCombat' => 230]
 	],
 	241 => [
 		'name' => 'dominationRetreatPhase',
@@ -238,7 +238,7 @@ $machinestates = [
 		'name' => 'combat',
 		'type' => 'game',
 		'action' => 'stBeforeCombat',
-		'transitions' => ['domination' => 251, 'continue' => 252]
+		'transitions' => ['domination' => 251, 'continue' => 252, 'endCombat' => 230]
 	],
 	251 => [
 		'name' => 'dominationCombatPhase',
