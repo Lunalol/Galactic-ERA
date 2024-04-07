@@ -762,6 +762,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 										}
 										if (stateName === 'individualChoice') this.action('individualChoice', {color: this.color, technology: counter});
 										if (stateName === 'stealTechnology') this.action('stealTechnology', {color: this.color, technology: counter});
+										if (stateName === 'researchPlus') this.action('researchPlus', {color: this.color, technology: 'Robotics', otherTechnology: counter});
 									}
 								});
 							}
@@ -2205,7 +2206,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		setSynchronous()
 		{
 			this.notifqueue.setSynchronous('updateRound', DELAY);
-			this.notifqueue.setSynchronous('updateFaction', DELAY / 2);
+			this.notifqueue.setSynchronous('updateFaction', DELAY / 4);
 			this.notifqueue.setSynchronous('playDomination', DELAY);
 //
 			this.notifqueue.setSynchronous('placeCounter', DELAY / 2);

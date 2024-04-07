@@ -343,7 +343,8 @@ class action_galacticera extends APP_GameAction
 		$technology = self::getArg("technology", AT_alphanum, true);
 		$otherColor = self::getArg("otherColor", AT_alphanum, false);
 		$growthAction = self::getArg("growthAction", AT_alphanum, false);
-		$this->game->acResearchPlus($color, $technology, $otherColor, $growthAction);
+		$otherTechnology = self::getArg("otherTechnology", AT_alphanum, false);
+		$this->game->acResearchPlus($color, $technology, $otherColor, $growthAction, $otherTechnology);
 //
 		self::ajaxResponse("");
 	}

@@ -90,7 +90,7 @@ class Counters extends APP_GameClass
 	}
 	static function gainStar(string $color, string $location, bool $willDeclareWar = false, bool $bonus = false): array
 	{
-		if (!$willDeclareWar && self::isBlocked($color, $location, $willDeclareWar)) return [0, 0, 0];
+		if (!$willDeclareWar && self::isBlocked($color, $location, $willDeclareWar)) return [0, 0, 'blocked'];
 //
 		$sizeOfPopulation = 0;
 //
@@ -104,7 +104,7 @@ class Counters extends APP_GameClass
 		if ($sizeOfPopulation)
 		{
 			$otherColor = $homeStar ? Ships::get($homeStar[0])['color'] : Counters::get($populations[0])['color'];
-			if ($willDeclareWar && self::isBlocked($color, $location, $otherColor)) return [0, 0, 0];
+			if ($willDeclareWar && self::isBlocked($color, $location, $otherColor)) return [0, 0, 'blocked'];
 //
 // ORION STO: Your population counts double for being conquered
 //
@@ -151,7 +151,7 @@ class Counters extends APP_GameClass
 					switch (Factions::getAlignment($color))
 					{
 						case 'STO':
-							return [0, 0, 0];
+							return [0, 0, 'primitive'];
 						case 'STS':
 							$SHIPS = 1;
 							$population = 2;

@@ -1,3 +1,5 @@
+const STEP = 2.5;
+
 define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 {
 	return declare("Ships", null,
@@ -121,6 +123,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			{
 				dojo.setAttr(node, 'fleet', fleet.fleet);
 				if (+fleet.ships > 0) dojo.setAttr(node, 'ships', fleet.ships);
+				if (/^\d:([+-]\d){3}$/.test(dojo.getAttr(node, 'location'))) this.arrange(dojo.getAttr(node, 'location'));
 			}
 		},
 		homeStarEvacuation: function (homeStar, to)
@@ -162,21 +165,22 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		{
 			let index = fleet = 0;
 			nodes = Array.from(dojo.query(`.ERAship[location='${location}']`, 'ERAboard')).sort((a, b) => {
-				const score_a = (dojo.getAttr(a, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(a, 'fleet') ? 0 : 1);
-				const score_b = (dojo.getAttr(b, 'color') === this.bgagame.color ? 1 : 0) * 10 + (dojo.hasAttr(b, 'fleet') ? 0 : 1);
-				return score_a - score_b;
+				const score_a = (dojo.getAttr(a, 'color') === this.bgagame.color ? 1 : 0) * 10 + {null: -1, '?': 0, A: 1, B: 2, C: 3, D: 4, E: 5}[dojo.getAttr(a, 'fleet')];
+				const score_b = (dojo.getAttr(b, 'color') === this.bgagame.color ? 1 : 0) * 10 + {null: -1, '?': 0, A: 1, B: 2, C: 3, D: 4, E: 5}[dojo.getAttr(b, 'fleet')];
+				return score_b - score_a;
 			});
+//
 			for (const node of nodes)
 			{
 				if (dojo.hasAttr(node, 'fleet'))
 				{
-					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${ -10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
+					dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(${STEP * (index - nodes.length / 2) * node.clientWidth / 10}px, ${ -10 + STEP * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
 					dojo.style(node, 'z-index', 200 + index);
 					fleet++;
 				}
 				else
 				{
-					dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translate(${2 * (index - nodes.length / 2) * node.clientWidth / 10}px, ${ -10 + 2 * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
+					dojo.style(node, 'transform', `scale(25%) rotate(calc(-1 * var(--ROTATE))) translate(${STEP * (index - nodes.length / 2) * node.clientWidth / 10}px, ${ -10 + STEP * (index - nodes.length / 2) * node.clientHeight / 10}px)`);
 					dojo.style(node, 'z-index', 205 + index);
 				}
 				index++;

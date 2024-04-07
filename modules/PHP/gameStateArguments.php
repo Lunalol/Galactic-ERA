@@ -100,6 +100,7 @@ trait gameStateArguments
 				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 			}
 		}
+		asort($this->possible['fleets']);
 //
 		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
@@ -166,6 +167,7 @@ trait gameStateArguments
 			$this->possible['fleets'][$fleet] = $ship;
 			$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 		}
+		asort($this->possible['fleets']);
 //
 		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
@@ -381,6 +383,7 @@ trait gameStateArguments
 								$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 							}
 						}
+						asort($this->possible['fleets']);
 					}
 					break;
 			}
@@ -492,6 +495,7 @@ trait gameStateArguments
 				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 			}
 		}
+		asort($this->possible['fleets']);
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
@@ -513,6 +517,7 @@ trait gameStateArguments
 				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 			}
 		}
+		asort($this->possible['fleets']);
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
@@ -565,6 +570,7 @@ trait gameStateArguments
 				case 'Military':
 //
 					foreach (Factions::atWar($color) as $otherColor) $this->possible['Military'][$otherColor] = array_diff(Factions::getStatus($otherColor, 'counters'), array_keys($this->TECHNOLOGIES));
+//
 					break;
 //
 				case 'Spirituality':
@@ -577,6 +583,17 @@ trait gameStateArguments
 					$cards = $this->domination->countCardInLocation('A', $color) + $this->domination->countCardInLocation('B', $color);
 					$this->possible['dominationCardExchange'] = ($cards < 2) && is_null(Factions::getStatus($color, 'exchange'));
 					if ($this->possible['dominationCardExchange']) $this->possible['hand'] = $this->domination->getPlayerHand($color);
+//
+					break;
+//
+				case 'Robotics':
+//
+					$this->possible['color'] = $color;
+					$this->possible['counters'] = array_diff(Factions::getStatus($color, 'technologies'), ['Robotics']);
+					$this->possible['Robotics'] = true;
+//
+					break;
+//
 			}
 		}
 //
@@ -618,6 +635,7 @@ trait gameStateArguments
 						$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 					}
 				}
+				asort($this->possible['fleets']);
 //
 				break;
 //

@@ -841,7 +841,7 @@ class Automas extends APP_GameClass
 // Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'player');
-						Factions::setStatus($color, 'special', true);
+//						Factions::setStatus($color, 'special', true);
 // Spawn ships at 2 wormholes
 						$counters[] = 'buildShips';
 						Factions::setStatus($color, 'buildShips', array_combine(array_slice($wormholes, 0, 2), [$ships, $ships]));
@@ -870,7 +870,7 @@ class Automas extends APP_GameClass
 // Gain a star(**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'any');
-						Factions::setStatus($color, 'special', true);
+//						Factions::setStatus($color, 'special', true);
 // Grow population (if they cannot grow any population, then they spawn ships at the center sector wormhole instead)
 						$counters[] = 'growPopulation';
 //						$counters[] = 'buildShips';
@@ -880,7 +880,7 @@ class Automas extends APP_GameClass
 // Gain a neutral star (otherwise one of yours)(**)
 						$counters[] = 'gainStar';
 						Factions::setStatus($color, 'gainStar', 'neutral');
-						Factions::setStatus($color, 'special', true);
+//						Factions::setStatus($color, 'special', true);
 // Research a randomly selected technology (determine which one immediately and use a technology counter to mark as reminder)
 						$counters[] = 'research';
 						self::randomTechnology($color, $counters);
@@ -909,6 +909,8 @@ class Automas extends APP_GameClass
 		{
 //
 			case 'gainStar':
+//
+				Factions::setStatus($color, 'special', true);
 //
 				$shipLocations = array_unique(array_column(Ships::getAll($color), 'location'));
 				$stars = array_keys(Counters::getPopulations(Factions::getNotAutomas()));

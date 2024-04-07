@@ -472,7 +472,7 @@ trait gameStateActions
 //------------------------
 // A-section: Diplomatic //
 //------------------------
-				if (Factions::getStatus($on, 'diplomatic')) throw new BgaUserException(self::_('You can\'t declare war on this player (Diplomatic)'));
+				if (Factions::getStatus($on, 'diplomatic')) throw new BgaUserException(self::_('You cannot declare war on this player (Diplomatic)'));
 //------------------------
 // A-section: Diplomatic //
 //------------------------
@@ -495,7 +495,7 @@ trait gameStateActions
 					if ($this->gamestate->state()['name'] === 'movement') $possible = true;
 					if ($this->gamestate->state()['name'] === 'researchPlus') $possible = true;
 				}
-				if (!$possible) throw new BgaUserException(self::_('You can\'t declare war now'));
+				if (!$possible) throw new BgaUserException(self::_('You cannot declare war now'));
 			}
 		}
 //
@@ -1457,6 +1457,7 @@ trait gameStateActions
 //
 		if (Factions::getStatus($color, 'central')) array_push($counters, 'gainStar+');
 		Factions::setStatus($color, 'counters', array_values($counters));
+		Factions::setStatus($color, 'technologies', array_values(array_intersect(array_keys(Factions::TECHNOLOGIES), $counters)));
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
 	}
@@ -1577,8 +1578,6 @@ trait gameStateActions
 		unset($counters[array_search('research', $counters)]);
 		if (!in_array('research', Factions::getStatus($color, 'used'))) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), ['research'])));
 //
-		foreach ($technologies as $technology) if ($technology !== 'Robotics') Factions::setStatus($color, 'otherTechnology', $technology);
-//
 		foreach ($technologies as $technology)
 		{
 			$level = self::gainTechnology($color, $technology);
@@ -1596,7 +1595,7 @@ trait gameStateActions
 		self::updateScoring();
 		self::triggerAndNextState('advancedFleetTactics');
 	}
-	function acResearchPlus($color, $technology, $otherColor, $growthAction)
+	function acResearchPlus($color, $technology, $otherColor, $growthAction, $otherTechnology)
 	{
 		$player_id = Factions::getPlayer($color);
 //
@@ -1618,7 +1617,7 @@ trait gameStateActions
 //
 					if (!array_key_exists($otherColor, $this->possible[$technology])) throw new BgaVisibleSystemException("Invalid color : $otherColor");
 					if (!in_array($growthAction, $this->possible[$technology][$otherColor])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
-					if ($growthAction === 'buildShips' && Factions::getPlayer($otherColor) <= 0) throw new BgaUserException(self::_('You can\'t cancel a spawn ships growth action'));
+					if ($growthAction === 'buildShips' && Factions::getPlayer($otherColor) <= 0) throw new BgaUserException(self::_('You cannot cancel a spawn ships growth action'));
 					if (Factions::getTechnology($otherColor, 'Spirituality') >= 5) throw new BgaUserException(self::_('Spirituality level 5 or 6 are imune to this'));
 //
 					$counters = Factions::getStatus($otherColor, 'counters');
@@ -1632,6 +1631,21 @@ trait gameStateActions
 //
 					if (!in_array($growthAction, $this->possible['counters'])) throw new BgaVisibleSystemException("Invalid growthAction : $growthAction");
 					Factions::setStatus($color, 'counters', array_values(array_merge(Factions::getStatus($color, 'counters'), [$growthAction])));
+//
+					break;
+//
+				case 'Robotics':
+//
+					if (!in_array($otherTechnology, $this->possible['counters'])) throw new BgaVisibleSystemException("Invalid technology : $technology");
+//
+					self::gainTechnology($color, $otherTechnology);
+//
+					$DP = -2;
+					self::gainDP($color, $DP);
+					self::incStat($DP, 'DP_LOST', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
+//* -------------------------------------------------------------------------------------------------------- */
 //
 					break;
 //
@@ -1665,8 +1679,10 @@ trait gameStateActions
 		[$type, $SHIPS, $population] = Counters::gainStar($color, $location, $automa, $center);
 		if (!$type)
 		{
+			if ($population === 'blocked') throw new BgaUserException(self::_('You cannot gain a blocked star'));;
+			if ($population === 'primitive') throw new BgaUserException(self::_('STO players cannot subjugate primitive civilizations'));;
 			if ($SHIPS > 0) throw new BgaUserException(sprintf(self::_('You need at least %d ships to gain this star'), $SHIPS));
-			else throw new BgaUserException(self::_('You can\'t gain this star'));
+			throw new BgaUserException(self::_('You cannot gain this star'));
 		}
 //
 		if ($type === LIBERATE || $type === CONQUERVS)

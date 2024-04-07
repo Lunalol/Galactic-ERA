@@ -1412,41 +1412,44 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 			switch ($technology)
 			{
+//
 				case 'Military':
+//
 					return;
+//
 				case 'Spirituality':
+//
 					Factions::setStatus($color, 'exchange');
 					return;
+//
 				case 'Propulsion':
+//
 					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar', 'gainStar']));
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} gets 2 free Gain Star actions'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
-				case 'Robotics':
-					if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
-					else Factions::setStatus($color, 'researchPlus');
-					$otherTechnology = Factions::getStatus($color, 'otherTechnology');
-					if ($otherTechnology)
-					{
-						self::gainTechnology($color, $otherTechnology);
 //
-						$DP = -2;
-						self::gainDP($color, $DP);
-						self::incStat($DP, 'DP_LOST', $player_id);
-//* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} loses ${DP} DP'), ['DP' => -$DP, 'player_name' => Factions::getName($color), 'faction' => ['color' => $color, 'DP' => Factions::getDP($color)]]);
-//* -------------------------------------------------------------------------------------------------------- */
-					}
-					break;
-				case 'Genetics':
+				case 'Robotics':
+//
+					if (array_diff(Factions::getStatus($color, 'technologies'), ['Robotics'])) return;
+//
 					if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
 					else Factions::setStatus($color, 'researchPlus');
+//
+					break;
+//
+				case 'Genetics':
+//
+					if ($technologies) Factions::setStatus($color, 'researchPlus', $technologies);
+					else Factions::setStatus($color, 'researchPlus');
+//
 					Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['growPopulation+']));
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} gets a free Grow Population action with 2 additional bonus population'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
+//
 			}
 		}
 //
