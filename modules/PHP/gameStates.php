@@ -2229,7 +2229,7 @@ trait gameStates
 				foreach (Factions::list(false) as $color)
 				{
 					$centralStars = 0;
-					foreach (array_keys(Counters::getPopulations($color)) as $location) if ($location[0] === '0') $centralStars++;
+					foreach (array_keys(Counters::getPopulations($color)) as $location) if (substr($location, 2) === '+0+0+0') $centralStars++;
 //
 					$DP = 10 * $centralStars;
 					self::gainDP($color, $DP);

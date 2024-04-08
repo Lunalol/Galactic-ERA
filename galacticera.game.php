@@ -113,6 +113,7 @@ class GalacticEra extends Table
 		$result['factions'] = Factions::getAllDatas();
 		$result['galacticStory'] = $this->STORIES[self::getGameStateValue('galacticStory')];
 		$result['galacticGoal'] = $this->GOALS[self::getGameStateValue('galacticGoal')];
+		$result['technologies'] = Factions::TECHNOLOGIES;
 		$result['round'] = intval(self::getGameStateValue('round'));
 		$result['A'] = $this->domination->getCardsInLocation('A');
 		$result['B'] = $this->domination->getCardsInLocation('B');

@@ -309,6 +309,14 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						_('If the player has Propulsion 5 this movement cannot be blocked (in either direction)')]]
 			};
 //
+			this.FLEETS = {
+				'A': _('<B>(A)ssault</B>: Whenever this fleet is involved in combat, add 1 CV per ship in this fleet'),
+				'B': _('<B>(B)omb</B>: For every 2 ships in this fleet increase the ship count by 1 for purposes of conquering or liberating a star'),
+				'C': _('<B>(C)ounterassault</B>: Add 2 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat'),
+				'D': _('<B>(D)art</B>: Ships in this fleet get +1 to their movement range<BR>Ships that leave this fleet immediately lose this advantage<BR>Ships that have already used this advantage may not leave this fleet, in this turn'),
+				'E': _('<B>(E)vade</B>: Ships in this fleet have the option to retreat before combat regardless of technology levels (but only as defender)<BR>To use this special effect, the player must reveal the counter')
+			};
+//
 			this.RANKINGS = {0: _('sublunar'), 1: _('lunar'), 2: _('planetary'), 3: _('stellar'), 4: _('galactic'), 5: _('cosmic')};
 //
 			this.ERAtechnologyTooltips = new dijit.Tooltip({
@@ -745,6 +753,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 									dojo.stopEvent(event);
 									if (this.isCurrentPlayerActive())
 									{
+										if (this.gamedatas.factions[this.color].starPeople === 'Yowies' && counter === 'Robotics')
+											return this.showMessage(_('Yowies may not have Robotics higher than level 1'), 'error');
 										if (stateName === 'selectCounters')
 										{
 											if (state.args._private.square > 1 || +this.gamedatas.GODMODE === 1)

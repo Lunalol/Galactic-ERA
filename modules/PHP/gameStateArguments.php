@@ -100,7 +100,7 @@ trait gameStateArguments
 				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 			}
 		}
-		asort($this->possible['fleets']);
+		ksort($this->possible['fleets']);
 //
 		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
@@ -125,6 +125,8 @@ trait gameStateArguments
 					$this->possible[$player_id]['fleets'][$fleet] = $ship;
 					$this->possible[$player_id]['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 				}
+				ksort($this->possible[$player_id]['fleets']);
+//
 				$this->possible[$player_id]['advancedFleetTactics'] = Factions::getAllAdvancedFleetTactics($color);
 			}
 		}
@@ -167,7 +169,7 @@ trait gameStateArguments
 			$this->possible['fleets'][$fleet] = $ship;
 			$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 		}
-		asort($this->possible['fleets']);
+		ksort($this->possible['fleets']);
 //
 		$ancientPyramids = Counters::getRelic(ANCIENTPYRAMIDS);
 		if ($ancientPyramids && Counters::getStatus($ancientPyramids, 'owner') === $ship['color']) $this->possible['ancientPyramids'] = intval(Counters::getStatus($ancientPyramids, 'available'));
@@ -383,7 +385,7 @@ trait gameStateArguments
 								$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 							}
 						}
-						asort($this->possible['fleets']);
+						ksort($this->possible['fleets']);
 					}
 					break;
 			}
@@ -495,7 +497,7 @@ trait gameStateArguments
 				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 			}
 		}
-		asort($this->possible['fleets']);
+		ksort($this->possible['fleets']);
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
@@ -517,7 +519,7 @@ trait gameStateArguments
 				$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 			}
 		}
-		asort($this->possible['fleets']);
+		ksort($this->possible['fleets']);
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color];
 	}
@@ -635,7 +637,7 @@ trait gameStateArguments
 						$this->possible['fleets'][$fleet]['ships'] = intval(Ships::getStatus($ship['id'], 'ships'));
 					}
 				}
-				asort($this->possible['fleets']);
+				ksort($this->possible['fleets']);
 //
 				break;
 //

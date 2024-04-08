@@ -1,5 +1,4 @@
 const STEP = 2.5;
-
 define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 {
 	return declare("Ships", null,
@@ -12,6 +11,45 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			this.bgagame = bgagame;
 			this.board = bgagame.board;
+//
+			this.ERAfleet = new dijit.Tooltip({
+				showDelay: 500, hideDelay: 0,
+				getContent: (node) =>
+				{
+					const color = node.getAttribute('color');
+					const fleet = node.getAttribute('fleet');
+					const ships = node.getAttribute('ships');
+//
+					let html = `<div>`;
+					html += `<div class='ERAship ERAship-${color}' fleet='${fleet}' style='display:inline-block;position:relative;margin:5px;'></div>`;
+					if (fleet !== 'fleet' && fleet !== '?')
+					{
+						let tactics = $(`ERAtechTrack-${color}`).querySelector(`.ERAcounter-tactics[location=${fleet}]`);
+						if (tactics) html += `<div class='ERAcounter ERAcounter-tactics' tactics='${tactics.getAttribute('tactics')}' style='display:inline-block;position:relative;margin:5px;'></div>`;
+					}
+					html += `</div>`;
+//
+					if (fleet !== 'fleet' && fleet !== '?')
+					{
+						html += `<div><HR>${this.bgagame.FLEETS[fleet]}<HR></div>`;
+//						html += `<div><B>"${fleet}" ${_('Fleet')}</B> : ${this.bgagame.FLEETS[fleet]}</div>`;
+//
+						if (ships)
+						{
+							html += `<div>${ships} ${_('Ship(s)')}</div>`;
+							CV = ships * ((fleet === 'A' ? 1 : 0) + this.bgagame.gamedatas.technologies.Military[dojo.query('.circleBlack', `ERAtech-${color}-Military`).length]);
+							html += `<div><B>${_('CV')} : ${CV}</B></div>`;
+							if (fleet === 'C')
+							{
+								CV = ships * (2 + this.bgagame.gamedatas.technologies.Military[dojo.query('.circleBlack', `ERAtech-${color}-Military`).length]);
+								html += `<div>${_('CV')} : ${CV} ${_('vs. “A” fleet')}</div>`;
+							}
+						}
+					}
+					else html += `<div>${_('Unrevealed fleet')}</div>`;
+					return html;
+				}
+			});
 //
 		},
 		place: function (ship)
@@ -106,6 +144,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 
 						}
+						this.ERAfleet.addTarget(node);
 					}
 					break;
 //
@@ -157,6 +196,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		{
 //			console.info('removeShip', ship);
 //
+			this.ERAfleet.removeTarget(`ERAship-${ship.id}`);
 			dojo.query(`#ERAboard .ERAship[ship=${ship.id}]`).remove();
 //
 			if (/^\d:([+-]\d){3}$/.test(ship.location)) this.arrange(ship.location);
