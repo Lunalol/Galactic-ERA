@@ -110,7 +110,9 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 		},
 		update: function (faction)
 		{
-//			console.info('updateFaction', faction);
+			console.info('updateFaction', faction);
+//
+			for (let entry in faction) if (entry in this.bgagame.gamedatas.factions[faction.color]) this.bgagame.gamedatas.factions[faction.color][entry] = faction[entry];
 //
 			if ('starPeople' in faction)
 			{

@@ -674,12 +674,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							case 'Propulsion':
 							case 'Robotics':
 							case 'Genetics':
-								node = dojo.place(`<div id='usedGrowthAction-${color}-${index}' class='ERAsmallTechnology' style='filter:opacity(75%);'><div class='ERAcounter ERAcounter-technology' counter='${counter}' color='${color}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='usedGrowthAction-${color}-${index}' class='ERAsmallTechnology' style='opacity:75%;'><div class='ERAcounter ERAcounter-technology' counter='${counter}' color='${color}'/></div>`, `ERAcounters-${color}`);
 								dojo.connect(node, 'click', (event) => dojo.stopEvent(event));
 								this.addTooltip(node.id, _(counter), '');
 								break;
 							default:
-								node = dojo.place(`<div id='usedGrowthAction-${color}-${index}' class='ERAsmallGrowth' style='filter:opacity(75%);'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth' counter='${counter}' color='${color}'/></div>`, `ERAcounters-${color}`);
+								node = dojo.place(`<div id='usedGrowthAction-${color}-${index}' class='ERAsmallGrowth' style='opacity:75%;'><div class='ERAcounter ERAcounter-${color} ERAcounter-growth' counter='${counter}' color='${color}'/></div>`, `ERAcounters-${color}`);
 								dojo.connect(node, 'click', (event) => dojo.stopEvent(event));
 								this.addTooltip(node.id, ...this.GROWTHACTIONS[(counter === 'buildShips' && this.gamedatas.factions[color].player_id < 0) ? 'spawnShips' : counter]);
 						}
@@ -1684,7 +1684,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					case 'fleets':
 //
-						this.board.centerMap(this.gamedatas.factions[this.players[this.player_id]].homeStar + ':+0+0+0');
+						if (!this.center)
+						{
+							this.board.centerMap(this.gamedatas.factions[this.players[this.player_id]].homeStar + ':+0+0+0');
+							this.center = true;
+						}
+
 //
 						if (args.undo) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
 //
@@ -1711,6 +1716,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					case 'movement':
 //
+						delete this.center;
 						if (args.undo) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
 //
 						this.addActionButton('ERAscoutButton', _('Scout'), () => {

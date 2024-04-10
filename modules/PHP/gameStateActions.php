@@ -482,7 +482,11 @@ trait gameStateActions
 				$possible = false;
 				if (Factions::getAlignment($from) === 'STO')
 				{
-					if (Factions::getStarPeople($from) === 'Plejars' && Factions::getAlignment($on) === 'STS' && in_array($this->gamestate->state()['name'], ['fleets', 'movement'])) $possible = true;
+					if (Factions::getStarPeople($from) === 'Plejars' && in_array($this->gamestate->state()['name'], ['fleets', 'movement']))
+					{
+						if (Factions::getAlignment($on) === 'STS') $possible = true;
+						else throw new BgaUserException(self::_('Plejars may declare war on STS players during they movement'));
+					}
 				}
 				if (Factions::getAlignment($from) === 'STS')
 				{

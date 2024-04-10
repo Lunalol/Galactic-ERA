@@ -502,12 +502,16 @@ div,img {
 	vertical-align: middle;
 }
 .ERAsmallerTechnology{
+	position: relative;
 	display: inline-block;
 	width: calc(74px / 4);
 	height: calc(74px / 4);
 	transform: scale(25%);
 	transform-origin: left top;
 	vertical-align: middle;
+}
+.ERAsmallerTechnology:hover {
+	z-index:500;
 }
 .ERAtechnology {
 	vertical-align: middle;
@@ -579,23 +583,24 @@ div,img {
 .ERAcounter {
 	position: relative;
 	background: url('img/counters.png');
-	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
+	transition: filter .25s, box-shadow .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	z-index: 100;
 	/*	pointer-events: none;*/
 }
 .ERAcounter.ERAselectable {
 	pointer-events: all;
 	box-shadow: 0px 0px 10px 5px slategrey;
-	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
+	transition: filter .25s, box-shadow .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 .ERAcounter.ERAselected {
 	box-shadow: 0px 0px 10px 5px white;
 	filter: brightness(150%);
-	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
+	transition: filter .25s, box-shadow .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
-.ERAcounter:hover {
-	filter: brightness(200%);
-	transition: filter .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
+.ERAcounter:not(.ERAcounter-cube):not(.ERAorder):hover {
+	box-shadow: 0px 0px 5px 10px white;
+	z-index: 500;
+	transition: filter .25s, box-shadow .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 }
 
 /* <editor-fold defaultstate="collapsed" desc="Cylinders (6)"> */
@@ -1072,12 +1077,16 @@ div,img {
 	transition: filter .25s, transform .25s;
 }
 .ERAsmallGrowth{
+	position: relative;
 	display: inline-block;
 	width: calc(89px / 2);
 	height: calc(118px / 2);
 	transform: scale(50%);
 	transform-origin: left top;
 	vertical-align: middle;
+}
+.ERAsmallGrowth:hover {
+	z-index:500;
 }
 .ERAcounter-growth[counter='growPopulation+']:after
 {
