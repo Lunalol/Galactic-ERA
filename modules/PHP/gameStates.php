@@ -289,6 +289,7 @@ trait gameStates
 //
 		if (FAST_START)
 		{
+			$starPeoples = ['ICC', 'Caninoids', 'Mantids', 'Dracos', 'Yowies', 'Orion'];
 			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples)]);
 			$this->gamestate->nextState('next');
 		}
@@ -1633,100 +1634,95 @@ trait gameStates
 		}
 		else $this->gamestate->nextState('resolveGrowthActions');
 	}
-	function stTradingPhase()
+	function stTradingPhaseBegin()
 	{
-		Factions::setActivation('ALL', 'done');
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('Trading Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
+		self::setGameStateValue('trading', CANINOIDS);
+		Factions::setActivation('ALL', 'no');
+		foreach (Factions::list() as $color) Factions::setStatus($color, 'trade', []);
+//
+		$this->gamestate->nextState('tradingPhase');
+	}
+	function stTradingPhase()
+	{
+		$trading = intval(self::getGameStateValue('trading'));
+		if ($trading > SECOND) return $this->gamestate->nextState('end');
+		if ($trading > FIRST) return $this->gamestate->nextState('next');
+//
 		$players = [];
-		foreach (Factions::list() as $color)
+//
+		foreach (Factions::list() as $from)
 		{
-			$player_id = Factions::getPlayer($color);
+			if ($trading === CANINOIDS && Factions::getStarPeople($from) !== 'Caninoids') continue;
+			if (Factions::getStatus($from, 'no_more_trade')) continue;
+//
+			$player_id = Factions::getPlayer($from);
 			if ($player_id > 0)
 			{
-				Factions::setActivation($color, 'no');
-				Factions::setStatus($color, 'inContact', []);
-				Factions::setStatus($color, 'trade', []);
+				Factions::setActivation($from, 'no');
+				Factions::setStatus($from, 'inContact', []);
 //
-				$inContact = array_diff(Factions::inContact($color), Factions::atWar($color));
-				foreach (Factions::atPeace($color) as $with)
-				{
-					if (!in_array($with, $inContact))
-					{
-						if (Factions::getTechnology($color, 'Spirituality') >= 4) $inContact[] = $with;
-						else if (Factions::getTechnology($with, 'Spirituality') >= 4) $inContact[] = $with;
-					}
-				}
+// Spirituality >= 4 : You may trade technologies without being in contact; your trading partner does not need to have this too.
+//
+				$inContact = array_diff(Factions::inContact($from), Factions::atWar($from));
+				foreach (Factions::atPeace($from) as $to) if (!in_array($to, $inContact) && (Factions::getTechnology($from, 'Spirituality') >= 4 || Factions::getTechnology($to, 'Spirituality') >= 4)) $inContact[] = $to;
 //
 				if ($inContact)
 				{
-					foreach ($inContact as $index => $with)
+					foreach ($inContact as $to)
 					{
-						if (Factions::getPlayer($with) === 0)
+						if (Factions::getStatus($to, 'trade')) continue;
+//
+// Something to trade ?
+//
+						$teach = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) > Factions::getTechnology($to, $technology));
+						$learn = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) < Factions::getTechnology($to, $technology));
+//
+						if ($teach && $learn)
 						{
-							Factions::setStatus($with, 'trade', []);
-							Factions::setActivation($with, 'no');
-						}
-						if (Factions::getPlayer($with) < 0)
-						{
-							$technologies = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($color, $technology) > Factions::getTechnology($with, $technology));
-							if ($technologies)
+//
+// Solo automas
+//
+							if (Factions::getPlayer($to) < 0 && $trading !== CANINOIDS)
 							{
-								$roll = Automas::trading($with, Factions::getAlignment($color));
-								if ($roll)
 								{
-									$dice = bga_rand(1, 6);
+									$roll = Automas::trading($to, Factions::getAlignment($from));
+									if ($roll)
+									{
+										$dice = bga_rand(1, 6);
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
-										'player_name' => Factions::getName($with), 'DICE' => $dice]);
+										self::notifyAllPlayers('msg', clienttranslate('${player_name} rolls ${DICE}'), [
+											'player_name' => Factions::getName($to), 'DICE' => $dice]);
 //* -------------------------------------------------------------------------------------------------------- */
-								}
-								if ($roll && $dice > $roll)
-								{
+									}
+									if ($roll && $dice > $roll)
+									{
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('msg', clienttranslate('${player_name} not willing to trade'), ['player_name' => Factions::getName($with)]);
+										self::notifyAllPlayers('msg', clienttranslate('${player_name} not willing to trade'), ['player_name' => Factions::getName($to)]);
 //* -------------------------------------------------------------------------------------------------------- */
-									unset($inContact[$index]);
-								}
-								else
-								{
+										continue;
+									}
+									else
+									{
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('msg', clienttranslate('${player_name} willing to trade'), ['player_name' => Factions::getName($with)]);
+										self::notifyAllPlayers('msg', clienttranslate('${player_name} willing to trade'), ['player_name' => Factions::getName($to)]);
 //* -------------------------------------------------------------------------------------------------------- */
-									Factions::setStatus($with, 'trade', [$color => ['technology' => $technologies[array_rand($technologies)], 'pending' => false]]);
-									Factions::setActivation($with, 'no');
+										Factions::setStatus($to, 'trade', [$from => ['technology' => $teach[array_rand($teach)], 'pending' => false]]);
+									}
 								}
 							}
-							else unset($inContact[$index]);
+//
+							Factions::setStatus($from, 'inContact', $inContact);
+							Factions::setActivation($from, 'yes');
+							$players[] = $player_id;
 						}
 					}
-					if ($inContact)
-					{
-						Factions::setStatus($color, 'inContact', $inContact);
-						$players[] = Factions::getPlayer($color);
-					}
 				}
 			}
-		}
-//
-		if (self::getPlayersNumber() === 2 && sizeof($players) > 1)
-		{
-			foreach (Factions::list(false) as $color)
-			{
-				$player_id = Factions::getPlayer($color);
-				if (in_array($player_id, $players))
-				{
-					if (Factions::getAlignment($color) === 'STO')
-					{
-						$players = [$player_id];
-						break;
-					}
-				}
-			}
-			$players = array_slice($players, 0, 1);
 		}
 //
 		if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;
@@ -1734,17 +1730,20 @@ trait gameStates
 	}
 	function stTradingPhaseEnd()
 	{
+		if (intval(self::incGameStateValue('trading', 1)) > SECOND)
+		{
 //
 // #offboard population : 3 - Slavers gain 1 technology level in a trading phase in which they did not trade.
 //
-		$slavers = Factions::getAutoma(SLAVERS);
-		if ($slavers && Factions::getDP($slavers) >= 3 && !Factions::getStatus($slavers, 'trade'))
-		{
-			$technologies = [];
-			Automas::randomTechnology($slavers, $technologies);
-			if ($technologies) return self::acResearch($slavers, $technologies, true);
-		}
+			$slavers = Factions::getAutoma(SLAVERS);
+			if ($slavers && Factions::getDP($slavers) >= 3 && !Factions::getStatus($slavers, 'trade'))
+			{
+				$technologies = [];
+				Automas::randomTechnology($slavers, $technologies);
+				if ($technologies) return self::acResearch($slavers, $technologies, true);
+			}
 //
+		}
 		$this->gamestate->nextState('next');
 	}
 	function stScoringPhase()

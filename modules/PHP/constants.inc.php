@@ -45,6 +45,7 @@ define('PATH', 110);
 define('ROUND', 10);
 define('GODMODE', 20);
 define('SWITCHALIGNMENT', 21);
+define('TRADING', 21);
 //
 // Automas (2)
 //
@@ -96,7 +97,7 @@ define('CONQUERVS', 4);
 define('ALLY', 5);
 define('CONQUER', 6);
 //
-// Ancient Relics (10
+// Ancient Relics (10)
 //
 define('ANCIENTPYRAMIDS', 0);
 define('ANCIENTTECHNOLOGYGENETICS', 1);
@@ -108,3 +109,9 @@ define('BURIEDSHIPS', 6);
 define('PLANETARYDEATHRAY', 7);
 define('DEFENSEGRID', 8);
 define('SUPERSTARGATE', 9);
+//
+// Trading (3)
+//
+define('CANINOIDS', 0);
+define('FIRST', 1);
+define('SECOND', 2);

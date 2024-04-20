@@ -214,7 +214,7 @@ div,img {
     width: 176px;
 }
 .ERAstatus .ERAdominationCard {
-	max-width: 75px;
+	max-width: 50px;
 }
 .ERAdominationCard.ERAselected {
     border-radius: 5%;
@@ -504,9 +504,9 @@ div,img {
 .ERAsmallerTechnology{
 	position: relative;
 	display: inline-block;
-	width: calc(74px / 4);
-	height: calc(74px / 4);
-	transform: scale(25%);
+	width: calc(74px / 5);
+	height: calc(74px / 5);
+	transform: scale(20%);
 	transform-origin: left top;
 	vertical-align: middle;
 }
@@ -765,8 +765,8 @@ div,img {
 	display:none;
 }
 .ERAsmall {
-	margin: 0px -44px -44px 0px;
-	transform: scale(50%);
+	margin: 0px -60px -60px 0px;
+	transform: scale(30%);
 	transform-origin: left top;
 }
 .ERAcounter.ERAcounter-peace.ERAcounter-6666FF {

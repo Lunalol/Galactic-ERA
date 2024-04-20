@@ -1233,6 +1233,20 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 				case 'tradingPhase':
 					{
+//
+						switch (state.args.trading)
+						{
+//
+							case 0:
+//
+								this.gamedatas.gamestate.description = _('Carninoids can force others players to trade with them');
+								this.gamedatas.gamestate.descriptionmyturn = _('You can force others players to trade with you');
+//
+								break;
+//
+						}
+						this.updatePageTitle();
+
 						if (/*this.isCurrentPlayerActive()*/ 'trade' in state.args._private)
 						{
 							dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
@@ -1240,43 +1254,64 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							const from = state.args._private.color;
 							for (let to in state.args._private.inContact)
 							{
-								const _container = dojo.place(`<div style='display: flex;flex-direction: column;flex: 1 1 auto;max-width: 500px;'></div>`, 'ERAchoice');
-								const container = dojo.place(`<div style='display: flex;justify-content: space-evenly;margin: 1%;padding: 5%; border-radius: 5%;' class='ERAtrade' id='ERAtrade-${from}-${to}'></div>`, _container);
-								dojo.style(container, 'background', '#' + to + '80');
+								const _container = dojo.place(`<div style='display:flex;flex-direction:column;flex:1 1 auto;max-width:500px;'></div>`, 'ERAchoice');
+								const otherName = $(`player_name_${this.gamedatas.factions[to].player_id}`).children[0].outerHTML;
+								dojo.place(`<div style='text-align:center;border-radius:20px;background:black;color:white;font-family:ERA;'>${dojo.string.substitute(_('Trading with ${on}'), {on: `<span>${otherName}</span>`})}<div>`, _container);
+//
+								const container = dojo.place(`<div style='display:flex;justify-content:space-evenly;margin:1%;padding:5%;border-radius:5%;background:#${to}80;' class='ERAtrade' id='ERAtrade-${from}-${to}'></div>`, _container);
 //
 								const fromColor = dojo.place(`<div style='display: flex;flex-direction: column;flex: 1 1 auto;align-items: center;' class='ERAtrade' id='ERAtradeFrom-${from}-${to}'></div>`, container);
 								dojo.place(`<div style='color:white;margin-bottom: 10px;'>${_('You are teaching')}</div>`, fromColor);
-								for (let [technology, level] of Object.entries(state.args._private.inContact[to]))
+//
+								for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
 								{
 									const node = dojo.place(this.format_block('ERAcounter', {id: technology, color: to, type: 'technology', location: ''}), fromColor);
-									dojo.toggleClass(node, 'ERAhide', level >= state.args._private[technology]);
+									debugger;
+									dojo.toggleClass(node, 'ERAhide', !state.args._private.inContact[to].teach.includes(technology));
 									dojo.toggleClass(node, 'ERAselectable', !dojo.hasClass(node, 'ERAdisabled'));
 									dojo.toggleClass(node, 'ERAselected', to in state.args._private.trade && from in state.args._private.trade[to] && state.args._private.trade[to][from].technology === technology);
 //
-									if (to === state.args.automa) dojo.connect(node, 'click', () => {
-											dojo.query('.ERAcounter.ERAcounter-technology', `ERAtradeFrom-${this.color}-${to}`).removeClass('ERAselected');
-											dojo.addClass(node, 'ERAselected');
+									if (to === state.args.automa || state.args.trading === 0)
+									{
+										dojo.connect(node, 'click', () => {
+											if (!dojo.hasClass(node, 'ERAselected'))
+											{
+												dojo.query('.ERAcounter.ERAcounter-technology', `ERAtradeFrom-${this.color}-${to}`).removeClass('ERAselected');
+												dojo.addClass(node, 'ERAselected');
+											}
+											else dojo.removeClass(node, 'ERAselected');
 										});
+									}
+
 								}
+								if (to === state.args.automa || state.args.trading === 0) dojo.place(`<div style='color:white;margin-top:10px;font-size:small;'><HR>${_('Select a technology')}</div>`, fromColor);
 //
 								const toColor = dojo.place(`<div style='display: flex;flex-direction: column;flex: 1 1 auto;align-items: center;' class='ERAtrade' id='ERAtradeTo-${from}-${to}'></div>`, container);
 								dojo.place(`<div style='color:white;margin-bottom: 10px;'>${_('You are getting')}</div>`, toColor);
-								for (let [technology, level] of Object.entries(state.args._private.inContact[to]))
+//
+								for (let technology of ['Military', 'Spirituality', 'Propulsion', 'Robotics', 'Genetics'])
 								{
 									const node = dojo.place(this.format_block('ERAcounter', {id: technology, color: to, type: 'technology', location: ''}), toColor);
-									dojo.toggleClass(node, 'ERAhide', level <= state.args._private[technology]);
+									dojo.toggleClass(node, 'ERAhide', !state.args._private.inContact[to].learn.includes(technology));
 									dojo.toggleClass(node, 'ERAselectable', !dojo.hasClass(node, 'ERAdisabled'));
 									dojo.toggleClass(node, 'ERAselected', from in state.args._private.trade && to in state.args._private.trade[from] && state.args._private.trade[from][to].technology === technology);
 //
 									dojo.connect(node, 'click', () => {
-										if (to === state.args.automa) {
-											const nodes = dojo.query('.ERAcounter.ERAcounter-technology.ERAselected', `ERAtradeFrom-${this.color}-${to}`);
-											if (nodes.length !== 1) this.showMessage(_('You must choose what to teach first'), 'error');
-											else this.action('trade', {from: from, to: to, technology: technology, toTeach: nodes[0].getAttribute('counter')});
+										if (dojo.query('.ERAcounter.ERAcounter-technology:not(.ERAhide)', `ERAtradeFrom-${this.color}-${to}`).length > 0)
+										{
+											if (to === state.args.automa || state.args.trading === 0)
+											{
+												const nodes = dojo.query('.ERAcounter.ERAcounter-technology.ERAselected', `ERAtradeFrom-${this.color}-${to}`);
+												if (nodes.length !== 1) this.showMessage(_('You must choose what to teach to first'), 'error');
+												else this.action('trade', {from: from, to: to, technology: technology, toTeach: nodes[0].getAttribute('counter')});
+											}
+											else this.action('trade', {from: from, to: to, technology: technology});
 										}
-										else this.action('trade', {from: from, to: to, technology: technology});
+										else this.showMessage(_('Nothing to teach'), 'error');
 									});
 								}
+								dojo.place(`<div style='color:white;margin-top:10px;font-size:small;'><HR>${_('Select a technology')}</div>`, toColor);
+//
 								const node = dojo.place('<div style="display: flex;justify-content: space-between;"></div>', _container);
 								const refuse = dojo.place(`<div class='bgabutton'>${_('Refuse trade')}</div>`, node);
 								dojo.style(refuse, 'background', '#' + to + '80');

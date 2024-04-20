@@ -525,6 +525,8 @@ trait gameStateArguments
 	}
 	function argTradingPhase()
 	{
+		$trading = intval(self::getGameStateValue('trading'));
+//
 		$private = [];
 		foreach (Factions::list(false) as $from)
 		{
@@ -534,24 +536,28 @@ trait gameStateArguments
 			{
 				$private[$player_id]['color'] = $from;
 //
-				if (Factions::getActivation($from) === 'done') continue;
+				if (Factions::getActivation($from) !== 'yes') continue;
 //
 				$private[$player_id]['trade'][$from] = Factions::getStatus($from, 'trade');
-				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($from, $technology);
+//				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($from, $technology);
 				foreach (Factions::getStatus($from, 'inContact') as $to)
 				{
-					if (Factions::getActivation($to) !== 'done')
+					if (Factions::getActivation($to) !== 'done' || $trading === CANINOIDS)
 					{
 						$private[$player_id]['trade'][$to] = array_filter(Factions::getStatus($to, 'trade'), fn($key) => $key === $from, ARRAY_FILTER_USE_KEY);
-						foreach (array_keys($this->TECHNOLOGIES) as $technology)
+//
+						$teach = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) > Factions::getTechnology($to, $technology));
+						$learn = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) < Factions::getTechnology($to, $technology));
+						if ($learn && $teach)
 						{
-							$private[$player_id]['inContact'][$to][$technology] = Factions::getTechnology($to, $technology);
+							$private[$player_id]['inContact'][$to]['teach'] = array_values($teach);
+							$private[$player_id]['inContact'][$to]['learn'] = array_values($learn);
 						}
 					}
 				}
 			}
 		}
-		return ['_private' => $private, 'automa' => Factions::getAutoma()];
+		return ['_private' => $private, 'automa' => Factions::getAutoma(), 'trading' => $trading];
 	}
 	function argResearchPlus()
 	{

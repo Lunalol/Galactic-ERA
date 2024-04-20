@@ -2504,34 +2504,85 @@ trait gameStateActions
 			Factions::setActivation($from, 'done');
 //
 			$players = [];
-			foreach (Factions::list(false) as $color) if (Factions::getActivation($color) !== 'done') $players[] = Factions::getPlayer($color);
+			foreach (Factions::list(false) as $color) if (Factions::getActivation($color) === 'yes') $players[] = Factions::getPlayer($color);
 //
 			if ($this->gamestate->setPlayersMultiactive($players, 'next', true)) return;
-			return $this->gamestate->nextState('continue');
+			return $this->gamestate->nextState('tradingPhase');
 		}
 //
 		$automas = Factions::getPlayer($to) <= 0;
+		$trading = intval(self::getGameStateValue('trading'));
 //
 		$fromStatus = Factions::getStatus($from, 'trade');
 		switch ($technology)
 		{
+//
 			case 'confirm':
+//
 				{
 					if (!array_key_exists($to, $fromStatus)) throw new BgaUserException(self::_('You must choose what you are getting'));
 					$toStatus = Factions::getStatus($to, 'trade');
 					if (!array_key_exists($from, $toStatus)) throw new BgaUserException(self::_('Other player must choose what you are teaching'));
 //
-					foreach ([$from => $fromStatus[$to]['technology'], $to => $toStatus[$from]['technology']] as $color => $technology) self::gainTechnology($color, $technology);
+					if (Factions::getAutoma() === $from)
+					{
+						$priority = [];
+						foreach (Factions::list(false) as $color) if (Factions::getActivation($color) === 'yes') $priority[$color] = (Factions::getAlignment($color) === 'STS' ? 10 : 0) + Factions::getOrder($color);
+						asort($priority);
 //
-					Factions::setActivation($from, 'done');
-					Factions::setActivation($to, 'done');
+						if (array_key_first($priority) !== $to) throw new BgaUserException(self::_('Other player has priority for trading with automa'));
+					}
 //
-					if ($player_id > 0 && $this->gamestate->setPlayerNonMultiactive($player_id, 'next')) return;
-					if ($this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($to), 'next')) return;
-					return $this->gamestate->nextState('continue');
+					foreach ([$from => $fromStatus[$to]['technology'], $to => $toStatus[$from]['technology']] as $color => $technology)
+					{
+						self::gainTechnology($color, $technology);
+					}
+//
+//
+// CANINOIDS STO: Each time you make a trade, you and your trading partner get 1 DP each
+//
+					if ((Factions::getStarPeople($from) === 'Caninoids' && Factions::getAlignment($from) === 'STO') || (Factions::getStarPeople($to) === 'Caninoids') && Factions::getAlignment($to) === 'STO')
+					{
+						$DP = 1;
+						if ($player_id > 0)
+						{
+							self::gainDP($from, $DP);
+							self::incStat($DP, 'DP_SP', $player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($from), 'faction' => ['color' => $from, 'DP' => Factions::getDP($from)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+						$other_player_id = Factions::getPlayer($to);
+						if ($other_player_id > 0)
+						{
+							self::gainDP($to, $DP);
+							self::incStat($DP, 'DP_SP', $other_player_id);
+//* -------------------------------------------------------------------------------------------------------- */
+							self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($to), 'faction' => ['color' => $to, 'DP' => Factions::getDP($to)]]);
+//* -------------------------------------------------------------------------------------------------------- */
+						}
+					}
+					if (Factions::getStarPeople($from) === 'ICC')
+					{
+						unset($fromStatus[$to]);
+					}
+					else Factions::setActivation($from, 'done');
+//
+					if (Factions::getStarPeople($to) === 'ICC')
+					{
+						unset($toStatus[$from]);
+						Factions::setStatus($to, 'trade', $toStatus);
+					}
+					else Factions::setActivation($to, 'done');
+//
+					if (Factions::getStarPeople($from) !== 'ICC') if ($player_id > 0 && $this->gamestate->setPlayerNonMultiactive($player_id, 'next')) return;
+					if (Factions::getStarPeople($to) !== 'ICC') if ($this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($to), 'next')) return;
+//
 				}
 				break;
+//
 			case 'refuse':
+//
 				{
 					if (array_key_exists($to, $fromStatus)) unset($fromStatus[$to]);
 					if (!$automas)
@@ -2554,7 +2605,9 @@ trait gameStateActions
 					}
 				}
 				break;
+//
 			default:
+//
 				{
 					if (array_key_exists($to, $fromStatus))
 					{
@@ -2573,7 +2626,7 @@ trait gameStateActions
 						self::dbSetPlayerMultiactive($player_id, 0);
 //
 						$toStatus = Factions::getStatus($to, 'trade');
-						if ($automas)
+						if ($automas || $trading === CANINOIDS)
 						{
 							if (!array_key_exists($from, $toStatus))
 							{
@@ -2606,7 +2659,7 @@ trait gameStateActions
 		Factions::setStatus($from, 'trade', $fromStatus);
 //
 		self::updateScoring();
-		$this->gamestate->nextState('continue');
+		$this->gamestate->nextState('tradingPhase');
 	}
 	function acDomination(string $color, int $id, string $section)
 	{

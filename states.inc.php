@@ -365,8 +365,14 @@ $machinestates = [
 	500 => [
 		'name' => 'tradingPhase',
 		'type' => 'game',
+		'action' => 'stTradingPhaseBegin',
+		'transitions' => ['tradingPhase' => 505]
+	],
+	505 => [
+		'name' => 'tradingPhase',
+		'type' => 'game',
 		'action' => 'stTradingPhase',
-		'transitions' => ['tradingPhase' => 510, 'next' => 540]
+		'transitions' => ['tradingPhase' => 510, 'next' => 540, 'end' => 550]
 	],
 	510 => [
 		'name' => 'tradingPhase',
@@ -374,8 +380,8 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may trade technology'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argTradingPhase',
-		'possibleactions' => ['domination', 'trade', 'pass'],
-		'transitions' => ['continue' => 510, 'next' => 540]
+		'possibleactions' => ['declarePeace', 'domination', 'trade', 'pass'],
+		'transitions' => ['continue' => 505, 'tradingPhase' => 510, 'next' => 540]
 	],
 	540 => [
 		'name' => 'tradingPhaseEnd',
@@ -391,7 +397,7 @@ $machinestates = [
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
 		'possibleactions' => ['advancedFleetTactics'],
-		'transitions' => ['continue' => 545, 'next' => 550]
+		'transitions' => ['continue' => 545, 'next' => 505]
 	],
 	550 => [
 		'name' => 'scoringPhase',
