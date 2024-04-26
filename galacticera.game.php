@@ -122,7 +122,7 @@ class GalacticEra extends Table
 		{
 			if (Factions::getPlayer($color) > 0)
 			{
-				if ($this->domination->countCardInLocation('A', $color) == 0) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
+				if ($this->domination->countCardInLocation('A', $color) == 0) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
 				else foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = 0;
 //
 				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['B'] = DominationCards::B($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
@@ -139,6 +139,8 @@ class GalacticEra extends Table
 				}
 				$result['peace'] = Factions::getStatus($color, 'peace');
 			}
+			$result['factions'][$color]['diplomatic'] = Factions::getStatus($color, 'diplomatic');
+			$result['factions'][$color]['generalscientific'] = Factions::getStatus($color, 'generalscientific');
 //
 			foreach ($this->domination->getPlayerHand($color) as $domination) $result['factions'][$color]['domination'][$domination['id']] = ($player_id === Factions::getPlayer($color)) ? $domination['type'] : 'back';
 			$result['factions'][$color]['ships'] = 16 - sizeof(Ships::getAll($color, 'ship'));
@@ -221,10 +223,33 @@ class GalacticEra extends Table
 		$tomodify = ['player' => ['player_id'], 'factions' => ['player_id'], 'global' => ['global_value'], 'stats' => ['stats_player_id']];
 		$players_id = [];
 		foreach (self::getObjectListFromDB("SELECT * from player") as $player) $players_id[] = $player['player_id'];
-		for ($i = 0;
-			$i < sizeof($players_id);
-			$i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
+		for ($i = 0; $i < sizeof($players_id); $i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
 		$this->notifyAllPlayers('loadGame', 'Refreshing interface', ['id' => -1, 'n' => 0]);
+	}
+	public function loadBugReportSQL(int $reportId, array $studioPlayersIds): void
+	{
+		$players = $this->getObjectListFromDb('SELECT player_id FROM player', true);
+
+		// Change for your game
+		// We are setting the current state to match the start of a player's turn if it's already game over
+		$sql = ['UPDATE global SET global_value=120 WHERE global_id=1 AND global_value=99'];
+		foreach ($players as $index => $pId)
+		{
+			$studioPlayer = $studioPlayersIds[$index];
+
+			// All games can keep this SQL
+			$sql[] = "UPDATE player SET player_id=$studioPlayer WHERE player_id=$pId";
+			$sql[] = "UPDATE global SET global_value=$studioPlayer WHERE global_value=$pId";
+			$sql[] = "UPDATE stats SET stats_player_id=$studioPlayer WHERE stats_player_id=$pId";
+			// Add game-specific SQL update the tables for your game
+			$sql[] = "UPDATE factions SET player_id=$studioPlayer WHERE player_id=$pId";
+		}
+		foreach ($sql as $q)
+		{
+			$this->DbQuery($q);
+		}
+
+		$this->reloadPlayersBasicInfos();
 	}
 	function triggerEvent(int $new_state, string $new_active_faction)
 	{

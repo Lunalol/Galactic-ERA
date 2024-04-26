@@ -1115,8 +1115,8 @@ trait gameStates
 		foreach (array_merge([$attacker], $defenders) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
-			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, DEFENSIVE, 1, 'combat')) $players[] = $player_id;
-			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, MILITARY, 1, 'combat')) $players[] = $player_id;
+			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, DEFENSIVE, 1)) $players[] = $player_id;
+			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, MILITARY, 1)) $players[] = $player_id;
 		}
 		if ($players)
 		{
@@ -1651,14 +1651,15 @@ trait gameStates
 	{
 		$trading = intval(self::getGameStateValue('trading'));
 		if ($trading > SECOND) return $this->gamestate->nextState('end');
-		if ($trading > FIRST) return $this->gamestate->nextState('next');
 //
 		$players = [];
 //
 		foreach (Factions::list() as $from)
 		{
+			if (Factions::getActivation($from) === 'done') continue;
+//
 			if ($trading === CANINOIDS && Factions::getStarPeople($from) !== 'Caninoids') continue;
-			if (Factions::getStatus($from, 'no_more_trade')) continue;
+			if ($trading === SECOND && !Factions::getStatus($from, 'generalscientific')) continue;
 //
 			$player_id = Factions::getPlayer($from);
 			if ($player_id > 0)
@@ -1675,7 +1676,8 @@ trait gameStates
 				{
 					foreach ($inContact as $to)
 					{
-						if (Factions::getStatus($to, 'trade')) continue;
+//						if (Factions::getStatus($to, 'trade') && Factions::getStarPeople($to) !== 'ICC') continue;
+						if (Factions::getActivation($to) === 'done') continue;
 //
 // Something to trade ?
 //
@@ -1704,6 +1706,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 										self::notifyAllPlayers('msg', clienttranslate('${player_name} not willing to trade'), ['player_name' => Factions::getName($to)]);
 //* -------------------------------------------------------------------------------------------------------- */
+										Factions::setActivation($to, 'done');
 										continue;
 									}
 									else
@@ -1718,6 +1721,7 @@ trait gameStates
 //
 							Factions::setStatus($from, 'inContact', $inContact);
 							Factions::setActivation($from, 'yes');
+							Factions::setActivation($to, 'yes');
 							$players[] = $player_id;
 						}
 					}
@@ -1730,7 +1734,9 @@ trait gameStates
 	}
 	function stTradingPhaseEnd()
 	{
-		if (intval(self::incGameStateValue('trading', 1)) > SECOND)
+		$trade = intval(self::incGameStateValue('trading', 1));
+		if ($trade > FIRST) foreach (Factions::list() as $color) Factions::setStatus($color, 'trade', []);
+		if ($trade > SECOND)
 		{
 //
 // #offboard population : 3 - Slavers gain 1 technology level in a trading phase in which they did not trade.
@@ -1757,7 +1763,9 @@ trait gameStates
 //
 		switch (self::ERA())
 		{
+//
 			case 'First':
+//
 				{
 //
 // First : Every player with the STO alignment at the end of a round scores 1 DP
@@ -1778,6 +1786,7 @@ trait gameStates
 					}
 					switch ($galacticStory)
 					{
+//
 						case JOURNEYS:
 //
 // JOURNEYS First : All players score 1 DP for every player they are “in contact” with at the end of the round (including the automa in a 2-player game)
@@ -1804,8 +1813,11 @@ trait gameStates
 							break;
 					}
 				}
+//
 				break;
+//
 			case 'Second':
+//
 				{
 //
 // Second : Every player with the STS alignment at the end of a round scores 1 DP
@@ -1889,6 +1901,7 @@ trait gameStates
 							if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 1 DP for every star of another player they are blocking at the end of the round')]);
 							foreach (Factions::list(false) as $color)
 							{
+								$DP = 0;
 								foreach (Factions::atWar($color) as $otherColor)
 								{
 									if (Factions::getTechnology($otherColor, 'Spirituality') >= 5) continue;
@@ -1926,7 +1939,9 @@ trait gameStates
 					}
 				}
 				break;
+//
 			case 'Third':
+//
 				{
 //
 // Third : Every player with the STO alignment at the end of a round scores 1 DP

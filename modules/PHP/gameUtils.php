@@ -16,7 +16,7 @@ trait gameUtils
 //
 		foreach (Factions::list(false) as $color)
 		{
-			if ($this->domination->countCardInLocation('A', $color) == 0) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1, $this->gamestate->state()['name']);
+			if ($this->domination->countCardInLocation('A', $color) == 0) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
 			else foreach (array_keys($this->DOMINATIONCARDS) as $domination) $scoring[$color][$domination]['A'] = 0;
 		}
 //

@@ -13,7 +13,7 @@ class DominationCards extends APP_GameClass
 //
 		return $deck;
 	}
-	static function A(string $color, int $domination, int $multiplier, string $gamestate): int
+	static function A(string $color, int $domination, int $multiplier): int
 	{
 		$scoringPhase = false;
 		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
@@ -23,7 +23,7 @@ class DominationCards extends APP_GameClass
 		{
 			case ACQUISITION:
 // Conquer/liberate 2 player owned stars on the same turn
-// Play this card when this happens
+// Play this car	d when this happens
 				$acquisition = Factions::getStatus($color, 'acquisition') ?? [];
 				return (sizeof($acquisition) >= 2) ? 10 * $multiplier : 0;
 			case ALIGNMENT:
@@ -89,7 +89,7 @@ class DominationCards extends APP_GameClass
 // Have a ship each in 4 nebula hexes at the start of your movement
 				$numberOfShips = 0;
 				foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::NEBULA) $numberOfShips++;
-				return ($numberOfShips >= 4 && $gamestate === 'fleets') ? 8 * $multiplier : 0;
+				return ($numberOfShips >= 4) ? 8 * $multiplier : 0;
 			case EXPLORATORY:
 // Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors
 				$sectors = array_fill_keys(Sectors::getAll(), ['ships' => 0, 'stars' => 0]);
@@ -133,7 +133,7 @@ class DominationCards extends APP_GameClass
 // Have level 6 in 1 technology field and level 5 or higher in another field
 				$technologies = array_map(fn($technology) => Factions::getTechnology($color, $technology), array_keys(Factions::TECHNOLOGIES));
 				rsort($technologies);
-				return ($technologies[0] === 6 && $technologies[1] >= 5 && $gamestate === 'resolveGrowthActions' && Factions::getActive() === $color) ? 11 * $multiplier : 0;
+				return ($technologies[0] === 6 && $technologies[1] >= 5) ? 11 * $multiplier : 0;
 			default:
 				throw new BgaVisibleSystemException('Invalid Domination Card: ' . $domination);
 		}

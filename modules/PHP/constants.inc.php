@@ -45,7 +45,7 @@ define('PATH', 110);
 define('ROUND', 10);
 define('GODMODE', 20);
 define('SWITCHALIGNMENT', 21);
-define('TRADING', 21);
+define('TRADING', 22);
 //
 // Automas (2)
 //

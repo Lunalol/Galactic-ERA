@@ -662,7 +662,7 @@ trait gameStateArguments
 			case SPECIALSCIENTIFIC:
 //
 				$this->possible['color'] = $color;
-				$this->possible['counters'] = array_diff(array_keys(Factions::TECHNOLOGIES), Factions::getStatus($color, 'used'));
+				$this->possible['counters'] = array_diff(array_keys(Factions::TECHNOLOGIES), Factions::getStatus($color, 'counters'), Factions::getStatus($color, 'used'));
 				break;
 		}
 //

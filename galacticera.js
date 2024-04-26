@@ -115,31 +115,37 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				0: {title: _('Acquisition'), DP: 10,
 					A: [_('Conquer/liberate 2 player owned stars on the same turn'),
 						_('Play this card when this happens')],
+					E: [],
 					B: [_('1 DP per neutral star where only you have a ship'),
 						_('1 DP per Military level')]},
 				1: {title: _('Alignment'), DP: 9,
 					A: [_('Can only be played at the end of the scoring phase'),
-						_('Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then')
-					],
+						_('Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then')],
+					E: [],
 					B: [_('4 DP if you did not get any DP for your alignment in the scoring phase of this round'),
 						_('1 DP per Spirituality level')]},
 				2: {title: _('Central'), DP: 12,
 					A: [_('Own 4 stars in the center sector')],
+					E: [],
 					B: [_('1 DP per population of one of your stars in the center sector')]},
 				3: {title: _('Defensive'), DP: 9,
 					A: [_('Own all the stars (except neutron stars) in your home star sector')],
+					E: [],
 					B: [_('4 DP if no other player owns a star in your home sector + 1 DP per 2 Military levels')]},
 				4: {title: _('Density'), DP: 7,
 					A: [_('Have 3 stars with 5 or more population each')],
+					E: [],
 					B: [_('1 DP per star you own with 4+ population')]},
 				5: {title: _('Diplomatic'), DP: 14,
 					A: [_('Have Spirituality level 4 or higher, own the center star of the center sector and be at peace with every player')],
+					E: [_('No players may declare war on you forthe rest of this round')],
 					B: [_('2 DP per other player’s home star where you have a ship (including automa)'),
 						_('1 DP per Spirituality level')]},
 				6: {title: _('Economic'), DP: 7,
 					A: [_('Build 10 ships in a single Build Ships growth action'),
 						_('Any ships built as the direct result of star people special effects (e.g. STS Rogue AI) do not count for fulfilling this'),
 						_('Play this card when this happens')],
+					E: [],
 					B: [_('1 DP per Asteroid System where you have a ship'),
 						_('1 DP per Robotics level')]},
 				7: {title: _('Etheric'), DP: 8,
@@ -147,23 +153,33 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					B: [_('STO: 1 DP per Spirituality level / STS: 1 DP per Military level')]},
 				8: {title: _('Exploratory'), DP: 13,
 					A: [_('Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors')],
+					E: [],
 					B: [_('1 DP per sector with a ship of yours'),
 						_('1 DP per Propulsion level')]},
 				9: {title: _('General Scientific'), DP: 9,
 					A: [_('Have a total of 16 technology levels')],
+					E: [_('You may do an additional technology trade this round'),
+						_('The player you trade with can also do this additionally (this need not be the player you traded with previously)')],
 					B: [_('2 DP × your lowest technology level')]},
 				10: {title: _('Military'), DP: 10,
 					A: [_('Have ships totaling 120 in CV (not counting bonuses of any kind)'),
 						_('Reveal enough ships to prove this'),
 						_('If you play this card during a battle, all your ships in that battle still count toward the total (even if they would be destroyed)')],
+					E: [
+						_('In the current battle you are involved in, your opponents may not retreat before combat (not even with fleet “E”; any star people special effects still apply though) OR none of your ships are destroyed (you may choose which)'),
+						_('If none of your ships are destroyed as loser of a battle, then less ships are destroyed from the winner accordingly')],
 					B: [_('2 DP per sector where you are the only player with a fleet'),
 						_('1 DP per Military level')]},
 				11: {title: _('Spatial'), DP: 11,
 					A: [_('Own 10 stars')],
+					E: [_('Teleport up to 3 population'),
+						_('This cannot be blocked though, and you can do this anytime')],
 					B: [_('2 DP per 3 stars you own'),
 						_('1 DP per Propulsion level')]},
 				12: {title: _('Special Scientific'), DP: 11,
 					A: [_('Have level 6 in 1 technology field and level 5 or higher in another field')],
+					E: [_('Get a free Research action in a technology field for which you have a technology counter that you did not select this round'),
+						_('This also counts toward scoring and other effects as normal')],
 					B: [_('1 DP × your highest technology level')]}
 			};
 //
@@ -1246,7 +1262,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						}
 						this.updatePageTitle();
-
 						if (/*this.isCurrentPlayerActive()*/ 'trade' in state.args._private)
 						{
 							dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
@@ -1313,16 +1328,13 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								dojo.place(`<div style='color:white;margin-top:10px;font-size:small;'><HR>${_('Select a technology')}</div>`, toColor);
 //
 								const node = dojo.place('<div style="display: flex;justify-content: space-between;"></div>', _container);
-								const refuse = dojo.place(`<div class='bgabutton'>${_('Refuse trade')}</div>`, node);
-								dojo.style(refuse, 'background', '#' + to + '80');
-								dojo.style(refuse, 'pointer-events', 'all');
-								dojo.connect(refuse, 'click', () => this.action('trade', {from: from, to: to, technology: 'refuse'}));
-//								const accept = dojo.place(`<div class='bgabutton'>${_('Accept trade')}</div>`, node);
-//								dojo.style(accept, 'background', '#' + to + '80');
-//								dojo.style(accept, 'pointer-events', 'all');
-//								if (from in state.args._private.trade && to in state.args._private.trade[from] && state.args._private.trade[from][to].pending) dojo.addClass(accept, 'ERAdisabled', );
-//								if (to in state.args._private.trade && from in state.args._private.trade[to] && state.args._private.trade[to][from].pending) dojo.addClass(accept, 'ERAdisabled', );
-//								dojo.connect(accept, 'click', () => this.action('trade', {from: from, to: to, technology: 'accept'}))
+								if (Object.keys(this.gamedatas.players).length > 1)
+								{
+									const refuse = dojo.place(`<div class='bgabutton'>${_('Refuse trade')}</div>`, node);
+									dojo.style(refuse, 'background', '#' + to + '80');
+									dojo.style(refuse, 'pointer-events', 'all');
+									dojo.connect(refuse, 'click', () => this.action('trade', {from: from, to: to, technology: 'refuse'}));
+								}
 							}
 //
 							let html = '';
@@ -1422,20 +1434,46 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					{
 						switch (state.args.dominationCard)
 						{
+//
 							case 'Economic':
-								this.setClientState('buildShips', {counter: null, possibleactions: ['buildShips'
-									], descriptionmyturn: dojo.string.substitute(_('${you} get ${SHIPS} new ship(s)'), {you: '${you}', SHIPS: state.args._private.newShips})});
+//
+								this.last_server_state.name = 'buildShips';
+								this.last_server_state.descriptionmyturn = dojo.string.substitute(_('${you} get ${SHIPS} new ship(s)'), {you: '${you}', SHIPS: state.args._private.newShips});
+								this.last_server_state.possibleactions = ['buildShips'];
+								this.last_server_state.counter = null;
+//
+								this.restoreServerGameState();
+//
 								break;
+//
 							case 'Exploratory':
+//
 								dojo.place(`<span style='font-size:small;'><BR>${_('You may inspect the unplayed domination cards of another player (in a game with 5+ players, you may even do this with 2 players)')}</span>`, 'generalactions');
 								dojo.query(`.ERAdominationCard[domination='back']`).addClass('ERAselectable ERAselected');
+//
 								break;
+//
 							case 'Spatial':
-								this.setClientState('teleportPopulation', {phase: 'from', descriptionmyturn: dojo.string.substitute(_('${you} can select up to ${population} population disc(s) to teleport'), {you: '${you}', population: state.args._private.teleportPopulation})});
+//
+								this.last_server_state.name = 'teleportPopulation';
+								this.last_server_state.descriptionmyturn = dojo.string.substitute(_('${you} can select up to ${population} population disc(s) to teleport'), {you: '${you}', population: state.args._private.teleportPopulation});
+								this.last_server_state.possibleactions = ['teleportPopulation'];
+								this.last_server_state.phase = 'from';
+//
+								this.restoreServerGameState();
+//
 								break;
+//
 							case 'Special Scientific':
-								this.setClientState('individualChoice', {descriptionmyturn: _('Get a free Research action in a technology field for which you have a technology counter that you did not select this round')});
+//
+								this.last_server_state.name = 'individualChoice';
+								this.last_server_state.descriptionmyturn = this.DOMINATIONS[12].E[0];
+								this.last_server_state.possibleactions = ['individualChoice'];
+//
+								this.restoreServerGameState();
+//
 								break;
+//
 						}
 
 					}
@@ -1471,7 +1509,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			if (this.isCurrentPlayerActive())
 			{
-				if (this.on_client_state) this.addActionButton('ERAcancelButton', _('Cancel'), () => this.restoreServerGameState());
+				if (this.on_client_state && this.last_server_state.name !== 'oneTimeEffect') this.addActionButton('ERAcancelButton', _('Cancel'), () => this.restoreServerGameState());
+				if (this.gamedatas.gamestate.possibleactions.includes('continue')) this.addActionButton('ERAcontinueButton', _('Continue'), () => this.action('continue', {}));
+//
 				if (this.gamedatas.gamestate.possibleactions.includes('declareWar')) dojo.query(`.ERAcounter-peace[color='${this.color}']`, 'player_boards').addClass('ERAselectable');
 				if (this.gamedatas.gamestate.possibleactions.includes('declarePeace')) dojo.query(`.ERAcounter-war[color='${this.color}']`, 'player_boards').addClass('ERAselectable');
 //
@@ -1525,15 +1565,17 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						dojo.setAttr(fleetNode, 'fleet', fleet);
 						dojo.setAttr(fleetNode, 'ships', ships);
 //
-						const shipsNode = dojo.place(`<div class='ERAships' style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
+						const shipsNode = dojo.place(`<div class='ERAships'style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
 						for (let index = 0; index < ships; index++)
 						{
 							let node = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, location: location}), shipsNode);
 							dojo.addClass(node, 'ERAselectable');
 							dojo.connect(node, 'click', (event) => {
 								dojo.stopEvent(event);
-								if (event.detail === 1) dojo.toggleClass(node, 'ERAselected');
-								if (event.detail === 2) dojo.query(`#ERAfleets>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(node, 'ERAselected'));
+								const nodes = event.currentTarget.parentNode.children;
+								for (let i = 0; i < nodes.length; i++) dojo.toggleClass(nodes[i], 'ERAselected', i <= index);
+//								if (event.detail === 1) dojo.toggleClass(node, 'ERAselected');
+//								if (event.detail === 2) dojo.query(`#ERAfleets>.ERAfleet[fleet='${fleet}'] .ERAship:not([fleet]).ERAselectable`).toggleClass('ERAselected', dojo.hasClass(node, 'ERAselected'));
 							});
 						}
 //
@@ -2219,14 +2261,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					this.gamedatas.factions[color].scoring = notif.args.scoring[color];
 					if (this.color === color)
 					{
-						dojo.query('.ERAdominationCard', `ERAdominationCards-${color}`).forEach((node) => {
-							if (this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A) dojo.style(node, 'box-shadow', `0px 0px 5px 4px #${color}`);
-							else dojo.style(node, 'box-shadow', '');
-						});
-						dojo.query('.ERAdominationCard', `ERAplayerDominationCards-${color}`).forEach((node) => {
-							if (this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A) dojo.style(node, 'box-shadow', `0px 0px 5px 4px #${color}`);
-							else dojo.style(node, 'box-shadow', '');
-						});
+						dojo.query('.ERAdominationCard', `ERAdominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationEffect', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A));
+						dojo.query('.ERAdominationCard', `ERAplayerDominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationEffect', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A));
 					}
 				}
 			});

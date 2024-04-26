@@ -380,7 +380,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may trade technology'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argTradingPhase',
-		'possibleactions' => ['declarePeace', 'domination', 'trade', 'pass'],
+		'possibleactions' => ['declarePeace', 'trade', 'pass'],
 		'transitions' => ['continue' => 505, 'tradingPhase' => 510, 'next' => 540]
 	],
 	540 => [
@@ -500,7 +500,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may use the Immediate Effect for ${dominationCard}'),
 		'type' => 'activeplayer',
 		'args' => 'argOneTimeEffect',
-		'possibleactions' => ['oneTimeEffect', 'teleportPopulation', 'buildShips', 'individualChoice'],
+		'possibleactions' => ['oneTimeEffect', 'teleportPopulation', 'buildShips', 'individualChoice', 'null'],
 		'transitions' => ['continue' => ONETIMEEFFECT, 'advancedFleetTactics' => ONETIMEEFFECT + 1, 'end' => POP_EVENT]
 	],
 	ONETIMEEFFECT + 1 => [

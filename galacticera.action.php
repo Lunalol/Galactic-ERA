@@ -22,6 +22,14 @@ class action_galacticera extends APP_GameAction
 		$this->game->acGODMODE($god);
 		self::ajaxResponse();
 	}
+	public function continue()
+	{
+		self::setAjaxMode();
+//
+		$this->game->acContinue();
+//
+		self::ajaxResponse("");
+	}
 	public function null()
 	{
 		self::setAjaxMode();
@@ -431,7 +439,8 @@ class action_galacticera extends APP_GameAction
 		$color = self::getArg("color", AT_alphanum, true);
 		$id = self::getArg("id", AT_int, true);
 		$section = self::getArg("section", AT_alphanum, true);
-		$this->game->acDomination($color, $id, $section);
+		$effect = self::getArg("effect", AT_bool, true);
+		$this->game->acDomination($color, $id, $section, $effect);
 //
 		self::ajaxResponse("");
 	}
