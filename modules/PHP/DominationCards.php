@@ -138,6 +138,44 @@ class DominationCards extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid Domination Card: ' . $domination);
 		}
 	}
+	static function effect(string $color, int $domination, string $gamestate): bool
+	{
+		$scoringPhase = false;
+		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		if ($event && $event['trigger_state'] == 550) $scoringPhase = true;
+//
+		switch ($domination)
+		{
+			case ACQUISITION:
+				return in_array($gamestate, ['resolveGrowthActions']);
+			case ALIGNMENT:
+				return $scoringPhase;
+			case CENTRAL:
+				return in_array($gamestate, ['selectCounters', 'resolveGrowthActions']);
+			case DEFENSIVE:
+				return in_array($gamestate, ['dominationCombatPhase']);
+			case DENSITY:
+				return true;
+			case DIPLOMATIC:
+				return true;
+			case ECONOMIC:
+				return true;
+			case ETHERIC:
+				return in_array($gamestate, ['fleets']);
+			case EXPLORATORY:
+				return true;
+			case GENERALSCIENTIFIC:
+				return true;
+			case MILITARY:
+				return in_array($gamestate, ['dominationRetreatPhase', 'domination']);
+			case SPATIAL:
+				return true;
+			case SPECIALSCIENTIFIC:
+				return in_array($gamestate, ['resolveGrowthActions', 'dominationCombatPhase']);
+			default:
+				throw new BgaVisibleSystemException('Invalid Domination Card: ' . $domination);
+		}
+	}
 	static function B(string $color, int $domination, int $multiplier): array
 	{
 		$scoringPhase = false;

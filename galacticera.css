@@ -44,10 +44,22 @@
 	padding: 15px 0px 5px 0px;
 	font-size: 30px;
 }
-
+.ERAview {
+    display: inline-block;
+    background-image: url('img/hide.svg');
+    width: 25px;
+    height: 25px;
+    background-size: contain;
+    vertical-align: middle;
+}
 .ERAicon {
 	vertical-align: middle;
 	padding: 0px 10px;
+	font-size: x-large;
+}
+.mobile_version .ERAicon {
+	padding: 0px 25px;
+	font-size: xx-large;
 }
 
 html,body {
@@ -94,7 +106,6 @@ div,img {
 .ERAbutton.ERAselected {
 	opacity: 100%;
 }
-
 .ERAdice {
     display:inline-block;
     vertical-align:middle;
@@ -102,16 +113,13 @@ div,img {
     height:30px;
     background-image:url('img/dices.png');
 }
-
 .ERAhide {
 	visibility: hidden;
 }
-
 .ERAdisabled {
 	pointer-events: none !important;
 	filter: grayscale(1) !important;
 }
-
 #ERAoffboard {
 	position: relative;
 	padding: 10px;
@@ -121,7 +129,6 @@ div,img {
 #ERAoffboard.ERAfocus {
 	z-index: 1000;
 }
-
 #ERAfleets {
 	position: fixed;
 	top: 0px;
@@ -201,6 +208,9 @@ div,img {
 	position: relative;
 	max-width: 250px;
 	transition: transform CALC(var(--DELAY) * 0.5ms);
+}
+.ERAdominationCard.ERAdominationA {
+	box-shadow: 0px 0px 5px 5px red;
 }
 .ERAdominationCard.ERAdominationEffect:before {
 	position: absolute;
@@ -492,18 +502,15 @@ div,img {
 	pointer-events: none;
 	z-index: 500;
 }
-
 .ERAfaction {
 	display: flex;
 	justify-content: space-evenly;
 }
-
 .ERAstatus {
 	display: flex;
 	justify-content: space-evenly;
 	align-items: center;
 }
-
 .ERAtechnologies {
 	flex: 1 1 50%;
 	display: flex;
@@ -537,7 +544,6 @@ div,img {
 .ERApopulation {
 	vertical-align: middle;
 }
-
 .circleBlack {
 	border:white solid 1px;
 	border-radius:50%;
@@ -562,7 +568,6 @@ div,img {
 	vertical-align:middle;
 	margin:1px;
 }
-
 .ERAstarPeople {
 	pointer-events: all;
 	transition: transform CALC(var(--DELAY) * 0.5ms);

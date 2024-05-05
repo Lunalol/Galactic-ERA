@@ -15,7 +15,7 @@
 	<input id='ERAzoomLevel' type='range' style='vertical-align:middle;'/>
 	<span id='ERAzoomPlus' class='ERAicon'>🔎</span>
 	<span id='ERAhome' class="ERAicon fa fa-home fa-2x"></span>
-	<span id='ERAview' class="ERAicon fa fa-eye fa-2x"></span>
+	<span id='ERAview' class='ERAview'></span>
 	<span id='ERArotateAntiClockwise' class='ERAicon'>⟲</span>
 	<input id='ERArotate' type='range' min='-180' max='180' value='0' style='vertical-align:middle;'/>
 	<span id='ERArotateClockwise' class='ERAicon'>⟳</span>

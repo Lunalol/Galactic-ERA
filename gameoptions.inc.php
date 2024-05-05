@@ -19,22 +19,22 @@ $game_options = [
 			JOURNEYS => [
 				'name' => totranslate('Journeys'),
 				'tmdisplay' => totranslate('Galactic story: Journeys'),
-				'description' => totranslate('The galaxy seeks growth through exploration and traveling great distances. Seeking knowledge of the unknown is the ultimate aim of the Universe.')
+				'description' => totranslate('The galaxy seeks growth through exploration and traveling great distances. Seeking knowledge of the unknown is the ultimate aim of the Universe')
 			],
 			MIGRATIONS => [
 				'name' => totranslate('Migrations'),
 				'tmdisplay' => totranslate('Galactic story: Migrations'),
-				'description' => totranslate('The galaxy seeks growth through lots of population. A plentiful harvest of souls enriches the Universe.')
+				'description' => totranslate('The galaxy seeks growth through lots of population. A plentiful harvest of souls enriches the Universe')
 			],
 			RIVALRY => [
 				'name' => totranslate('Rivalry'),
 				'tmdisplay' => totranslate('Galactic story: Rivalry'),
-				'description' => totranslate('The galaxy seeks growth through non-destructive competition and rejects cowardice. A friendly amount of competition is the most beneficial for all.')
+				'description' => totranslate('The galaxy seeks growth through non-destructive competition and rejects cowardice. A friendly amount of competition is the most beneficial for all')
 			],
 			WAR => [
 				'name' => totranslate('War'),
 				'tmdisplay' => totranslate('Galactic story: War'),
-				'description' => totranslate('The galaxy seeks growth through fierce battles. The most powerful souls are forged in the fires of war.')
+				'description' => totranslate('The galaxy seeks growth through fierce battles. The most powerful souls are forged in the fires of war')
 			],
 		],
 		'displaycondition' => [['type' => 'otheroption', 'id' => GAME, 'value' => MANUAL]],

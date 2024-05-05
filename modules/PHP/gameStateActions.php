@@ -242,7 +242,7 @@ trait gameStateActions
 				$MP--;
 				if (Factions::getAdvancedFleetTactics($color, 'D') === '2x') $MP--;
 			}
-			if ($MP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn.'));
+			if ($MP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn'));
 //
 			if (intval(Ships::getStatus($fleetID, 'ships')) < $ships) throw new BgaVisibleSystemException('Not enough ships: ' . $ships);
 //			if ($shipsUsed + $ships > 16) throw new BgaUserException(self::_('No more ship minis'));
@@ -318,7 +318,7 @@ trait gameStateActions
 				$fromFleetMP--;
 				if (Factions::getAdvancedFleetTactics($color, 'D') === '2x') $fromFleetMP--;
 			}
-			if ($fromFleetMP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn.'));
+			if ($fromFleetMP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn'));
 //
 			$toFleetMP = $toFleet['MP'];
 			if ($to === 'D')
@@ -326,7 +326,7 @@ trait gameStateActions
 				$toFleetMP--;
 				if (Factions::getAdvancedFleetTactics($color, 'D') === '2x') $toFleetMP--;
 			}
-			if ($toFleetMP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn.'));
+			if ($toFleetMP < 0 && $this->gamestate->state()['name'] === 'movement') throw new BgaUserException(self::_('(D)art: Ships that have already used this advantage may not leave this fleet, in this turn'));
 //
 			if (intval(Ships::getStatus($fromID, 'ships')) < $ships) throw new BgaVisibleSystemException('Not enough ships: ' . $ships);
 //
@@ -924,6 +924,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+						foreach ($toBlock as $player_id) self::giveExtraTime($player_id);
 						$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
 						$params = func_get_args();
 						Factions::setStatus($color, 'action', ['name' => 'wormhole', 'from' => $location, 'to' => $next_location, 'function' => __FUNCTION__, 'params' => $params]);
@@ -942,6 +943,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+						foreach ($toBlock as $player_id) self::giveExtraTime($player_id);
 						$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
 						$params = func_get_args();
 						Factions::setStatus($color, 'action', ['name' => 'stargate', 'from' => $location, 'to' => $next_location, 'function' => __FUNCTION__, 'params' => $params]);
@@ -1118,6 +1120,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to evacuate home star ${GPS}'), ['player_name' => Factions::getName($color), 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
+			foreach ($toBlock as $player_id) self::giveExtraTime($player_id);
 			$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
 			Factions::setStatus($color, 'action', ['name' => 'homeStarEvacuation', 'locations' => [$location], 'function' => __FUNCTION__, 'params' => func_get_args()]);
 			return $this->gamestate->nextState('blockAction');
@@ -1731,6 +1734,7 @@ trait gameStateActions
 				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to gain ${PLANET}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
+				foreach ($toBlock as $player_id) self::giveExtraTime($player_id);
 				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
 				Factions::setStatus($color, 'action', ['name' => 'gainStar', 'locations' => [$location], 'function' => __FUNCTION__, 'params' => func_get_args()]);
 				return $this->gamestate->nextState('blockAction');
@@ -2157,6 +2161,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to grow population'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+				foreach ($toBlock as $player_id) self::giveExtraTime($player_id);
 				$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
 				Factions::setStatus($color, 'action', ['name' => 'growPopulation', 'locations' => array_unique(array_merge($locations, $locationsBonus)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
 				return $this->gamestate->nextState('blockAction');
@@ -2363,6 +2368,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('${player_name} tries to build ships'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
+					foreach ($toBlock as $player_id) self::giveExtraTime($player_id);
 					$this->gamestate->setPlayersMultiactive(array_unique($toBlock), 'end', true);
 					Factions::setStatus($color, 'action', ['name' => 'buildShips', 'locations' => array_keys(Counters::getPopulations($color)), 'function' => __FUNCTION__, 'params' => func_get_args()]);
 					return $this->gamestate->nextState('blockAction');
@@ -2727,6 +2733,8 @@ trait gameStateActions
 							break;
 //
 						case DEFENSIVE:
+//
+							if (!in_array($this->gamestate->state()['name'], ['dominationRetreatPhase', 'dominationCombatPhase'])) throw new BgaUserException(self::_('Must be played during combat step of Move/Combat Phase'));
 //* -------------------------------------------------------------------------------------------------------- */
 							if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('Add 20 CV to your side in the current battle if it is in your Home Star sector<BR>Play this card even after ships have been revealed')]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2777,7 +2785,7 @@ trait gameStateActions
 //
 						case ETHERIC:
 //
-							if (!in_array($this->gamestate->state()['name'], ['fleet'])) throw new BgaUserException(self::_('Must be played during create/swap fleets step of Move/Combat Phase'));
+							if (!in_array($this->gamestate->state()['name'], ['fleets'])) throw new BgaUserException(self::_('Must be played during create/swap fleets step of Move/Combat Phase'));
 //* -------------------------------------------------------------------------------------------------------- */
 							if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${log}</span>', ['i18n' => ['log'], 'log' => clienttranslate('All of your ships starting their move in a nebula hex now get +4 range (instead of +2)')]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -2838,6 +2846,7 @@ trait gameStateActions
 //
 							throw new BgaVisibleSystemException('A-Section NOT implemented');
 					}
+					if (!DominationCards::effect($color, $domination, $this->gamestate->state()['name'])) throw new BgaUserException(self::_('Immediate effect impossible to trigger now'));
 				}
 //
 				self::gainDP($color, $DP);

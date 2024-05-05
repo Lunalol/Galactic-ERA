@@ -122,8 +122,22 @@ class GalacticEra extends Table
 		{
 			if (Factions::getPlayer($color) > 0)
 			{
-				if ($this->domination->countCardInLocation('A', $color) == 0) foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
-				else foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['A'] = 0;
+				if ($this->domination->countCardInLocation('A', $color) == 0)
+				{
+					foreach (array_keys($this->DOMINATIONCARDS) as $domination)
+					{
+						$result['factions'][$color]['scoring'][$domination]['A'] = DominationCards::A($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
+						$result['factions'][$color]['scoring'][$domination]['effect'] = $result['factions'][$color]['scoring'][$domination]['A'] && DominationCards::effect($color, $domination, $this->gamestate->state()['name']);
+					}
+				}
+				else
+				{
+					foreach (array_keys($this->DOMINATIONCARDS) as $domination)
+					{
+						$result['factions'][$color]['scoring'][$domination]['A'] = 0;
+						$result['factions'][$color]['scoring'][$domination]['effect'] = false;
+					}
+				}
 //
 				foreach (array_keys($this->DOMINATIONCARDS) as $domination) $result['factions'][$color]['scoring'][$domination]['B'] = DominationCards::B($color, $domination, self::getGameStateValue('galacticGoal') == PERSONALGROWTH ? 2 : 1);
 			}
@@ -277,6 +291,7 @@ class GalacticEra extends Table
 			self::DbQuery("UPDATE stack SET new_state = 0 WHERE id = $event[id]");
 //
 			if ($event['new_active_faction'] !== 'neutral') $this->gamestate->changeActivePlayer(Factions::getPlayer($event['new_active_faction']));
+			foreach ($this->gamestate->getActivePlayerList() as $player_id) self::giveExtraTime($player_id);
 			return $this->gamestate->jumpToState($event['new_state']);
 		}
 	}

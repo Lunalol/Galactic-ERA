@@ -185,7 +185,8 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
 					if (domination !== 'back')
 					{
-						dojo.toggleClass(node, 'ERAdominationEffect', this.bgagame.gamedatas.factions[faction.color].scoring[node.getAttribute('domination')].A);
+						dojo.toggleClass(node, 'ERAdominationA', this.bgagame.gamedatas.factions[faction.color].scoring[node.getAttribute('domination')].A);
+						dojo.toggleClass(node, 'ERAdominationEffect', this.bgagame.gamedatas.factions[faction.color].scoring[node.getAttribute('domination')].effect);
 						dojo.connect(node, 'click', (event) => {
 							dojo.stopEvent(event);
 							if (true) this.dominationDialog(faction, index, domination);
@@ -212,7 +213,8 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					dojo.setAttr(node.querySelector('img'), 'src', `${g_gamethemeurl}img/dominationCards/${domination}.jpg`);
 					if (domination !== 'back')
 					{
-						dojo.toggleClass(node, 'ERAdominationEffect', this.bgagame.gamedatas.factions[faction.color].scoring[node.getAttribute('domination')].A);
+						dojo.toggleClass(node, 'ERAdominationA', this.bgagame.gamedatas.factions[faction.color].scoring[node.getAttribute('domination')].A);
+						dojo.toggleClass(node, 'ERAdominationEffect', this.bgagame.gamedatas.factions[faction.color].scoring[node.getAttribute('domination')].effect);
 						dojo.connect(node, 'click', (event) => {
 							dojo.stopEvent(event);
 							if (true) this.dominationDialog(faction, index, domination);

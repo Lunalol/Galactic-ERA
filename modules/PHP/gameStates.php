@@ -295,9 +295,10 @@ trait gameStates
 		}
 		else
 		{
-			if (sizeof($starPeoples) < 2 * self::getPlayersNumber() || DEBUG) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
+			if (sizeof($starPeoples) < 2 * self::getPlayersNumber() /* || DEBUG */) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
 			else foreach (Factions::list(false) as $color) if (Factions::getPlayer($color) >= 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 //
+			foreach (Factions::list(false) as $color) self::giveExtraTime(Factions::getPlayer($color));
 			$this->gamestate->setAllPlayersMultiactive('next');
 		}
 //
@@ -327,7 +328,11 @@ trait gameStates
 			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'alignment', true);
 			$this->gamestate->nextState('next');
 		}
-		else $this->gamestate->setAllPlayersMultiactive('next');
+		else
+		{
+			foreach (Factions::list(false) as $color) self::giveExtraTime(Factions::getPlayer($color));
+			$this->gamestate->setAllPlayersMultiactive('next');
+		}
 //
 		self::updateScoring();
 		$this->gamestate->nextState('next');
@@ -608,6 +613,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Individual choices')]);
 //* -------------------------------------------------------------------------------------------------------- */
+		self::updateScoring();
 		$this->gamestate->nextState('next');
 	}
 	/**
@@ -646,6 +652,7 @@ trait gameStates
 //
 				return $this->gamestate->nextState('continue');
 			}
+			self::giveExtraTime(Factions::getPlayer($color));
 			$this->gamestate->changeActivePlayer(Factions::getPlayer($color));
 			return $this->gamestate->nextState('individualChoice');
 		}
@@ -727,10 +734,13 @@ trait gameStates
 			if ($this->domination->countCardInLocation('hand', $color) > 0) $players[] = Factions::getPlayer($color);
 		}
 //
+		foreach ($players as $player_id) self::giveExtraTime($player_id);
 		$this->gamestate->setPlayersMultiactive($players, 'end', true);
 	}
 	function stDominationCardExchange()
 	{
+		self::updateScoring();
+//
 		$round = intval(self::getGameStateValue('round'));
 //
 		while ($color = Factions::getNext())
@@ -745,6 +755,7 @@ trait gameStates
 				{
 					if ($cards === 1 || $round === 3)
 					{
+						self::giveExtraTime($player_id);
 						$this->gamestate->changeActivePlayer($player_id);
 						return $this->gamestate->nextState('dominationCardExchange');
 					}
@@ -773,6 +784,8 @@ trait gameStates
 	}
 	function stMovementCombatPhase()
 	{
+		self::updateScoring();
+//
 		$color = Factions::getNext();
 		if (!$color) return $this->gamestate->nextState('next');
 //
@@ -834,11 +847,14 @@ trait gameStates
 		}
 		if ($player_id === 0) return $this->gamestate->nextState('continue');
 //
+		self::giveExtraTime($player_id);
 		$this->gamestate->changeActivePlayer($player_id);
 		$this->gamestate->nextState('nextPlayer');
 	}
 	function stCombatChoice()
 	{
+		self::updateScoring();
+//
 		$color = Factions::getActive();
 //
 		self::argCombatChoice();
@@ -855,11 +871,13 @@ trait gameStates
 			return self::acCombatChoice($color, array_pop($this->possible), true);
 		}
 //
+		self::giveExtraTime($player_id);
 		$this->gamestate->changeActivePlayer($player_id);
 		$this->gamestate->nextState('combatChoice');
 	}
 	function stBeforeRetreat()
 	{
+//
 		$attacker = Factions::getActive();
 		$location = Factions::getStatus($attacker, 'combat');
 //
@@ -871,8 +889,10 @@ trait gameStates
 		$player_id = Factions::getPlayer($attacker);
 		if ($player_id >= 0 && $this->domination->countCardInLocation('A', $attacker) == 0 && DominationCards::A($attacker, MILITARY, 1, 'combat'))
 		{
+			self::giveExtraTime($player_id);
 			$this->gamestate->setPlayersMultiactive([$player_id], 'end', true);
-			return $this->gamestate->nextState('domination');
+			$this->gamestate->nextState('domination');
+			return self::updateScoring();
 		}
 //------------------------
 // A-section: Military //
@@ -911,6 +931,7 @@ trait gameStates
 //
 					Factions::setStatus($attacker, 'retreat', $defender);
 //
+					self::giveExtraTime($player_id);
 					$this->gamestate->changeActivePlayer($player_id);
 					return $this->gamestate->nextState('retreat');
 				}
@@ -958,6 +979,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					}
 //
+					self::giveExtraTime($player_id);
 					$this->gamestate->changeActivePlayer($player_id);
 					return $this->gamestate->nextState('retreatE');
 				}
@@ -1120,8 +1142,10 @@ trait gameStates
 		}
 		if ($players)
 		{
+			foreach ($players as $player_id) self::giveExtraTime($player_id);
 			$this->gamestate->setPlayersMultiactive($players, 'end', true);
-			return $this->gamestate->nextState('domination');
+			$this->gamestate->nextState('domination');
+			return self::updateScoring();
 		}
 //------------------------
 // A-section: Defensive //
@@ -1338,6 +1362,7 @@ trait gameStates
 		if ($player_id < 0) return self::acBattleLoss($winner, Automas::battleLoss($attacker, $defenders, $totalVictory), true);
 		if ($player_id === 0) $player_id = Factions::getPlayer(Factions::getNotAutomas($attacker));
 //
+		self::giveExtraTime($player_id);
 		$this->gamestate->changeActivePlayer($player_id);
 		return $this->gamestate->nextState('battleLoss');
 	}
@@ -1472,10 +1497,13 @@ trait gameStates
 	function stAdvancedFleetTactics()
 	{
 		$players = array_values(Factions::advancedFleetTactics());
+		foreach ($players as $player_id) self::giveExtraTime($player_id);
 		$this->gamestate->setPlayersMultiactive($players, 'next', true);
 	}
 	function stGrowthPhase()
 	{
+		self::updateScoring();
+//
 		Factions::setActivation();
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
@@ -1490,6 +1518,7 @@ trait gameStates
 			if (Factions::getStatus($color, 'central')) Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
 		}
 //
+		foreach (Factions::list(false) as $color) self::giveExtraTime(Factions::getPlayer($color));
 		$this->gamestate->setAllPlayersMultiactive('next');
 		$this->gamestate->nextState('next');
 	}
@@ -1606,6 +1635,8 @@ trait gameStates
 	}
 	function stGrowthActions()
 	{
+		self::updateScoring();
+//
 		$color = Factions::getNext();
 		if (!$color) return $this->gamestate->nextState('next');
 //
@@ -1614,12 +1645,18 @@ trait gameStates
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
-		if ($player_id > 0) $this->gamestate->changeActivePlayer($player_id);
+		if ($player_id > 0)
+		{
+			self::giveExtraTime($player_id);
+			$this->gamestate->changeActivePlayer($player_id);
+		}
 //
 		$this->gamestate->nextState('nextPlayer');
 	}
 	function stResolveGrowthActions()
 	{
+		self::updateScoring();
+//
 		$color = Factions::getActive();
 		$player_id = Factions::getPlayer($color);
 //
@@ -1649,6 +1686,8 @@ trait gameStates
 	}
 	function stTradingPhase()
 	{
+		self::updateScoring();
+//
 		$trading = intval(self::getGameStateValue('trading'));
 		if ($trading > SECOND) return $this->gamestate->nextState('end');
 //
@@ -1754,6 +1793,8 @@ trait gameStates
 	}
 	function stScoringPhase()
 	{
+		self::updateScoring();
+//
 //* -------------------------------------------------------------------------------------------------------- */
 		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('Scoring Phase')

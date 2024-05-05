@@ -104,7 +104,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				Control: _('Players score 10 DP per star they have in the center of a sector at game end'),
 				Cooperation: _('Players immediately score 2 DP per technology trade they are part of<BR>Players immediately lose 3 DP when they declare war on a player (you only lose this once per player)'),
 				Discovery: _('Players keep the star counters of neutral stars they took during the course of the game (a primitive neutral that was “advanced” by the STO Annunaki still counts as a primitive for this purpose)<BR>At game end, the player with the most star counters of a type scores 10 DP'),
-				Leadership: _('At the end of every era (after the scoring phase), the player with the most DP of all players belonging to an alignment places a ship of their color (from the supply or the map) on the galactic goal tile<BR>In case of a tie each player among the tied does this. At the end of the third era do this before adding any game end DP<BR>The player with the most ships on the galactic goal tile at game end scores 10 DP (solo variant: 20 DP)'),
+				Leadership: _('At the end of every era (after the scoring phase), the player with the most DP of all players belonging to an alignment places a ship of their color (from the supply or the map) on the galactic goal tile<BR>In case of a tie each player among the tied does this<BR>At the end of the third era do this before adding any game end DP<BR>The player with the most ships on the galactic goal tile at game end scores 10 DP (solo variant: 20 DP)'),
 				Legacy: _('Player scores 10 DP per star they have with a relic at game end (the one-time effect relics do not count)'),
 				'Personal Growth': _('Players score double for domination cards (i.e., all effects on a card that directly give DP)<BR>Fractions are not rounded down (any half DP become whole)'),
 				Power: _('Players score 8 DP if they have <B>more</B> ships in a sector than all other players’ ships there <B>combined</B> (no DP in case of a tie)'),
@@ -115,26 +115,28 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				0: {title: _('Acquisition'), DP: 10,
 					A: [_('Conquer/liberate 2 player owned stars on the same turn'),
 						_('Play this card when this happens')],
-					E: [],
+					E: [_('Get an additional technology level from one of the players you took a star from this turn')],
 					B: [_('1 DP per neutral star where only you have a ship'),
 						_('1 DP per Military level')]},
 				1: {title: _('Alignment'), DP: 9,
 					A: [_('Can only be played at the end of the scoring phase'),
-						_('Have 5 DP and either have more DP (solo variant: tech. levels) than every other player with your alignment or be the only one of your alignment then')],
-					E: [],
+						_('Have 5 DP and either have more DP (solo variant: technology levels) than every other player with your alignment or be the only one of your alignment then')],
+					E: [_('Get an additional 2 DP for every Switch Alignment growth action counter played this round (including your own)')],
 					B: [_('4 DP if you did not get any DP for your alignment in the scoring phase of this round'),
 						_('1 DP per Spirituality level')]},
 				2: {title: _('Central'), DP: 12,
 					A: [_('Own 4 stars in the center sector')],
-					E: [],
+					E: [
+						_('On your turn in this growth phase, you get a free Gain Star action, which you can use in the center sector only<BR>Your ships count double for this action (apply before calculating Fleet “B” bonus)')
+					],
 					B: [_('1 DP per population of one of your stars in the center sector')]},
 				3: {title: _('Defensive'), DP: 9,
 					A: [_('Own all the stars (except neutron stars) in your home star sector')],
-					E: [],
+					E: [_('Add 20 CV to your side in the current battle if it is in your home star sector<BR>You may play this card even after ships have been revealed')],
 					B: [_('4 DP if no other player owns a star in your home sector + 1 DP per 2 Military levels')]},
 				4: {title: _('Density'), DP: 7,
 					A: [_('Have 3 stars with 5 or more population each')],
-					E: [],
+					E: [_('Add 1 population disc to each of your stars with 5+ population (regardless of any limits or blocking)')],
 					B: [_('1 DP per star you own with 4+ population')]},
 				5: {title: _('Diplomatic'), DP: 14,
 					A: [_('Have Spirituality level 4 or higher, own the center star of the center sector and be at peace with every player')],
@@ -143,17 +145,20 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						_('1 DP per Spirituality level')]},
 				6: {title: _('Economic'), DP: 7,
 					A: [_('Build 10 ships in a single Build Ships growth action'),
-						_('Any ships built as the direct result of star people special effects (e.g. STS Rogue AI) do not count for fulfilling this'),
+						_('Any ships built as the direct result of star people special effects do not count for fulfilling this'),
 						_('Play this card when this happens')],
-					E: [],
+					E: [
+						_('Get an additional 6 ships which you can place at any of your stars<BR>Otherwise, use the same rules for placing new ships as when doing the Build Ships action<BR>This effect cannot be blocked though')
+					],
 					B: [_('1 DP per Asteroid System where you have a ship'),
 						_('1 DP per Robotics level')]},
 				7: {title: _('Etheric'), DP: 8,
 					A: [_('Have a ship each in 4 nebula hexes at the start of your movement')],
+					E: [_('All of your ships starting their move in a nebula hex now get +4 range (instead of +2)')],
 					B: [_('STO: 1 DP per Spirituality level / STS: 1 DP per Military level')]},
 				8: {title: _('Exploratory'), DP: 13,
 					A: [_('Have Propulsion level 4 or higher, have a ship and a star each in 4 sectors')],
-					E: [],
+					E: [_('You may inspect the unplayed domination cards of another player<BR>In a game with 5+ players, you may even do this with 2 players')],
 					B: [_('1 DP per sector with a ship of yours'),
 						_('1 DP per Propulsion level')]},
 				9: {title: _('General Scientific'), DP: 9,
@@ -227,7 +232,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					5: [_('Ship range is 5'),
 						_('You can use Stargate 2 connections'),
 						_('You may enter Neutron Star hexes'),
-						_('You can teleport 1 population disc (as a free action in growth phase, blockable).')],
+						_('You can teleport 1 population disc (as a free action in growth phase, blockable)')],
 					6: [_('You can move your ships anywhere, including Neutron Star hexes'),
 						_('You can teleport up to 3 population discs (as a free action in growth phase, blockable)')],
 					'6+': [_('You get 2 free Gain Star actions')]
@@ -264,36 +269,36 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			this.GROWTHACTIONS = {
 				'changeTurnOrderUp': [_('Change Turn Order UP'),
-					('First, all players who selected an “up” (green arrow pointing up) turn order change counter switch to one position earlier in turn order.<BR>Do this by starting with the smallest number and then continuing in numerical order.<BR>Each such player exchanges their octagonal turn order counter with the player who has the next smaller number.<BR>For a player who already had the number 1 of the turn order at the start of the phase such a counter does nothing though.')
+					('First, all players who selected an “up” (green arrow pointing up) turn order change counter switch to one position earlier in turn order.<BR>Do this by starting with the smallest number and then continuing in numerical order.<BR>Each such player exchanges their octagonal turn order counter with the player who has the next smaller number.<BR>For a player who already had the number 1 of the turn order at the start of the phase such a counter does nothing though')
 				],
 				'changeTurnOrderDown': [_('Change Turn Order DOWN'),
-					_('Secondly, all players who selected a “down” (red arrow pointing down) turn order change counter switch to one position later in turn order (swapping with the next greater number).<BR>Do this as above, but starting with the greatest number and then continuing in reverse numerical order.<BR>For a player who already had the greatest turn order number at the start of the phase such a counter does nothing though.')
+					_('Secondly, all players who selected a “down” (red arrow pointing down) turn order change counter switch to one position later in turn order (swapping with the next greater number).<BR>Do this as above, but starting with the greatest number and then continuing in reverse numerical order.<BR>For a player who already had the greatest turn order number at the start of the phase such a counter does nothing though')
 				],
 				'buildShips': [
 					_('Build Ships'),
-					_('Get additional ships as indicated by your population track, plus 1 per asteroid system where you have a ship and your bonus from Robotics.<BR>Place at any of your stars with 4+ population.')
+					_('Get additional ships as indicated by your population track, plus 1 per asteroid system where you have a ship and your bonus from Robotics.<BR>Place at any of your stars with 4+ population')
 				],
 				'spawnShips': [
 					_('Spawn Ships'),
-					_('“Spawning ships” is a special type of growth action that only the automas have.')],
+					_('“Spawning ships” is a special type of growth action that only the automas have')],
 				'gainStar': [
 					_('Gain Star'),
-					_('Take one star of your choice where you have the required number of ships as shown by the table on your star people tile.')],
+					_('Take one star of your choice where you have the required number of ships as shown by the table on your star people tile')],
 				'gainStar+': [
 					_('Gain Star (center sector only)'),
-					_('Take one star of your choice where you have the required number of ships as shown by the table on your star people tile.')],
+					_('Take one star of your choice where you have the required number of ships as shown by the table on your star people tile')],
 				'growPopulation': [
 					_('Grow Population'),
-					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics.')],
+					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics')],
 				'growPopulation+': [
 					_('Grow Population (2 additional bonus population)'),
-					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics.')],
+					_('First get 1 additional population at every star below its limit (=distance to nearest owned star).<BR>Then get bonus population as per Genetics')],
 				'research': [
 					_('Research'),
-					_('You must also select a square technology counter before revealing.<BR>Go up 1 level in the selected technology.')],
+					_('You must also select a square technology counter before revealing.<BR>Go up 1 level in the selected technology')],
 				'switchAlignment': [
 					_('Switch Alignment'),
-					_('Happens immediately when the action is revealed.<BR>Flip your star people tile over to the other side.<BR>You are automatically at peace with everyone then.')
+					_('Happens immediately when the action is revealed.<BR>Flip your star people tile over to the other side.<BR>You are automatically at peace with everyone then')
 				]
 			};
 //
@@ -2261,8 +2266,10 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					this.gamedatas.factions[color].scoring = notif.args.scoring[color];
 					if (this.color === color)
 					{
-						dojo.query('.ERAdominationCard', `ERAdominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationEffect', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A));
-						dojo.query('.ERAdominationCard', `ERAplayerDominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationEffect', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A));
+						dojo.query('.ERAdominationCard', `ERAdominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationA', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A));
+						dojo.query('.ERAdominationCard', `ERAdominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationEffect', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].effect));
+						dojo.query('.ERAdominationCard', `ERAplayerDominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationA', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].A));
+						dojo.query('.ERAdominationCard', `ERAplayerDominationCards-${color}`).forEach((node) => dojo.toggleClass(node, 'ERAdominationEffect', this.gamedatas.factions[color].scoring[node.getAttribute('domination')].effect));
 					}
 				}
 			});
