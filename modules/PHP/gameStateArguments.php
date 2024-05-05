@@ -70,7 +70,10 @@ trait gameStateArguments
 		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
 		$phase = $event ? $this->gamestate->states[$event['trigger_state']]['name'] : $this->gamestate->state()['name'];
 //
-		return ['counters' => $counters, 'phase' => $this->PHASES[$phase], 'lastChance' => +self::getGameStateValue('round') === 8 && $phase === 'scoringPhase'];
+		return ['counters' => $counters,
+			'active' => Factions::getActive(),
+			'location' => Factions::getStatus(Factions::getActive(), 'combat'),
+			'phase' => $this->PHASES[$phase], 'lastChance' => +self::getGameStateValue('round') === 8 && $phase === 'scoringPhase'];
 	}
 	function argDominationCardExchange()
 	{

@@ -1001,9 +1001,34 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					}
 					break;
 //
+				case 'dominationRetreatPhase':
+				case 'dominationCombatPhase':
+//
+					this.board.centerMap(state.args.location);
+//
+					const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+					dojo.setStyle(svg, 'position', 'absolute');
+					dojo.setStyle(svg, 'left', '0px');
+					dojo.setStyle(svg, 'top', '0px');
+					dojo.setStyle(svg, 'z-index', '1');
+					dojo.setStyle(svg, 'pointer-events', 'all');
+					svg.setAttribute("width", 10000);
+					svg.setAttribute("height", 10000);
+					svg.id = 'ERAstars';
+//
+					debugger;
+					dojo.query(`[location='${state.args.location}']`, 'ERAboard').addClass('ERAselectable');
+					svg.appendChild(this.board.drawHexagon(this.board.hexagons[state.args.location], "#" + state.args.active + 'C0'));
+//
+					this.board.board.appendChild(svg);
+//
+					break;
+//
 				case 'retreat':
 				case 'retreatE':
 					{
+						this.board.centerMap(state.args.location);
+//
 						dojo.query(`.ERAship[color=${this.color}][location='${state.args.location}']`, 'ERAboard').addClass('ERAselectable');
 //
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -1028,6 +1053,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 				case 'battleLoss':
 					{
+						this.board.centerMap(state.args.location);
+//
 						const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 						dojo.setStyle(svg, 'position', 'absolute');
 						dojo.setStyle(svg, 'left', '0px');

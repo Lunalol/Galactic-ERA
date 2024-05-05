@@ -170,7 +170,7 @@ class DominationCards extends APP_GameClass
 			case GENERALSCIENTIFIC:
 				return true;
 			case MILITARY:
-				return in_array($gamestate, ['dominationRetreatPhase', 'domination']);
+				return in_array($gamestate, ['dominationRetreatPhase', 'dominationCombatPhase']);
 			case SPATIAL:
 				return true;
 			case SPECIALSCIENTIFIC:

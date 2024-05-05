@@ -887,7 +887,7 @@ trait gameStates
 // A-section: Military //
 //------------------------
 		$player_id = Factions::getPlayer($attacker);
-		if ($player_id >= 0 && $this->domination->countCardInLocation('A', $attacker) == 0 && DominationCards::A($attacker, MILITARY, 1, 'combat'))
+		if ($player_id > 0 && $this->domination->countCardInLocation('A', $attacker) == 0 && DominationCards::A($attacker, MILITARY, 1, 'combat'))
 		{
 			self::giveExtraTime($player_id);
 			$this->gamestate->setPlayersMultiactive([$player_id], 'end', true);
@@ -1137,8 +1137,8 @@ trait gameStates
 		foreach (array_merge([$attacker], $defenders) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
-			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, DEFENSIVE, 1)) $players[] = $player_id;
-			if ($player_id >= 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, MILITARY, 1)) $players[] = $player_id;
+			if ($player_id > 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, DEFENSIVE, 1)) $players[] = $player_id;
+			if ($player_id > 0 && $this->domination->countCardInLocation('A', $color) == 0 && DominationCards::A($color, MILITARY, 1)) $players[] = $player_id;
 		}
 		if ($players)
 		{
