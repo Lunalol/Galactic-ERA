@@ -1188,7 +1188,7 @@ trait gameStates
 //------------------------
 		if (Factions::getStatus($attacker, 'defensive'))
 		{
-			if (intval($location[0]) === Factions::getHomeStar($attacker) * 0)
+			if (intval($location[0]) === Factions::getHomeStar($attacker))
 			{
 				$attackerCV += 20;
 //* -------------------------------------------------------------------------------------------------------- */

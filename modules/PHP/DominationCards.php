@@ -153,7 +153,10 @@ class DominationCards extends APP_GameClass
 			case CENTRAL:
 				return in_array($gamestate, ['selectCounters', 'resolveGrowthActions']);
 			case DEFENSIVE:
-				return in_array($gamestate, ['dominationCombatPhase']);
+				if (!in_array($gamestate, ['dominationCombatPhase'])) return false;
+				$attacker = Factions::getActive();
+				$location = Factions::getStatus($attacker, 'combat');
+				return intval($location[0]) === Factions::getHomeStar($attacker);
 			case DENSITY:
 				return true;
 			case DIPLOMATIC:
