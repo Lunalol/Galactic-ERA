@@ -22,6 +22,11 @@ class action_galacticera extends APP_GameAction
 		$this->game->acGODMODE($god);
 		self::ajaxResponse();
 	}
+	public function getGame()
+	{
+		self::setAjaxMode();
+		self::ajaxResponseWithResult($this->game->getGame());
+	}
 	public function continue()
 	{
 		self::setAjaxMode();

@@ -289,6 +289,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 						dojo.style(node, 'top', y + 'px');
 						dojo.style(node, 'transform', 'scale(12.5%)');
 						dojo.style(node, 'transform-origin', 'left top');
+						dojo.style(node, 'pointer-events', 'none');
 					}
 				}
 				if (player_id in this.bgagame.gamedatas.players)

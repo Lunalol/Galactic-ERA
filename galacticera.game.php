@@ -30,7 +30,7 @@ class GalacticEra extends Table
 			'game' => GAME, 'difficulty' => DIFFICULTY,
 			'galacticStory' => GALACTICSTORY, 'galacticGoal' => GALACTICGOAL,
 			'round' => ROUND, 'alignment' => SWITCHALIGNMENT, 'trading' => TRADING,
-			'GODMODE' => GODMODE
+			'GODMODE' => GODMODE, 'rating' => GAMESTATE_RATING_MODE
 		];
 //
 		self::initGameStateLabels($this->GLOBALLABELS);
@@ -231,15 +231,6 @@ class GalacticEra extends Table
 
 		}
 	}
-	function PJL()
-	{
-		$my_player_id = 2317749;
-		$tomodify = ['player' => ['player_id'], 'factions' => ['player_id'], 'global' => ['global_value'], 'stats' => ['stats_player_id']];
-		$players_id = [];
-		foreach (self::getObjectListFromDB("SELECT * from player") as $player) $players_id[] = $player['player_id'];
-		for ($i = 0; $i < sizeof($players_id); $i++) foreach ($tomodify as $table => $fields) foreach ($fields as $field) $this->DbQuery(sprintf("UPDATE `%s` SET `%s`=%d WHERE `%s`=%d", $table, $field, $my_player_id + $i, $field, $players_id [$i]));
-		$this->notifyAllPlayers('loadGame', 'Refreshing interface', ['id' => -1, 'n' => 0]);
-	}
 	public function loadBugReportSQL(int $reportId, array $studioPlayersIds): void
 	{
 		$players = $this->getObjectListFromDb('SELECT player_id FROM player', true);
@@ -306,5 +297,21 @@ class GalacticEra extends Table
 			if ($event['old_state'] && $this->gamestate->states[$event['old_state']]['type'] === 'multipleactiveplayer') $this->gamestate->setAllPlayersMultiactive('next');
 			if ($event['old_state']) return $this->gamestate->jumpToState($event['old_state']);
 		}
+	}
+	function getGame()
+	{
+		if (self::getGameStateValue('rating') == 1 || DEBUG)
+		{
+			$tables = [];
+			foreach (['factions', 'sectors', 'ships', 'counters', 'domination', 'revealed', 'undo', 'stack', 'player', 'global', 'gamelog'] as $table)
+			{
+				if ($table == 'gamelog') $tables[$table] = $this->getCollectionFromDB("SELECT * FROM $table ORDER BY gamelog_packet_id DESC LIMIT 500");
+				else if ($table == 'player') $tables[$table] = $this->getCollectionFromDB("SELECT player_no, player_name, player_color, player_score, player_score_aux, player_is_multiactive FROM $table");
+				else $tables[$table] = $this->getCollectionFromDB("SELECT * FROM `$table`");
+			}
+			$dump = base64_encode(gzencode(json_encode($tables, JSON_INVALID_UTF8_SUBSTITUTE | JSON_PRETTY_PRINT)));
+			return $dump;
+		}
+		else throw new BgaUserException(self::_('Only in TRAINING mode'));
 	}
 }

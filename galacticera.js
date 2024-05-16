@@ -27,7 +27,20 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			dojo.destroy('debug_output');
 //
-			dojo.place(`<div id='ERAalien' class='upperrightmenu_item' style='margin-top:10px;font-size:x-large;'>👽</div>`, 'upperrightmenu', 'first');
+// Save game
+//
+			dojo.connect(dojo.place(`<a id="ingame_menu_save" class="ingame_menu_item"><span class="fa fa-3x fa-download" style="float:left;line-height:70px;"></span><p>${_('Save game for debugging (only in training mode)')}</p></a>`, 'ingame_menu_back', 'after'), 'click', () => {
+				this.getGame();
+			});
+//
+// GOD MODE
+//
+			dojo.connect(dojo.place(`<div id='ERAalien' class='upperrightmenu_item' style='margin-top:10px;font-size:x-large;'>👽</div>`, 'upperrightmenu', 'first'), 'click', () => {
+				if (!this.isSpectator) this.action('GODMODE', {god: JSON.stringify({action: 'toggle', color: this.color})})
+			});
+//
+// GOD MODE
+//
 //
 // Translations
 //
@@ -120,7 +133,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						_('1 DP per Military level')]},
 				1: {title: _('Alignment'), DP: 9,
 					A: [_('Can only be played at the end of the scoring phase'),
-						_('Have 5 DP and either have more DP (solo variant: technology levels) than every other player with your alignment or be the only one of your alignment then')],
+						_('Have 5 DP and either have more DP (solo variant: technology levels) than every other player with your alignment or be the only one of your alignment then')
+					],
 					E: [_('Get an additional 2 DP for every Switch Alignment growth action counter played this round (including your own)')],
 					B: [_('4 DP if you did not get any DP for your alignment in the scoring phase of this round'),
 						_('1 DP per Spirituality level')]},
@@ -335,8 +349,22 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				'B': _('<B>(B)omb</B>: For every 2 ships in this fleet increase the ship count by 1 for purposes of conquering or liberating a star'),
 				'C': _('<B>(C)ounterassault</B>: Add 2 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat'),
 				'D': _('<B>(D)art</B>: Ships in this fleet get +1 to their movement range<BR>Ships that leave this fleet immediately lose this advantage<BR>Ships that have already used this advantage may not leave this fleet, in this turn'),
-				'E': _('<B>(E)vade</B>: Ships in this fleet have the option to retreat before combat regardless of technology levels (but only as defender)<BR>To use this special effect, the player must reveal the counter')
+				'E': _('<B>(E)vade</B>: Ships in this fleet have the option to retreat before combat regardless of technology levels (but only as defender)<BR>To use this special effect, the player must reveal the counter'),
+				'A2x': _('<B>(A)ssault</B>: Whenever this fleet is involved in combat, add 2 CV per ship in this fleet'),
+				'B2x': _('<B>(B)omb</B>: For every ship in this fleet increase the ship count by 1 for purposes of conquering or liberating a star'),
+				'C2x': _('<B>(C)ounterassault</B>: Add 4 CV per ship in this fleet if there is an “A” fleet on the opposing side in combat'),
+				'D2x': _('<B>(D)art</B>: Ships in this fleet get +2 to their movement range<BR>Ships that leave this fleet immediately lose this advantage<BR>Ships that have already used this advantage may not leave this fleet, in this turn'),
+				'E2x': _('<B>(E)vade</B>: Ships in this fleet have the option to retreat before combat (without revealing the number of ships in their “E” fleet) regardless of technology levels (but only as defender)<BR>To use this special effect, the player must reveal the counter')
 			};
+//
+			this.OFFBOARD = {
+				0: _('Slavers’ Offboard Power Effects'),
+				1: _('no effect'),
+				2: _('Slavers never make peace'),
+				3: _('Slavers gain 1 technology level in a trading phase in which they did not trade'),
+				4: _('Slavers roll 2 dice and use lower one for movement and growth action results'),
+				5: _('You immediately lose 5 DP for each new offboard population')
+			}
 //
 			this.RANKINGS = {0: _('sublunar'), 1: _('lunar'), 2: _('planetary'), 3: _('stellar'), 4: _('galactic'), 5: _('cosmic')};
 //
@@ -425,15 +453,6 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - this.prefs[PATH].value);
 //
-// GOD MODE
-//
-			dojo.connect($('ERAalien'), 'click', () => {
-				if (!this.isSpectator) this.action('GODMODE', {god: JSON.stringify({action: 'toggle', color: this.color})})
-			});
-//
-// GOD MODE
-//
-//
 // Setup game Board
 //
 			this.board = new Board(this);
@@ -499,7 +518,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 // Slavers
 				if (+faction.player_id === -2)
 				{
-					const node = dojo.place(`<div id='ERAoffboard' title='${_('Slavers’ offboard power track')}'><img style='width:100%;' src='${g_gamethemeurl}img/offboard.jpg' draggable='false'/></div>`, nodeFaction, 'after');
+					const node = dojo.place(`<div id='ERAoffboard'><img style='width:100%;' src='${g_gamethemeurl}img/offboard.jpg' draggable='false'/></div>`, nodeFaction, 'after');
+					for (let i = 1; i <= 5; i++)
+					{
+						let circle = dojo.place(`<div id='ERAoffboard${i}' class='ERAoffboard ERAoffboard${i}'></div>`, node);
+						this.addTooltip(circle.id, this.OFFBOARD[0], this.OFFBOARD[i])
+					}
 					dojo.connect(node, 'click', (event) => {
 						dojo.stopEvent(event);
 						this.focus(event.currentTarget);
@@ -1594,6 +1618,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						dojo.place(`<div class='ERAfleetAction' style="color:white;"></div>`, _fleetNode);
 						const fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, ship: ships, location: location}), _fleetNode);
+						this.ships.ERAfleet.removeTarget(fleetNode.id);
+						this.ships.ERAfleet.addTarget(fleetNode.id);
 						dojo.setAttr(fleetNode, 'fleet', fleet);
 						dojo.setAttr(fleetNode, 'ships', ships);
 //
@@ -1782,8 +1808,11 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						const node2x = dojo.place(this.format_block('ERAcounter', {id: '2x', color: args._private.color, type: 'tactics', location: ''}), 'generalactions');
 						dojo.setAttr(node2x, 'tactics', '2x');
+						this.addTooltip(node2x.id, _('Advanced Fleet Tactics'), _('A fleet with a counter showing its “x2” side has its special effect doubled. For the “B” fleet, simply double the ship count versus stars. For the “E” fleet, this means a defending player can have it retreat before combat after opposing fleets are revealed without revealing the number of ships in their “E” fleet.'), 1000);
+//
 						const nodeDP = dojo.place(this.format_block('ERAcounter', {id: 'DP', color: args._private.color, type: 'tactics', location: ''}), 'generalactions');
 						dojo.setAttr(nodeDP, 'tactics', 'DP');
+						this.addTooltip(nodeDP.id, _('Advanced Fleet Tactics'), _('Each time a player wins a battle in which any of their fleets have a “+3 DP” counter, that player gets an additional 3 DP (even if that fleet becomes dissolved as the result of that battle). A player can get these additional DP only once per battle won. A battle where all opposing ships retreated before combat does not count though.'), 1000);
 //
 						dojo.query('.ERAcounter-tactics', 'generalactions').addClass('ERAselectable ERAdisabled').connect('click', (event) => {
 							const fleets = dojo.query('.ERAship[fleet].ERAselected', 'ERAfleets');
@@ -2366,6 +2395,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 		},
 		updateRound: function (round)
 		{
+			this.gamedatas.round = round;
 			if (round > 0)
 			{
 				dojo.style('ERApawn', 'left', (84.7 * round) + 'px');
@@ -2714,6 +2744,39 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - value);
 				}
 			}
+		},
+		getGame: function ()
+		{
+			function b64ToUint6(nChr)
+			{
+				return nChr > 64 && nChr < 91 ? nChr - 65 : nChr > 96 && nChr < 123 ? nChr - 71 : nChr > 47 && nChr < 58 ? nChr + 4 : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
+			}
+			function base64DecToArr(sBase64)
+			{
+				var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ""), nInLen = sB64Enc.length, nOutLen = nInLen * 3 + 1 >> 2, taBytes = new Uint8Array(nOutLen);
+				for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++)
+				{
+					nMod4 = nInIdx & 3;
+					nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
+					if (nMod4 === 3 || nInLen - nInIdx === 1)
+					{
+						for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
+						nUint24 = 0;
+					}
+				}
+				return taBytes;
+			}
+			this.ajaxcall('/galacticera/galacticera/getGame.html', {}, this, function (error)
+			{
+				var filename = 'ERA_' + this.gamedatas.round + ':' + this.gamedatas.gamestate.name;
+				for (var player of Object.values(this.gamedatas.players)) filename += '_' + player.name;
+				filename += '.gz';
+				var bb = new Blob([base64DecToArr(error.data)], {type: 'data:application/zip;base64'});
+				var a = document.createElement('a');
+				a.download = filename;
+				a.href = window.URL.createObjectURL(bb);
+				a.click();
+			});
 		},
 		action: function (action, args =
 		{}, success = () => {}, fail = undefined)

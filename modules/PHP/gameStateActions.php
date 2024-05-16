@@ -11,7 +11,8 @@ trait gameStateActions
 		$color = $god['color'];
 //
 		$player_id = Factions::getPlayer($color);
-//		if ($player_id !== Players::getAdmin()) throw new BgaVisibleSystemException('Only table admin can use GOD MODE');
+		if ($player_id !== Players::getAdmin() && !DEBUG) throw new BgaUserException('Only table admin can use GOD MODE');
+		if (self::getGameStateValue('rating') != 1 && !DEBUG) throw new BgaUserException('Only in TRAINING mode');
 //
 		switch ($god['action'])
 		{

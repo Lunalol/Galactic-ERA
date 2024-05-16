@@ -20,28 +20,29 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					const fleet = node.getAttribute('fleet');
 					const ships = node.getAttribute('ships');
 //
+					let tactics = null;
+					let tacticsNode = $(`ERAtechTrack-${color}`).querySelector(`.ERAcounter-tactics[location='${fleet}']`);
+					if (tacticsNode) tactics = tacticsNode.getAttribute('tactics');
+//
 					let html = `<div>`;
 					html += `<div class='ERAship ERAship-${color}' fleet='${fleet}' style='display:inline-block;position:relative;margin:5px;'></div>`;
-					if (fleet !== 'fleet' && fleet !== '?')
-					{
-						let tactics = $(`ERAtechTrack-${color}`).querySelector(`.ERAcounter-tactics[location=${fleet}]`);
-						if (tactics) html += `<div class='ERAcounter ERAcounter-tactics' tactics='${tactics.getAttribute('tactics')}' style='display:inline-block;position:relative;margin:5px;'></div>`;
-					}
+					if (tactics) html += `<div class='ERAcounter ERAcounter-tactics' tactics='${tactics}' style='display:inline-block;position:relative;margin:5px;'></div>`;
 					html += `</div>`;
 //
 					if (fleet !== 'fleet' && fleet !== '?')
 					{
-						html += `<div><HR>${this.bgagame.FLEETS[fleet]}<HR></div>`;
+						if (tactics === '2x') html += `<div><HR>${this.bgagame.FLEETS[fleet + '2x']}<HR></div>`;
+						else html += `<div><HR>${this.bgagame.FLEETS[fleet]}<HR></div>`;
 //						html += `<div><B>"${fleet}" ${_('Fleet')}</B> : ${this.bgagame.FLEETS[fleet]}</div>`;
 //
 						if (ships)
 						{
 							html += `<div>${ships} ${_('Ship(s)')}</div>`;
-							CV = ships * ((fleet === 'A' ? 1 : 0) + this.bgagame.gamedatas.technologies.Military[dojo.query('.circleBlack', `ERAtech-${color}-Military`).length]);
+							CV = ships * ((fleet === 'A' ? ((tactics === '2x' ? 2 : 1)) : 0) + this.bgagame.gamedatas.technologies.Military[dojo.query('.circleBlack', `ERAtech-${color}-Military`).length]);
 							html += `<div><B>${_('CV')} : ${CV}</B></div>`;
 							if (fleet === 'C')
 							{
-								CV = ships * (2 + this.bgagame.gamedatas.technologies.Military[dojo.query('.circleBlack', `ERAtech-${color}-Military`).length]);
+								CV = ships * ((tactics === '2x' ? 4 : 2) + this.bgagame.gamedatas.technologies.Military[dojo.query('.circleBlack', `ERAtech-${color}-Military`).length]);
 								html += `<div>${_('CV')} : ${CV} ${_('vs. “A” fleet')}</div>`;
 							}
 						}

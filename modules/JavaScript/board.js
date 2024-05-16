@@ -264,7 +264,6 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		begin_drag: function (event)
 		{
-//
 			this.startX = event.clientX;
 			this.startY = event.clientY;
 		},
@@ -282,23 +281,23 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				this.startY = event.clientY;
 			}
 		},
-		end_drag: function ()
+		end_drag: function (event)
 		{
-			this.dragging = false;
-//			if (this.dragging)
-//			{
-//				if (this.dragging === true)
-//				{
-//					window.setTimeout(() => {
-//						this.dragging = false;
-//					});
-//				}
-//				else
-//				{
-//					window.clearTimeout(this.dragging);
-//					this.dragging = false;
-//				}
-//			}
+//			this.dragging = false;
+			if (this.dragging)
+			{
+				if (this.dragging === true)
+				{
+					window.setTimeout(() => {
+						this.dragging = false;
+					});
+				}
+				else
+				{
+					window.clearTimeout(this.dragging);
+					this.dragging = false;
+				}
+			}
 		},
 		centerMap: function (location)
 		{
