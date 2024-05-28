@@ -34,58 +34,59 @@ class Factions extends APP_GameClass
 //
 	const TELEPORT = [null, 0, 0, 0, 0, 1, 3];
 //
+	static $table = null;
 	static function create(string $color, int $player_id, int $homeStar): int
 	{
-		$json = self::escapeStringForDB(json_encode(['A' => null, 'B' => null, 'C' => null, 'D' => null, 'E' => null], JSON_FORCE_OBJECT));
-		self::DbQuery("INSERT INTO factions (color,player_id,starPeople,alignment,homeStar,atWar,advancedFleetTactics,status) VALUES ('$color', $player_id, 'None', 'STO', $homeStar, '[]','$json', '{}')");
-		return self::DbGetLastId();
+		$json = self::$table->escapeStringForDB(json_encode(['A' => null, 'B' => null, 'C' => null, 'D' => null, 'E' => null], JSON_FORCE_OBJECT));
+		self::$table->DbQuery("INSERT INTO factions (color,player_id,starPeople,alignment,homeStar,atWar,advancedFleetTactics,status) VALUES ('$color', $player_id, 'None', 'STO', $homeStar, '[]','$json', '{}')");
+		return self::$table->DbGetLastId();
 	}
 	static function list(bool $automas = true): array
 	{
-		if ($automas) return self::getObjectListFromDB("SELECT color FROM factions ORDER BY `order`", true);
-		return self::getObjectListFromDB("SELECT color FROM factions WHERE player_id > 0 ORDER BY `order`", true);
+		if ($automas) return self::$table->getObjectListFromDB("SELECT color FROM factions ORDER BY `order`", true);
+		return self::$table->getObjectListFromDB("SELECT color FROM factions WHERE player_id > 0 ORDER BY `order`", true);
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics,emergencyReserve FROM factions ORDER by `order`");
+		return self::$table->getCollectionFromDb("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics,emergencyReserve FROM factions ORDER by `order`");
 	}
 	static function get(string $color): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics,emergencyReserve FROM factions WHERE color = '$color'");
+		return self::$table->getNonEmptyObjectFromDB("SELECT color,player_id,homeStar,`order`,starPeople,alignment,DP,population,atWar,advancedFleetTactics,Military,Spirituality,Propulsion,Robotics,Genetics,emergencyReserve FROM factions WHERE color = '$color'");
 	}
 	static function getNext()
 	{
-		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE activation = 'no' ORDER BY `order` LIMIT 1");
+		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE activation = 'no' ORDER BY `order` LIMIT 1");
 	}
 	static function getActive()
 	{
-		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE activation = 'yes'");
+		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE activation = 'yes'");
 	}
 	static function setActivation(string $color = 'ALL', string $activation = 'no'): void
 	{
-		if ($color === 'ALL') self::dbQuery("UPDATE factions SET activation = '$activation'");
-		else self::dbQuery("UPDATE factions SET activation = '$activation' WHERE color = '$color'");
+		if ($color === 'ALL') self::$table->dbQuery("UPDATE factions SET activation = '$activation'");
+		else self::$table->dbQuery("UPDATE factions SET activation = '$activation' WHERE color = '$color'");
 	}
 	static function getActivation(string $color): string
 	{
-		return self::getUniqueValueFromDB("SELECT activation FROM factions WHERE color = '$color'");
+		return self::$table->getUniqueValueFromDB("SELECT activation FROM factions WHERE color = '$color'");
 	}
 	static function getPlayer(string $color): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT player_id FROM factions WHERE color = '$color'"));
 	}
 	static function getColor(int $player_id): string
 	{
-		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id = $player_id");
+		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE player_id = $player_id");
 	}
 	static function getAutoma(int $automa = AUTOMA)
 	{
-		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id = $automa");
+		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE player_id = $automa");
 	}
 	static function getNotAutomas(string $color = ''): string
 	{
-		if ($color) return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id > 0 AND color <> '$color'");
-		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE player_id > 0");
+		if ($color) return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE player_id > 0 AND color <> '$color'");
+		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE player_id > 0");
 	}
 	static function getName(string $color)
 	{
@@ -95,11 +96,11 @@ class Factions extends APP_GameClass
 	}
 	static function getHomeStar(string $color): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT homeStar FROM factions WHERE color = '$color'"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT homeStar FROM factions WHERE color = '$color'"));
 	}
 	static function getAlignment(string $color): string
 	{
-		return self::getUniqueValueFromDB("SELECT alignment FROM factions WHERE color = '$color'");
+		return self::$table->getUniqueValueFromDB("SELECT alignment FROM factions WHERE color = '$color'");
 	}
 	static function switchAlignment(string $color): void
 	{
@@ -108,103 +109,103 @@ class Factions extends APP_GameClass
 	}
 	static function STO(string $color): void
 	{
-		self::dbQuery("UPDATE factions SET alignment = 'STO', atWar = '[]' WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET alignment = 'STO', atWar = '[]' WHERE color = '$color'");
 	}
 	static function STS(string $color): void
 	{
-		self::dbQuery("UPDATE factions SET alignment = 'STS', atWar = '[]' WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET alignment = 'STS', atWar = '[]' WHERE color = '$color'");
 	}
 	static function getStarPeople(string $color): string
 	{
-		return self::getUniqueValueFromDB("SELECT starPeople FROM factions WHERE color = '$color'");
+		return self::$table->getUniqueValueFromDB("SELECT starPeople FROM factions WHERE color = '$color'");
 	}
 	static function setStarPeople(string $color, string $starPeople): void
 	{
-		self::dbQuery("UPDATE factions SET starPeople = '$starPeople' WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET starPeople = '$starPeople' WHERE color = '$color'");
 	}
 	static function getByOrder(int $order): string
 	{
-		return self::getUniqueValueFromDB("SELECT color FROM factions WHERE `order` = $order");
+		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE `order` = $order");
 	}
 	static function getOrder(string $color): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT `order` FROM factions WHERE color = '$color'"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT `order` FROM factions WHERE color = '$color'"));
 	}
 	static function setOrder(string $color, int $order): void
 	{
-		self::dbQuery("UPDATE factions SET `order` = $order WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET `order` = $order WHERE color = '$color'");
 	}
 	static function getDP(string $color): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT `DP` FROM factions WHERE color = '$color'"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT `DP` FROM factions WHERE color = '$color'"));
 	}
 	static function gainDP(string $color, int $delta): int
 	{
-		self::dbQuery("UPDATE factions SET `DP` = `DP` + $delta WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET `DP` = `DP` + $delta WHERE color = '$color'");
 		return self::getDP($color);
 	}
 	static function getPopulation(string $color): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT `population` FROM factions WHERE color = '$color'"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT `population` FROM factions WHERE color = '$color'"));
 	}
 	static function gainPopulation(string $color, int $delta): int
 	{
-		self::dbQuery("UPDATE factions SET `population` = `population` + $delta WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET `population` = `population` + $delta WHERE color = '$color'");
 		return self::getPopulation($color);
 	}
 	static function getTechnology(string $color, string $technology): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT `$technology` FROM factions WHERE color = '$color'"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT `$technology` FROM factions WHERE color = '$color'"));
 	}
 	static function gainTechnology(string $color, string $technology): int
 	{
-		self::dbQuery("UPDATE factions SET `$technology` = `$technology` + 1 WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET `$technology` = `$technology` + 1 WHERE color = '$color'");
 		return self::getTechnology($color, $technology);
 	}
 	static function getEmergencyReserve($color): bool
 	{
-		return boolval(self::getUniqueValueFromDB("SELECT emergencyReserve FROM factions WHERE color = '$color'", true));
+		return boolval(self::$table->getUniqueValueFromDB("SELECT emergencyReserve FROM factions WHERE color = '$color'", true));
 	}
 	static function useEmergencyReserve($color)
 	{
-		self::DbQuery("UPDATE factions SET emergencyReserve = false WHERE color = '$color'");
+		self::$table->DbQuery("UPDATE factions SET emergencyReserve = false WHERE color = '$color'");
 	}
 	static function emergencyReserve(): array
 	{
-		return self::getCollectionFromDB("SELECT color, player_id FROM factions WHERE status->'$.emergencyReserve'", true);
+		return self::$table->getCollectionFromDB("SELECT color, player_id FROM factions WHERE status->'$.emergencyReserve'", true);
 	}
 	static function advancedFleetTactics(): array
 	{
-		return self::getCollectionFromDB("SELECT color, player_id FROM factions WHERE status->'$.advancedFleetTactics'", true);
+		return self::$table->getCollectionFromDB("SELECT color, player_id FROM factions WHERE status->'$.advancedFleetTactics'", true);
 	}
 	static function getAllAdvancedFleetTactics(string $color): array
 	{
-		return json_decode(self::getUniqueValueFromDB("SELECT advancedFleetTactics FROM factions WHERE color = '$color'"), JSON_OBJECT_AS_ARRAY);
+		return json_decode(self::$table->getUniqueValueFromDB("SELECT advancedFleetTactics FROM factions WHERE color = '$color'"), JSON_OBJECT_AS_ARRAY);
 	}
 	static function getAdvancedFleetTactics(string $color, string $fleet)
 	{
-		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(advancedFleetTactics->'$.$fleet') FROM factions WHERE color = '$color'");
+		return self::$table->getUniqueValueFromDB("SELECT JSON_UNQUOTE(advancedFleetTactics->'$.$fleet') FROM factions WHERE color = '$color'");
 	}
 	static function setAdvancedFleetTactics(string $color, string $fleet, string $tactics): void
 	{
-		self::DbQuery("UPDATE factions SET advancedFleetTactics = JSON_SET(advancedFleetTactics, '$.$fleet', '$tactics') WHERE color = '$color'");
+		self::$table->DbQuery("UPDATE factions SET advancedFleetTactics = JSON_SET(advancedFleetTactics, '$.$fleet', '$tactics') WHERE color = '$color'");
 	}
 	static function getStatus(string $color, string $status)
 	{
-		return json_decode(self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM factions WHERE color = '$color'"), JSON_OBJECT_AS_ARRAY);
+		return json_decode(self::$table->getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM factions WHERE color = '$color'"), JSON_OBJECT_AS_ARRAY);
 	}
 	static function setStatus(string $color, string $status, $value = null): void
 	{
-		if (is_null($value)) self::dbQuery("UPDATE factions SET status = JSON_REMOVE(status, '$.$status') WHERE color = '$color'");
+		if (is_null($value)) self::$table->dbQuery("UPDATE factions SET status = JSON_REMOVE(status, '$.$status') WHERE color = '$color'");
 		else
 		{
-			$json = self::escapeStringForDB(json_encode($value));
-			self::dbQuery("UPDATE factions SET status = JSON_SET(status, '$.$status', '$json') WHERE color = '$color'");
+			$json = self::$table->escapeStringForDB(json_encode($value));
+			self::$table->dbQuery("UPDATE factions SET status = JSON_SET(status, '$.$status', '$json') WHERE color = '$color'");
 		}
 	}
 	static function clearStatus(string $color): void
 	{
-		self::dbQuery("UPDATE factions SET status = '{}' WHERE color = '$color'");
+		self::$table->dbQuery("UPDATE factions SET status = '{}' WHERE color = '$color'");
 	}
 	static function ships(string $color): int
 	{
@@ -241,20 +242,20 @@ class Factions extends APP_GameClass
 	}
 	static function atPeace(string $color): array
 	{
-		return self::getObjectListFromDB("SELECT color FROM factions WHERE color <> '$color' AND NOT JSON_CONTAINS(atWar, '\"$color\"')", true);
+		return self::$table->getObjectListFromDB("SELECT color FROM factions WHERE color <> '$color' AND NOT JSON_CONTAINS(atWar, '\"$color\"')", true);
 	}
 	static function atWar(string $color): array
 	{
-		return self::getObjectListFromDB("SELECT color FROM factions WHERE color <> '$color' AND JSON_CONTAINS(atWar, '\"$color\"')", true);
+		return self::$table->getObjectListFromDB("SELECT color FROM factions WHERE color <> '$color' AND JSON_CONTAINS(atWar, '\"$color\"')", true);
 	}
 	static function declareWar(string $color, string $on): void
 	{
 		$atWar = array_unique(array_merge(self::atWar($color), [$on]));
-		self::dBQuery("UPDATE factions SET atWar = '" . json_encode(array_values($atWar)) . "' WHERE color = '$color'");
+		self::$table->dBQuery("UPDATE factions SET atWar = '" . json_encode(array_values($atWar)) . "' WHERE color = '$color'");
 	}
 	static function declarePeace(string $color, string $on = ''): void
 	{
 		$atWar = $on ? array_diff(self::atWar($color), [$on]) : [];
-		self::dBQuery("UPDATE factions SET atWar = '" . json_encode(array_values($atWar)) . "' WHERE color = '$color'");
+		self::$table->dBQuery("UPDATE factions SET atWar = '" . json_encode(array_values($atWar)) . "' WHERE color = '$color'");
 	}
 }

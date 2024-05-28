@@ -53,7 +53,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 //
 			html = `<div style='display:flex;flex-direction:row;'>`;
 //
-			html += node.innerHTML;
+			html += node.outerHTML;
 //
 			html += `<div style='display:flex;flex-direction:column;justify-content:space-between;padding:25px;'>`;
 //

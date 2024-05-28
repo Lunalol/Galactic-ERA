@@ -4,36 +4,37 @@ class Ships extends APP_GameClass
 {
 	const FLEETS = ['A', 'B', 'C', 'D', 'E'];
 //
+	static $table = null;
 	static function create($color, $fleet, $location, array $status = []): int
 	{
-		$json = self::escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
-		self::DbQuery("INSERT INTO ships (color,fleet,location,activation,status) VALUES ('$color','$fleet','$location','no','$json')");
-		return self::DbGetLastId();
+		$json = self::$table->escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
+		self::$table->DbQuery("INSERT INTO ships (color,fleet,location,activation,status) VALUES ('$color','$fleet','$location','no','$json')");
+		return self::$table->DbGetLastId();
 	}
 	static function destroy(int $id): void
 	{
-		self::DbQuery("DELETE FROM ships WHERE id = $id");
+		self::$table->DbQuery("DELETE FROM ships WHERE id = $id");
 	}
 	static function get(int $id): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE id = $id");
+		return self::$table->getNonEmptyObjectFromDB("SELECT id,color,fleet,location,activation,MP FROM ships WHERE id = $id");
 	}
 	static function getHomeStar(string $color = null)
 	{
-		if (is_null($color)) return self::getCollectionFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
-		return self::getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
+		if (is_null($color)) return self::$table->getCollectionFromDB("SELECT id, location FROM ships WHERE fleet = 'homeStar'", true);
+		return self::$table->getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
 	}
 	static function getHomeStarLocation(string $color)
 	{
-		return self::getUniqueValueFromDB("SELECT location FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
+		return self::$table->getUniqueValueFromDB("SELECT location FROM ships WHERE color = '$color' AND fleet = 'homeStar'");
 	}
 	static function isShip(string $color, int $id): bool
 	{
-		return boolval(self::getUniqueValueFromDB("SELECT fleet = 'ship' FROM ships WHERE color = '$color' AND id = $id"));
+		return boolval(self::$table->getUniqueValueFromDB("SELECT fleet = 'ship' FROM ships WHERE color = '$color' AND id = $id"));
 	}
 	static function getFleet(string $color, string $fleet)
 	{
-		return self::getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND status->'$.fleet' = '$fleet'");
+		return self::$table->getUniqueValueFromDB("SELECT id FROM ships WHERE color = '$color' AND status->'$.fleet' = '$fleet'");
 	}
 	static function getAtLocation(string $location, string $color = null, string $fleet = null): array
 	{
@@ -41,18 +42,18 @@ class Ships extends APP_GameClass
 		if (!is_null($color)) $sql .= " AND color ='$color'";
 		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
 		else $sql .= " AND fleet <> 'homeStar'";
-		return self::getObjectListFromDB($sql . " ORDER BY color,fleet", true);
+		return self::$table->getObjectListFromDB($sql . " ORDER BY color,fleet", true);
 	}
 	static function getAll(string $color = null, string $fleet = null): array
 	{
 		$sql = "SELECT * FROM ships WHERE true";
 		if (!is_null($color)) $sql .= " AND color ='$color'";
 		if (!is_null($fleet)) $sql .= " AND fleet ='$fleet'";
-		return self::getCollectionFromDB($sql . " ORDER BY color,fleet");
+		return self::$table->getCollectionFromDB($sql . " ORDER BY color,fleet");
 	}
 	static function getConflictLocation(string $color): array
 	{
-		return self::getObjectListFromDB("SELECT DISTINCT location FROM ships AS attacker"
+		return self::$table->getObjectListFromDB("SELECT DISTINCT location FROM ships AS attacker"
 				. " JOIN ships AS defender USING (location)"
 				. " JOIN factions ON attacker.color = factions.color"
 				. " WHERE location <> 'stock' AND attacker.color = '$color' AND attacker.color <> defender.color"
@@ -61,7 +62,7 @@ class Ships extends APP_GameClass
 	}
 	static function getConflictFactions(string $color, string $location): array
 	{
-		return self::getObjectListFromDB("SELECT DISTINCT defender.color"
+		return self::$table->getObjectListFromDB("SELECT DISTINCT defender.color"
 				. " FROM ships AS attacker"
 				. " JOIN ships AS defender USING (location)"
 				. " JOIN factions AS attackerFaction ON attacker.color = attackerFaction.color"
@@ -72,7 +73,7 @@ class Ships extends APP_GameClass
 	}
 	static function getAllDatas($player_id): array
 	{
-		$ships = self::getCollectionFromDB("SELECT id,color,fleet,location,activation FROM ships ORDER BY color,fleet");
+		$ships = self::$table->getCollectionFromDB("SELECT id,color,fleet,location,activation FROM ships ORDER BY color,fleet");
 		foreach ($ships as $id => $ship)
 		{
 			if ($player_id == Factions::getPlayer($ship['color']))
@@ -90,34 +91,34 @@ class Ships extends APP_GameClass
 	}
 	static function setLocation(int $id, string $location): void
 	{
-		self::dbQuery("UPDATE ships SET location = '$location' WHERE id = $id");
+		self::$table->dbQuery("UPDATE ships SET location = '$location' WHERE id = $id");
 	}
 	static function setActivation(int $id = null, string $activation = 'no'): void
 	{
-		if (is_null($id)) self::dbQuery("UPDATE ships SET activation = '$activation'");
-		else self::dbQuery("UPDATE ships SET activation = '$activation' WHERE id = $id");
+		if (is_null($id)) self::$table->dbQuery("UPDATE ships SET activation = '$activation'");
+		else self::$table->dbQuery("UPDATE ships SET activation = '$activation' WHERE id = $id");
 	}
 	static function getActivation(int $id): string
 	{
-		return self::getUniqueValueFromDB("SELECT activation FROM ships WHERE id = $id");
+		return self::$table->getUniqueValueFromDB("SELECT activation FROM ships WHERE id = $id");
 	}
 	static function setMP(int $id, int $MP): void
 	{
-		self::dbQuery("UPDATE ships SET MP = $MP WHERE id = $id");
+		self::$table->dbQuery("UPDATE ships SET MP = $MP WHERE id = $id");
 	}
 	static function getStatus(int $id, string $status)
 	{
-		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM ships WHERE id = $id");
+		return self::$table->getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM ships WHERE id = $id");
 	}
 	static function setStatus(int $id, string $status, $value = null): void
 	{
-		if (is_null($value)) self::dbQuery("UPDATE ships SET status = JSON_REMOVE(status,'$.$status') WHERE id = $id");
-		else self::dbQuery("UPDATE ships SET status = JSON_SET(status,'$.$status','$value') WHERE id = $id");
+		if (is_null($value)) self::$table->dbQuery("UPDATE ships SET status = JSON_REMOVE(status,'$.$status') WHERE id = $id");
+		else self::$table->dbQuery("UPDATE ships SET status = JSON_SET(status,'$.$status','$value') WHERE id = $id");
 	}
 	static function reveal(string $color, string $type, int $id)
 	{
-//		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
-//		return self::DbGetLastId();
+//		self::$table->DbQuery("INSERT INTO revealed VALUES('$color','$type',$id)");
+//		return self::$table->DbGetLastId();
 	}
 	static function movement(array $ship)
 	{

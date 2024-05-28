@@ -2,50 +2,50 @@
 
 class Counters extends APP_GameClass
 {
-//
+	static $table = null;
 	static function create($color, $type, $location, array $status = []): int
 	{
-		$json = self::escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
-		self::DbQuery("INSERT INTO counters (color,type,location,status) VALUES ('$color','$type','$location','$json')");
-		return self::DbGetLastId();
+		$json = self::$table->escapeStringForDB(json_encode($status, JSON_FORCE_OBJECT));
+		self::$table->DbQuery("INSERT INTO counters (color,type,location,status) VALUES ('$color','$type','$location','$json')");
+		return self::$table->DbGetLastId();
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDB("SELECT id,color,type,location FROM counters ORDER BY color,type");
+		return self::$table->getCollectionFromDB("SELECT id,color,type,location FROM counters ORDER BY color,type");
 	}
 	static function destroy(int $id): void
 	{
-		self::DbQuery("DELETE FROM counters WHERE id = $id");
+		self::$table->DbQuery("DELETE FROM counters WHERE id = $id");
 	}
 	static function get(int $id): array
 	{
-		return self::getNonEmptyObjectFromDB("SELECT * FROM counters WHERE id = $id");
+		return self::$table->getNonEmptyObjectFromDB("SELECT * FROM counters WHERE id = $id");
 	}
 	static function getRelic(int $relic)
 	{
-		return self::getUniqueValueFromDB("SELECT id FROM counters WHERE status->'$.back' = $relic");
+		return self::$table->getUniqueValueFromDB("SELECT id FROM counters WHERE status->'$.back' = $relic");
 	}
 	static function getAtLocation(string $location, string $type = null): array
 	{
-		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location'", true);
-		return self::getObjectListFromDB("SELECT id FROM counters WHERE location = '$location' AND type = '$type'", true);
+		if (is_null($type)) return self::$table->getObjectListFromDB("SELECT id FROM counters WHERE location = '$location'", true);
+		return self::$table->getObjectListFromDB("SELECT id FROM counters WHERE location = '$location' AND type = '$type'", true);
 	}
 	static function setStatus(int $id, string $status, $value = null): void
 	{
-		if (is_null($value)) self::dbQuery("UPDATE counters SET status = JSON_REMOVE(status,'$.$status') WHERE id = $id");
-		else self::dbQuery("UPDATE counters SET status = JSON_SET(status,'$.$status','$value') WHERE id = $id");
+		if (is_null($value)) self::$table->dbQuery("UPDATE counters SET status = JSON_REMOVE(status,'$.$status') WHERE id = $id");
+		else self::$table->dbQuery("UPDATE counters SET status = JSON_SET(status,'$.$status','$value') WHERE id = $id");
 	}
 	static function getStatus(int $id, string $status)
 	{
-		return self::getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM counters WHERE id = $id");
+		return self::$table->getUniqueValueFromDB("SELECT JSON_UNQUOTE(status->'$.$status') FROM counters WHERE id = $id");
 	}
 	static function getAdvancedFleetTactics(string $color): array
 	{
-		return self::getCollectionFromDB("SELECT location, id FROM counters WHERE color = '$color' AND type IN ('2x', 'DP')", true);
+		return self::$table->getCollectionFromDB("SELECT location, id FROM counters WHERE color = '$color' AND type IN ('2x', 'DP')", true);
 	}
 	static function getPopulations(string $color, bool $blocking = false): array
 	{
-		$populations = self::getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisc' GROUP BY location", true);
+		$populations = self::$table->getCollectionFromDB("SELECT location,COUNT(*) AS population FROM counters WHERE color = '$color' AND type = 'populationDisc' GROUP BY location", true);
 //
 		$homeStar = Ships::getHomeStarLocation($color);
 		if ($homeStar)
@@ -75,18 +75,18 @@ class Counters extends APP_GameClass
 	}
 	static function reveal(string $color, string $type, int $id)
 	{
-		self::DbQuery("INSERT INTO revealed VALUES('$color','$type',$id) ON DUPLICATE KEY UPDATE id = id");
-		return self::DbGetLastId();
+		self::$table->DbQuery("INSERT INTO revealed VALUES('$color','$type',$id) ON DUPLICATE KEY UPDATE id = id");
+		return self::$table->DbGetLastId();
 	}
 	static function isRevealed(int $id, string $type = null): array
 	{
-		if (is_null($type)) return self::getObjectListFromDB("SELECT color FROM revealed WHERE type IN ('star','relic') AND id = $id", true);
-		return self::getObjectListFromDB("SELECT color FROM revealed WHERE type = '$type' AND id = $id", true);
+		if (is_null($type)) return self::$table->getObjectListFromDB("SELECT color FROM revealed WHERE type IN ('star','relic') AND id = $id", true);
+		return self::$table->getObjectListFromDB("SELECT color FROM revealed WHERE type = '$type' AND id = $id", true);
 	}
 	static function listRevealed(string $color, string $type = null): array
 	{
-		if (is_null($type)) return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star','relic')", true);
-		return self::getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type = '$type'", true);
+		if (is_null($type)) return self::$table->getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type IN ('star','relic')", true);
+		return self::$table->getObjectListFromDB("SELECT id FROM revealed WHERE color = '$color' AND type = '$type'", true);
 	}
 	static function gainStar(string $color, string $location, bool $willDeclareWar = false, bool $bonus = false): array
 	{

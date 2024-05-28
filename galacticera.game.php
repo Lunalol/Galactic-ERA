@@ -35,9 +35,15 @@ class GalacticEra extends Table
 //
 		self::initGameStateLabels($this->GLOBALLABELS);
 //
+		Counters::$table = $this;
+		Factions::$table = $this;
+		Players::$table = $this;
+		Sectors::$table = $this;
+		Ships::$table = $this;
+//
 // Initialize domination deck
 //
-		$this->domination = DominationCards::init();
+		$this->domination = DominationCards::init($this);
 	}
 	protected function getGameName()
 	{
@@ -300,10 +306,10 @@ class GalacticEra extends Table
 	}
 	function getGame()
 	{
-		if (self::getGameStateValue('rating') == 1 || DEBUG)
+		if (self::getGameStateValue('rating') == 1)
 		{
 			$tables = [];
-			foreach (['factions', 'sectors', 'ships', 'counters', 'domination', 'revealed', 'undo', 'stack', 'player', 'global', 'gamelog'] as $table)
+			foreach (['factions', 'sectors', 'ships', 'counters', 'domination', 'revealed', 'undo', 'stack', 'global', 'player' /* , 'gamelog' */] as $table)
 			{
 				if ($table == 'gamelog') $tables[$table] = $this->getCollectionFromDB("SELECT * FROM $table ORDER BY gamelog_packet_id DESC LIMIT 500");
 				else if ($table == 'player') $tables[$table] = $this->getCollectionFromDB("SELECT player_no, player_name, player_color, player_score, player_score_aux, player_is_multiactive FROM $table");

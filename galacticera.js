@@ -1618,10 +1618,10 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						dojo.place(`<div class='ERAfleetAction' style="color:white;"></div>`, _fleetNode);
 						const fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: this.color, ship: ships, location: location}), _fleetNode);
-						this.ships.ERAfleet.removeTarget(fleetNode.id);
-						this.ships.ERAfleet.addTarget(fleetNode.id);
 						dojo.setAttr(fleetNode, 'fleet', fleet);
 						dojo.setAttr(fleetNode, 'ships', ships);
+						this.ships.ERAfleet.removeTarget(fleetNode.id);
+						this.ships.ERAfleet.addTarget(fleetNode.id);
 //
 						const shipsNode = dojo.place(`<div class='ERAships'style='display:relative;width:50px;height:0px'></div>`, _fleetNode);
 						for (let index = 0; index < ships; index++)
@@ -1783,6 +1783,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							dojo.place(`<div class='ERAfleetAction' style="color:white;"></div>`, _fleetNode);
 							const fleetNode = dojo.place(this.format_block('ERAship', {id: fleet, color: args._private.color, ship: ships, location: location}), _fleetNode);
 							dojo.setAttr(fleetNode, 'fleet', fleet);
+							dojo.setAttr(fleetNode, 'ships', ships);
+							this.ships.ERAfleet.removeTarget(fleetNode.id);
+							this.ships.ERAfleet.addTarget(fleetNode.id);
 							dojo.toggleClass(_fleetNode, 'ERAhide', args._private.advancedFleetTactics[fleet]);
 							dojo.toggleClass(fleetNode, 'ERAselectable', !args._private.advancedFleetTactics[fleet]);
 //

@@ -6,9 +6,11 @@
  */
 class DominationCards extends APP_GameClass
 {
-	static function init()
+	static $table = null;
+	static function init($table)
 	{
-		$deck = self::getNew("module.common.deck");
+		self::$table = $table;
+		$deck = $table->getNew("module.common.deck");
 		$deck->init("domination");
 //
 		return $deck;
@@ -16,7 +18,7 @@ class DominationCards extends APP_GameClass
 	static function A(string $color, int $domination, int $multiplier): int
 	{
 		$scoringPhase = false;
-		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		$event = self::$table->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
 		if ($event && $event['trigger_state'] == 550) $scoringPhase = true;
 //
 		switch ($domination)
@@ -141,7 +143,7 @@ class DominationCards extends APP_GameClass
 	static function effect(string $color, int $domination, string $gamestate): bool
 	{
 		$scoringPhase = false;
-		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		$event = self::$table->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
 		if ($event && $event['trigger_state'] == 550) $scoringPhase = true;
 //
 		switch ($domination)
@@ -182,7 +184,7 @@ class DominationCards extends APP_GameClass
 	static function B(string $color, int $domination, int $multiplier): array
 	{
 		$scoringPhase = false;
-		$event = self::getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
+		$event = self::$table->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
 		if ($event && $event['trigger_state'] == 550) $scoringPhase = true;
 //
 		$scoring = [];

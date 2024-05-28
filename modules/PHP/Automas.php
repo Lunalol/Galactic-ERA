@@ -9,7 +9,7 @@ class Automas extends APP_GameClass
 	const DIFFICULTY = [0, 0, 1, 2];
 	const WORMHOLES = ['0:-2+4-2', '1:-4+2+2', '1:+2+2-4'];
 //
-	function getName(string $color): array
+	static function getName(string $color): array
 	{
 		switch (Factions::getPlayer($color))
 		{
@@ -29,7 +29,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function startBonus(string $color, int $dice): array
+	static function startBonus(string $color, int $dice): array
 	{
 		switch (Factions::getPlayer($color))
 		{
@@ -62,7 +62,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function advancedFleetTactics(string $color)
+	static function advancedFleetTactics(string $color)
 	{
 		switch (Factions::getPlayer($color))
 		{
@@ -75,7 +75,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function makingPeace(string $color): int
+	static function makingPeace(string $color): int
 	{
 		switch (Factions::getPlayer($color))
 		{
@@ -87,7 +87,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function movement(object $bgagame, string $color, int $dice): void
+	static function movement(object $bgagame, string $color, int $dice): void
 	{
 		foreach (Ships::getAll($color) as $ship)
 		{
@@ -733,7 +733,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function retreat(string $color): int
+	static function retreat(string $color): int
 	{
 		switch (Factions::getPlayer($color))
 		{
@@ -745,7 +745,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function battleLoss(string $attacker, array $defenders, bool $totalVictory)
+	static function battleLoss(string $attacker, array $defenders, bool $totalVictory)
 	{
 		$location = Factions::getStatus($attacker, 'combat');
 		$winner = Factions::getStatus($attacker, 'winner');
@@ -776,7 +776,7 @@ class Automas extends APP_GameClass
 //
 		return $toDestroy;
 	}
-	function growthActions(string $color, int $difficulty, int $dice): array
+	static function growthActions(string $color, int $difficulty, int $dice): array
 	{
 		$wormholes = self::WORMHOLES;
 		shuffle($wormholes);
@@ -893,14 +893,14 @@ class Automas extends APP_GameClass
 //
 		return $counters;
 	}
-	function randomTechnology(string $color, array &$counters)
+	static function randomTechnology(string $color, array &$counters)
 	{
 		$technologies = array_diff_key(Factions::TECHNOLOGIES, $counters);
 		if (Factions::getPlayer($color) === SLAVERS && Factions::getTechnology($color, 'Spirituality') >= 4) unset($technologies['Spirituality']);
 		foreach (array_keys($technologies) as $technology) if (Factions::getTechnology($color, $technology) === 6) unset($technologies[$technology]);
 		if ($technologies) $counters[] = array_rand($technologies);
 	}
-	function actions(object $bgagame, string $color)
+	static function actions(object $bgagame, string $color)
 	{
 		$counters = Factions::getStatus($color, 'counters');
 		$counter = array_shift($counters);
@@ -1091,7 +1091,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException("Invalid action $counter");
 		}
 	}
-	function buildShips(string $color, array $locations): array
+	static function buildShips(string $color, array $locations): array
 	{
 		$shipsUsed = sizeof(Ships::getAll($color, 'ship'));
 //
@@ -1121,7 +1121,7 @@ class Automas extends APP_GameClass
 		}
 		return $toBuild;
 	}
-	function trading(string $color, string $alignment): int
+	static function trading(string $color, string $alignment): int
 	{
 		switch (Factions::getPlayer($color))
 		{
@@ -1143,7 +1143,7 @@ class Automas extends APP_GameClass
 				throw new BgaVisibleSystemException('Invalid automas: ' . $color);
 		}
 	}
-	function paths(string $location, int $MP, array $dests, bool $inRange = false, $direction = null)
+	static function paths(string $location, int $MP, array $dests, bool $inRange = false, $direction = null)
 	{
 		$founds = [];
 //

@@ -29,7 +29,7 @@ $gameinfos = [
 	'player_colors' => ['FF3333', '00CC00', '6666FF', 'FF9900', 'CD1FCD', 'FFFF00'],
 	'favorite_colors_support' => false,
 	'disable_player_order_swap_on_rematch' => true,
-	'game_interface_width' => array('min' => 804 + 100, 'max' => null),
+	'game_interface_width' => ['min' => 804 + 100, 'max' => null],
 	'presentation' => [
 		totranslate("Galactic Era is an epic space empire builder boardgame from Seajay Games. Each player controls a fledgling space-faring civilization expanding into the galaxy. You will explore distant planets and take them over, advance your technologies, trade with allies and battle your enemies."),
 	],

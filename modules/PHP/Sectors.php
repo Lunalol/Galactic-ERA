@@ -1586,6 +1586,7 @@ class Sectors extends APP_GameClass
 		6 => ['previous' => '6:-2+4-2', 'next' => '6:+4-2-2'],
 	];
 //
+	static $table = null;
 	static function setup($playersNumber)
 	{
 		$locations = range(1, 6);
@@ -1660,24 +1661,24 @@ class Sectors extends APP_GameClass
 	}
 	static function create(int $position, int $sector, int $orientation): int
 	{
-		self::DbQuery("INSERT INTO sectors VALUES ($position, $sector ,$orientation)");
-		return self::DbGetLastId();
+		self::$table->DbQuery("INSERT INTO sectors VALUES ($position, $sector ,$orientation)");
+		return self::$table->DbGetLastId();
 	}
 	static function getAllDatas(): array
 	{
-		return self::getCollectionFromDB("SELECT * FROM sectors");
+		return self::$table->getCollectionFromDB("SELECT * FROM sectors");
 	}
 	static function getAll(): array
 	{
-		return self::getObjectListFromDB("SELECT position FROM sectors", true);
+		return self::$table->getObjectListFromDB("SELECT position FROM sectors", true);
 	}
 	static function get(int $position): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT sector FROM sectors WHERE position = $position"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT sector FROM sectors WHERE position = $position"));
 	}
 	static function getOrientation(int $position): int
 	{
-		return intval(self::getUniqueValueFromDB("SELECT orientation FROM sectors WHERE position = $position"));
+		return intval(self::$table->getUniqueValueFromDB("SELECT orientation FROM sectors WHERE position = $position"));
 	}
 	static function rotate(string $location, int $orientation): string
 	{
