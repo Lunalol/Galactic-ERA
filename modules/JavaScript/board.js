@@ -93,7 +93,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			const sX = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sX`));
 			const sY = parseFloat(localStorage.getItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sY`));
 //
-			if (isNaN(scale) || isNaN(rotate) || isNaN(sX) || isNaN(sY)) this.home(this.bgagame.player_id);
+			if (isNaN(scale) || isNaN(rotate) || isNaN(sX) || isNaN(sY) || true) this.home(this.bgagame.player_id);
 			else
 			{
 				this.setRotate(rotate);
@@ -184,6 +184,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			else
 			{
 				this.setZoom(10 * Math.min(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight), this.playarea.clientWidth / 2, this.playarea.clientHeight / 2);
+				this.setRotate(0);
 				this.centerMap('0:+0+0+0');
 			}
 		},
@@ -194,7 +195,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 // Calc scale and store in session
 //
-			localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.rotate`, rotate);
+			if (!this.bgagame.isSpectator) localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.rotate`, rotate);
 //
 // Update range value
 //
@@ -210,7 +211,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 // Calc scale and store in session
 //
 			scale = Math.max(this.playarea.clientWidth / this.boardWidth, this.playarea.clientHeight / this.boardHeight, scale);
-			localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.zoomLevel`, scale);
+			if (!this.bgagame.isSpectator) localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.zoomLevel`, scale);
 //
 // Update range value
 //
@@ -259,8 +260,11 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		scroll: function ()
 		{
-			localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sX`, this.playarea.scrollLeft);
-			localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sY`, this.playarea.scrollTop);
+			if (!this.bgagame.isSpectator)
+			{
+				localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sX`, this.playarea.scrollLeft);
+				localStorage.setItem(`${this.bgagame.game_id}.${this.bgagame.table_id}.sY`, this.playarea.scrollTop);
+			}
 		},
 		begin_drag: function (event)
 		{

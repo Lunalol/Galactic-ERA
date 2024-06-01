@@ -544,6 +544,11 @@ trait gameStateArguments
 				$private[$player_id]['trade'][$from] = Factions::getStatus($from, 'trade');
 //				foreach (array_keys($this->TECHNOLOGIES) as $technology) $private[$player_id][$technology] = Factions::getTechnology($from, $technology);
 				foreach (Factions::getStatus($from, 'inContact') as $to)
+// PJL
+// [01-Jun-2024 14:46:34 Australia/Sydney] PHP Warning:
+// foreach() argument must be of type array|object, null given in
+// /var/tournoi/release/games/galacticera/240528-1546/modules/PHP/gameStateArguments.php on line 546
+// PJL
 				{
 					if (Factions::getActivation($to) !== 'done' || $trading === CANINOIDS)
 					{
