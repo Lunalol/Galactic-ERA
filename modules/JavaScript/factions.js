@@ -101,11 +101,14 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 			this.dialog.show();
 			dojo.style('popin_ERAdominationDialog_underlay', 'visibility', 'hidden');
 //
+			dojo.connect($('popin_ERAdominationDialog'), 'click', () => this.dialog.destroy());
+//
 			if ('possibleactions' in this.bgagame.gamedatas.gamestate && this.bgagame.gamedatas.gamestate.possibleactions.includes('domination') && this.bgagame.gamedatas.factions[faction.color].scoring[domination].A)
 			{
-				dojo.connect($('ERAdominationButtonAwithEffect'), 'click', () => {
+				dojo.connect($('ERAdominationButtonAwithEffect'), 'click', (event) => {
 					if (this.bgagame.isCurrentPlayerActive())
 					{
+						dojo.stopEvent(event);
 						this.bgagame.confirmationDialog(dojo.string.substitute(_('Play A-Section <B>WITH</B> One-time Effect'), {}), () =>
 						{
 							this.bgagame.action('domination', {color: faction.color, id: id, section: 'A', effect: true});
@@ -113,9 +116,10 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 						});
 					}
 				});
-				dojo.connect($('ERAdominationButtonAwithoutEffect'), 'click', () => {
+				dojo.connect($('ERAdominationButtonAwithoutEffect'), 'click', (event) => {
 					if (this.bgagame.isCurrentPlayerActive())
 					{
+						dojo.stopEvent(event);
 						this.bgagame.confirmationDialog(dojo.string.substitute(_('Play A-Section <B>WITHOUT</B> One-time Effect'), {}), () =>
 						{
 							this.bgagame.action('domination', {color: faction.color, id: id, section: 'A', effect: false});
@@ -131,9 +135,10 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 			}
 //
 			if ('possibleactions' in this.bgagame.gamedatas.gamestate && this.bgagame.gamedatas.gamestate.possibleactions.includes('domination'))
-				dojo.connect($('ERAdominationButtonB'), 'click', () => {
+				dojo.connect($('ERAdominationButtonB'), 'click', (event) => {
 					if (this.bgagame.isCurrentPlayerActive())
 					{
+						dojo.stopEvent(event);
 						this.bgagame.confirmationDialog(dojo.string.substitute(_('Play B-Section and score <B>${DP} DP<B>'), {DP: Math.max(...this.bgagame.gamedatas.factions[faction.color].scoring[domination].B)}), () =>
 						{
 							this.bgagame.action('domination', {color: faction.color, id: id, section: 'B', effect: false});
@@ -279,14 +284,14 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 				if (player_id === -2)
 				{
 					dojo.query('.ERAcounter-population', 'ERAoffboard').remove();
-					for (let i = 0; i < faction.DP; i++)
+					for (let i = 0; i < faction.DP * 0 + 4; i++)
 					{
-						let x = 20 + 30 * i;
-						let y = 75;
+						let x = 8 + 13 * i;
+						let y = 55;
 						let node = dojo.place(this.bgagame.format_block('ERAcounter', {id: faction.color + '-population', color: faction.color, type: 'populationDisc', location: 'offbard'}), 'ERAoffboard');
 						dojo.style(node, 'position', 'absolute');
-						dojo.style(node, 'left', x + 'px');
-						dojo.style(node, 'top', y + 'px');
+						dojo.style(node, 'left', x + '%');
+						dojo.style(node, 'top', y + '%');
 						dojo.style(node, 'transform', 'scale(12.5%)');
 						dojo.style(node, 'transform-origin', 'left top');
 						dojo.style(node, 'pointer-events', 'none');

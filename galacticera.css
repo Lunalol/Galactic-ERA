@@ -72,6 +72,9 @@ div,img {
     background-image:none;
     background-color:rgba(255, 255, 255, 75%);
 }
+.standard_popin_closeicon {
+	color: white !important;
+}
 #maintitlebar_content {
 	font-family: 'ERA';
 }
@@ -1315,36 +1318,32 @@ div,img {
 	position: absolute;
 	border-radius: 50%;
 	transition: box-shadow .25s;
+	aspect-ratio: 1;
 }
 .ERAoffboard1 {
-	top: 78px;
-	left: 24px;
-	width: 24px;
-	height: 25px;
+    top: 57.25%;
+    left: 10.0%;
+    width: 10.75%;
 }
 .ERAoffboard2 {
-	top: 78px;
-	left: 54px;
-	width: 24px;
-	height: 24px;
+    top: 57.25%;
+	left: 22.5%;
+    width: 10.75%;
 }
 .ERAoffboard3 {
-	top: 78px;
-	left: 83px;
-	width: 24px;
-	height: 24px;
+    top: 57.25%;
+	left: 35.5%;
+    width: 10.75%;
 }
 .ERAoffboard4 {
-	top: 78px;
-	left: 113px;
-	width: 24px;
-	height: 24px;
+    top: 57.25%;
+	left: 48.25%;
+    width: 10.75%;
 }
 .ERAoffboard5 {
-	top: 65px;
-	left: 143px;
-	width: 47px;
-	height: 49px;
+    top: 48%;
+    left: 60.5%;
+    width: 21%;
 }
 .ERAoffboard:hover {
 	background: #ffffff20;

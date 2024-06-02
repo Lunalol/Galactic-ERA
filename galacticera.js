@@ -2390,7 +2390,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				const zoom = window.getComputedStyle($('page-content')).zoom || 1;
 				dojo.style(node, {
 					'pointer-events': 'none', 'z-index': '1000',
-					'transform': `translate(${(window.innerWidth / zoom / 2 - rect.x - rect.width / 2)}px,${(window.innerHeight / zoom / 2 - rect.y - rect.height / 2)}px) scale(${.75 * window.innerHeight / rect.height})`,
+					'transform': `translate(${(window.innerWidth / zoom / 2 - rect.x - rect.width / 2)}px,${(window.innerHeight / zoom / 2 - rect.y - rect.height / 2)}px) scale(${Math.min(.90 * window.innerWidth / rect.width, .90 * window.innerHeight / rect.height)})`,
 					'transform-origin': 'center'
 				});
 				dojo.addClass(node, 'ERAfocus');
