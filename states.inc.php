@@ -177,7 +177,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can block ${other_player}\'s movement'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockMovement',
-		'possibleactions' => ['blockMovement'],
+		'possibleactions' => ['declareWar', 'blockMovement'],
 		'transitions' => ['continue' => 220, 'blockMovement' => 225, 'next' => 230]
 	],
 	230 => [
@@ -291,6 +291,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} have to select growth actions'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argSelectCounters',
+		'action' => 'updateScoring',
 		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'selectCounters'],
 		'transitions' => ['continue' => 305, 'next' => 310]
 	],
@@ -330,6 +331,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} resolve all remaining growth actions'),
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
+		'action' => 'updateScoring',
 		'possibleactions' => ['domination', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'switchAlignment', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
 		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400]
 	],
@@ -359,7 +361,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can block ${other_player}\'s growth action'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockAction',
-		'possibleactions' => ['blockAction'],
+		'possibleactions' => ['declareWar', 'blockAction'],
 		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400]
 	],
 	500 => [
@@ -409,7 +411,8 @@ $machinestates = [
 		'name' => 'endOfRound',
 		'type' => 'game',
 		'action' => 'stEndOfRound',
-		'transitions' => ['gameEnd' => 99, 'nextRound' => 100]
+		'transitions' => ['gameEnd' => 99, 'nextRound' => 100],
+		'updateGameProgression' => true
 	],
 //
 // Trigger
@@ -442,7 +445,7 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer}\'s home star evacuation'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockAction',
-		'possibleactions' => ['blockAction'],
+		'possibleactions' => ['declareWar', 'blockAction'],
 		'transitions' => ['end' => HOMESTAREVACUATION]
 	],
 	EMERGENCYRESERVE => [

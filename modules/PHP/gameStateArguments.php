@@ -356,8 +356,16 @@ trait gameStateArguments
 							$star = Counters::getAtLocation($location, 'star');
 							if ($star) $this->possible['gainStar'][$location] = Counters::getOwner($location);
 							$populations = Counters::getAtLocation($location, 'populationDisc');
-							if ($populations && Counters::get($populations[0])['color'] !== $color) $this->possible['gainStar'][$location] = Counters::getOwner($location);
-							if (in_array($location, Ships::getHomeStar()) && $location !== Ships::getHomeStarLocation($color)) $this->possible['gainStar'][$location] = Counters::getOwner($location);
+							if ($populations && Counters::get($populations[0])['color'] !== $color)
+							{
+								$otherColor = Counters::getOwner($location);
+								if (in_array($otherColor, Factions::atWar($color)) || Factions::getAlignment($color) === 'STS') $this->possible['gainStar'][$location] = $otherColor;
+							}
+							if (in_array($location, Ships::getHomeStar()) && $location !== Ships::getHomeStarLocation($color))
+							{
+								$otherColor = Counters::getOwner($location);
+								if (in_array($otherColor, Factions::atWar($color)) || Factions::getAlignment($color) === 'STS') $this->possible['gainStar'][$location] = $otherColor;
+							}
 						}
 					}
 					break;

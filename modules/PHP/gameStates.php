@@ -1946,7 +1946,10 @@ trait gameStates
 								foreach (Factions::atWar($color) as $otherColor)
 								{
 									if (Factions::getTechnology($otherColor, 'Spirituality') >= 5) continue;
-									foreach (Counters::getPopulations($otherColor, false) as $location) if (Ships::getAtLocation($location, $color)) $DP++;
+									foreach (array_keys(Counters::getPopulations($otherColor, false)) as $location)
+									{
+										if (Ships::getAtLocation($location, $color)) $DP++;
+									}
 								}
 								if ($DP)
 								{

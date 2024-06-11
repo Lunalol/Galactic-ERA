@@ -458,50 +458,55 @@ trait gameStateActions
 	{
 		$player_id = Factions::getPlayer($from);
 //
-		if (!$automa)
+		if ($player_id > 0 && !self::getGameStateValue('GODMODE'))
 		{
 			$this->checkAction('declareWar');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
 			if (!in_array($on, Factions::atPeace($from))) throw new BgaVisibleSystemException('Invalid Declare War on: ' . $on);
+		}
 //
-			if (!self::getGameStateValue('GODMODE'))
-			{
+		if (!self::getGameStateValue('GODMODE'))
+		{
 //
 // GREYS STO: You may not declare war on other players (also not on a automa)
 //
-				if (Factions::getAlignment($from) === 'STO' && Factions::getStarPeople($from) === 'Greys') throw new BgaUserException(self::_('Greys STO may not declare war'));
+			if (Factions::getAlignment($from) === 'STO' && Factions::getStarPeople($from) === 'Greys') throw new BgaUserException(self::_('Greys STO may not declare war'));
 //------------------------
 // A-section: Diplomatic //
 //------------------------
-				if (Factions::getStatus($on, 'diplomatic')) throw new BgaUserException(self::_('You cannot declare war on this player (Diplomatic)'));
+			if (Factions::getStatus($on, 'diplomatic')) throw new BgaUserException(self::_('You cannot declare war on this player (Diplomatic)'));
 //------------------------
 // A-section: Diplomatic //
 //------------------------
 //
 // PLEJARS STO: May declare war on STS players during your movement
 //
-				$possible = false;
-				if (Factions::getAlignment($from) === 'STO')
+			$possible = false;
+			if (Factions::getAlignment($from) === 'STO')
+			{
+				if (Factions::getStarPeople($from) === 'Plejars' && in_array($this->gamestate->state()['name'], ['fleets', 'movement']))
 				{
-					if (Factions::getStarPeople($from) === 'Plejars' && in_array($this->gamestate->state()['name'], ['fleets', 'movement']))
-					{
-						if (Factions::getAlignment($on) === 'STS') $possible = true;
-						else throw new BgaUserException(self::_('Plejars may declare war on STS players during they movement'));
-					}
+					if (Factions::getAlignment($on) === 'STS') $possible = true;
+					else throw new BgaUserException(self::_('Plejars may declare war on STS players during they movement'));
 				}
-				if (Factions::getAlignment($from) === 'STS')
-				{
-					if ($this->gamestate->state()['name'] === 'selectCounters')
-					{
-						$homeStar = Ships::getHomeStarLocation($on);
-						foreach (Counters::getPopulations($on, true) as $location => $population) if ($population >= 5 && $location !== $homeStar && Ships::getAtLocation($location, $from)) $possible = true;
-					}
-					if ($this->gamestate->state()['name'] === 'fleets') $possible = true;
-					if ($this->gamestate->state()['name'] === 'movement') $possible = true;
-					if ($this->gamestate->state()['name'] === 'researchPlus') $possible = true;
-				}
-				if (!$possible) throw new BgaUserException(self::_('You cannot declare war now'));
+				if ($this->gamestate->state()['name'] === 'blockMovement') $possible = true;
+				if ($this->gamestate->state()['name'] === 'blockAction') $possible = true;
 			}
+			if (Factions::getAlignment($from) === 'STS')
+			{
+				if ($this->gamestate->state()['name'] === 'selectCounters')
+				{
+					$homeStar = Ships::getHomeStarLocation($on);
+					foreach (Counters::getPopulations($on, true) as $location => $population) if ($population >= 5 && $location !== $homeStar && Ships::getAtLocation($location, $from)) $possible = true;
+				}
+				if ($this->gamestate->state()['name'] === 'fleets') $possible = true;
+				if ($this->gamestate->state()['name'] === 'movement') $possible = true;
+				if ($this->gamestate->state()['name'] === 'researchPlus') $possible = true;
+				if ($this->gamestate->state()['name'] === 'resolveGrowthActions') $possible = true;
+				if ($this->gamestate->state()['name'] === 'blockMovement') $possible = true;
+				if ($this->gamestate->state()['name'] === 'blockAction') $possible = true;
+			}
+			if (!$possible) throw new BgaUserException(self::_('You cannot declare war now'));
 		}
 //
 		self::DbQuery("DELETE FROM `undo` WHERE color = '$from'");
@@ -942,7 +947,7 @@ trait gameStateActions
 					if ($toBlock)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
-						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to use a wormhole'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
+						self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} tries to use a stargate'), ['GPS' => $next_location, 'player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 						foreach ($toBlock as $player_id) self::giveExtraTime($player_id);
 						$this->gamestate->setPlayersMultiactive($toBlock, 'end', true);
@@ -1854,12 +1859,14 @@ trait gameStateActions
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
+//
 			case SUBJUGATE:
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} subjugates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
+//
 			case LIBERATE:
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} liberates ${PLANET} with at least ${SHIPS} ship(s)'), ['GPS' => $location, 'SHIPS' => $SHIPS,
@@ -1878,6 +1885,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				break;
+//
 			case CONQUER:
 			case CONQUERVS:
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1885,6 +1893,7 @@ trait gameStateActions
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
+//
 			case ALLY:
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('${GPS} ${player_name} allies with ${PLANET}'), ['GPS' => $location,
@@ -2729,7 +2738,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 							if (Factions::getStatus($color, 'counters')) Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
 							Factions::setStatus($color, 'central', true);
-							Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
+							if (Factions::getStatus($color, 'counters')) Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), ['gainStar+']));
 //
 							break;
 //

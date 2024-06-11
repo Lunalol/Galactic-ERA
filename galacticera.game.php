@@ -215,7 +215,7 @@ class GalacticEra extends Table
 	}
 	function getGameProgression(): int
 	{
-		return (8 - self::getGameStateValue('round')) * (100 / 8);
+		return self::getGameStateValue('round') * (100 / 8);
 	}
 	function zombieTurn($state, $player_id)
 	{
