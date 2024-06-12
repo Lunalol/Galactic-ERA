@@ -458,7 +458,7 @@ trait gameStateActions
 	{
 		$player_id = Factions::getPlayer($from);
 //
-		if ($player_id > 0 && !self::getGameStateValue('GODMODE'))
+		if (!$automa)
 		{
 			$this->checkAction('declareWar');
 			if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
@@ -2520,6 +2520,7 @@ trait gameStateActions
 		if (!$to)
 		{
 			if ($trading === CANINOIDS) return $this->gamestate->nextState('next');
+			Factions::setActivation($from, 'done');
 //
 			$players = [];
 			foreach (Factions::list(false) as $color) if (Factions::getActivation($color) === 'yes') $players[] = Factions::getPlayer($color);
