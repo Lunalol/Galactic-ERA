@@ -119,7 +119,7 @@ trait gameUtils
 //
 //		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('Yowies may not have Robotics higher than level 1'));
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} researches <B>${TECHNOLOGY} (${LEVEL})</B>'), [
 			'player_name' => Factions::getName($color),
 			'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
 			'faction' => ['color' => $color, $technology => $level]

@@ -67,6 +67,7 @@ $this->PHASES = [
 	'dominationRetreatPhase' => clienttranslate('Retreat before combat'),
 	'dominationCombatPhase' => clienttranslate('Combat Phase'),
 	'changeTurnOrder' => clienttranslate('Start of Growth Phase'),
+	'tradingPhase' => clienttranslate('Trading Phase'),
 	'scoringPhase' => clienttranslate('End of round')
 ];
 //
@@ -74,7 +75,7 @@ $this->PHASES = [
 //
 $this->STARPEOPLES = [
 	'Alliance' => ['STO' => clienttranslate('Alliance of Light'), 'STS' => clienttranslate('Alliance of Darkness')],
-//	'Anchara' => ['STO' => clienttranslate('Anchara Coalition'), 'STS' => clienttranslate('Anchara Coalition')],
+	'Anchara' => ['STO' => clienttranslate('Anchara Coalition'), 'STS' => clienttranslate('Anchara Coalition')],
 //	'Annunaki' => ['STO' => clienttranslate('Annunaki'), 'STS' => clienttranslate('Annunaki')],
 	'Avians' => ['STO' => clienttranslate('Avians'), 'STS' => clienttranslate('Avians')],
 	'Caninoids' => ['STO' => clienttranslate('Caninoids'), 'STS' => clienttranslate('Caninoids')],

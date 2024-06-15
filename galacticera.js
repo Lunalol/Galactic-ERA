@@ -29,9 +29,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 // Save game
 //
-			dojo.connect(dojo.place(`<a id="ingame_menu_save" class="ingame_menu_item"><span class="fa fa-3x fa-download" style="float:left;line-height:70px;"></span><p>${_('Save game for debugging (only in training mode)')}</p></a>`, 'ingame_menu_back', 'after'), 'click', () => {
-				this.getGame();
-			});
+//			dojo.connect(dojo.place(`<a id="ingame_menu_save" class="ingame_menu_item"><span class="fa fa-3x fa-download" style="float:left;line-height:70px;"></span><p>${_('Save game for debugging (only in training mode)')}</p></a>`, 'ingame_menu_back', 'after'), 'click', () => {
+//				this.getGame();
+//			});
 //
 // GOD MODE
 //
@@ -1384,7 +1384,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								dojo.place(`<div style='color:white;margin-top:10px;font-size:small;'><HR>${_('Select a technology')}</div>`, toColor);
 //
 								const node = dojo.place('<div style="display: flex;justify-content: space-between;"></div>', _container);
-								if (Object.keys(this.gamedatas.players).length > 1)
+								if (Object.keys(this.gamedatas.players).length > 1 && state.args.trading > 0)
 								{
 									const refuse = dojo.place(`<div class='bgabutton'>${_('Refuse trade')}</div>`, node);
 									dojo.style(refuse, 'background', '#' + to + '80');
@@ -2686,8 +2686,9 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			const oval = dojo.query('#ERAchoice .ERAcounter-growth.ERAselected').length;
 			const square = dojo.query('#ERAchoice .ERAcounter-technology.ERAselected,#ERAchoice .ERAcounter-turnOrder.ERAselected').length;
+			const bonus = this.gamedatas.factions[this.color].starPeople === 'Anchara' && dojo.query('#ERAchoice .ERAcounter-growth[counter="switchAlignment"].ERAselected').length;
 //
-			return oval === +this.gamedatas.gamestate.args._private.oval && square >= 1 && square <= +this.gamedatas.gamestate.args._private.square;
+			return (oval >= this.gamedatas.gamestate.args._private.oval && oval <= bonus + this.gamedatas.gamestate.args._private.oval) && square >= 1 && square <= +this.gamedatas.gamestate.args._private.square;
 		},
 		onCenter: function (event)
 		{

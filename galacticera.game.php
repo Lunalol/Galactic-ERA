@@ -29,7 +29,7 @@ class GalacticEra extends Table
 		$this->GLOBALLABELS = [
 			'game' => GAME, 'difficulty' => DIFFICULTY,
 			'galacticStory' => GALACTICSTORY, 'galacticGoal' => GALACTICGOAL,
-			'round' => ROUND, 'alignment' => SWITCHALIGNMENT, 'trading' => TRADING,
+			'round' => ROUND, 'alignment' => SWITCHALIGNMENT, 'trading' => TRADING, 'scoring' => SCORING,
 			'GODMODE' => GODMODE, 'rating' => GAMESTATE_RATING_MODE
 		];
 //

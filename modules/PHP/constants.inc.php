@@ -1,6 +1,6 @@
 <?php
 define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== false);
-define('FAST_START', 0);
+define('FAST_START', 1);
 define('DEBUG', 1);
 //
 define('LEGACYDATA', 'ALPHA2');
@@ -46,6 +46,7 @@ define('ROUND', 10);
 define('GODMODE', 20);
 define('SWITCHALIGNMENT', 21);
 define('TRADING', 22);
+define('SCORING', 23);
 //
 // Automas (2)
 //
