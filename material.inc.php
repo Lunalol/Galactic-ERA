@@ -91,8 +91,10 @@ $this->STARPEOPLES = [
 //	'Progenitors' => ['STO' => clienttranslate('Progenitors'), 'STS' => clienttranslate('Progenitors')],
 //	'Rogue' => ['STO' => clienttranslate('Rogue AI'), 'STS' => clienttranslate('Rogue AI')],
 	'Yowies' => ['STO' => clienttranslate('Yowies'), 'STS' => clienttranslate('Yowies')],
+#
 	'Farmers' => ['STO' => clienttranslate('Genetic Farmers')],
 	'Slavers' => ['STS' => clienttranslate('Slavers')],
+#
 ];
 //
 // Technologies (5)

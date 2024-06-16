@@ -284,7 +284,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 				if (player_id === -2)
 				{
 					dojo.query('.ERAcounter-population', 'ERAoffboard').remove();
-					for (let i = 0; i < faction.DP * 0 + 4; i++)
+					for (let i = 0; i < faction.DP; i++)
 					{
 						let x = 8 + 13 * i;
 						let y = 55;
