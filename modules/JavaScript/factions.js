@@ -15,7 +15,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 // Setup DP
 //
 			const galacticStoryNode = dojo.place(`<img id='ERAgalacticStory' src='${g_gamethemeurl}img/galacticStories/${this.bgagame.gamedatas.galacticStory}.png' draggable='false'>`, 'ERA-DP');
-			const galacticStory = bgagame.GALATIC_STORIES[this.bgagame.gamedatas.galacticStory];
+			const galacticStory = bgagame.GALACTIC_STORIES[this.bgagame.gamedatas.galacticStory];
 //
 			let html = `<H1 style='font-family:ERA;'>${_('Galactic') + ' ' + _(this.bgagame.gamedatas.galacticStory)}</H1>`;
 			html += '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
@@ -150,8 +150,6 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 		},
 		update: function (faction)
 		{
-			console.info('updateFaction', faction);
-//
 			for (let entry in faction) if (entry in this.bgagame.gamedatas.factions[faction.color]) this.bgagame.gamedatas.factions[faction.color][entry] = faction[entry];
 //
 			if ('starPeople' in faction)
@@ -356,6 +354,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					}
 				}
 				$(`ERApopulation-${faction.color}`).innerHTML = 39 - faction.population;
+				if ($(`ERAbonus-${faction.color}`)) $(`ERAbonus-${faction.color}`).innerHTML = `(+${POPULATION[faction.population]})`;
 			}
 //
 			const nodeTechnologiesTrack = $(`ERAtechTrack-${faction.color}`);
@@ -399,7 +398,9 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 					dojo.setAttr(node, 'level', faction[technology]);
 //
 					let html = '';
-					for (let i = 1; i <= 6; i++) html += `<span id='ERAtechnology-${faction.color}-${i}-${technology}' class='${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
+					for (let i = 1; i <= 6; i++)
+						html += `<span id='ERAtechnology-${faction.color}-${i}-${technology}' class='${i === faction[technology] ? 'circleCurrent' : ''} ${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
+					console.log(html);
 					node.children[0].innerHTML = html;
 //
 					for (let i = 1; i <= 6; i++)

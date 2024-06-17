@@ -95,7 +95,7 @@ trait gameUtils
 		}
 		return Factions::gainDP($color, $delta);
 	}
-	function gainTechnology(string $color, string $technology): int
+	function gainTechnology(string $color, string $technology, bool $research = false): int
 	{
 		if (Factions::getTechnology($color, $technology) === 6)
 		{
@@ -119,11 +119,16 @@ trait gameUtils
 //
 //		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('Yowies may not have Robotics higher than level 1'));
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} researches <B>${TECHNOLOGY} (${LEVEL})</B>'), [
-			'player_name' => Factions::getName($color),
-			'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
-			'faction' => ['color' => $color, $technology => $level]
-		]);
+		if ($research) self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} researches <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+				'player_name' => Factions::getName($color),
+				'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+				'faction' => ['color' => $color, $technology => $level]
+			]);
+		else self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains <B>${TECHNOLOGY} (${LEVEL})</B>'), [
+				'player_name' => Factions::getName($color),
+				'i18n' => ['TECHNOLOGY'], 'TECHNOLOGY' => $this->TECHNOLOGIES[$technology], 'LEVEL' => $level,
+				'faction' => ['color' => $color, $technology => $level]
+			]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Spirituality : At levels 5 and 6 you automatically switch to STO (no growth action needed for that) and may not switch back to STS again.*

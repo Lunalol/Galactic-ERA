@@ -247,6 +247,9 @@ div,img {
 .ERAstatus .ERAdominationCard {
 	max-width: 50px;
 }
+.ERAcompact .ERAstatus .ERAdominationCard {
+	max-width: 20px;
+}
 .ERAdominationCard.ERAselected {
 	border-radius: 5%;
 	box-shadow: 0px 0px 10px 10px red;
@@ -521,6 +524,12 @@ div,img {
 	justify-content: start;
 	font-size: xx-small;
 }
+.ERAcompact .ERAtechnologies {
+	flex-direction: row;
+}
+.ERAcompact .ERApopulationDisplay {
+	display: none;
+}
 .ERAsmallTechnology{
 	display: inline-block;
 	width: calc(74px / 2);
@@ -558,6 +567,10 @@ div,img {
 	box-sizing:border-box;
 	vertical-align:middle;
 	margin:1px;
+	color:black;
+}
+.ERAcompact .circleBlack:not(.circleCurrent) {
+	display:none;
 }
 .circleWhite {
 	border:white solid 1px;
@@ -571,16 +584,25 @@ div,img {
 	vertical-align:middle;
 	margin:1px;
 }
+.ERAcompact .circleWhite {
+	display:none;
+}
 .ERAstarPeople {
 	pointer-events: all;
 	transition: transform CALC(var(--DELAY) * 0.5ms);
+}
+.ERAfaction>.ERAstarPeople {
+	flex: 1 1 50%;
+}
+.ERAcompact .ERAfaction>.ERAstarPeople {
+	flex: 0 1 15%;
 }
 .ERAstarPeople.ERAfocus {
 	z-index: 1000;
 }
 .ERAstarPeople img{
 	width: 100%;
-	border-radius: 10px;
+	/*border-radius: 10px;*/
 	border: 5px solid transparent;
 	box-sizing: border-box;
 }

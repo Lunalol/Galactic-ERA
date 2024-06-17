@@ -321,7 +321,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Alignment choice')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Alignment choice')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		if (FAST_START && STUDIO)
 		{
@@ -360,7 +360,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Star People Starting Bonus')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Star People Starting Bonus')]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Star people starting bonus
@@ -526,7 +526,7 @@ trait gameStates
 			}
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Sector Starting Bonus')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Sector Starting Bonus')]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
 // Home Star bonus
@@ -611,7 +611,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Individual choices')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Individual choices')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		self::updateScoring();
 		$this->gamestate->nextState('next');
@@ -657,7 +657,7 @@ trait gameStates
 			return $this->gamestate->nextState('individualChoice');
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('Start of game')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -698,7 +698,7 @@ trait gameStates
 	{
 		$round = intval(self::incGameStateValue('round', 1));
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('updateRound', '<span class = "ERA-phase">${LOG} ${round}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Start of round'), 'round' => $round]);
+		self::notifyAllPlayers('updateRound', '<span class="ERA-phase">${LOG} ${round}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Start of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		Ships::setActivation();
 		Factions::setActivation();
@@ -804,7 +804,7 @@ trait gameStates
 			foreach (array_diff($toReveal, Counters::listRevealed($color)) as $counter) self::reveal($color, 'counter', $counter);
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Move/Combat Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Move/Combat Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
 		if ($player_id < 0)
@@ -952,7 +952,7 @@ trait gameStates
 						foreach ($attackerCVs['fleets'] as $fleet => ['ships' => $ships])
 						{
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+							self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 								'LOG' => [
 									'log' => clienttranslate('<B>${fleet}</B> fleet with ${ships} ship(s)'),
 									'args' => ['fleet' => $fleet, 'ships' => $ships]
@@ -963,7 +963,7 @@ trait gameStates
 						if ($attackerCVs['ships']['ships'])
 						{
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+							self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 								'LOG' => [
 									'log' => clienttranslate('${ships} ship piece(s)'),
 									'args' => ['ships' => $attackerCVs['ships']['ships']]
@@ -1056,7 +1056,7 @@ trait gameStates
 		foreach ($attackerCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+			self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
 					'log' => clienttranslate('<B>CV ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
 					'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
@@ -1067,7 +1067,7 @@ trait gameStates
 		if ($attackerCVs['ships']['ships'])
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
+			self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $attacker,
 				'LOG' => [
 					'log' => clienttranslate('<B>CV ${CV}</B>: ${ships} ship piece(s)'),
 					'args' => ['CV' => $attackerCVs['ships']['CV'], 'ships' => $attackerCVs['ships']['ships']]
@@ -1077,7 +1077,7 @@ trait gameStates
 		}
 		$attackerCV = $attackerCVs['total'];
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => $attacker,
+		self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => $attacker,
 			'LOG' => [
 				'log' => clienttranslate('Attacking side: ${CV} CV'),
 				'args' => ['CV' => $attackerCV]
@@ -1098,7 +1098,7 @@ trait gameStates
 			foreach ($defenderCVs['fleets'] as $fleet => ['CV' => $CV, 'ships' => $ships])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
+				self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
 					'LOG' => [
 						'log' => clienttranslate('<B>CV ${CV}</B>: <B>${fleet}</B> fleet with ${ships} ship(s)'),
 						'args' => ['CV' => $CV, 'fleet' => $fleet, 'ships' => $ships]
@@ -1110,7 +1110,7 @@ trait gameStates
 			if ($defenderCVs['ships']['ships'])
 			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
+				self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};">${LOG}</div>', ['color' => $defender,
 					'LOG' => [
 						'log' => clienttranslate('<B>CV ${CV}</B>: ${ships} ship piece(s)'),
 						'args' => ['CV' => $defenderCVs['ships']['CV'], 'ships' => $defenderCVs['ships']['ships']]
@@ -1121,7 +1121,7 @@ trait gameStates
 			$defenderCV += $defenderCVs['total'];
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => 'FFFFFF',
+		self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => 'FFFFFF',
 			'LOG' => [
 				'log' => clienttranslate('Defending side: ${CV} CV'),
 				'args' => ['CV' => $defenderCV]
@@ -1194,7 +1194,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => $attacker,
+				self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => $attacker,
 					'LOG' => [
 						'log' => clienttranslate('Attacking side: ${CV} CV'),
 						'args' => ['CV' => $attackerCV]
@@ -1230,7 +1230,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 					self::notifyAllPlayers('msg', clienttranslate('<B>Defensive</B> immediate effect +${CV} CV'), ['CV' => 20]);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', '<div style = "color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => 'FFFFFF',
+					self::notifyAllPlayers('msg', '<div style="color:black;background:#${color};font-weight:bold;"><HR>${LOG}<HR></div>', ['color' => 'FFFFFF',
 						'LOG' => [
 							'log' => clienttranslate('Defending side: ${CV} CV'),
 							'args' => ['CV' => $defenderCV]
@@ -1323,7 +1323,7 @@ trait gameStates
 				if (intval($location[0]) !== Factions::getHomeStar($color) && $player_id > 0)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 2 DP for every battle they win outside of their home star sector')]);
+					if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 2 DP for every battle they win outside of their home star sector')]);
 //* -------------------------------------------------------------------------------------------------------- */
 					$DP = 2;
 					self::gainDP($color, $DP);
@@ -1346,7 +1346,7 @@ trait gameStates
 				if ($player_id > 0)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 1 DP for every battle they win. Battles where all opposing ships retreated before combat are not counted')]);
+					if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 1 DP for every battle they win. Battles where all opposing ships retreated before combat are not counted')]);
 //* -------------------------------------------------------------------------------------------------------- */
 					$DP = 1;
 					self::gainDP($color, $DP);
@@ -1506,7 +1506,7 @@ trait gameStates
 //
 		Factions::setActivation();
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('Growth Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1643,7 +1643,7 @@ trait gameStates
 //
 		Factions::setActivation($color, 'yes');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['LOG' => ['log' => clienttranslate('${player_name} Growth Phase'), 'args' => ['player_name' => Factions::getName($color)]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$player_id = Factions::getPlayer($color);
 		if ($player_id > 0)
@@ -1675,7 +1675,7 @@ trait gameStates
 	function stTradingPhaseBegin()
 	{
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('Trading Phase')
 		]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1800,7 +1800,7 @@ trait gameStates
 		if (intval(self::getGameStateValue('scoring')))
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', [
+			self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', [
 				'i18n' => ['LOG'], 'LOG' => clienttranslate('Scoring Phase')
 			]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1815,7 +1815,7 @@ trait gameStates
 //
 // First : Every player with the STO alignment at the end of a round scores 1 DP
 //
-						if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player with the STO alignment at the end of a round scores 1 DP')]);
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player with the STO alignment at the end of a round scores 1 DP')]);
 						foreach (Factions::list(false) as $color)
 						{
 							if (Factions::getAlignment($color) === 'STO')
@@ -1836,7 +1836,7 @@ trait gameStates
 //
 // JOURNEYS First : All players score 1 DP for every player they are “in contact” with at the end of the round (including the automa in a 2-player game)
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 1 DP for every player they are “in contact” with at the end of the round(including the automa in a 2-player game')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 1 DP for every player they are “in contact” with at the end of the round(including the automa in a 2-player game')]);
 								foreach (Factions::list(false) as $color)
 								{
 									$DP = sizeof(Factions::inContact($color, 'contact'));
@@ -1867,7 +1867,7 @@ trait gameStates
 //
 // Second : Every player with the STS alignment at the end of a round scores 1 DP
 //
-						if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player with the STS alignment at the end of a round scores 1 DP')]);
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player with the STS alignment at the end of a round scores 1 DP')]);
 						foreach (Factions::list(false) as $color)
 						{
 							if (Factions::getAlignment($color) === 'STS')
@@ -1888,7 +1888,7 @@ trait gameStates
 //
 // JOURNEYS Second : Every player “at war” with at least one other player at the end of the round scores 1 DP
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 1 DP')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 1 DP')]);
 								foreach (Factions::list(false) as $color)
 								{
 									$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 1;
@@ -1907,7 +1907,7 @@ trait gameStates
 //
 // MIGRATIONS Second : Every player “at war” with at least one other player at the end of the round scores 1 DP
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 1 DP')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 1 DP')]);
 								foreach (Factions::list(false) as $color)
 								{
 									$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 1;
@@ -1926,7 +1926,7 @@ trait gameStates
 //
 // RIVALRY Second : Every player “at war” with at least one other player at the end of the round scores 1 DP
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 1 DP')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 1 DP')]);
 								foreach (Factions::list(false) as $color)
 								{
 									$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 1;
@@ -1943,7 +1943,7 @@ trait gameStates
 // RIVALRY Second : All players score 1 DP for every star of another player they are blocking at the end of the round (i.e., for each hostile star where they are present)
 // Multiple players can score for the same star they are blocking
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 1 DP for every star of another player they are blocking at the end of the round')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('All players score 1 DP for every star of another player they are blocking at the end of the round')]);
 								foreach (Factions::list(false) as $color)
 								{
 									$DP = 0;
@@ -1970,7 +1970,7 @@ trait gameStates
 //
 // WAR Second : Every player “at war” with at least one other player at the end of the round scores 2 DP
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 2 DP')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player “at war” with at least one other player at the end of the round scores 2 DP')]);
 								foreach (Factions::list(false) as $color)
 								{
 									$DP = sizeof(Factions::atWar($color)) === 0 ? 0 : 2;
@@ -1994,7 +1994,7 @@ trait gameStates
 //
 // Third : Every player with the STO alignment at the end of a round scores 1 DP
 //
-						if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player with the STO alignment at the end of a round scores 1 DP')]);
+						if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player with the STO alignment at the end of a round scores 1 DP')]);
 						foreach (Factions::list(false) as $color)
 						{
 							if (Factions::getAlignment($color) === 'STO')
@@ -2018,7 +2018,7 @@ trait gameStates
 //
 								foreach (['Spirituality', 'Propulsion'] as $technology)
 								{
-									if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['LOG' => ['log' => clienttranslate('At the end of the round, each player who researched ${technology} in that round and has the highest level(ties allowed) in that field among all the players who also researched that, scores 7 minus their ${technology} level'), 'args' => ['technology' => $technology]]]);
+									if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['LOG' => ['log' => clienttranslate('At the end of the round, each player who researched ${technology} in that round and has the highest level(ties allowed) in that field among all the players who also researched that, scores 7 minus their ${technology} level'), 'args' => ['technology' => $technology]]]);
 									foreach (Factions::list(false) as $color)
 									{
 										if (in_array($technology, Factions::getStatus($color, 'used')))
@@ -2044,7 +2044,7 @@ trait gameStates
 // MIGRATIONS Third : Every player who is the only player to research a certain technology field in a round in this era scores 4 DP (per such field)
 // Technology levels gained by any other means (such as taking a star from another player) do not count for this, neither for scoring nor for preventing scoring
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player who is the only player to research a certain technology field in a round in this era scores 4 DP(per such field)')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player who is the only player to research a certain technology field in a round in this era scores 4 DP(per such field)')]);
 								foreach (array_keys(Factions::TECHNOLOGIES) as $technology)
 								{
 									$research = [];
@@ -2070,7 +2070,7 @@ trait gameStates
 //
 // RIVALRY Third : For every technology field, the player who has the highest level in that field at the end of the round scores 3 DP (even if tied with other players)
 //
-								if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('For every technology field, the player who has the highest level in that field at the end of the round scores 3 DP(even if tied with other players)')]);
+								if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('For every technology field, the player who has the highest level in that field at the end of the round scores 3 DP(even if tied with other players)')]);
 								foreach (array_keys(Factions::TECHNOLOGIES) as $technology)
 								{
 									$research = [];
@@ -2098,7 +2098,7 @@ trait gameStates
 //
 								foreach (['Military', 'Robotics'] as $technology)
 								{
-									if (DEBUG) self::notifyAllPlayers('msg', '<span class = "ERA-info">${LOG}</span>', ['LOG' => ['log' => clienttranslate('At the end of the round, each player who researched ${technology} in that round and has the highest level(ties allowed) in that field among all the players who also researched that, scores 7 minus their ${technology} level'), 'args' => ['technology' => $technology]]]);
+									if (DEBUG) self::notifyAllPlayers('msg', '<span class="ERA-info">${LOG}</span>', ['LOG' => ['log' => clienttranslate('At the end of the round, each player who researched ${technology} in that round and has the highest level(ties allowed) in that field among all the players who also researched that, scores 7 minus their ${technology} level'), 'args' => ['technology' => $technology]]]);
 									foreach (Factions::list(false) as $color)
 									{
 										if (in_array($technology, Factions::getStatus($color, 'used')))
@@ -2141,7 +2141,7 @@ trait gameStates
 	{
 		$round = self::getGameStateValue('round');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG} ${round}</span>', [
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG} ${round}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list() as $color) Factions::clearStatus($color);
@@ -2150,9 +2150,9 @@ trait gameStates
 		if ($round < 8) return $this->gamestate->nextState('nextRound');
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Game End Scoring')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Game End Scoring')]);
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player scores DP equal to the highest number on their population track without a disc')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('Every player scores DP equal to the highest number on their population track without a disc')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		foreach (Factions::list(false) as $color)
 		{
@@ -2181,14 +2181,14 @@ trait gameStates
 //
 		$galacticGoal = self::getGameStateValue('galacticGoal');
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => ['log' => clienttranslate('Galactic goal: <B>${galacticGoal}</B>'), 'args' => ['i18n' => ['galacticGoal'], 'galacticGoal' => $this->GOALS[$galacticGoal]]]]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => ['log' => clienttranslate('Galactic goal: <B>${galacticGoal}</B>'), 'args' => ['i18n' => ['galacticGoal'], 'galacticGoal' => $this->GOALS[$galacticGoal]]]]);
 //* -------------------------------------------------------------------------------------------------------- */
 		if ($galacticGoal != NONE) self::galacticGoal($galacticGoal);
 //
 // For every sector, the player with the most ships there scores 4 DP (in the case of a tie all tied players score this)
 //
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', '<span class = "ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('For every sector, the player with the most ships there scores 4 DP(in the case of a tie all tied players score this) ')]);
+		self::notifyAllPlayers('msg', '<span class="ERA-subphase">${LOG}</span>', ['i18n' => ['LOG'], 'LOG' => clienttranslate('For every sector, the player with the most ships there scores 4 DP(in the case of a tie all tied players score this) ')]);
 //* -------------------------------------------------------------------------------------------------------- */
 		$sectors = [];
 		foreach (Factions::list() as $color)

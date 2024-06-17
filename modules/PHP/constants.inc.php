@@ -40,6 +40,8 @@ define('NEVER', 2);
 //
 define('PATH', 110);
 //
+define('COMPACT', 120);
+//
 // Game globals
 //
 define('ROUND', 10);

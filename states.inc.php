@@ -93,7 +93,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argIndividualChoice',
 		'possibleactions' => ['individualChoice'],
-		'transitions' => ['nextPlayer' => 85]
+		'transitions' => ['nextPlayer' => 85, 'zombiePass' => 85]
 	],
 	91 => [
 		'name' => 'advancedFleetTactics',
@@ -143,7 +143,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argDominationCardExchange',
 		'possibleactions' => ['dominationCardExchange'],
-		'transitions' => ['nextPlayer' => 110]
+		'transitions' => ['nextPlayer' => 110, 'zombiePass' => 110]
 	],
 	200 => [
 		'name' => 'movementCombatPhase',
@@ -159,7 +159,7 @@ $machinestates = [
 		'action' => 'updateScoring',
 		'args' => 'argFleets',
 		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'swapFleets', 'remoteViewing', 'done'],
-		'transitions' => ['continue' => 210, 'next' => 220]
+		'transitions' => ['continue' => 210, 'next' => 220, 'zombiePass' => 220]
 	],
 	220 => [
 		'name' => 'movement',
@@ -169,7 +169,7 @@ $machinestates = [
 		'action' => 'updateScoring',
 		'args' => 'argMovement',
 		'possibleactions' => ['domination', 'declareWar', 'declarePeace', 'undo', 'shipsToFleet', 'fleetToShips', 'fleetToFleet', 'move', 'scout', 'remoteViewing', 'planetaryDeathRay', 'done'],
-		'transitions' => ['undo' => 210, 'continue' => 220, 'blockMovement' => 225, 'next' => 230]
+		'transitions' => ['undo' => 210, 'continue' => 220, 'blockMovement' => 225, 'next' => 230, 'zombiePass' => 230]
 	],
 	225 => [
 		'name' => 'blockMovement',
@@ -333,7 +333,7 @@ $machinestates = [
 		'args' => 'argResolveGrowthActions',
 		'action' => 'updateScoring',
 		'possibleactions' => ['domination', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'switchAlignment', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
-		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400]
+		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400, 'zombiePass' => 400]
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',
@@ -353,7 +353,7 @@ $machinestates = [
 		'action' => 'stBuriedShips',
 		'args' => 'argBuriedShips',
 		'possibleactions' => ['buildShips', 'done'],
-		'transitions' => ['continue' => 410]
+		'transitions' => ['continue' => 410, 'zombiePass' => 410]
 	],
 	450 => [
 		'name' => 'blockAction',
@@ -437,7 +437,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argHomeStarEvacuation',
 		'possibleactions' => ['homeStarEvacuation'],
-		'transitions' => ['continue' => POP_EVENT, 'blockAction' => HOMESTAREVACUATION + 1]
+		'transitions' => ['continue' => POP_EVENT, 'blockAction' => HOMESTAREVACUATION + 1, 'zombiePass' => POP_EVENT]
 	],
 	HOMESTAREVACUATION + 1 => [
 		'name' => 'blockHomeStarEvacuation',
@@ -456,7 +456,7 @@ $machinestates = [
 		'args' => 'argEmergencyReserve',
 		'action' => 'stEmergencyReserve',
 		'possibleactions' => ['buildShips', 'done'],
-		'transitions' => ['continue' => POP_EVENT]
+		'transitions' => ['continue' => POP_EVENT, 'zombiePass' => POP_EVENT]
 	],
 	STEALTECHNOLOGY => [
 		'name' => 'stealTechnology',
@@ -466,7 +466,7 @@ $machinestates = [
 		'args' => 'argStealTechnology',
 		'action' => 'stStealTechnology',
 		'possibleactions' => ['stealTechnology'],
-		'transitions' => ['continue' => POP_EVENT]
+		'transitions' => ['continue' => POP_EVENT, 'zombiePass' => POP_EVENT]
 	],
 	REMOVEPOPULATION => [
 		'name' => 'removePopulation',
@@ -475,7 +475,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argRemovePopulation',
 		'possibleactions' => ['removePopulation'],
-		'transitions' => ['end' => POP_EVENT]
+		'transitions' => ['end' => POP_EVENT, 'zombiePass' => POP_EVENT]
 	],
 	RESEARCHPLUS => [
 		'name' => 'researchPlus',
@@ -485,7 +485,7 @@ $machinestates = [
 		'args' => 'argResearchPlus',
 		'action' => 'stResearchPlus',
 		'possibleactions' => ['declareWar', 'declarePeace', 'dominationCardExchange', 'researchPlus'],
-		'transitions' => ['continue' => RESEARCHPLUS, 'end' => POP_EVENT]
+		'transitions' => ['continue' => RESEARCHPLUS, 'end' => POP_EVENT, 'zombiePass' => POP_EVENT]
 	],
 	DOMINATION => [
 		'name' => 'domination',
@@ -504,7 +504,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argOneTimeEffect',
 		'possibleactions' => ['oneTimeEffect', 'teleportPopulation', 'buildShips', 'individualChoice', 'null'],
-		'transitions' => ['continue' => ONETIMEEFFECT, 'advancedFleetTactics' => ONETIMEEFFECT + 1, 'end' => POP_EVENT]
+		'transitions' => ['continue' => ONETIMEEFFECT, 'advancedFleetTactics' => ONETIMEEFFECT + 1, 'end' => POP_EVENT, 'zombiePass' => POP_EVENT]
 	],
 	ONETIMEEFFECT + 1 => [
 		'name' => 'advancedFleetTactics',

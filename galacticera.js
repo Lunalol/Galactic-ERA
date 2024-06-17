@@ -44,7 +44,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 // Translations
 //
-			this.GALATIC_STORIES = {
+			this.GALACTIC_STORIES = {
 				Journeys: {
 					1: [
 						_('Every player with the STO alignment at the end of a round scores 1 DP'),
@@ -443,15 +443,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 // Animations speed
 //
-			DELAY = DELAYS[this.prefs[100].value];
+			DELAY = DELAYS[this.getGameUserPreference(SPEED)];
 			document.documentElement.style.setProperty('--DELAY', DELAY);
-			dojo.query('.preference_control').connect('onchange', this, 'updatePreference');
 //
 			this.players = {};
 			for (let faction of Object.values(gamedatas.factions)) this.players[faction.player_id] = faction.color;
 			this.color = this.player_id in this.players ? this.players[this.player_id] : null;
-//
-			dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - this.prefs[PATH].value);
 //
 // Setup game Board
 //
@@ -474,6 +471,12 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				}
 //
 // Setup player panels
+//
+				if (faction.player_id > 0)
+				{
+					const bonus = dojo.place(`<span id='ERAbonus-${faction.color}' style='margin:0px 2px;'	>(+0)</span>`, `icon_point_${faction.player_id}`, 'after');
+					this.addTooltip(bonus, _('Population score at end of game'), '');
+				}
 //
 				let nodeCounters = dojo.place(`<div class='ERAcounters' id='ERAcounters-${faction.color}'></div>`, `player_board_${faction.player_id}`, 2);
 //
@@ -509,10 +512,10 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				let nodeFaction = dojo.place(this.format_block('ERAfaction', {color: faction.color}), nodeStatus, 'after');
 //
 				let nodeStarPeople = dojo.place(this.format_block('ERAstarPeople', {starpeople: faction.starPeople}), nodeFaction);
-				dojo.style(nodeStarPeople, 'flex', '1 1 50%');
+//				dojo.style(nodeStarPeople, 'flex', '1 1 50%');
 //
 				let nodeTechnologies = dojo.place(this.format_block('ERAtechnologies', {color: faction.color}), nodeFaction);
-				let nodePopulation = dojo.place(`<div>${'Population discs'} : <span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeTechnologies);
+				let nodePopulation = dojo.place(`<div style='margin:0px 5px;'><span class='ERApopulationDisplay'>${'Population discs'} : </span><span id='ERApopulation-${faction.color}'>?</span>/39</div>`, nodeTechnologies);
 // Farmers
 				if (+faction.player_id === -1) dojo.style(nodePopulation, 'display', 'none');
 // Slavers
@@ -2728,25 +2731,42 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 			}
 			return this.inherited(arguments);
 		},
-		updatePreference: function (event)
+//		updatePreference: function (event)
+//		{
+//			const match = event.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
+////
+//			if (match)
+//			{
+//				let pref = +match[1];
+//				let value = +event.target.value;
+//				this.prefs[pref].value = value;
+//				switch (pref)
+//				{
+//					case SPEED:
+//						DELAY = DELAYS[value];
+//						document.documentElement.style.setProperty('--DELAY', DELAY);
+//						this.setSynchronous();
+//						break;
+//					case PATH:
+//						dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - value);
+//				}
+//			}
+//		},
+		onGameUserPreferenceChanged: function (pref, value)
 		{
-			const match = event.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-//
-			if (match)
+			switch (pref)
 			{
-				let pref = +match[1];
-				let value = +event.target.value;
-				this.prefs[pref].value = value;
-				switch (pref)
-				{
-					case SPEED:
-						DELAY = DELAYS[value];
-						document.documentElement.style.setProperty('--DELAY', DELAY);
-						this.setSynchronous();
-						break;
-					case PATH:
-						dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - value);
-				}
+				case SPEED:
+					DELAY = DELAYS[value];
+					document.documentElement.style.setProperty('--DELAY', DELAY);
+					this.setSynchronous();
+					break;
+				case PATH:
+					dojo.toggleClass('ERAboard', 'ERAnoPath', 1 - value);
+					break;
+				case COMPACT:
+					dojo.query('.player-board').toggleClass('ERAcompact', +value);
+					break;
 			}
 		},
 		getGame: function ()
