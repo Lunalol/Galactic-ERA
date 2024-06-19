@@ -181,6 +181,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				$fleet['location'] = $location;
 				Ships::setLocation($fleetID, $fleet['location']);
+				self::notifyAllPlayers('placeShip', ['ship' => $fleet]);
 //
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
@@ -190,7 +191,7 @@ trait gameStateActions
 							'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
 					]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				else self::notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => $fleet]);
+				else self::notifyAllPlayers('msg', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 			Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + sizeof($ships));
@@ -357,8 +358,17 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				$toFleet['location'] = $location;
 				Ships::setLocation($toID, $toFleet['location']);
+				self::notifyAllPlayers('placeShip', ['ship' => $toFleet]);
+//
+				$sector = Sectors::get($location[0]);
+				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
+				if (array_key_exists($rotated, $this->SECTORS[$sector])) self::notifyAllPlayers('msg', clienttranslate('A new fleet is created at ${PLANET} ${GPS}'), ['GPS' => $location,
+						'PLANET' => [
+							'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
+							'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
+					]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('placeShip', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location, 'ship' => $toFleet]);
+				else self::notifyAllPlayers('msg', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 //* -------------------------------------------------------------------------------------------------------- */
