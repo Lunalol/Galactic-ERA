@@ -181,7 +181,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				$fleet['location'] = $location;
 				Ships::setLocation($fleetID, $fleet['location']);
-				self::notifyAllPlayers('placeShip', ['ship' => $fleet]);
+				self::notifyAllPlayers('placeShip', '', ['ship' => $fleet]);
 //
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
@@ -358,7 +358,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 				$toFleet['location'] = $location;
 				Ships::setLocation($toID, $toFleet['location']);
-				self::notifyAllPlayers('placeShip', ['ship' => $toFleet]);
+				self::notifyAllPlayers('placeShip', '', ['ship' => $toFleet]);
 //
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
@@ -501,7 +501,7 @@ trait gameStateActions
 //
 // PLEJARS STO: May declare war on STS players during your movement
 //
-			$possible = false;
+			$possible = $automa;
 			if (Factions::getAlignment($from) === 'STO')
 			{
 				if (Factions::getStarPeople($from) === 'Plejars' && in_array($this->gamestate->state()['name'], ['fleets', 'movement']))
@@ -2420,7 +2420,7 @@ trait gameStateActions
 	{
 		$player_id = Factions::getPlayer($color);
 //
-		self::notifyAllPlayers('msg', clienttranslate('${player_name} builds <B>${ships} ship(s)</B>'), ['player_name' => Factions::getName($color), 'ships' => sizeof($buildShips['ships'])]);
+		if (!$buildShips) self::notifyAllPlayers('msg', clienttranslate('${player_name} builds <B>${ships} ship(s)</B>'), ['player_name' => Factions::getName($color), 'ships' => sizeof($buildShips['ships'])]);
 //
 		foreach ($buildShips['fleets'] as $Fleet => $location)
 		{
@@ -2431,23 +2431,23 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			$fleet['location'] = $location;
 			Ships::setLocation($fleetID, $fleet['location']);
+			self::notifyAllPlayers('placeShip', '', ['ship' => $fleet]);
 //* -------------------------------------------------------------------------------------------------------- */
-			if ($location === Ships::getHomeStarLocation($color))
-			{
+//			if ($location === Ships::getHomeStarLocation($color))
+//			{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created at Home Star ${GPS}'), ['GPS' => $location]);
+//				self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created at Home Star ${GPS}'), ['GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
-			}
-			else
+//			}
+//			else
 			{
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created at ${PLANET} ${GPS}'), [
-					'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
+				if (array_key_exists($rotated, $this->SECTORS[$sector])) self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created at ${PLANET} ${GPS}'), ['i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
+				else self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created ${GPS}'), ['GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
-			self::notifyAllPlayers('placeShip', '', ['ship' => $fleet]);
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 			if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
@@ -2468,6 +2468,7 @@ trait gameStateActions
 				Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + $ships);
 //* -------------------------------------------------------------------------------------------------------- */
 				if ($player_id > 0) self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${ships} ship(s)</B> join ${FLEET} fleet ${GPS}'), ['GPS' => $fleet['location'], 'FLEET' => $Fleet, 'ships' => $ships]);
+				else self::notifyAllPlayer('msg', clienttranslate('<B>${ships} ship(s)</B> join ${FLEET} fleet ${GPS}'), ['GPS' => $fleet['location'], 'FLEET' => $Fleet, 'ships' => $ships]);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 				if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
@@ -2478,25 +2479,24 @@ trait gameStateActions
 				if ($automa)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					if (!$buriedShips) self::notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>additional ship(s)</B> ${GPS}'), [
-							'player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
+					if (!$buriedShips) self::notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>additional ship(s)</B> ${GPS}'), ['player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				else
 				{
-					if ($location === Ships::getHomeStarLocation($color))
-					{
+//					if ($location === Ships::getHomeStarLocation($color))
+//					{
 //* -------------------------------------------------------------------------------------------------------- */
-						if ($player_id > 0) self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${ships} ship(s)</B> are build at Home Star ${GPS}'), ['ships' => $ships, 'GPS' => $location]);
+//						if ($player_id > 0) self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${ships} ship(s)</B> are built at Home Star ${GPS}'), ['ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
-					}
-					else
+//					}
+//					else
 					{
 						$sector = Sectors::get($location[0]);
 						$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-						if ($player_id > 0) self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${ships} ship(s)</B> are build at ${PLANET} ${GPS}'), ['ships' => $ships,
-								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
+						if (array_key_exists($rotated, $this->SECTORS[$sector])) self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${ships} ship(s)</B> are built at ${PLANET} ${GPS}'), ['ships' => $ships, 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated], 'GPS' => $location]);
+						else self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${ships} ship(s)</B> are built ${GPS}'), ['ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 					}
 				}
