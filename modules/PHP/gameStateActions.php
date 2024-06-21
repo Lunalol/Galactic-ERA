@@ -2468,7 +2468,7 @@ trait gameStateActions
 				Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + $ships);
 //* -------------------------------------------------------------------------------------------------------- */
 				if ($player_id > 0) self::notifyPlayer($player_id, 'msg', clienttranslate('<B>${ships} ship(s)</B> join ${FLEET} fleet ${GPS}'), ['GPS' => $fleet['location'], 'FLEET' => $Fleet, 'ships' => $ships]);
-				else self::notifyAllPlayer('msg', clienttranslate('<B>${ships} ship(s)</B> join ${FLEET} fleet ${GPS}'), ['GPS' => $fleet['location'], 'FLEET' => $Fleet, 'ships' => $ships]);
+				else self::notifyAllPlayers('msg', clienttranslate('<B>${ships} ship(s)</B> join ${FLEET} fleet ${GPS}'), ['GPS' => $fleet['location'], 'FLEET' => $Fleet, 'ships' => $ships]);
 //* -------------------------------------------------------------------------------------------------------- */
 				self::notifyAllPlayers('revealShip', '', ['player_id' => $player_id, 'ship' => ['id' => $fleetID, 'fleet' => $Fleet === 'D' ? 'D' : 'fleet', 'ships' => '?']]);
 				if ($player_id > 0) self::notifyPlayer($player_id, 'revealShip', '', ['ship' => ['id' => $fleetID, 'fleet' => $Fleet, 'ships' => Ships::getStatus($fleetID, 'ships')]]);
@@ -2479,7 +2479,7 @@ trait gameStateActions
 				if ($automa)
 				{
 //* -------------------------------------------------------------------------------------------------------- */
-					if (!$buriedShips) self::notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>additional ship(s)</B> ${GPS}'), ['player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
+					if (!$buriedShips) self::notifyAllPlayers('msg', clienttranslate('${player_name} spawns ${ships} <B>ship(s)</B> ${GPS}'), ['player_name' => Factions::getName($color), 'ships' => $ships, 'GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 				}
 				else

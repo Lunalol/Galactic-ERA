@@ -391,7 +391,7 @@ trait gameStates
 // ANCHARA SPECIAL STS: Start with 2 additional ships
 					if ($alignment === 'STS')
 					{
-						for ($i = 0; $i < 3; $i++)
+						for ($i = 0; $i < 2; $i++)
 						{
 //* -------------------------------------------------------------------------------------------------------- */
 							self::notifyAllPlayers('placeShip', clienttranslate('${player_name} gains an <B>additional ship</B>'), [

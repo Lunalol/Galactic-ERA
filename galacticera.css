@@ -511,6 +511,7 @@ div,img {
 .ERAfaction {
 	display: flex;
 	justify-content: space-evenly;
+	align-items: center;
 }
 .ERAstatus {
 	display: flex;

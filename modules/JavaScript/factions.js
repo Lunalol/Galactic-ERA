@@ -399,8 +399,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 //
 					let html = '';
 					for (let i = 1; i <= 6; i++)
-						html += `<span id='ERAtechnology-${faction.color}-${i}-${technology}' class='${i === faction[technology] ? 'circleCurrent' : ''} ${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
-					console.log(html);
+						html += `<span id='ERAtechnology-${faction.color}-${i}-${technology}' class='${i === +faction[technology] ? 'circleCurrent' : ''} ${i <= faction[technology] ? 'circleBlack' : 'circleWhite'}'>${i}</span>`;
 					node.children[0].innerHTML = html;
 //
 					for (let i = 1; i <= 6; i++)

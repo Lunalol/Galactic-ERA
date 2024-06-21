@@ -1,7 +1,7 @@
 <?php
 define('STUDIO', strpos($_SERVER['HTTP_HOST'], "studio.boardgamearena.com") !== false);
 define('FAST_START', 0);
-define('DEBUG', 1);
+define('DEBUG', 0);
 //
 define('LEGACYDATA', 'ALPHA2');
 //
