@@ -209,11 +209,12 @@ class Factions extends APP_GameClass
 	}
 	static function ships(string $color): int
 	{
-		$population = max(6, array_sum(Counters::getPopulations($color, true)));
+		if (Factions::getAutoma(SLAVERS) === $color) $population = 6 + array_sum(Counters::getPopulations($color, true)) + Factions::getDP($color);
+		else $population = max(6, array_sum(Counters::getPopulations($color, true)));
 //
 		$ships = self::TECHNOLOGIES['Robotics'][self::getTechnology($color, 'Robotics')];
 //
-// COSMIC MAYANS: May "ally" with advanced neutrals
+// COSMIC MAYANS: Asteroid systems do not give you extra ships when building ships
 //
 		if (Factions::getStarPeople($color) !== 'Mayans') foreach (array_unique(array_column(Ships::getAll($color), 'location')) as $location) if (Sectors::terrainFromLocation($location) === Sectors::ASTEROIDS) $ships++;
 //

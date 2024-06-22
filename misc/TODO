@@ -14,7 +14,6 @@ SOLO:
 
  • Automa EVADE fleet
  • Automa Buried ships
- • Automa trade pref
  • Galactic Goals
 
 3-6 PLAYERS:
@@ -25,10 +24,7 @@ SOLO:
 /* NOT IMPLEMENTED */
 /*******************/
 
-7.4.1 Scoring
-	• A-Section
 9. Variants
-11.5 Galactic Goals
 
 /***************/
 /* IMPLEMENTED */
@@ -60,6 +56,7 @@ SOLO:
 7.2.3 Blocking Movement
 7.3 When to Declare War
 7.4 Domination Cards
+7.4.1 Scoring
 7.4.2 Drawing/Exchanging Cards
 7.5 Stars Becoming Uninhabited
 7.6 Emergency Reserve
@@ -80,5 +77,6 @@ SOLO:
     • Robotics:     (1-6)+
     • Genetics:     (1-6)+
 11.4 Galactic Stories
+11.5 Galactic Goals
 11.6 Sector Starting Bonus
 11.7 Ancient Relics

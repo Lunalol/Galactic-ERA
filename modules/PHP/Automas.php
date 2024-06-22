@@ -824,6 +824,7 @@ class Automas extends APP_GameClass
 				break;
 			case SLAVERS:
 				$ships = $difficulty + Factions::ships($color);
+				$dice = 1;
 				switch ($dice)
 				{
 					case 1:
@@ -1094,6 +1095,8 @@ class Automas extends APP_GameClass
 	static function buildShips(string $color, array $locations): array
 	{
 		$shipsUsed = sizeof(Ships::getAll($color, 'ship'));
+		$stocks = Ships::getAtLocation('stock', $color, 'fleet');
+		shuffle($stocks);
 //
 		$toBuild = ['fleets' => [], 'ships' => []];
 		foreach ($locations as $location => $ships)
@@ -1101,7 +1104,7 @@ class Automas extends APP_GameClass
 			if ($shipsUsed + $ships > 16)
 			{
 				$fleets = Ships::getAtLocation($location, $color, 'fleet');
-				if (!$fleets) $fleets = Ships::getAtLocation('stock', $color, 'fleet');
+				if (!$fleets && $stocks) $fleets = [array_pop($stocks)];
 				if ($fleets)
 				{
 					shuffle($fleets);
@@ -1111,6 +1114,12 @@ class Automas extends APP_GameClass
 					if ($fleet['location'] === 'stock') $toBuild['fleets'][$Fleet] = $location;
 //
 					for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $Fleet;
+				}
+				else
+				{
+					$ships = 16 - $shipsUsed;
+					$shipsUsed += $ships;
+					for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $location;
 				}
 			}
 			else
