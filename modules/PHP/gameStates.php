@@ -289,13 +289,13 @@ trait gameStates
 //
 		if (FAST_START && STUDIO)
 		{
-			$starPeoples = ['ICC', 'Caninoids', 'Mantids', 'Dracos', 'Yowies', 'Orion', 'Anchara',];
+			$starPeoples = ['ICC', 'Caninoids', 'Dracos', 'Yowies', 'Orion', 'Anchara',];
 			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples)]);
 			$this->gamestate->nextState('next');
 		}
 		else
 		{
-			if (sizeof($starPeoples) < 2 * self::getPlayersNumber() /* || DEBUG */) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
+			if (sizeof($starPeoples) < 2 * self::getPlayersNumber()) foreach (Factions::list(false) as $color) Factions::setStatus($color, 'starPeople', $starPeoples);
 			else foreach (Factions::list(false) as $color) if (Factions::getPlayer($color) >= 0) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples), array_pop($starPeoples)]);
 //
 			foreach (Factions::list(false) as $color) self::giveExtraTime(Factions::getPlayer($color));
@@ -1566,6 +1566,7 @@ trait gameStates
 // ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter, then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost
 // To do Research, you must have already chosen a technology for your square counter choice
 //
+				if (Factions::getStarPeople($color) === 'Anchara') Factions::setStatus($color, 'Anchara', true);
 				Factions::setStatus($color, 'switchAlignment', true);
 				if (Factions::getTechnology($color, 'Spirituality') < 5) self::switchAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */

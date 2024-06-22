@@ -871,6 +871,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 										dojo.toggleClass(event.currentTarget, 'ERAselected');
 										dojo.toggleClass('ERAselectButton', 'disabled', !this.checkGrowthActions());
 									}
+									if (stateName === 'Anchara') this.action('Anchara', {color: this.color, counter: counter});
 									if (stateName === 'resolveGrowthActions')
 									{
 										switch (counter)
@@ -2102,6 +2103,11 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						this.board.centerMap(this.gamedatas.factions[this.players[this.player_id]].homeStar + ':+0+0+0');
 //
+						if (args.Anchara) this.addActionButton('ERAAnchara', _('Anchara Coalition'), () => {
+								args._private.counters = args.counters[this.color].stock;
+								this.setClientState('Anchara', {descriptionmyturn: _('${you} can select an additional growth action counter')});
+							});
+//
 						if (args.evacuation) this.addActionButton('ERAevacuationButton', _('Voluntary Home Star Evacuation'), () => this.action('homeStarEvacuation', {color: this.color}));
 //
 						if ('_private' in args && 'teleportPopulation' in args._private)
@@ -2689,9 +2695,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 			const oval = dojo.query('#ERAchoice .ERAcounter-growth.ERAselected').length;
 			const square = dojo.query('#ERAchoice .ERAcounter-technology.ERAselected,#ERAchoice .ERAcounter-turnOrder.ERAselected').length;
-			const bonus = this.gamedatas.factions[this.color].starPeople === 'Anchara' && dojo.query('#ERAchoice .ERAcounter-growth[counter="switchAlignment"].ERAselected').length;
 //
-			return (oval >= this.gamedatas.gamestate.args._private.oval && oval <= bonus + this.gamedatas.gamestate.args._private.oval) && square >= 1 && square <= +this.gamedatas.gamestate.args._private.square;
+			return oval === this.gamedatas.gamestate.args._private.oval && (square >= 1 && square <= +this.gamedatas.gamestate.args._private.square);
 		},
 		onCenter: function (event)
 		{

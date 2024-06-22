@@ -120,7 +120,7 @@ class Automas extends APP_GameClass
 //
 							$path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
-							if (DEBUG)
+							if (DEBUG >= 2)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to (or as close as possible to) the nearest one of your stars</B>', []);
@@ -156,7 +156,7 @@ class Automas extends APP_GameClass
 //
 							$path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
-							if (DEBUG)
+							if (DEBUG >= 2)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to (or as close as possible to) the nearest star (other than the one it may be at already)</B>', []);
@@ -183,7 +183,7 @@ class Automas extends APP_GameClass
 //
 							$path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
-							if (DEBUG)
+							if (DEBUG >= 2)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves as close as possible to the center hex of its sector</B>', []);
@@ -217,7 +217,7 @@ class Automas extends APP_GameClass
 							$path = self::paths($location, $ship['MP'], $locations, true);
 							if (!$path) $path = self::paths($location, $ship['MP'], $locations);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
-							if (DEBUG)
+							if (DEBUG >= 2)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to any star within range. If there is no star within range then it moves as close as possible to the nearest one</B>', []);
@@ -250,7 +250,7 @@ class Automas extends APP_GameClass
 //
 							$path = self::paths($location, $ship['MP'], [$next_location], false, $direction);
 							if (!$path) throw new BgaVisibleSystemException('No movement path found for Farmers');
-							if (DEBUG)
+							if (DEBUG >= 2)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								$bgagame->notifyAllPlayers('msg', '<B>Each ship moves its full range in a random direction</B>', []);
@@ -280,7 +280,7 @@ class Automas extends APP_GameClass
 								{
 									$path = self::paths($location, $ship['MP'], $locations);
 									if (!$path) throw new BgaVisi0leSystemException('No movement path found for Farmers');
-									if (DEBUG)
+									if (DEBUG >= 2)
 									{
 										$bgagame->notifyAllPlayers('msg', '<HR>', []);
 										$bgagame->notifyAllPlayers('msg', '<B>Each ship moves to the nearest hex without hostile ships</B>', []);
@@ -301,7 +301,7 @@ class Automas extends APP_GameClass
 							}
 							else
 							{
-								if (DEBUG)
+								if (DEBUG >= 2)
 								{
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
 									$bgagame->notifyAllPlayers('msg', '<B>No movement</B>', []);
@@ -413,7 +413,7 @@ class Automas extends APP_GameClass
 								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 								$path = self::paths($location, min($MPs), $locations);
 								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
-								if (DEBUG)
+								if (DEBUG >= 2)
 								{
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
 									$bgagame->notifyAllPlayers('msg', '<B>All ships then move to (or as close as possible to) the nearest one of your stars</B>', []);
@@ -476,7 +476,7 @@ class Automas extends APP_GameClass
 									foreach ($hostiles as $hostile => $count) if (!is_null(self::paths($location, min($MPs), [$hostile], true))) $founds[$hostile] = -$count;
 									if ($founds)
 									{
-										if (DEBUG)
+										if (DEBUG >= 2)
 										{
 											$bgagame->notifyAllPlayers('msg', '<HR>', []);
 											$bgagame->notifyAllPlayers('msg', '<B>All ships then move to the hex with the most hostile ships within range</B>', []);
@@ -498,7 +498,7 @@ class Automas extends APP_GameClass
 											$path = self::paths($location, min($MPs), [$hostile]);
 											$founds[$hostile] = $path['possible'][$hostile]['distance'];
 										}
-										if (DEBUG)
+										if (DEBUG >= 2)
 										{
 											$bgagame->notifyAllPlayers('msg', '<HR>', []);
 											$bgagame->notifyAllPlayers('msg', '<B>If they have no hostile ships within range, they move as close as possible to the nearest hostile ships</B>', []);
@@ -531,7 +531,7 @@ class Automas extends APP_GameClass
 								}
 								else
 								{
-									if (DEBUG)
+									if (DEBUG >= 2)
 									{
 										$bgagame->notifyAllPlayers('msg', '<HR>', []);
 										$bgagame->notifyAllPlayers('msg', '<B>No movement</B>', []);
@@ -550,7 +550,7 @@ class Automas extends APP_GameClass
 								foreach ($ships as $shipID) $MPs[] = Ships::get($shipID)['MP'];
 								$path = self::paths($location, min($MPs), $locations);
 								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
-								if (DEBUG)
+								if (DEBUG >= 2)
 								{
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
 									$bgagame->notifyAllPlayers('msg', '<B>All ships move as close as possible to the center hex of their sectors</B>', []);
@@ -594,7 +594,7 @@ class Automas extends APP_GameClass
 								$path = self::paths($location, min($MPs), $locations, true);
 								if (!$path) $path = self::paths($location, $ship['MP'], $locations);
 								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
-								if (DEBUG)
+								if (DEBUG >= 2)
 								{
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
 									$bgagame->notifyAllPlayers('msg', '<B>All ships move to any star within range other than their own If there are none, then they move as close as possible to the nearest one</B>', []);
@@ -647,7 +647,7 @@ class Automas extends APP_GameClass
 									$path = self::paths($location, min($MPs), [$next_location], false, $direction);
 								}
 								if (!$path) throw new BgaVisibleSystemException('No movement path found for Slavers');
-								if (DEBUG)
+								if (DEBUG >= 2)
 								{
 									$bgagame->notifyAllPlayers('msg', '<HR>', []);
 									$bgagame->notifyAllPlayers('msg', '<B>All ships move to any neutral star within range. If there are none then they move their full range in a random direction.</B>', []);
@@ -690,7 +690,7 @@ class Automas extends APP_GameClass
 								$path = self::paths($location, min($MPs), $locations, true);
 								if ($path)
 								{
-									if (DEBUG)
+									if (DEBUG >= 2)
 									{
 										$bgagame->notifyAllPlayers('msg', '<HR>', []);
 										$bgagame->notifyAllPlayers('msg', '<B>All ships move to any neutral star within range. If there are none, then they do not move</B>', []);
@@ -717,7 +717,7 @@ class Automas extends APP_GameClass
 								}
 								else
 								{
-									if (DEBUG)
+									if (DEBUG >= 2)
 									{
 										$bgagame->notifyAllPlayers('msg', '<HR>', []);
 										$bgagame->notifyAllPlayers('msg', '<B>No movement</B>', []);
@@ -928,7 +928,7 @@ class Automas extends APP_GameClass
 						if ($locations)
 						{
 							shuffle($locations);
-							if (DEBUG)
+							if (DEBUG >= 2)
 							{
 								$bgagame->notifyAllPlayers('msg', '<HR>', []);
 								$bgagame->notifyAllPlayers('msg', '<B>Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)</B>', []);
@@ -960,7 +960,7 @@ class Automas extends APP_GameClass
 						$locations = [];
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						shuffle($locations);
-						if (DEBUG)
+						if (DEBUG >= 2)
 						{
 							$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							$bgagame->notifyAllPlayers('msg', '<B>Gain a star owned by you (declaring war on you if needed), otherwise gain 2 neutral stars (**)</B>', []);
@@ -985,7 +985,7 @@ class Automas extends APP_GameClass
 						foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location, true)[0]) $locations[] = $location;
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						shuffle($locations);
-						if (DEBUG)
+						if (DEBUG >= 2)
 						{
 							$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							$bgagame->notifyAllPlayers('msg', '<B>Gain a star(**)</B>', []);
@@ -1010,7 +1010,7 @@ class Automas extends APP_GameClass
 						foreach ($shipLocations as $location) if (Counters::getAtLocation($location, 'star') && Counters::gainStar($color, $location)[0]) $locations[] = $location;
 						if (!$locations) foreach (array_intersect($shipLocations, $stars) as $location) if (Counters::gainStar($color, $location, true)[0]) $locations[] = $location;
 						shuffle($locations);
-						if (DEBUG)
+						if (DEBUG >= 2)
 						{
 							$bgagame->notifyAllPlayers('msg', '<HR>', []);
 							$bgagame->notifyAllPlayers('msg', '<B>Gain a neutral star (otherwise one of yours)(**)</B>', []);
@@ -1117,9 +1117,9 @@ class Automas extends APP_GameClass
 				}
 				else
 				{
-					$ships = 16 - $shipsUsed;
-					$shipsUsed += $ships;
-					for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $location;
+//					$ships = 16 - $shipsUsed;
+//					$shipsUsed += $ships;
+//					for ($i = 0; $i < $ships; $i++) $toBuild['ships'][] = $location;
 				}
 			}
 			else

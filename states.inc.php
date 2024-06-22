@@ -332,7 +332,7 @@ $machinestates = [
 		'type' => 'activeplayer',
 		'args' => 'argResolveGrowthActions',
 		'action' => 'updateScoring',
-		'possibleactions' => ['domination', 'declarePeace', 'homeStarEvacuation', 'teleportPopulation', 'switchAlignment', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
+		'possibleactions' => ['domination', 'declarePeace', 'homeStarEvacuation', 'Anchara', 'teleportPopulation', 'switchAlignment', 'research', 'growPopulation', 'gainStar', 'buildShips', 'pass'],
 		'transitions' => ['advancedFleetTactics' => 415, 'buriedShips' => 420, 'continue' => 410, 'blockAction' => 450, 'next' => 400, 'zombiePass' => 400]
 	],
 	415 => [

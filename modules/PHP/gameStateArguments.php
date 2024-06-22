@@ -65,6 +65,7 @@ trait gameStateArguments
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
 			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'stock') ?? [] as $counter) if (in_array($counter, $this->OVAL)) $counters[$otherColor]['stock'][] = $counter;
 		}
 //
 		$event = $this->getObjectFromDB("SELECT * FROM stack WHERE new_state = 0 ORDER BY id DESC LIMIT 1");
@@ -408,6 +409,7 @@ trait gameStateArguments
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
 			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'stock') ?? [] as $counter) if (in_array($counter, $this->OVAL)) $counters[$otherColor]['stock'][] = $counter;
 		}
 //
 		if (!in_array('teleportPopulation', $counters[$color]['used']))
@@ -420,8 +422,8 @@ trait gameStateArguments
 		$evacuation = false;
 		foreach (Factions::atWar($color) as $otherColor) if (Ships::getAtLocation($homeStar, $otherColor)) $evacuation = true;
 //
-		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters, 'evacuation' => $evacuation
-		];
+		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters,
+			'evacuation' => $evacuation, 'Anchara' => Factions::getStatus($color, 'Anchara')];
 	}
 	function argRemovePopulation()
 	{
@@ -467,12 +469,18 @@ trait gameStateArguments
 					$this->possible[$player_id]['evacuate'] = [];
 					$sector = Sectors::get(Factions::getHomeStar($color));
 					$current = Hex(0, 0, 0);
-					for ($radius = 1; $radius <= 4; $radius++)
+					for ($radius = 1;
+						$radius <= 4;
+						$radius++)
 					{
 						$current = hex_neighbor($current, 4);
-						for ($direction = 0; $direction < 6; $direction++)
+						for ($direction = 0;
+							$direction < 6;
+							$direction++)
 						{
-							for ($count = 0; $count < $radius; $count++)
+							for ($count = 0;
+								$count < $radius;
+								$count++)
 							{
 								$hexagon = sprintf('%+2d%+2d%+2d', $current['q'], $current['r'], $current['s']);
 								$location = Factions::getHomeStar($color) . ':' . $hexagon;
@@ -624,6 +632,7 @@ trait gameStateArguments
 			$counters[$otherColor] = ['available' => [], 'used' => []];
 			foreach (Factions::getStatus($otherColor, 'counters') ?? [] as $counter) $counters[$otherColor]['available'][] = $counter;
 			foreach (Factions::getStatus($otherColor, 'used') ?? [] as $counter) $counters[$otherColor]['used'][] = $counter;
+			foreach (Factions::getStatus($otherColor, 'stock') ?? [] as $counter) if (in_array($counter, $this->OVAL)) $counters[$otherColor]['stock'][] = $counter;
 		}
 //
 		return ['_private' => [$player_id => $this->possible], 'active' => $color, 'counters' => $counters,

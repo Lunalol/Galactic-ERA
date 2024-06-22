@@ -185,13 +185,13 @@ trait gameStateActions
 //
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
-				if (array_key_exists($rotated, $this->SECTORS[$sector])) self::notifyAllPlayers('msg', clienttranslate('A new fleet is created at ${PLANET} ${GPS}'), ['GPS' => $location,
+				if (array_key_exists($rotated, $this->SECTORS[$sector])) self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created at ${PLANET} ${GPS}'), ['GPS' => $location,
 						'PLANET' => [
 							'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 							'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
 					]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				else self::notifyAllPlayers('msg', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location]);
+				else self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created ${GPS}'), ['GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 			Ships::setStatus($fleetID, 'ships', intval(Ships::getStatus($fleetID, 'ships')) + sizeof($ships));
@@ -362,13 +362,13 @@ trait gameStateActions
 //
 				$sector = Sectors::get($location[0]);
 				$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
-				if (array_key_exists($rotated, $this->SECTORS[$sector])) self::notifyAllPlayers('msg', clienttranslate('A new fleet is created at ${PLANET} ${GPS}'), ['GPS' => $location,
+				if (array_key_exists($rotated, $this->SECTORS[$sector])) self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created at ${PLANET} ${GPS}'), ['GPS' => $location,
 						'PLANET' => [
 							'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 							'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
 					]]);
 //* -------------------------------------------------------------------------------------------------------- */
-				else self::notifyAllPlayers('msg', clienttranslate('A new fleet is created ${GPS}'), ['GPS' => $location]);
+				else self::notifyAllPlayers('msg', clienttranslate('A new <B>fleet</B> is created ${GPS}'), ['GPS' => $location]);
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1479,21 +1479,14 @@ trait gameStateActions
 //
 		if (!self::getGameStateValue('GODMODE'))
 		{
-			$bonus = 0;
-//
-// ANCHARA SPECIAL STO & STS: If you have chosen the Switch Alignment growth action counter,
-// then on your turn of the growth phase, you may select and execute an additional, unused growth action counter at no cost.
-// To do Research, you must have already chosen a technology for your square counter choice
-//
 			$oval = $square = 0;
 			foreach ($counters as $counter)
 			{
-				if ($counter === 'switchAlignment' && Factions::getStarPeople($color) === 'Anchara') $bonus = 1;
 				if (in_array($counter, ['research', 'growPopulation', 'gainStar', 'gainStar', 'buildShips', 'switchAlignment'])) $oval++;
 				else $square++;
 			}
 			if ($oval < $this->possible[$player_id]['oval']) throw new BgaVisibleSystemException("Invalid number of oval counters: $oval");
-			if ($oval > $this->possible[$player_id]['oval'] + $this->possible[$player_id]['additional'] + $bonus) throw new BgaVisibleSystemException('Invalid number of oval counters: ' . $oval);
+			if ($oval > $this->possible[$player_id]['oval'] + $this->possible[$player_id]['additional']) throw new BgaVisibleSystemException('Invalid number of oval counters: ' . $oval);
 			if ($square < 1 || $square > $this->possible[$player_id]['square']) throw new BgaVisibleSystemException("Invalid number of square counters: $square");
 		}
 //
@@ -1502,6 +1495,26 @@ trait gameStateActions
 		Factions::setStatus($color, 'technologies', array_values(array_intersect(array_keys(Factions::TECHNOLOGIES), $counters)));
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'next');
+	}
+	function acAnchara(string $color, string $counter)
+	{
+		$player_id = Factions::getPlayer($color);
+//
+		$this->checkAction('Anchara');
+		if ($player_id != self::getCurrentPlayerId()) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+		if (Factions::getStarPeople($color) !== 'Anchara') throw new BgaVisibleSystemException('Not Anchara coalition');
+		if (!Factions::getStatus($color, 'Anchara')) throw new BgaVisibleSystemException('Already used');
+//
+		$stock = Factions::getStatus($color, 'stock');
+		$index = array_search($counter, $stock);
+		if ($index === false) throw new BgaVisibleSystemException('Invalid counter: ' . $counter);
+		unset($stock[$index]);
+		Factions::setStatus($color, 'stock', array_values($stock));
+//
+		Factions::setStatus($color, 'Anchara');
+		Factions::setStatus($color, 'counters', array_merge(Factions::getStatus($color, 'counters'), [$counter]));
+//
+		$this->gamestate->nextState('continue');
 	}
 	function acBlockAction(string $color, bool $blocked)
 	{

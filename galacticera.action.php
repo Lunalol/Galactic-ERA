@@ -299,6 +299,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function Anchara()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$counter = self::getArg("counter", AT_alphanum, true);
+		$this->game->acAnchara($color, $counter);
+//
+		self::ajaxResponse("");
+	}
 	public function selectCounters()
 	{
 		self::setAjaxMode();
