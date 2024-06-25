@@ -631,6 +631,7 @@ div,img {
 
 .ERAcounter {
 	position: relative;
+	margin: auto;
 	background: url('img/counters.png');
 	transition: filter .25s, box-shadow .25s, left CALC(var(--DELAY) * 1ms), top CALC(var(--DELAY) * 1ms);
 	z-index: 100;

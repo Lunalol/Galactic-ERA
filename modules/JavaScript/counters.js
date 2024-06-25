@@ -10,6 +10,48 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 //
 			this.bgagame = bgagame;
 			this.board = bgagame.board;
+//
+			this.STARS = {
+				UNINHABITED: {
+					type: _('(uninhabited)'),
+					BOTH: _('<B>Colonize:</B> This option is available to players of both alignments. The player must have 1 ship in the same hex as this star. The player removes the star counter and places 1 population disc of their own color there.')},
+				PRIMITIVE: {
+					type: _('(primitive neutral)'),
+					STO: _('STO players cannot take this star'),
+					STS: _('<B>Subjugate:</B> Only 1 ship at this star is needed for this. The STS player removes the star counter and places 2 of their population discs there.')},
+				ADVANCED: {
+					type: _('(advanced neutral)'),
+					STO: _('<B>Ally:</B> Only 1 ship at this star is needed for this. The STO player removes the star counter and places 3 of their population discs there.'),
+					STS: _('<B>Conquer:</B> STS players can only “conquer” this star. It is considered to have 3 population discs. Thus 4 ships are needed to conquer it. The player removes the star counter and places 1 population disc there.')},
+			}
+//
+			this.StarTooltips = new dijit.Tooltip({
+				showDelay: 500, hideDelay: 0,
+				getContent: (node) =>
+				{
+					const type = dojo.getAttr(node, 'back');
+//
+					let html = ``;
+					html += '<div style="display:grid;grid-template-columns:auto 5fr 5fr;max-width:50vw;outline:1px solid white;">';
+					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Star') + '</div>';
+					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Option for STO players') + '</div>';
+					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Option for STS players') + '</div>';
+					for (let [star, description] of Object.entries(this.STARS))
+					{
+						if (!type || type === star)
+						{
+							html += `<div style="padding:12px;outline:1px solid grey;"><div class='ERAcounter ERAcounter-star ERAcounter-${star}'></div><div style="text-align:center;font-style:italic;font-weight:bold;">${_(description.type)}</div></div>`;
+							if ('BOTH' in description) html += '<div style="padding:12px;text-align:justify;outline:1px solid grey;grid-column:span 2;">' + _(description.BOTH) + '</div>';
+							else
+							{
+								html += '<div style="padding:12px;text-align:justify;outline:1px solid grey;">' + _(description.STO) + '</div>';
+								html += '<div style="padding:12px;text-align:justify;outline:1px solid grey;">' + _(description.STS) + '</div>';
+							}
+						}
+					}
+					return html;
+				}
+			});
 		},
 		place: function (counter)
 		{
@@ -48,6 +90,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 							else dojo.style(node, 'animation', '');
 						});
 						dojo.connect(node, 'click', this, 'click');
+						this.StarTooltips.addTarget(node);
 					}
 					break;
 				case 'relic':
