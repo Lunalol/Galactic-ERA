@@ -11,12 +11,12 @@ trait gameStateActions
 		$color = $god['color'];
 //
 		$player_id = intval(self::getCurrentPlayerId());
-		if ($player_id !== Players::getAdmin()) throw new BgaUserException('Only table admin can use GOD MODE');
 		if (self::getGameStateValue('rating') != 1) throw new BgaUserException('Only in TRAINING mode');
 //
 		switch ($god['action'])
 		{
 			case 'toggle':
+				if ($player_id !== Players::getAdmin()) throw new BgaUserException('Only table admin can toggle GOD MODE');
 				if (self::getGameStateValue('GODMODE'))
 				{
 					self::notifyAllPlayers('GODMODE', 'GOD mode OFF', ['GODMODE' => 0]);

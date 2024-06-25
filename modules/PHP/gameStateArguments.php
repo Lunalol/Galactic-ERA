@@ -185,7 +185,7 @@ trait gameStateArguments
 			$this->possible['planetaryDeathRayTargets'] = Sectors::range(Counters::get($PlanetaryDeathRay)['location'], 3);
 		}
 //
-		return ['_private' => [$player_id => $this->possible],
+		return ['_private' => [$player_id => $this->possible], 'OK' => (Factions::getTechnology($color, 'Propulsion') * sizeof(Ships::getAll($color, 'ship'))) < 40,
 			'active' => $color, 'undo' => +self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'")];
 	}
 	function argCombatChoice()

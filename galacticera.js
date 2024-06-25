@@ -1864,6 +1864,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						delete this.center;
 						if (args.undo) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
 //
+						if (!args.OK) this.showMessage(_('Due to BGA limitations, you must move your ships one hex at a time'), 'only_to_log')
+//
 						this.addActionButton('ERAscoutButton', _('Scout'), () => {
 							const ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
 							if ($('ERApath'))

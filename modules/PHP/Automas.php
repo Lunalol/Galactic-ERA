@@ -824,7 +824,6 @@ class Automas extends APP_GameClass
 				break;
 			case SLAVERS:
 				$ships = $difficulty + Factions::ships($color);
-				$dice = 1;
 				switch ($dice)
 				{
 					case 1:
