@@ -1,4 +1,4 @@
-/* global g_gamethemeurl */
+/* global g_gamethemeurl, ebg */
 
 define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 {
@@ -46,6 +46,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 //
 			const domination = node.getAttribute('domination');
 			const multiplier = this.bgagame.gamedatas.galacticGoal === 'Personal Growth' ? 2 : 1;
+			const A = dojo.query(`#ERAdominationCard-${faction}-A`, 'ERAboard').length;
 //
 			this.dialog = new ebg.popindialog();
 			this.dialog.create('ERAdominationDialog');
@@ -58,8 +59,9 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 			html += `<div style='display:flex;flex-direction:column;justify-content:space-between;padding:25px;'>`;
 //
 			html += `<div style='display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;'>`;
-			html += `<div id='ERAdominationButtonAwithEffect' class='bgabutton bgabutton_red' style='font-size:large;margin-right:10px;'>${_('A-Section')}</div>`;
-			html += `<div id='ERAdominationButtonAwithoutEffect' class='bgabutton bgabutton_red' style='font-size:x-small;text-align:center;;margin-right:10px;'>${_('A-Section<BR>(without effect)')}</div>`;
+//
+			html += `<div id='ERAdominationButtonAwithEffect' class='bgabutton bgabutton_red' style='visibility:${A ? 'hidden' : 'visible'};font-size:large;margin-right:10px;'>${_('A-Section')}</div>`;
+			html += `<div id='ERAdominationButtonAwithoutEffect' class='bgabutton bgabutton_red' style='visibility:${A ? 'hidden' : 'visible'};font-size:x-small;text-align:center;;margin-right:10px;'>${_('A-Section<BR>(without effect)')}</div>`;
 			html += `<div style='margin:20px;font-family:ERA;font-size:large;color:#${faction.color};'>`;
 			html += `<div style='font-family:ERA;font-size:${this.bgagame.DOMINATIONS[domination].DP * multiplier * 2 + 10}pt'>${this.bgagame.DOMINATIONS[domination].DP * multiplier}  DP</div>`;
 			html += `</div>`;

@@ -97,8 +97,8 @@ $machinestates = [
 	],
 	91 => [
 		'name' => 'advancedFleetTactics',
-		'description' => clienttranslate('Some players get an advanced fleet tactics'),
-		'descriptionmyturn' => clienttranslate('${you} get an advanced fleet tactics'),
+		'description' => clienttranslate('Some players get an advanced fleet tactic'),
+		'descriptionmyturn' => clienttranslate('${you} get an advanced fleet tactic'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
@@ -337,8 +337,8 @@ $machinestates = [
 	],
 	415 => [
 		'name' => 'advancedFleetTactics',
-		'description' => clienttranslate('Some players get an advanced fleet tactics'),
-		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactics'),
+		'description' => clienttranslate('Some players get an advanced fleet tactic'),
+		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactic'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
@@ -393,8 +393,8 @@ $machinestates = [
 	],
 	545 => [
 		'name' => 'advancedFleetTactics',
-		'description' => clienttranslate('Some players get an advanced fleet tactics'),
-		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactics'),
+		'description' => clienttranslate('Some players get an advanced fleet tactic'),
+		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactic'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',
@@ -508,8 +508,8 @@ $machinestates = [
 	],
 	ONETIMEEFFECT + 1 => [
 		'name' => 'advancedFleetTactics',
-		'description' => clienttranslate('Some players get an advanced fleet tactics'),
-		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactics'),
+		'description' => clienttranslate('Some players get an advanced fleet tactic'),
+		'descriptionmyturn' => clienttranslate('${you} gets an advanced fleet tactic'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argAdvancedFleetTactics',
 		'action' => 'stAdvancedFleetTactics',

@@ -1,3 +1,5 @@
+/* global dijit */
+
 define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 {
 	return declare("Counters", null,
@@ -22,20 +24,23 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				ADVANCED: {
 					type: _('(advanced neutral)'),
 					STO: _('<B>Ally:</B> Only 1 ship at this star is needed for this. The STO player removes the star counter and places 3 of their population discs there.'),
-					STS: _('<B>Conquer:</B> STS players can only “conquer” this star. It is considered to have 3 population discs. Thus 4 ships are needed to conquer it. The player removes the star counter and places 1 population disc there.')},
-			}
+					STS: _('<B>Conquer:</B> STS players can only “conquer” this star. It is considered to have 3 population discs. Thus 4 ships are needed to conquer it. The player removes the star counter and places 1 population disc there.')}
+			};
 //
-			this.StarTooltips = new dijit.Tooltip({
+			this.NeutralStarTooltips = new dijit.Tooltip({
 				showDelay: 500, hideDelay: 0,
 				getContent: (node) =>
 				{
+					const location = dojo.getAttr(node, 'location');
 					const type = dojo.getAttr(node, 'back');
 //
-					let html = ``;
+					let html = `<H1 style='font-family:ERA;'><div class='ERAcounter ERAcounter-star' style='display:inline-block;vertical-align:middle;margin:5px;'></div>${bgagame.gamedatas.sectors[+location[0]].shape[location.substring(2)].star}</H1><BR>`;
+//
 					html += '<div style="display:grid;grid-template-columns:auto 5fr 5fr;max-width:50vw;outline:1px solid white;">';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Star') + '</div>';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Option for STO players') + '</div>';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Option for STS players') + '</div>';
+//
 					for (let [star, description] of Object.entries(this.STARS))
 					{
 						if (!type || type === star)
@@ -52,6 +57,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					return html;
 				}
 			});
+//
 		},
 		place: function (counter)
 		{
@@ -90,13 +96,14 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 							else dojo.style(node, 'animation', '');
 						});
 						dojo.connect(node, 'click', this, 'click');
-						this.StarTooltips.addTarget(node);
+						this.NeutralStarTooltips.addTarget(node);
 					}
 					break;
 				case 'relic':
 					{
 						dojo.style(node, 'transform', `rotate(calc(-1 * var(--ROTATE))) translate(32px, -32px)`);
 						dojo.style(node, 'z-index', 100);
+						this.bgagame.addTooltip(node.id, _('Ancient Relic'), '');
 						node.addEventListener('animationend', (event) => {
 							if (event.animationName === 'flip')
 							{
@@ -112,6 +119,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					break;
 				case 'populationDisc':
 					dojo.connect(node, 'click', this, 'click');
+					this.bgagame.ERAstarTooltips.addTarget(node);
 					break;
 			}
 //

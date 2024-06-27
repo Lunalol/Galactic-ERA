@@ -1,3 +1,5 @@
+/* global g_gamethemeurl, g_archive_mode */
+
 define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 {
 	return declare("Board", null,

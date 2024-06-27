@@ -1,3 +1,5 @@
+/* global g_gamethemeurl, ebg */
+
 /**
  *
  * @author Lunalol
@@ -36,7 +38,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 // GOD MODE
 //
 			dojo.connect(dojo.place(`<div id='ERAalien' class='upperrightmenu_item' style='margin-top:10px;font-size:x-large;'>👽</div>`, 'upperrightmenu', 'first'), 'click', () => {
-				if (!this.isSpectator) this.action('GODMODE', {god: JSON.stringify({action: 'toggle', color: this.color})})
+				if (!this.isSpectator) this.action('GODMODE', {god: JSON.stringify({action: 'toggle', color: this.color})});
 			});
 //
 // GOD MODE
@@ -364,9 +366,45 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				3: _('Slavers gain 1 technology level in a trading phase in which they did not trade'),
 				4: _('Slavers roll 2 dice and use lower one for movement and growth action results'),
 				5: _('You immediately lose 5 DP for each new offboard population')
-			}
+			};
 //
 			this.RANKINGS = {0: _('sublunar'), 1: _('lunar'), 2: _('planetary'), 3: _('stellar'), 4: _('galactic'), 5: _('cosmic')};
+//
+			this.ERAstarTooltips = new dijit.Tooltip({
+				showDelay: 500, hideDelay: 0,
+				getContent: (node) =>
+				{
+					const color = dojo.getAttr(node, 'color');
+					const location = dojo.getAttr(node, 'location');
+//
+					const homestar = dojo.query(`.ERAhomeStar[location=${location}]`).length;
+					const discs = dojo.query(`.ERAcounter.ERAcounter-populationDisc[location=${location}]`).length + (homestar ? 6 : 0);
+//
+					let html = `<H1 style='font-family:ERA;'><div class='ERAcounter ERAcounter-star' style='display:inline-block;vertical-align:middle;margin:5px;'></div>${gamedatas.sectors[ +location[0]].shape[location.substring(2)].star}</H1><BR>`;
+					html += '<HR>';
+					html += `<span>${_('Owner:')} </span>`;
+					html += `<span style='font-weight:bold;'>` + $(`player_name_${gamedatas.factions[color].player_id}`).children[0].outerHTML + `</span>`;
+					if (homestar) html += ` (${_('home star')}) `;
+					html += '<HR>';
+					html += `<span>${_('Population:')} </span><span style='font-weight:bold;'>${discs}</span>`;
+					html += '<HR>';
+//					html += `<span>${_('Growth limit:')} ?</span>`;
+//					html += '<HR>';
+					if (discs >= 3)
+					{
+						html += `<div>${_('Effects:')} </div>`;
+						html += `<div style='font-weight:bold;'>• ${_('Use Stargate 1 movement (with Propulsion 3/4)')} </div>`;
+						if (discs >= [null, 4, 4, 4, 3, 2, 1][dojo.query(`#ERAtech-${color}-Robotics .circleBlack`, `ERAtechnologies-${color}`).length])
+							html += `<div style='font-weight:bold;'>• ${_('Place newly built ships here')} </div>`;
+						if (discs >= 5 && !homestar)
+							html += `<div style='font-weight:bold;'>• ${dojo.string.substitute(_('Get additional growth action for ${DP} DP'),
+							{DP: [null, 3, 3, 3, 3, 2, 1][dojo.query(`#ERAtech-${color}-Genetics .circleBlack`, `ERAtechnologies-${color}`).length]})} </div>`;
+						if (discs >= 6) html += `<div style='font-weight:bold;color:red;'>• ${_('Opponents get 2 tech. levels when taking this')} </div>`;
+						else html += `<div style='font-weight:bold;color:red;'>• ${_('Opponents get 1 tech. level when taking this')} </div>`;
+					}
+					return html;
+				}
+			});
 //
 			this.ERAtechnologyTooltips = new dijit.Tooltip({
 				showDelay: 500, hideDelay: 0,
@@ -375,7 +413,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					const technology = dojo.getAttr(node, 'technology');
 					const technologyLevel = dojo.getAttr(node, 'level');
 //
-					let html = `<H1 style='font-family:ERA;'>${_(technology)}</H1>`;
+					let html = `<H1 style='font-family:ERA;'><div class='ERAcounter ERAcounter-technology' counter='${technology}' style='display:inline-block;vertical-align:middle;margin:5px;'></div>${_(technology)}</H1>`;
 					html += '<div style="display:grid;grid-template-columns:1fr 5fr;max-width:50vw;outline:1px solid white;">';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Level') + '</div>';
 					html += '<div style="padding:12px;text-align:center;outline:1px solid grey;font-style:italic;font-weight:bold;">' + _('Effect') + '</div>';
@@ -475,7 +513,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				if (faction.player_id > 0)
 				{
 					const bonus = dojo.place(`<span id='ERAbonus-${faction.color}' style='margin:0px 2px;'	>(+0)</span>`, `icon_point_${faction.player_id}`, 'after');
-					this.addTooltip(bonus, _('Population score at end of game'), '');
+					this.addTooltip(bonus.id, _('Population score at end of game'), '');
 				}
 //
 				let nodeCounters = dojo.place(`<div class='ERAcounters' id='ERAcounters-${faction.color}'></div>`, `player_board_${faction.player_id}`, 2);
@@ -525,7 +563,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					for (let i = 1; i <= 5; i++)
 					{
 						let circle = dojo.place(`<div id='ERAoffboard${i}' class='ERAoffboard ERAoffboard${i}'></div>`, node);
-						this.addTooltip(circle.id, this.OFFBOARD[0], this.OFFBOARD[i])
+						this.addTooltip(circle.id, this.OFFBOARD[0], this.OFFBOARD[i]);
 					}
 					dojo.connect(node, 'click', (event) => {
 						dojo.stopEvent(event);
@@ -1322,7 +1360,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						}
 						this.updatePageTitle();
-						if (/*this.isCurrentPlayerActive()*/ 'trade' in state.args._private)
+						if ('_private' in state.args && 'trade' in state.args._private)
 						{
 							dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
 //
@@ -1864,7 +1902,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						delete this.center;
 						if (args.undo) this.addActionButton('ERAundoButton', _('Undo'), () => this.action('undo', {color: this.color}));
 //
-						if (!args.OK) this.showMessage(_('Due to BGA limitations, you must move your ships one hex at a time'), 'only_to_log')
+						if (!args.OK) this.showMessage(_('Due to BGA limitations, you must move your ships one hex at a time'), 'only_to_log');
 //
 						this.addActionButton('ERAscoutButton', _('Scout'), () => {
 							const ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
@@ -2168,7 +2206,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						if (args._private.ancientPyramids)
 						{
 							const node = dojo.place(`<div id='ERAancientPyramids' class='ERAcounter ERAcounter-relic ERAcounter-0 action-button' style='display:inline-block;vertical-align:middle;'></div>`, 'generalactions');
-							this.addTooltip(node, _('Ancient Pyramids'), _('Place a bonus population here'));
+							this.addTooltip(node.id, _('Ancient Pyramids'), _('Place a bonus population here'));
 							dojo.connect(node, 'click', () => this.bonusPopulation(args._private.ancientPyramids));
 						}
 //
@@ -2604,7 +2642,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				}
 				else
 				{
-					if (location == ancientPyramids || dojo.query(`.ERAcounter-populationDisc.ERAprovisionalBonus:not([location='${ancientPyramids}'])`).length < this.gamedatas.gamestate.args._private.bonusPopulation)
+					if (location === ancientPyramids || dojo.query(`.ERAcounter-populationDisc.ERAprovisionalBonus:not([location='${ancientPyramids}'])`).length < this.gamedatas.gamestate.args._private.bonusPopulation)
 						dojo.addClass(this.counters.place({id: 'growPopulation', color: this.color, type: 'populationDisc', location: location}), 'ERAprovisionalBonus');
 				}
 			}

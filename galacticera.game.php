@@ -169,9 +169,13 @@ class GalacticEra extends Table
 		$result['sectors'] = Sectors::getAllDatas();
 		foreach ($result['sectors'] as $position => $sector)
 		{
-			$locations = [];
-			foreach (array_keys(Sectors::SHAPES[$sector['sector']]) as $location) $locations[$location] = Sectors::rotate($location, -$sector['orientation']);
-			$result['sectors'][$position]['shape'] = array_combine($locations, Sectors::SHAPES[$sector['sector']]);
+			foreach (Sectors::SHAPES[$sector['sector']] as $location => $shape)
+			{
+				$rotated = Sectors::rotate($location, -$sector['orientation']);
+				$result['sectors'][$position]['shape'][$rotated] = $shape;
+				$result['sectors'][$position]['shape'][$rotated]['star'] = $this->SECTORS[$sector['sector']][$location] ?? null;
+				$result['sectors'][$position]['shape'][$rotated]['terrain'] = Sectors::SECTORS[$sector['sector']][$location] ?? null;
+			}
 		}
 //
 		$result['ships'] = Ships::getAllDatas($player_id);
@@ -243,7 +247,7 @@ class GalacticEra extends Table
 
 		// Change for your game
 		// We are setting the current state to match the start of a player's turn if it's already game over
-		$sql = ['UPDATE global SET global_value=120 WHERE global_id=1 AND global_value=99'];
+		$sql = ['UPDATE global SET global_value = 120 WHERE global_id = 1 AND global_value = 99'];
 		foreach ($players as $index => $pId)
 		{
 			$studioPlayer = $studioPlayersIds[$index];

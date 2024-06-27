@@ -27,7 +27,7 @@
 	var ERAdominationCards = "<div class='ERAdominationCards' id='ERAdominationCards'></div>";
 	var ERAdominationCard = "<div class='ERAdominationCard' id='ERAdominationCard-${owner}-${id}' index='${index}' owner='${owner}' domination='${domination}'><img draggable='false'/></div>";
 	var ERAsector = "<div class='ERAsector ERAsector-${id}' id='ERAsector-${id}' sector=${sector} style='left:${x}px;top:${y}px;transform:rotate(${angle}deg)'></div>";
-	var ERAcounter = "<div class='ERAcounter ERAcounter-${color} ERAcounter-${type}' id='ERAcounter-${id}' counter=${id} location='${location}'></div>";
+	var ERAcounter = "<div class='ERAcounter ERAcounter-${color} ERAcounter-${type}' id='ERAcounter-${id}' counter=${id} color='${color}' location='${location}'></div>";
 	var ERAhomeStar = "<div class='ERAhomeStar ERAhomeStar-${color}' id='ERAhomeStar-${id}' homeStar=${id} color='${color}' location='${location}'></div>";
 	var ERAship = "<div class='ERAship ERAship-${color}' id='ERAship-${id}' ship='${id}' color='${color}' location='${location}' style='color:#${color}'></div>";
 	var ERAfleet = "<div class='ERAfleet' id='ERAfleet-${fleet}' fleet='${fleet}' ships='${ships}' location='${location}' style='display:flex;flex-direction:column;align-items:center;'></div>";

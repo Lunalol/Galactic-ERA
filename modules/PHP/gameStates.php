@@ -1570,7 +1570,7 @@ trait gameStates
 				Factions::setStatus($color, 'switchAlignment', true);
 				if (Factions::getTechnology($color, 'Spirituality') < 5) self::switchAlignment($color);
 //* -------------------------------------------------------------------------------------------------------- */
-				else self::notifyAllPlayers('msg', clienttranslate('${player_name} can not switch alignment'), ['player_name' => Factions::getName($color)]);
+				else self::notifyAllPlayers('msg', clienttranslate('${player_name} cannot switch alignment'), ['player_name' => Factions::getName($color)]);
 //* -------------------------------------------------------------------------------------------------------- */
 				$counters = Factions::getStatus($color, 'counters');
 				unset($counters[array_search('switchAlignment', $counters)]);
@@ -2202,7 +2202,7 @@ trait gameStates
 		foreach (Sectors::getAllDatas() as $location => $sector)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('${GPS} Sector of ${PLANET}'), ['i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector['sector']]['+0+0+0'], 'GPS' => "$location:+0+0+0"]);
+			self::notifyAllPlayers('msg', clienttranslate('Sector of ${PLANET} ${GPS'), ['i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector['sector']]['+0+0+0'], 'GPS' => "$location:+0+0+0"]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$max = max($sectors[$location]);
 			if ($max > 0)

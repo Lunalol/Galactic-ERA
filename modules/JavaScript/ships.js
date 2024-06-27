@@ -1,3 +1,5 @@
+/* global dijit */
+
 const STEP = 2.5;
 define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 {
@@ -69,7 +71,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 						dojo.style(node, 'transform', `scale(30%) rotate(calc(-1 * var(--ROTATE))) translateX(3px)`);
 //
 						dojo.connect(node, 'click', this, 'click');
-//						dojo.connect(node, 'dragstart', this, (event) => event.dataTransfer.setData("text", ship.id));
+						this.bgagame.ERAstarTooltips.addTarget(node);
 					}
 					break;
 				case 'ship':
@@ -93,9 +95,10 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 					{
 						if (ship.location === 'stock')
 						{
-							const container = `ERAboardFleets-${ship.color}`;
+							const container = $(`ERAboardFleets-${ship.color}`);
 							node = dojo.place(this.bgagame.format_block('ERAship', {id: ship.id, color: ship.color, ship: 0, location: 'stock'}), container);
 							dojo.setAttr(node, 'fleet', '?');
+//
 						}
 						else
 						{
@@ -156,7 +159,7 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 		},
 		reveal: function (fleet)
 		{
-//			console.info('reveal', fleet);
+			console.info('reveal', fleet);
 //
 			let node = $(`ERAship-${fleet.id}`);
 			if (node)
@@ -164,6 +167,14 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 				dojo.setAttr(node, 'fleet', fleet.fleet);
 				if (+fleet.ships > 0) dojo.setAttr(node, 'ships', fleet.ships);
 				if (/^\d:([+-]\d){3}$/.test(dojo.getAttr(node, 'location'))) this.arrange(dojo.getAttr(node, 'location'));
+				if (dojo.getAttr(node, 'location') === 'stock')
+				{
+					const container = $(`ERAboardFleets-${dojo.getAttr(node, 'color')}`);
+					dojo.query('.ERAship', container).sort(
+							(a, b) => {
+						return {null: -1, '?': 0, A: 1, B: 2, C: 3, D: 4, E: 5}[dojo.getAttr(b, 'fleet')] - {null: -1, '?': 0, A: 1, B: 2, C: 3, D: 4, E: 5}[dojo.getAttr(a, 'fleet')];
+					}).forEach((node) => dojo.place(node, container, 'first'));
+				}
 			}
 		},
 		homeStarEvacuation: function (homeStar, to)

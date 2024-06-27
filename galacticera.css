@@ -708,7 +708,7 @@ div,img {
 	width: 59px;
 	height: 59px;
 	border-radius: 50%;
-	z-index: -1;
+	z-index: 1;
 }
 .ERAcounter-wormhole.ERAcounter-blue {
 	background-position-x: -8355px;
