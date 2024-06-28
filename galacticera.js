@@ -390,18 +390,15 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					html += '<HR>';
 //					html += `<span>${_('Growth limit:')} ?</span>`;
 //					html += '<HR>';
-					if (discs >= 3)
-					{
-						html += `<div>${_('Effects:')} </div>`;
-						html += `<div style='font-weight:bold;'>• ${_('Use Stargate 1 movement (with Propulsion 3/4)')} </div>`;
-						if (discs >= [null, 4, 4, 4, 3, 2, 1][dojo.query(`#ERAtech-${color}-Robotics .circleBlack`, `ERAtechnologies-${color}`).length])
-							html += `<div style='font-weight:bold;'>• ${_('Place newly built ships here')} </div>`;
-						if (discs >= 5 && !homestar)
-							html += `<div style='font-weight:bold;'>• ${dojo.string.substitute(_('Get additional growth action for ${DP} DP'),
-							{DP: [null, 3, 3, 3, 3, 2, 1][dojo.query(`#ERAtech-${color}-Genetics .circleBlack`, `ERAtechnologies-${color}`).length]})} </div>`;
-						if (discs >= 6) html += `<div style='font-weight:bold;color:red;'>• ${_('Opponents get 2 tech. levels when taking this')} </div>`;
-						else html += `<div style='font-weight:bold;color:red;'>• ${_('Opponents get 1 tech. level when taking this')} </div>`;
-					}
+					html += `<div>${_('Effects:')} </div>`;
+					if (discs >= 3) html += `<div style='font-weight:bold;'>• ${_('Use Stargate 1 movement (with Propulsion 3/4)')} </div>`;
+					if (discs >= [null, 4, 4, 4, 3, 2, 1][dojo.query(`#ERAtech-${color}-Robotics .circleBlack`, `ERAtechnologies-${color}`).length])
+						html += `<div style='font-weight:bold;'>• ${_('Place newly built ships here')} </div>`;
+					if (discs >= 5 && !homestar)
+						html += `<div style='font-weight:bold;'>• ${dojo.string.substitute(_('Get additional growth action for ${DP} DP'),
+						{DP: [null, 3, 3, 3, 3, 2, 1][dojo.query(`#ERAtech-${color}-Genetics .circleBlack`, `ERAtechnologies-${color}`).length]})} </div>`;
+					if (discs >= 6) html += `<div style='font-weight:bold;color:red;'>• ${_('Opponents get 2 tech. levels when taking this')} </div>`;
+//						else html += `<div style='font-weight:bold;color:red;'>• ${_('Opponents get 1 tech. level when taking this')} </div>`;
 					return html;
 				}
 			});
