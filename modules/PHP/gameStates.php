@@ -2202,7 +2202,7 @@ trait gameStates
 		foreach (Sectors::getAllDatas() as $location => $sector)
 		{
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('msg', clienttranslate('Sector of ${PLANET} ${GPS'), ['i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector['sector']]['+0+0+0'], 'GPS' => "$location:+0+0+0"]);
+			self::notifyAllPlayers('msg', clienttranslate('Sector of ${PLANET} ${GPS}'), ['i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector['sector']]['+0+0+0'], 'GPS' => "$location:+0+0+0"]);
 //* -------------------------------------------------------------------------------------------------------- */
 			$max = max($sectors[$location]);
 			if ($max > 0)

@@ -241,7 +241,7 @@ trait gameUtils
 						{
 							Counters::reveal($color, 'star', $id);
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} is <B>uninhabited</B> ${GPS'), [
+							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} is <B>uninhabited</B> ${GPS}'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -254,7 +254,7 @@ trait gameUtils
 						else
 						{
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyAllPlayers('flipCounter', clienttranslate('${PLANET} is <B>uninhabited</B> ${GPS'), [
+							self::notifyAllPlayers('flipCounter', clienttranslate('${PLANET} is <B>uninhabited</B> ${GPS}'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -265,7 +265,7 @@ trait gameUtils
 						{
 							Counters::reveal($color, 'star', $id);
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has a <B>primitive</B> civilization ${GPS'), [
+							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has a <B>primitive</B> civilization ${GPS}'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -277,7 +277,7 @@ trait gameUtils
 						}
 						else
 						{
-							self::notifyAllPlayers('flipCounter', clienttranslate('${PLANET} has a <B>primitive</B> civilization ${GPS'), [
+							self::notifyAllPlayers('flipCounter', clienttranslate('${PLANET} has a <B>primitive</B> civilization ${GPS}'), [
 //* -------------------------------------------------------------------------------------------------------- */
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
@@ -290,7 +290,7 @@ trait gameUtils
 						{
 							Counters::reveal($color, 'star', $id);
 //* -------------------------------------------------------------------------------------------------------- */
-							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization ${GPS'), [
+							self::notifyPlayer(Factions::getPlayer($color), 'flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization ${GPS}'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
@@ -303,7 +303,7 @@ trait gameUtils
 						else
 						{
 //* -------------------------------------------------------------------------------------------------------- */10
-							self::notifyAllPlayers('flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization ${GPS'), [
+							self::notifyAllPlayers('flipCounter', clienttranslate('${PLANET} has an <B>advanced</B> civilization ${GPS}'), [
 								'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated],
 								'GPS' => $location, 'counter' => ['id' => $id, 'type' => Counters::getStatus($id, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */

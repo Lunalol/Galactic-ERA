@@ -1895,21 +1895,21 @@ trait gameStateActions
 		{
 			case COLONIZE:
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} colonizes ${PLANET} with at least ${SHIPS} ship(s) ${GPS'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} colonizes ${PLANET} with at least ${SHIPS} ship(s) ${GPS}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
 //
 			case SUBJUGATE:
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} subjugates ${PLANET} with at least ${SHIPS} ship(s) ${GPS'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} subjugates ${PLANET} with at least ${SHIPS} ship(s) ${GPS}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
 //
 			case LIBERATE:
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} liberates ${PLANET} with at least ${SHIPS} ship(s) ${GPS'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} liberates ${PLANET} with at least ${SHIPS} ship(s) ${GPS}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 //
@@ -1929,14 +1929,14 @@ trait gameStateActions
 			case CONQUER:
 			case CONQUERVS:
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} conquers ${PLANET} with at least ${SHIPS} ship(s) ${GPS'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} conquers ${PLANET} with at least ${SHIPS} ship(s) ${GPS}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
 //
 			case ALLY:
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} allies with ${PLANET} ${GPS'), ['GPS' => $location,
+				self::notifyAllPlayers('msg', clienttranslate('${player_name} allies with ${PLANET} ${GPS}'), ['GPS' => $location,
 					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
 				break;
@@ -1952,7 +1952,7 @@ trait gameStateActions
 			Counters::destroy($populationDisc['id']);
 		}
 //* -------------------------------------------------------------------------------------------------------- */
-		self::notifyAllPlayers('msg', clienttranslate('${PLANET} gains <B>${population} population(s)</B> ${GPS'), [
+		self::notifyAllPlayers('msg', clienttranslate('${PLANET} gains <B>${population} population(s)</B> ${GPS}'), [
 			'PLANET' => [
 				'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 				'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
@@ -1987,7 +1987,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS}'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -2056,7 +2056,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS}'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -2065,7 +2065,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS}'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -2074,7 +2074,7 @@ trait gameStateActions
 //
 					Counters::setStatus($relic, 'owner', $color);
 //* -------------------------------------------------------------------------------------------------------- */
-					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS'), ['GPS' => $location,
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} takes control of <B>${RELIC}</B> ${GPS}'), ['GPS' => $location,
 						'player_name' => Factions::getName($color), 'i18n' => ['RELIC'], 'RELIC' => $this->RELICS[Counters::getStatus($relic, 'back')]]);
 //* -------------------------------------------------------------------------------------------------------- */
 					break;
@@ -2232,7 +2232,7 @@ trait gameStateActions
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS'), [
+			self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS}'), [
 				'PLANET' => [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
@@ -2247,7 +2247,7 @@ trait gameStateActions
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS'), [
+			self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS}'), [
 				'PLANET' => [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
@@ -2316,7 +2316,7 @@ trait gameStateActions
 //
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
-			self::notifyAllPlayers('msg', clienttranslate('${PLANET} loses <B>one population(s)</B> ${GPS'), ['GPS' => $location,
+			self::notifyAllPlayers('msg', clienttranslate('${PLANET} loses <B>one population(s)</B> ${GPS}'), ['GPS' => $location,
 				'PLANET' => [
 					'log' => '<span style="color:#' . $populationDisc['color'] . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
@@ -2351,7 +2351,7 @@ trait gameStateActions
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('removeCounter', clienttranslate('${PLANET} teleports <B>one population</B> ${GPS'), [
+			self::notifyAllPlayers('removeCounter', clienttranslate('${PLANET} teleports <B>one population</B> ${GPS}'), [
 				'PLANET' => [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
@@ -2366,7 +2366,7 @@ trait gameStateActions
 			$sector = Sectors::get($location[0]);
 			$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-			self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS'), [
+			self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS}'), [
 				'PLANET' => [
 					'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 					'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
@@ -2824,7 +2824,7 @@ trait gameStateActions
 									$sector = Sectors::get($location[0]);
 									$rotated = Sectors::rotate(substr($location, 2), Sectors::getOrientation($location[0]));
 //* -------------------------------------------------------------------------------------------------------- */
-									self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS'), [
+									self::notifyAllPlayers('placeCounter', clienttranslate('${PLANET} gains <B>one population</B> ${GPS}'), [
 										'PLANET' => [
 											'log' => '<span style="color:#' . $color . ';font-weight:bold;">${PLANET}</span>',
 											'i18n' => ['PLANET'], 'args' => ['PLANET' => $this->SECTORS[$sector][$rotated]]
