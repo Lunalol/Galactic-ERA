@@ -289,7 +289,7 @@ trait gameStates
 //
 		if (FAST_START && STUDIO)
 		{
-			$starPeoples = ['ICC', 'Caninoids', 'Dracos', 'Yowies', 'Orion', 'Anchara',];
+			$starPeoples = ['ICC', 'Caninoids', 'Yowies', 'Dracos', 'Orion', 'Anchara',];
 			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples)]);
 			$this->gamestate->nextState('next');
 		}
@@ -1484,6 +1484,10 @@ trait gameStates
 //
 		self::triggerAndNextState('end');
 	}
+	function stHomeStarEvacuation()
+	{
+
+	}
 	function stEmergencyReserve()
 	{
 		$player_id = self::getActivePlayerId();
@@ -1724,8 +1728,12 @@ trait gameStates
 //
 // Something to trade ?
 //
-						$teach = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) > Factions::getTechnology($to, $technology));
-						$learn = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) < Factions::getTechnology($to, $technology));
+						$teach = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) =>
+							(Factions::getTechnology($from, $technology) > Factions::getTechnology($to, $technology) &&
+							!($technology === 'Robotics' && Factions::getStarPeople($to) === 'Yowies')));
+						$learn = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) =>
+							(Factions::getTechnology($from, $technology) < Factions::getTechnology($to, $technology) &&
+							!($technology === 'Robotics' && Factions::getStarPeople($from) === 'Yowies')));
 //
 						if ($teach && $learn)
 						{
@@ -1778,7 +1786,12 @@ trait gameStates
 	function stTradingPhaseEnd()
 	{
 		$trade = intval(self::incGameStateValue('trading', 1));
-		if ($trade > FIRST) foreach (Factions::list() as $color) Factions::setStatus($color, 'trade', []);
+		if ($trade > FIRST)
+		{
+			Factions::setActivation('ALL', 'no');
+			foreach (Factions::list() as $color) Factions::setStatus($color, 'trade', []);
+		}
+
 		if ($trade > SECOND)
 		{
 //

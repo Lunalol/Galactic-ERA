@@ -1351,12 +1351,20 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 							case 0:
 //
 								this.gamedatas.gamestate.description = _('Carninoids can force others players to trade with them');
-								this.gamedatas.gamestate.descriptionmyturn = _('You can force others players to trade with you');
+								this.gamedatas.gamestate.descriptionmyturn = _('${you} can force others players to trade with you');
+//
+								break;
+//
+							case 2:
+//
+								this.gamedatas.gamestate.description = _('Players at peace and in contact may trade technology (General Scientific effect)');
+								this.gamedatas.gamestate.descriptionmyturn = _('${you} may trade technology (General Scientific effect)');
 //
 								break;
 //
 						}
 						this.updatePageTitle();
+//
 						if ('_private' in state.args && 'trade' in state.args._private)
 						{
 							dojo.place(this.format_block('ERAchoice', {}), 'game_play_area');
@@ -2193,6 +2201,11 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 					case 'growPopulation+':
 //
 						this.addActionButton('ERAgrowPopulationButton', _('Confirm'), () => {
+							this.setClientState('bonusPopulation', {descriptionmyturn: dojo.string.substitute(_('${you} may add ${bonus} bonus population discs'), {you: '${you}', bonus: args._private.bonusPopulation})});
+						});
+						this.addActionButton('ERAgrowPopulationAll', _('Place all'), () => {
+							for (let location in this.gamedatas.gamestate.args._private.growPopulation)
+								if (dojo.query(`.ERAcounter-populationDisc[location='${location}'].ERAprovisional`).length === 0) this.growPopulation(location);
 							this.setClientState('bonusPopulation', {descriptionmyturn: dojo.string.substitute(_('${you} may add ${bonus} bonus population discs'), {you: '${you}', bonus: args._private.bonusPopulation})});
 						});
 //

@@ -117,7 +117,7 @@ trait gameUtils
 //
 // YOWIES SPECIAL STO & STS: You may not have Robotics higher than level 1
 //
-//		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('Yowies may not have Robotics higher than level 1'));
+		if (Factions::getStarPeople($color) === 'Yowies' && $technology === 'Robotics' && $level > 1) throw new BgaUserException(self::_('Yowies may not have Robotics higher than level 1'));
 //* -------------------------------------------------------------------------------------------------------- */
 		if ($research) self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} researches <B>${TECHNOLOGY} (${LEVEL})</B>'), [
 				'player_name' => Factions::getName($color),

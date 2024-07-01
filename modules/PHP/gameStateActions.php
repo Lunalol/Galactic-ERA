@@ -276,9 +276,7 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 			}
 //
-			for ($i = 0;
-				$i < $ships;
-				$i++)
+			for ($i = 0; $i < $ships; $i++)
 			{
 				if ($shipsUsed < 16)
 				{
@@ -290,7 +288,8 @@ trait gameStateActions
 //
 					self::notifyAllPlayers('placeShip', '', ['ship' => Ships::get($shipID)]);
 					Ships::setMP($shipID, $MP);
-					Ships::setActivation($shipID, $MP == 0 ? 'done' : 'yes');
+					if ($fleet['activation'] === 'no') Ships::setActivation($shipID, 'no');
+					else Ships::setActivation($shipID, $MP == 0 ? 'done' : 'yes');
 					$shipsUsed++;
 				}
 			}
@@ -1136,9 +1135,9 @@ trait gameStateActions
 		if (!array_key_exists('evacuate', $this->possible[$player_id])) throw new BgaVisibleSystemException('Invalid possible: ' . json_encode($this->possible));
 		if (!in_array($location, $this->possible[$player_id]['evacuate'])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 //
+		$toBlock = [];
 		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
-			$toBlock = [];
 			foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 		}
 		if ($toBlock)
@@ -1526,6 +1525,8 @@ trait gameStateActions
 		$blockedColor = Factions::getActive();
 		if ($blocked)
 		{
+			if (Factions::getStatus($blockedColor, 'evacuate') === 'voluntary') Factions::setStatus($blockedColor, 'evacuate');
+//
 			self::acDeclareWar($color, $blockedColor, true);
 			self::DbQuery("DELETE FROM `undo` WHERE color = '$blockedColor'");
 		}
@@ -1809,7 +1810,7 @@ trait gameStateActions
 				{
 					self::argHomeStarEvacuation();
 					shuffle($this->possible[0]['evacuate']);
-					self::acHomeStarEvacuation($otherColor, $this->possible[0]['evacuate'][0], true);
+					self::acHomeStarEvacuationValidated($otherColor, $this->possible[0]['evacuate'][0], true);
 				}
 				else self::triggerEvent(HOMESTAREVACUATION, $otherColor);
 			}

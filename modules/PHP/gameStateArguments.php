@@ -310,7 +310,7 @@ trait gameStateArguments
 				foreach ($action['locations'] as $location) if (Ships::getAtLocation($location, $otherColor)) $this->possible[$player_id]['locations'][] = $location;
 			}
 		}
-		return ['_private' => $this->possible, 'active' => $color, 'other_player' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
+		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
 	}
 	function argBlockMovement()
 	{
@@ -329,7 +329,7 @@ trait gameStateArguments
 				$this->possible[$player_id]['to'] = $action['to'];
 			}
 		}
-		return ['_private' => $this->possible, 'active' => $color, 'other_player' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
+		return ['_private' => $this->possible, 'active' => $color, 'otherplayer' => Factions::getName($color), 'otherplayer_id' => Factions::getPlayer($color)];
 	}
 	function argResolveGrowthActions()
 	{
@@ -452,7 +452,7 @@ trait gameStateArguments
 	{
 		$this->possible = [];
 //
-		foreach (Factions::list(false) as $color)
+		foreach (Factions::list(true) as $color)
 		{
 			$player_id = Factions::getPlayer($color);
 			if ($player_id >= 0 && Factions::getStatus($color, 'evacuate'))
@@ -567,8 +567,13 @@ trait gameStateArguments
 					{
 						$private[$player_id]['trade'][$to] = array_filter(Factions::getStatus($to, 'trade'), fn($key) => $key === $from, ARRAY_FILTER_USE_KEY);
 //
-						$teach = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) > Factions::getTechnology($to, $technology));
-						$learn = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) => Factions::getTechnology($from, $technology) < Factions::getTechnology($to, $technology));
+						$teach = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) =>
+							(Factions::getTechnology($from, $technology) > Factions::getTechnology($to, $technology) &&
+							!($technology === 'Robotics' && Factions::getStarPeople($to) === 'Yowies')));
+						$learn = array_filter(array_keys(Factions::TECHNOLOGIES), fn($technology) =>
+							(Factions::getTechnology($from, $technology) < Factions::getTechnology($to, $technology) &&
+							!($technology === 'Robotics' && Factions::getStarPeople($from) === 'Yowies')));
+//
 						if ($learn && $teach)
 						{
 							$private[$player_id]['inContact'][$to]['teach'] = array_values($teach);

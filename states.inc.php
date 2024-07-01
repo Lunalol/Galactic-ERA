@@ -173,8 +173,8 @@ $machinestates = [
 	],
 	225 => [
 		'name' => 'blockMovement',
-		'description' => clienttranslate('Some players can block ${other_player}\'s movement'),
-		'descriptionmyturn' => clienttranslate('${you} can block ${other_player}\'s movement'),
+		'description' => clienttranslate('Some players can block ${otherplayer}\'s movement'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer}\'s movement'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockMovement',
 		'possibleactions' => ['declareWar', 'blockMovement'],
@@ -357,8 +357,8 @@ $machinestates = [
 	],
 	450 => [
 		'name' => 'blockAction',
-		'description' => clienttranslate('Some players can block ${other_player}\'s growth action'),
-		'descriptionmyturn' => clienttranslate('${you} can block ${other_player}\'s growth action'),
+		'description' => clienttranslate('Some players can block ${otherplayer}\'s growth action'),
+		'descriptionmyturn' => clienttranslate('${you} can block ${otherplayer}\'s growth action'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockAction',
 		'possibleactions' => ['declareWar', 'blockAction'],
@@ -435,6 +435,7 @@ $machinestates = [
 		'description' => clienttranslate('${actplayer} evacuates their Home Star'),
 		'descriptionmyturn' => clienttranslate('${you} evacuate your Home Star'),
 		'type' => 'activeplayer',
+		'action' => 'stHomeStarEvacuation',
 		'args' => 'argHomeStarEvacuation',
 		'possibleactions' => ['homeStarEvacuation'],
 		'transitions' => ['continue' => POP_EVENT, 'blockAction' => HOMESTAREVACUATION + 1, 'zombiePass' => POP_EVENT]
@@ -446,7 +447,7 @@ $machinestates = [
 		'type' => 'multipleactiveplayer',
 		'args' => 'argBlockAction',
 		'possibleactions' => ['declareWar', 'blockAction'],
-		'transitions' => ['end' => HOMESTAREVACUATION]
+		'transitions' => ['blockAction' => 450, 'end' => HOMESTAREVACUATION]
 	],
 	EMERGENCYRESERVE => [
 		'name' => 'emergencyReserve',

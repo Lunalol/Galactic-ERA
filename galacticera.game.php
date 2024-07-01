@@ -291,7 +291,11 @@ class GalacticEra extends Table
 		{
 			self::DbQuery("UPDATE stack SET new_state = 0 WHERE id = $event[id]");
 //
-			if ($event['new_active_faction'] !== 'neutral') $this->gamestate->changeActivePlayer(Factions::getPlayer($event['new_active_faction']));
+			if ($event['new_active_faction'] !== 'neutral')
+			{
+				$player_id = Factions::getPlayer($event['new_active_faction']);
+				if ($player_id > 0) $this->gamestate->changeActivePlayer($player_id);
+			}
 			foreach ($this->gamestate->getActivePlayerList() as $player_id) self::giveExtraTime($player_id);
 			return $this->gamestate->jumpToState($event['new_state']);
 		}
