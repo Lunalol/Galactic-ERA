@@ -63,12 +63,14 @@ trait gameStateActions
 //
 		self::updateScoring();
 	}
-	function acNull(string $color): void
+	function acNull(string $color, bool $skip): void
 	{
 		$player_id = Factions::getPlayer($color);
 //
 		$this->checkAction('null');
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if ($skip) Factions::setStatus($color, 'ship', true);
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'end');
 	}
@@ -1097,14 +1099,15 @@ trait gameStateActions
 		if ($technology && !array_key_exists($technology, array_intersect($this->TECHNOLOGIES, $this->possible['counters']))) throw new BgaVisibleSystemException('Invalid technology: ' . $technology);
 //
 		['from' => $from, 'levels' => $levels] = Factions::getStatus($color, 'steal');
-		Factions::setStatus($color, 'steal');
+		Factions::setStatus($color, 'steal', ['from' => $from, 'levels' => --$levels]);
 //
-		if (!$technology) return $this->gamestate->nextState('continue');
+		if (!$technology) return self::triggerAndNextState('continue');
 //
-		for ($i = 0; $i < $levels; $i++) self::gainTechnology($color, $technology);
-//
+		self::gainTechnology($color, $technology);
 		self::updateScoring();
-		self::triggerAndNextState('continue');
+//
+		if ($levels > 0) $this->gamestate->nextState('stealTechnology');
+		else self::triggerAndNextState('continue');
 	}
 	function acHomeStarEvacuation(string $color, $location, bool $automa = false)
 	{
@@ -1929,10 +1932,22 @@ trait gameStateActions
 //
 			case CONQUER:
 			case CONQUERVS:
+//
+				if (array_key_exists($rotated, $this->SECTORS[$sector]))
+				{
 //* -------------------------------------------------------------------------------------------------------- */
-				self::notifyAllPlayers('msg', clienttranslate('${player_name} conquers ${PLANET} with at least ${SHIPS} ship(s) ${GPS}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
-					'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} conquers ${PLANET} with at least ${SHIPS} ship(s) ${GPS}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
 //* -------------------------------------------------------------------------------------------------------- */
+				}
+				else
+				{
+//* -------------------------------------------------------------------------------------------------------- */
+					self::notifyAllPlayers('msg', clienttranslate('${player_name} conquers a planet with at least ${SHIPS} ship(s) ${GPS}'), ['GPS' => $location, 'SHIPS' => $SHIPS,
+						'player_name' => Factions::getName($color), 'i18n' => ['PLANET'], 'PLANET' => $this->SECTORS[$sector][$rotated]]);
+//* -------------------------------------------------------------------------------------------------------- */
+				}
+				/* -------------------------------------------------------------------------------------------------------- */
 				break;
 //
 			case ALLY:
@@ -2567,6 +2582,7 @@ trait gameStateActions
 	function acTrade(string $from, string $to, string $technology, $toTeach = null)
 	{
 		$player_id = Factions::getPlayer($from);
+		$other_player_id = Factions::getPlayer($to);
 //
 		$this->gamestate->checkPossibleAction('trade');
 		if ($player_id != Factions::getPlayer($from)) throw new BgaVisibleSystemException('Invalid Faction: ' . $from);
@@ -2604,7 +2620,7 @@ trait gameStateActions
 					$toStatus = Factions::getStatus($to, 'trade');
 					if (!array_key_exists($from, $toStatus)) throw new BgaUserException(self::_('Other player must choose what you are teaching'));
 //
-					if (Factions::getAutoma() === $from)
+					if (Factions::getAutoma() === $from && $trading === FIRST)
 					{
 						$priority = [];
 						foreach (Factions::list(false) as $color) if (Factions::getActivation($color) === 'yes') $priority[$color] = (Factions::getAlignment($color) === 'STS' ? 10 : 0) + Factions::getOrder($color);
@@ -2612,12 +2628,6 @@ trait gameStateActions
 //
 						if (array_key_first($priority) !== $to) throw new BgaUserException(self::_('Other player has priority for trading with automa'));
 					}
-//
-					foreach ([$from => $fromStatus[$to]['technology'], $to => $toStatus[$from]['technology']] as $color => $technology)
-					{
-						self::gainTechnology($color, $technology);
-					}
-//
 //
 // CANINOIDS STO: Each time you make a trade, you and your trading partner get 1 DP each
 //
@@ -2632,7 +2642,6 @@ trait gameStateActions
 							self::notifyAllPlayers('updateFaction', clienttranslate('${player_name} gains ${DP} DP'), ['DP' => $DP, 'player_name' => Factions::getName($from), 'faction' => ['color' => $from, 'DP' => Factions::getDP($from)]]);
 //* -------------------------------------------------------------------------------------------------------- */
 						}
-						$other_player_id = Factions::getPlayer($to);
 						if ($other_player_id > 0)
 						{
 							self::gainDP($to, $DP);
@@ -2642,6 +2651,9 @@ trait gameStateActions
 //* -------------------------------------------------------------------------------------------------------- */
 						}
 					}
+//
+					foreach ([$from => $fromStatus[$to]['technology'], $to => $toStatus[$from]['technology']] as $color => $technology) self::gainTechnology($color, $technology);
+//
 					if (Factions::getStarPeople($from) === 'ICC') unset($fromStatus[$to]);
 					else Factions::setActivation($from, 'done');
 //
@@ -2652,6 +2664,22 @@ trait gameStateActions
 					}
 					else Factions::setActivation($to, 'done');
 //
+					if ($player_id > 0 && $this->domination->countCardInLocation('A', $from) == 0 && DominationCards::A($from, GENERALSCIENTIFIC, 1))
+					{
+						self::giveExtraTime($player_id);
+						$this->gamestate->setPlayersMultiactive([$player_id], 'end', true);
+						$this->gamestate->nextState('domination');
+						return self::updateScoring();
+					}
+					if ($other_player_id > 0 && $this->domination->countCardInLocation('A', $to) == 0 && DominationCards::A($to, GENERALSCIENTIFIC, 1))
+					{
+						self::giveExtraTime($other_player_id);
+						$this->gamestate->setPlayersMultiactive([$other_player_id], 'end', true);
+						$this->gamestate->nextState('domination');
+						return self::updateScoring();
+					}
+//
+					if ($trading !== FIRST) return $this->gamestate->nextState('next');
 //
 					if (Factions::getStarPeople($from) !== 'ICC') if ($player_id > 0 && $this->gamestate->setPlayerNonMultiactive($player_id, 'next')) return;
 					if (Factions::getStarPeople($to) !== 'ICC') if ($this->gamestate->setPlayerNonMultiactive(Factions::getPlayer($to), 'next')) return;
@@ -2659,7 +2687,6 @@ trait gameStateActions
 					$activated = 0;
 					foreach (Factions::list() as $otherColor) if (Factions::getActivation($otherColor) === 'yes') $activated++;
 					if ($activated <= 1) return $this->gamestate->nextState('next');
-//
 				}
 				break;
 //

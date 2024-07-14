@@ -1799,14 +1799,25 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 					case 'dominationRetreatPhase':
 					case 'dominationCombatPhase':
+					case 'dominationTradingPhase':
 					case 'domination':
 //
-						if (!args.lastChance)
+						if (!(args.scoringPhase && this.gamedatas.round === 8))
 						{
 							this.addActionButton('ERAPassButton', _('Pass'), () => {
-								this.action('null', {color: this.color});
+								this.action('null', {color: this.color, skip: false});
 								if (this.factions.dialog) this.factions.dialog.destroy();
 							});
+						}
+						if (!args.scoringPhase)
+						{
+							this.addActionButton('ERAPassAllButton', _('Skip to the next round'), () => {
+								this.confirmationDialog(_('You will lose the opportunity to play domination cards for the entire round. You can still play them during your own turn.'), () =>
+								{
+									this.action('null', {color: this.color, skip: true});
+								});
+								if (this.factions.dialog) this.factions.dialog.destroy();
+							}, null, false, 'red');
 						}
 //
 						break;
@@ -2160,10 +2171,25 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								this.setClientState('teleportPopulation', {phase: 'from', descriptionmyturn: dojo.string.substitute(_('${you} can select up to ${population} population disc(s) to teleport'), {you: '${you}', population: args._private.teleportPopulation})});
 							});
 //
-						this.addActionButton('ERApassButton', _('End turn'), () => {
+						this.addActionButton('ERApassButton', _('End turn'), () =>
+						{
 							if (dojo.query('#ERAchoice .ERAcounter-growth').length)
 							{
 								this.confirmationDialog(_('You have unused growth action(s)'), () =>
+								{
+									if (args.Anchara)
+									{
+										this.confirmationDialog(_('You have not used Anchara Coalition special effect'), () =>
+										{
+											this.action('pass', {color: this.color});
+										});
+									}
+									else this.action('pass', {color: this.color});
+								});
+							}
+							else if (args.Anchara)
+							{
+								this.confirmationDialog(_('You have not used Anchara Coalition special effect'), () =>
 								{
 									this.action('pass', {color: this.color});
 								});

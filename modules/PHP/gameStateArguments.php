@@ -74,7 +74,7 @@ trait gameStateArguments
 		return ['counters' => $counters,
 			'active' => Factions::getActive(),
 			'location' => Factions::getActive() ? Factions::getStatus(Factions::getActive(), 'combat') : null,
-			'phase' => $this->PHASES[$phase], 'lastChance' => +self::getGameStateValue('round') === 8 && $phase === 'scoringPhase'];
+			'phase' => $this->PHASES[$phase], 'scoringPhase' => $phase === 'scoringPhase'];
 	}
 	function argDominationCardExchange()
 	{

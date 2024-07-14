@@ -731,7 +731,7 @@ trait gameStates
 		foreach (Factions::list(false) as $color)
 		{
 			Factions::setStatus($color, 'exchange');
-			if ($this->domination->countCardInLocation('hand', $color) > 0) $players[] = Factions::getPlayer($color);
+			if ($this->domination->countCardInLocation('hand', $color) > 0) if (!Factions::getStatus($color, 'ship')) $players[] = Factions::getPlayer($color);
 		}
 //
 		foreach ($players as $player_id) self::giveExtraTime($player_id);
@@ -1421,7 +1421,7 @@ trait gameStates
 //* -------------------------------------------------------------------------------------------------------- */
 			self::notifyPlayer($player_id, 'msg', clienttranslate('No technology to learn'), []);
 //* -------------------------------------------------------------------------------------------------------- */
-			$this->gamestate->nextState('continue');
+			self::triggerAndNextState('continue');
 		}
 	}
 	function stResearchPlus()

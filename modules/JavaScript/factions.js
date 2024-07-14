@@ -46,7 +46,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 //
 			const domination = node.getAttribute('domination');
 			const multiplier = this.bgagame.gamedatas.galacticGoal === 'Personal Growth' ? 2 : 1;
-			const A = dojo.query(`#ERAdominationCard-${faction}-A`, 'ERAboard').length;
+			const A = dojo.query(`#ERAdominationCard-${faction.color}-A`, 'ERAboard').length;
 //
 			this.dialog = new ebg.popindialog();
 			this.dialog.create('ERAdominationDialog');

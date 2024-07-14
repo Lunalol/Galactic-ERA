@@ -60,7 +60,7 @@ class Factions extends APP_GameClass
 	}
 	static function getActive()
 	{
-		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE activation = 'yes'");
+		return self::$table->getUniqueValueFromDB("SELECT color FROM factions WHERE activation = 'yes' LIMIT 1");
 	}
 	static function setActivation(string $color = 'ALL', string $activation = 'no'): void
 	{

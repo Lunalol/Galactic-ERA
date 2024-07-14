@@ -40,7 +40,8 @@ class action_galacticera extends APP_GameAction
 		self::setAjaxMode();
 //
 		$color = self::getArg("color", AT_alphanum, true);
-		$this->game->acNull($color,);
+		$skip = self::getArg("skip", AT_bool, true);
+		$this->game->acNull($color, $skip);
 //
 		self::ajaxResponse("");
 	}

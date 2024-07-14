@@ -382,8 +382,17 @@ $machinestates = [
 		'descriptionmyturn' => clienttranslate('${you} may trade technology'),
 		'type' => 'multipleactiveplayer',
 		'args' => 'argTradingPhase',
-		'possibleactions' => ['declarePeace', 'trade', 'pass'],
-		'transitions' => ['continue' => 505, 'tradingPhase' => 510, 'next' => 540]
+		'possibleactions' => ['domination', 'declarePeace', 'trade', 'pass'],
+		'transitions' => ['continue' => 505, 'domination' => 515, 'tradingPhase' => 510, 'next' => 540]
+	],
+	515 => [
+		'name' => 'dominationTradingPhase',
+		'description' => clienttranslate('${phase}: Players have the opportunity to play a domination card'),
+		'descriptionmyturn' => clienttranslate('${phase}: ${you} have the opportunity to play a domination card'),
+		'type' => 'multipleactiveplayer',
+		'args' => 'argDomination',
+		'possibleactions' => ['domination', 'null'],
+		'transitions' => ['continue' => 515, 'end' => 545]
 	],
 	540 => [
 		'name' => 'tradingPhaseEnd',
@@ -461,13 +470,13 @@ $machinestates = [
 	],
 	STEALTECHNOLOGY => [
 		'name' => 'stealTechnology',
-		'description' => clienttranslate('${actplayer} can gain ${levels} level(s) in one technology field'),
-		'descriptionmyturn' => clienttranslate('${you} can gain ${levels} level(s) in one technology field'),
+		'description' => clienttranslate('${actplayer} can gain ${levels} level(s) in some technology fields'),
+		'descriptionmyturn' => clienttranslate('${you} can gain ${levels} level(s) in some technology fields'),
 		'type' => 'activeplayer',
 		'args' => 'argStealTechnology',
 		'action' => 'stStealTechnology',
 		'possibleactions' => ['stealTechnology'],
-		'transitions' => ['continue' => POP_EVENT, 'zombiePass' => POP_EVENT]
+		'transitions' => ['stealTechnology' => STEALTECHNOLOGY, 'continue' => POP_EVENT, 'zombiePass' => POP_EVENT]
 	],
 	REMOVEPOPULATION => [
 		'name' => 'removePopulation',

@@ -67,7 +67,7 @@ $this->PHASES = [
 	'dominationRetreatPhase' => clienttranslate('Retreat before combat'),
 	'dominationCombatPhase' => clienttranslate('Combat Phase'),
 	'changeTurnOrder' => clienttranslate('Start of Growth Phase'),
-	'tradingPhase' => clienttranslate('Trading Phase'),
+	'dominationTradingPhase' => clienttranslate('Trading Phase'),
 	'scoringPhase' => clienttranslate('End of round')
 ];
 //
