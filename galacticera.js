@@ -1933,6 +1933,30 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						});
 						dojo.addClass('ERAscoutButton', 'disabled');
 //
+						const ships = Object.keys(args._private.move);
+						if (!ships.includes(this.current)) this.current = ships[0];
+//
+						dojo.connect(dojo.place(`<div id='ERApreviousButton' class='fa6 fa6-2x fa6-caret-square-left' title='${_('Previous ship')}' style='margin-left:5px;vertical-align:middle;'></div>`, 'generalactions'), 'click', () =>
+						{
+							if (ships.length > 0)
+							{
+								const index = ships.indexOf(this.current);
+								if (index >= 0) this.current = ships[(index - 1 + ships.length) % ships.length];
+								else index = 0;
+								this.board.centerMap(dojo.getAttr(`ERAship-${this.current}`, 'location'));
+							}
+						});
+						dojo.connect(dojo.place(`<div id='ERAnextButton' class='fa6 fa6-2x fa6-caret-square-right' title='${_('Next ship')}' style='margin-left:5px;vertical-align:middle;'></div>`, 'generalactions'), 'click', () =>
+						{
+							if (ships.length > 0)
+							{
+								const index = ships.indexOf(this.current);
+								if (index >= 0) this.current = ships[(index + 1) % ships.length];
+								else index = ships.length - 1;
+								this.board.centerMap(dojo.getAttr(`ERAship-${this.current}`, 'location'));
+							}
+						});
+//
 						this.addActionButton('ERApassButton', _('End turn'), () => {
 							const node = $('ERApassButton');
 							if (node.count)
@@ -2132,7 +2156,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 //
 						this.board.centerMap(args._private.to);
 //
-						this.addActionButton('ERAcancelButton', _('Don`t block movement'), () => this.action('blockMovement', {color: this.color, blocked: false}));
+						this.addActionButton('ERAcancelButton', _('Don`t block movement'), () => this.action('blockMovement'
+									, {color: this.color, blocked: false}));
 						this.addActionButton('ERAblockButton', _('Declare war and block movement'), () => this.action('blockMovement', {color: this.color, blocked: true}), null, false, 'red');
 //
 						break;
@@ -2609,7 +2634,8 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						this.action('gainStar', {color: this.color, location: JSON.stringify(location), locationsRemoved: JSON.stringify(locationsRemoved), center: counter.getAttribute('counter') === 'gainStar+'});
 					});
 				}
-				else this.action('gainStar', {color: this.color, location: JSON.stringify(location), locationsRemoved: JSON.stringify(locationsRemoved), center: counter.getAttribute('counter') === 'gainStar+'});
+				else
+					this.action('gainStar', {color: this.color, location: JSON.stringify(location), locationsRemoved: JSON.stringify(locationsRemoved), center: counter.getAttribute('counter') === 'gainStar+'});
 			}
 			;
 		},
