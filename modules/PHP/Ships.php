@@ -124,8 +124,6 @@ class Ships extends APP_GameClass
 	{
 		$propulsion = Factions::getTechnology($ship['color'], 'Propulsion');
 //
-		$OK = ($propulsion * sizeof(Ships::getAll($ship['color'], 'ship'))) < 40;
-//
 // Stargate 1
 //
 		$ownStars = Counters::getPopulations($ship['color'], true);
@@ -218,7 +216,7 @@ class Ships extends APP_GameClass
 					if (!array_key_exists($next_location, $possible) || ($possible[$next_location]['MP'] < $next_MP))
 					{
 						$possible[$next_location] = ['MP' => $next_MP, 'from' => $location];
-						if ($OK) $locations[$next_location] = $next_MP;
+						$locations[$next_location] = $next_MP;
 //
 						if (!is_int($type))
 						{

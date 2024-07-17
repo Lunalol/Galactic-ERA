@@ -246,68 +246,73 @@ define(["dojo", "dojo/_base/declare"], function (dojo, declare)
 			if (selected.length === 0) return;
 //
 			const color = dojo.getAttr(selected[0], 'color');
-			let paths = this.bgagame.gamedatas.gamestate.args._private['move'][dojo.getAttr(selected[0], 'ship')];
-			if (paths === undefined) return;
-//
-			let possible = Object.keys(paths);
-			selected.forEach((node) =>
+			this.bgagame.ajaxcall(`/galacticera/galacticera/path.html`, {ships: JSON.stringify(selected.reduce((L, node) => [...L, +dojo.getAttr(node, 'ship')], []))}, (response) =>
 			{
-				let paths = Object.keys(this.bgagame.gamedatas.gamestate.args._private['move'][dojo.getAttr(node, 'ship')]);
-				possible = possible.filter((location) => paths.includes(location));
-			}
-			);
-			if (possible.length === 0) return;
+				for (let ship in response.data) this.bgagame.gamedatas.gamestate.args._private['move'][+ship] = response.data[ship];
 //
-			const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-			for (let location of possible)
-			{
-				const SVGpath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-				let path = 'M' + this.board.hexagons[location].x + ' ' + this.board.hexagons[location].y;
-				let from = paths[location].from;
-				while (from)
+				let paths = this.bgagame.gamedatas.gamestate.args._private['move'][dojo.getAttr(selected[0], 'ship')];
+				if (paths === undefined) return;
+//
+				let possible = Object.keys(paths);
+				selected.forEach((node) =>
 				{
-					path += 'L' + this.board.hexagons[from].x + ' ' + this.board.hexagons[from].y;
-					from = paths[from].from;
+					let paths = Object.keys(this.bgagame.gamedatas.gamestate.args._private['move'][dojo.getAttr(node, 'ship')]);
+					possible = possible.filter((location) => paths.includes(location));
 				}
-				SVGpath.setAttribute('class', 'ERApath');
-				SVGpath.setAttribute('stroke', '#ffffff40');
-				SVGpath.setAttribute('fill', 'none');
-				SVGpath.setAttribute('d', path);
-				SVGpath.setAttribute('stroke-width', '2');
-				svg.appendChild(SVGpath);
-			}
-			for (let location of possible)
-			{
-				const SVGcircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-				SVGcircle.setAttribute('fill', '#' + color);
-				SVGcircle.setAttribute('cx', this.board.hexagons[location].x);
-				SVGcircle.setAttribute('cy', this.board.hexagons[location].y);
-				SVGcircle.setAttribute('r', 10);
-				svg.appendChild(SVGcircle);
+				);
+				if (possible.length === 0) return;
 //
-				if ('wormhole' in paths[location]) svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + 'FFFFFF' + 'C0'));
-				if ('stargate' in paths[location]) svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + 'FFFFFF' + 'C0'));
+				const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+				for (let location of possible)
+				{
+					const SVGpath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+					let path = 'M' + this.board.hexagons[location].x + ' ' + this.board.hexagons[location].y;
+					let from = paths[location].from;
+					while (from)
+					{
+						path += 'L' + this.board.hexagons[from].x + ' ' + this.board.hexagons[from].y;
+						from = paths[from].from;
+					}
+					SVGpath.setAttribute('class', 'ERApath');
+					SVGpath.setAttribute('stroke', '#ffffff40');
+					SVGpath.setAttribute('fill', 'none');
+					SVGpath.setAttribute('d', path);
+					SVGpath.setAttribute('stroke-width', '2');
+					svg.appendChild(SVGpath);
+				}
+				for (let location of possible)
+				{
+					const SVGcircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+					SVGcircle.setAttribute('fill', '#' + color);
+					SVGcircle.setAttribute('cx', this.board.hexagons[location].x);
+					SVGcircle.setAttribute('cy', this.board.hexagons[location].y);
+					SVGcircle.setAttribute('r', 10);
+					svg.appendChild(SVGcircle);
 //
-				const SVGshape = this.board.drawHexagon(this.board.hexagons[location], 'none');
-				dojo.setAttr(SVGshape, 'location', location);
-				svg.appendChild(SVGshape);
+					if ('wormhole' in paths[location]) svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + 'FFFFFF' + 'C0'));
+					if ('stargate' in paths[location]) svg.appendChild(this.board.drawHexagon(this.board.hexagons[location], "#" + 'FFFFFF' + 'C0'));
 //
-				dojo.connect(SVGshape, 'click', (event) => {
-					dojo.stopEvent(event);
-					let ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
-					let location = dojo.getAttr(event.target, 'location');
-					if (location !== possible[0]) this.bgagame.action('move', {color: color, location: JSON.stringify(location), ships: JSON.stringify(ships)});
-				});
-			}
-			dojo.setStyle(svg, 'position', 'absolute');
-			dojo.setStyle(svg, 'left', '0px');
-			dojo.setStyle(svg, 'top', '0px');
-			dojo.setStyle(svg, 'z-index', '150');
-			dojo.setStyle(svg, 'pointer-events', 'all');
-			svg.setAttribute("width", 10000);
-			svg.setAttribute("height", 10000);
-			svg.id = 'ERApath';
-			this.board.board.appendChild(svg);
+					const SVGshape = this.board.drawHexagon(this.board.hexagons[location], 'none');
+					dojo.setAttr(SVGshape, 'location', location);
+					svg.appendChild(SVGshape);
+//
+					dojo.connect(SVGshape, 'click', (event) => {
+						dojo.stopEvent(event);
+						let ships = dojo.query(`#ERAboard .ERAship.ERAselected`).reduce((L, node) => [...L, +node.getAttribute('ship')], []);
+						let location = dojo.getAttr(event.target, 'location');
+						if (location !== possible[0]) this.bgagame.action('move', {color: color, location: JSON.stringify(location), ships: JSON.stringify(ships)});
+					});
+				}
+				dojo.setStyle(svg, 'position', 'absolute');
+				dojo.setStyle(svg, 'left', '0px');
+				dojo.setStyle(svg, 'top', '0px');
+				dojo.setStyle(svg, 'z-index', '150');
+				dojo.setStyle(svg, 'pointer-events', 'all');
+				svg.setAttribute("width", 10000);
+				svg.setAttribute("height", 10000);
+				svg.id = 'ERApath';
+				this.board.board.appendChild(svg);
+			});
 		},
 		click: function (event)
 		{

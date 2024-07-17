@@ -155,10 +155,10 @@ trait gameStateArguments
 				switch ($ship['fleet'])
 				{
 					case 'ship':
-						$this->possible['move'][$ship['id']] = Ships::movement($ship);
+						$this->possible['move'][$ship['id']] = null; //Ships::movement($ship);
 						break;
 					case 'fleet':
-						$this->possible['move'][$ship['id']] = Ships::movement($ship);
+						$this->possible['move'][$ship['id']] = null; //Ships::movement($ship);
 						break;
 				}
 			}
@@ -185,7 +185,7 @@ trait gameStateArguments
 			$this->possible['planetaryDeathRayTargets'] = Sectors::range(Counters::get($PlanetaryDeathRay)['location'], 3);
 		}
 //
-		return ['_private' => [$player_id => $this->possible], 'OK' => (Factions::getTechnology($color, 'Propulsion') * sizeof(Ships::getAll($color, 'ship'))) < 40,
+		return ['_private' => [$player_id => $this->possible],
 			'active' => $color, 'undo' => +self::getUniqueValueFromDB("SELECT COALESCE(MAX(undoID), 0) FROM `undo` WHERE color = '$color'")];
 	}
 	function argCombatChoice()

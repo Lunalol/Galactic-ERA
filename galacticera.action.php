@@ -221,6 +221,15 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function path()
+	{
+		self::setAjaxMode();
+//
+		$ships = self::getArg("ships", AT_json, true);
+		foreach ($ships as $ship) $result[$ship] = Ships::movement(Ships::get($ship));
+//
+		self::ajaxResponseWithResult($result);
+	}
 	public function move()
 	{
 		self::setAjaxMode();
