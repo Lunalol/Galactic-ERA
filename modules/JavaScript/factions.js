@@ -95,6 +95,9 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 //
 			html += `</div>`;
 //
+			html += `<div style='font-size:small;'><input id='ERAskip' type='checkbox' ${this.bgagame.gamedatas.factions[faction.color].skip ? 'checked' : ''}/><label for="ERAskip"> ${_('Skip to the next round')}</label></div>`;
+			html += `<div style='font-size:x-small;width:50%;text-align:justify;'>${_('You will lose the opportunity to play domination cards for the entire round. You can still play them during your own turn.')}</div>`
+//
 			html += `</div>`;
 //
 			html += `</div>`;
@@ -102,6 +105,10 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 			this.dialog.setContent(html);
 			this.dialog.show();
 			dojo.style('popin_ERAdominationDialog_underlay', 'visibility', 'hidden');
+//
+			dojo.connect($('ERAskip'), 'click', (event) => event.stopPropagation());
+			dojo.connect($('ERAskip'), 'input', (event) => this.bgagame.ajaxcall(`/galacticera/galacticera/skip.html`, {color: faction.color, skip: event.currentTarget.checked}, this, () => {
+				}));
 //
 			dojo.connect($('popin_ERAdominationDialog'), 'click', () => this.dialog.destroy());
 //

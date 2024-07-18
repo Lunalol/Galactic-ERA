@@ -63,14 +63,23 @@ trait gameStateActions
 //
 		self::updateScoring();
 	}
-	function acNull(string $color, bool $skip): void
+	function acSkip(string $color, bool $skip)
+	{
+		$player_id = Factions::getPlayer($color);
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		if ($skip) Factions::setStatus($color, 'skip', true);
+		else Factions::setStatus($color, 'skip');
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyPlayer($player_id, 'skip', '', ['color' => $color, 'skip' => $skip]);
+//* -------------------------------------------------------------------------------------------------------- */
+	}
+	function acNull(string $color): void
 	{
 		$player_id = Factions::getPlayer($color);
 //
 		$this->checkAction('null');
 		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
-//
-		if ($skip) Factions::setStatus($color, 'ship', true);
 //
 		$this->gamestate->setPlayerNonMultiactive($player_id, 'end');
 	}
@@ -893,6 +902,7 @@ trait gameStateActions
 			if (!$ships) throw new BgaVisibleSystemException('Empty ship list');
 			foreach ($ships as $ship)
 			{
+				$this->possible['move'][$ship] = Ships::movement(Ships::get($ship));
 				if (!array_key_exists($ship, $this->possible['move'])) throw new BgaVisibleSystemException('Invalid ship: ' . $ship);
 				if (!array_key_exists($location, $this->possible['move'][$ship])) throw new BgaVisibleSystemException('Invalid location: ' . $location);
 			}

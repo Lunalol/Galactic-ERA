@@ -1805,16 +1805,18 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 						if (!(args.scoringPhase && this.gamedatas.round === 8))
 						{
 							this.addActionButton('ERAPassButton', _('Pass'), () => {
-								this.action('null', {color: this.color, skip: false});
+								this.action('null', {color: this.color});
 								if (this.factions.dialog) this.factions.dialog.destroy();
 							});
 						}
-						if (!args.scoringPhase)
+						if (!args.scoringPhase && this.gamedatas.playerorder.length > 0)
 						{
 							this.addActionButton('ERAPassAllButton', _('Skip to the next round'), () => {
 								this.confirmationDialog(_('You will lose the opportunity to play domination cards for the entire round. You can still play them during your own turn.'), () =>
 								{
-									this.action('null', {color: this.color, skip: true});
+									this.ajaxcall(`/galacticera/galacticera/skip.html`, {color: this.color, skip: true}, this, () => {
+									});
+									this.action('null', {color: this.color});
 								});
 								if (this.factions.dialog) this.factions.dialog.destroy();
 							}, null, false, 'red');
@@ -2428,6 +2430,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				this.gamedatas.GODMODE = +notif.args.GODMODE;
 				this.restoreServerGameState();
 			});
+			dojo.subscribe('skip', (notif) => this.gamedatas.factions[notif.args.color].skip = notif.args.skip);
 //
 			dojo.subscribe('updateScoring', (notif) => {
 				for (let color in notif.args.scoring)

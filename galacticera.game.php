@@ -150,6 +150,7 @@ class GalacticEra extends Table
 //
 			if ($player_id === Factions::getPlayer($color))
 			{
+				$result['factions'][$color]['skip'] = Factions::getStatus($color, 'skip');
 				foreach (Counters::listRevealed($color, 'star') as $counter) $result['factions'][$color]['revealed']['stars'][$counter] = Counters::getStatus($counter, 'back');
 				foreach (Counters::listRevealed($color, 'relic') as $counter) $result['factions'][$color]['revealed']['relics'][$counter] = Counters::getStatus($counter, 'back');
 				foreach (Ships::getAll(null, 'fleet') as $fleet)

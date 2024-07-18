@@ -731,7 +731,7 @@ trait gameStates
 		foreach (Factions::list(false) as $color)
 		{
 			Factions::setStatus($color, 'exchange');
-			if ($this->domination->countCardInLocation('hand', $color) > 0) if (!Factions::getStatus($color, 'ship')) $players[] = Factions::getPlayer($color);
+			if ($this->domination->countCardInLocation('hand', $color) > 0) if (!Factions::getStatus($color, 'skip')) $players[] = Factions::getPlayer($color);
 		}
 //
 		foreach ($players as $player_id) self::giveExtraTime($player_id);
@@ -2158,7 +2158,15 @@ trait gameStates
 		self::notifyAllPlayers('msg', '<span class="ERA-phase">${LOG} ${round}</span>', [
 			'i18n' => ['LOG'], 'LOG' => clienttranslate('End of round'), 'round' => $round]);
 //* -------------------------------------------------------------------------------------------------------- */
-		foreach (Factions::list() as $color) Factions::clearStatus($color);
+		foreach (Factions::list() as $color)
+		{
+			Factions::clearStatus($color);
+			$player_id = Factions::getPlayer($color);
+			if ($player_id > 0)
+//* -------------------------------------------------------------------------------------------------------- */
+				self::notifyPlayer($player_id, 'skip', '', ['color' => $color, 'skip' => false]);
+//* -------------------------------------------------------------------------------------------------------- */
+		}
 //
 		self::updateScoring();
 		if ($round < 8) return $this->gamestate->nextState('nextRound');
