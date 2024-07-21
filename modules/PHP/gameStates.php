@@ -289,7 +289,7 @@ trait gameStates
 //
 		if (FAST_START && STUDIO)
 		{
-			$starPeoples = ['ICC', 'Caninoids', 'Yowies', 'Dracos', 'Orion', 'Anchara',];
+			$starPeoples = ['ICC', 'Caninoids', 'Yowies', 'Dracos', 'Orion', 'Anchara', 'Greys'];
 			foreach (Factions::list(false)as $color) Factions::setStatus($color, 'starPeople', [array_pop($starPeoples)]);
 			$this->gamestate->nextState('next');
 		}
@@ -730,8 +730,13 @@ trait gameStates
 		$players = [];
 		foreach (Factions::list(false) as $color)
 		{
+			$player_id = Factions::getPlayer($color);
+//
 			Factions::setStatus($color, 'exchange');
-			if ($this->domination->countCardInLocation('hand', $color) > 0) if (!Factions::getStatus($color, 'skip')) $players[] = Factions::getPlayer($color);
+			if ($this->domination->countCardInLocation('hand', $color) > 0)
+			{
+				if (!Factions::getStatus($color, 'skip') && !Players::getSkipDM($player_id)) $players[] = $player_id;
+			}
 		}
 //
 		foreach ($players as $player_id) self::giveExtraTime($player_id);
@@ -847,6 +852,10 @@ trait gameStates
 		}
 		if ($player_id === 0) return $this->gamestate->nextState('continue');
 //
+		Players::setSkipDM($player_id, 0);
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyPlayer($player_id, 'skipDM', '', ['player_id' => $player_id, 'skipDM' => 0]);
+//* -------------------------------------------------------------------------------------------------------- */
 		self::giveExtraTime($player_id);
 		$this->gamestate->changeActivePlayer($player_id);
 		$this->gamestate->nextState('nextPlayer');

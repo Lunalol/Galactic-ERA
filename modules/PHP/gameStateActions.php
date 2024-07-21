@@ -74,6 +74,16 @@ trait gameStateActions
 		self::notifyPlayer($player_id, 'skip', '', ['color' => $color, 'skip' => $skip]);
 //* -------------------------------------------------------------------------------------------------------- */
 	}
+	function acSkipDM(string $color, bool $skipDM)
+	{
+		$player_id = Factions::getPlayer($color);
+		if ($player_id != Factions::getPlayer($color)) throw new BgaVisibleSystemException('Invalid Faction: ' . $color);
+//
+		Players::setSkipDM($player_id, $skipDM);
+//* -------------------------------------------------------------------------------------------------------- */
+		self::notifyPlayer($player_id, 'skipDM', '', ['player_id' => $player_id, 'skipDM' => $skipDM]);
+//* -------------------------------------------------------------------------------------------------------- */
+	}
 	function acNull(string $color): void
 	{
 		$player_id = Factions::getPlayer($color);
@@ -955,7 +965,7 @@ trait gameStateActions
 				if (Factions::getTechnology($color, 'Spirituality') < 5)
 				{
 					$toBlock = [];
-					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($next_location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getStarPeople($otherColor) !== 'Greys' && Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($next_location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 					if ($toBlock)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -974,7 +984,7 @@ trait gameStateActions
 				if (Factions::getTechnology($color, 'Spirituality') < 5)
 				{
 					$toBlock = [];
-					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS' && (Ships::getAtLocation($location, $otherColor) || Ships::getAtLocation($next_location, $otherColor))) $toBlock[] = Factions::getPlayer($otherColor);
+					foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getStarPeople($otherColor) !== 'Greys' && Factions::getAlignment($otherColor) === 'STS' && (Ships::getAtLocation($location, $otherColor) || Ships::getAtLocation($next_location, $otherColor))) $toBlock[] = Factions::getPlayer($otherColor);
 					if ($toBlock)
 					{
 //* -------------------------------------------------------------------------------------------------------- */
@@ -1151,7 +1161,7 @@ trait gameStateActions
 		$toBlock = [];
 		if (Factions::getTechnology($color, 'Spirituality') < 5)
 		{
-			foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
+			foreach (Factions::atPeace($color) as $otherColor) if (Factions::getPlayer($otherColor) > 0 && Factions::getStarPeople($otherColor) !== 'Greys' && Factions::getAlignment($otherColor) === 'STS' && Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 		}
 		if ($toBlock)
 		{
@@ -1647,9 +1657,9 @@ trait gameStateActions
 		{
 			$level = self::gainTechnology($color, $technology, true);
 //
-// GREYS SPECIAL STO & STS: When you research a technology at level 1 you increase it to level 3
+// GREYS SPECIAL STO : When you research a technology at level 1 you increase it to level 3
 //
-			if (Factions::getStarPeople($color) === 'Greys' && $level === 2) self::gainTechnology($color, $technology);
+			if (Factions::getStarPeople($color) === 'Greys' && Factions::getAlignment($color) === 'STO' && $level === 2) self::gainTechnology($color, $technology);
 //
 			unset($counters[array_search($technology, $counters)]);
 			if ($level) Factions::setStatus($color, 'used', array_values(array_merge(Factions::getStatus($color, 'used'), [$technology])));
@@ -1779,8 +1789,11 @@ trait gameStateActions
 					{
 						if (Factions::getAlignment($otherColor) === 'STO')
 						{
-							if ($type === SUBJUGATE || $type === CONQUER) $toBlock[] = Factions::getPlayer($otherColor);
-							if ($type === CONQUERVS && Factions::getAlignment($color) === 'STO') $toBlock[] = Factions::getPlayer($otherColor);
+							if (Factions::getStarPeople($otherColor) !== 'Greys')
+							{
+								if ($type === SUBJUGATE || $type === CONQUER) $toBlock[] = Factions::getPlayer($otherColor);
+								if ($type === CONQUERVS && Factions::getAlignment($color) === 'STO') $toBlock[] = Factions::getPlayer($otherColor);
+							}
 						}
 						else $toBlock[] = Factions::getPlayer($otherColor);
 					}
@@ -2228,7 +2241,7 @@ trait gameStateActions
 			$toBlock = [];
 			foreach (Factions::atPeace($color) as $otherColor)
 			{
-				if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS')
+				if (Factions::getPlayer($otherColor) > 0 && Factions::getStarPeople($otherColor) !== 'Greys' && Factions::getAlignment($otherColor) === 'STS')
 				{
 					foreach ($locations as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 					foreach ($locationsBonus as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
@@ -2436,7 +2449,7 @@ trait gameStateActions
 				$toBlock = [];
 				foreach (Factions::atPeace($color) as $otherColor)
 				{
-					if (Factions::getPlayer($otherColor) > 0 && Factions::getAlignment($otherColor) === 'STS')
+					if (Factions::getPlayer($otherColor) > 0 && Factions::getStarPeople($otherColor) !== 'Greys' && Factions::getAlignment($otherColor) === 'STS')
 					{
 						foreach (array_keys(Counters::getPopulations($color)) as $location) if (Ships::getAtLocation($location, $otherColor)) $toBlock[] = Factions::getPlayer($otherColor);
 					}

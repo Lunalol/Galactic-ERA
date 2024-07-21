@@ -95,7 +95,7 @@ define(["dojo", "dojo/_base/declare", "dijit"], function (dojo, declare, dijit)
 //
 			html += `</div>`;
 //
-			html += `<div style='font-size:small;'><input id='ERAskip' type='checkbox' ${this.bgagame.gamedatas.factions[faction.color].skip ? 'checked' : ''}/><label for="ERAskip"> ${_('Skip to the next round')}</label></div>`;
+			html += `<div style='font-size:small;'><input id='ERAskip' type='checkbox' ${+this.bgagame.gamedatas.factions[faction.color].skip ? 'checked' : ''}/><label for="ERAskip"> ${_('Skip to the next round')}</label></div>`;
 			html += `<div style='font-size:x-small;width:50%;text-align:justify;'>${_('You will lose the opportunity to play domination cards for the entire round. You can still play them during your own turn.')}</div>`
 //
 			html += `</div>`;

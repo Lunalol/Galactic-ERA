@@ -1809,17 +1809,22 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 								if (this.factions.dialog) this.factions.dialog.destroy();
 							});
 						}
-						if (!args.scoringPhase && this.gamedatas.playerorder.length > 0)
+						if (this.gamedatas.playerorder.length > 0)
 						{
-							this.addActionButton('ERAPassAllButton', _('Skip to the next round'), () => {
-								this.confirmationDialog(_('You will lose the opportunity to play domination cards for the entire round. You can still play them during your own turn.'), () =>
-								{
-									this.ajaxcall(`/galacticera/galacticera/skip.html`, {color: this.color, skip: true}, this, () => {
-									});
-									this.action('null', {color: this.color});
-								});
-								if (this.factions.dialog) this.factions.dialog.destroy();
-							}, null, false, 'red');
+							if (!args.scoringPhase)
+							{
+								this.addActionButton('ERAPassAllButton', _('Skip to the next round'), () => {
+									this.confirmationDialog(_('You will lose the opportunity to play domination cards for the entire round. You can still play them during your own turn.'), () => this.ajaxcall(`/galacticera/galacticera/skip.html`, {color: this.color, skip: true}, this, () => this.action('null', {color: this.color})));
+									if (this.factions.dialog) this.factions.dialog.destroy();
+								}, null, false, 'red');
+							}
+							else
+							{
+								this.addActionButton('ERAPassNextButton', _('Skip start of next round'), () => {
+									this.confirmationDialog(_('You will lose the opportunity to play domination cards at the start of the next round'), () => this.ajaxcall(`/galacticera/galacticera/skipDM.html`, {color: this.color, skipDM: true}, this, () => this.action('null', {color: this.color})));
+									if (this.factions.dialog) this.factions.dialog.destroy();
+								}, null, false, 'red');
+							}
 						}
 //
 						break;
@@ -2431,6 +2436,7 @@ define(["dojo", "dojo/_base/declare", "dijit", "ebg/core/gamegui", "ebg/counter"
 				this.restoreServerGameState();
 			});
 			dojo.subscribe('skip', (notif) => this.gamedatas.factions[notif.args.color].skip = notif.args.skip);
+			dojo.subscribe('skipDM', (notif) => this.gamedatas.players[notif.args.player_id].skipDM = notif.args.skipDM);
 //
 			dojo.subscribe('updateScoring', (notif) => {
 				for (let color in notif.args.scoring)

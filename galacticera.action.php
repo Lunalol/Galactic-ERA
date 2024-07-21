@@ -45,6 +45,16 @@ class action_galacticera extends APP_GameAction
 //
 		self::ajaxResponse("");
 	}
+	public function skipDM()
+	{
+		self::setAjaxMode();
+//
+		$color = self::getArg("color", AT_alphanum, true);
+		$skipDM = self::getArg("skipDM", AT_bool, true);
+		$this->game->acSkipDM($color, $skipDM);
+//
+		self::ajaxResponse("");
+	}
 	public function null()
 	{
 		self::setAjaxMode();

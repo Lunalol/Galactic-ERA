@@ -237,34 +237,31 @@ class GalacticEra extends Table
 	}
 	function upgradeTableDb($from_version)
 	{
-		if ($from_version <= '2308311759' && in_array($this->table_id, []))
+		if ($from_version <= '2308311759')
 		{
-
+			self::applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_player ADD `skipDM` BOOL DEFAULT false");
 		}
 	}
 	public function loadBugReportSQL(int $reportId, array $studioPlayersIds): void
 	{
 		$players = $this->getObjectListFromDb('SELECT player_id FROM player', true);
-
-		// Change for your game
-		// We are setting the current state to match the start of a player's turn if it's already game over
+//
+// Change for your game
+// We are setting the current state to match the start of a player's turn if it's already game over
 		$sql = ['UPDATE global SET global_value = 120 WHERE global_id = 1 AND global_value = 99'];
 		foreach ($players as $index => $pId)
 		{
 			$studioPlayer = $studioPlayersIds[$index];
 
-			// All games can keep this SQL
+// All games can keep this SQL
 			$sql[] = "UPDATE player SET player_id=$studioPlayer WHERE player_id=$pId";
 			$sql[] = "UPDATE global SET global_value=$studioPlayer WHERE global_value=$pId";
 			$sql[] = "UPDATE stats SET stats_player_id=$studioPlayer WHERE stats_player_id=$pId";
-			// Add game-specific SQL update the tables for your game
+// Add game-specific SQL update the tables for your game
 			$sql[] = "UPDATE factions SET player_id=$studioPlayer WHERE player_id=$pId";
 		}
-		foreach ($sql as $q)
-		{
-			$this->DbQuery($q);
-		}
-
+		foreach ($sql as $q) $this->DbQuery($q);
+//
 		$this->reloadPlayersBasicInfos();
 	}
 	function triggerEvent(int $new_state, string $new_active_faction)

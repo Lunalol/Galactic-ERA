@@ -11,7 +11,7 @@ class Players extends APP_GameClass
 	}
 	static function getAllDatas(): array
 	{
-		return self::$table->getCollectionFromDb("SELECT player_id id, player_score score FROM player");
+		return self::$table->getCollectionFromDb("SELECT player_id id, player_score score, skipDM FROM player");
 	}
 	static function getAdmin(): int
 	{
@@ -20,5 +20,13 @@ class Players extends APP_GameClass
 	static function getName(int $player_id): string
 	{
 		return self::$table->getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $player_id");
+	}
+	static function getSkipDM(int $player_id): bool
+	{
+		return boolval(self::$table->getUniqueValueFromDB("SELECT skipDM FROM player WHERE player_id = $player_id"));
+	}
+	static function setSkipDM(int $player_id, int $skipDM): void
+	{
+		self::$table->DbQuery("UPDATE player SET skipDM = $skipDM WHERE player_id = $player_id");
 	}
 }
