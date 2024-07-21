@@ -237,7 +237,7 @@ class GalacticEra extends Table
 	}
 	function upgradeTableDb($from_version)
 	{
-		if ($from_version <= '2308311759')
+		if ($from_version <= '2407181753')
 		{
 			self::applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_player ADD `skipDM` BOOL DEFAULT false");
 		}
